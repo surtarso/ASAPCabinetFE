@@ -1,6 +1,6 @@
 // main.cpp
 // ASAP-CABINET-FE in C++/SDL2
-// - Scans VPX_ROOT_FOLDER recursively for .vpx files
+// - Scans VPX_TABLES_PATH recursively for .vpx files
 // - For each table, loads images for the playfield, wheel, backglass and DMD
 // - Creates two windows: primary (playfield) and secondary (backglass)
 // - Uses left/right arrow keys to change tables with a fade transition
@@ -31,35 +31,39 @@ const std::string DEFAULT_BACKGLASS_PATH = "img/default_backglass.png";
 const std::string DEFAULT_DMD_PATH       = "img/default_dmd.gif";
 
 // Main paths and per-table image sub-paths
-const std::string VPX_ROOT_FOLDER  = "/home/tarso/Games/vpinball/build/tables/";
-const std::string EXECUTABLE_CMD   = "/home/tarso/Games/vpinball/build/VPinballX_GL";
-const std::string EXECUTABLE_SUB_CMD = "-Play";
+const std::string VPX_TABLES_PATH        = "/home/tarso/Games/vpinball/build/tables/";
+const std::string EXECUTABLE_CMD         = "/home/tarso/Games/vpinball/build/VPinballX_GL";
+const std::string EXECUTABLE_SUB_CMD     = "-Play";
 
 // Per-table relative paths (inside each table’s folder)
 const std::string TABLE_IMAGE_PATH       = "images/table.png";
-const std::string TABLE_WHEEL_PATH       = "images/wheel.png";
-const std::string TABLE_BACKGLASS_PATH   = "images/backglass.png";
-const std::string TABLE_DMD_PATH         = "images/dmd.gif";
+const std::string TABLE_VIDEO_PATH       = "images/table.mp4";
+const std::string BACKGLASS_IMAGE_PATH   = "images/backglass.png";
+const std::string BACKGLASS_VIDEO_PATH   = "images/backglass.mp4";
+const std::string DMD_VIDEO_PATH         = "images/dmd.mp4";
+const std::string WHEEL_IMAGE_PATH       = "images/wheel.png";
 
-// Window dimensions and UI constants
-const int MAIN_WINDOW_WIDTH    = 1080;
-const int MAIN_WINDOW_HEIGHT   = 1920;
-const int BACKGLASS_WINDOW_WIDTH  = 1024;
-const int BACKGLASS_WINDOW_HEIGHT = 1024;
-const int BACKGLASS_IMAGE_WIDTH   = 1024;
-const int BACKGLASS_IMAGE_HEIGHT  = 768;
-const int DMD_WIDTH            = 1024;
-const int DMD_HEIGHT           = 256;
-const int WHEEL_IMAGE_SIZE     = 250;
-const int WHEEL_IMAGE_MARGIN   = 24;
+// Main window dimensions and UI constants
+const int MAIN_WINDOW_MONITOR            = 1;
+const int MAIN_WINDOW_WIDTH              = 1080;
+const int MAIN_WINDOW_HEIGHT             = 1920;
+const int WHEEL_IMAGE_SIZE               = 250;
+const int WHEEL_IMAGE_MARGIN             = 24;
+const std::string FONT_PATH              = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+const int FONT_SIZE                      = 22;
+
+// Secondary window dimensions
+const int BACKGLASS_WINDOW_MONITOR       = 0;
+const int BACKGLASS_WINDOW_WIDTH         = 1024;
+const int BACKGLASS_WINDOW_HEIGHT        = 1024;
+const int BACKGLASS_IMAGE_WIDTH          = 1024;
+const int BACKGLASS_IMAGE_HEIGHT         = 768;
+const int DMD_IMAGE_WIDTH                = 1024;
+const int DMD_IMAGE_HEIGHT               = 256;
 
 // Fade transition settings
-const int FADE_DURATION_MS     = 300;   // total duration for fade-out/in phases
-const Uint8 FADE_TARGET_ALPHA  = 128;   // fade to 50% (128 out of 255)
-
-// Font settings for drawing table name text
-const std::string FONT_PATH    = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-const int FONT_SIZE            = 22;
+const int FADE_DURATION_MS               = 300;   // total duration for fade-out/in phases
+const Uint8 FADE_TARGET_ALPHA            = 128;   // fade to 50% (128 out of 255)
 
 // ------------------ Data Structures ------------------
 
@@ -84,10 +88,10 @@ std::string getImagePath(const std::string &root, const std::string &subpath, co
         return defaultPath;
 }
 
-// Scans VPX_ROOT_FOLDER recursively for .vpx files and builds a vector of Table objects.
+// Scans VPX_TABLES_PATH recursively for .vpx files and builds a vector of Table objects.
 std::vector<Table> loadTableList() {
     std::vector<Table> tables;
-    for (const auto &entry : fs::recursive_directory_iterator(VPX_ROOT_FOLDER)) {
+    for (const auto &entry : fs::recursive_directory_iterator(VPX_TABLES_PATH)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             Table table;
             table.vpxFile = entry.path().string();
@@ -95,9 +99,9 @@ std::vector<Table> loadTableList() {
             table.tableName = entry.path().stem().string();
             // Build per-table image paths with fallbacks:
             table.tableImg = getImagePath(table.folder, TABLE_IMAGE_PATH, DEFAULT_TABLE_PATH);
-            table.wheelImg = getImagePath(table.folder, TABLE_WHEEL_PATH, DEFAULT_WHEEL_PATH);
-            table.backglassImg = getImagePath(table.folder, TABLE_BACKGLASS_PATH, DEFAULT_BACKGLASS_PATH);
-            table.dmdImg = getImagePath(table.folder, TABLE_DMD_PATH, DEFAULT_DMD_PATH);
+            table.wheelImg = getImagePath(table.folder, WHEEL_IMAGE_PATH, DEFAULT_WHEEL_PATH);
+            table.backglassImg = getImagePath(table.folder, BACKGLASS_IMAGE_PATH, DEFAULT_BACKGLASS_PATH);
+            table.dmdImg = getImagePath(table.folder, DMD_VIDEO_PATH, DEFAULT_DMD_PATH);
             tables.push_back(table);
         }
     }
@@ -204,10 +208,10 @@ int main(int argc, char* argv[]) {
         // Continue without text if necessary
     }
     
-    // Load table list from VPX_ROOT_FOLDER
+    // Load table list from VPX_TABLES_PATH
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) {
-        std::cerr << "No .vpx files found in " << VPX_ROOT_FOLDER << std::endl;
+        std::cerr << "No .vpx files found in " << VPX_TABLES_PATH << std::endl;
         // Clean up and quit
         if (font) TTF_CloseFont(font);
         SDL_DestroyRenderer(secondaryRenderer);
@@ -365,7 +369,7 @@ int main(int argc, char* argv[]) {
         }
         // Render DMD image at bottom (positioned below backglass)
         if (dmdTexture) {
-            SDL_Rect dmdRect = {0, BACKGLASS_IMAGE_HEIGHT, DMD_WIDTH, DMD_HEIGHT};
+            SDL_Rect dmdRect = {0, BACKGLASS_IMAGE_HEIGHT, DMD_IMAGE_WIDTH, DMD_IMAGE_HEIGHT};
             SDL_RenderCopy(secondaryRenderer, dmdTexture, nullptr, &dmdRect);
         }
         
