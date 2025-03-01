@@ -1,2 +1,15 @@
+TODO - From urgent to least important.
+
+Main:
 - remove playfield and backglass window decorations
 - set each window to their respective monitors
+
+UI:
+- look for mp4 videos, fallback to .png images, fallback to default image.
+- add 'settings button' and panel
+- add 'search button' by query
+
+Flares:
+- add 'jump to letter'  navigation
+- add blinking arrows on sides to indicate table flow/keys
+- add splash screen on start
