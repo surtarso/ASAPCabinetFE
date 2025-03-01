@@ -1,0 +1,4 @@
+assets/img/* filter=lfs diff=lfs merge=lfs -text
+assets/snd/* filter=lfs diff=lfs merge=lfs -text
+img/*.png filter=lfs diff=lfs merge=lfs -text
+img/*.mp4 filter=lfs diff=lfs merge=lfs -text
