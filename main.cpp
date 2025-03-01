@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 const std::string DEFAULT_TABLE_PATH     = "img/default_table.png";
 const std::string DEFAULT_WHEEL_PATH     = "img/default_wheel.png";
 const std::string DEFAULT_BACKGLASS_PATH = "img/default_backglass.png";
-const std::string DEFAULT_DMD_PATH       = "img/default_dmd.gif";
+const std::string DEFAULT_DMD_PATH       = "img/default_dmd.png"; 
 
 // Main paths and per-table image sub-paths
 const std::string VPX_TABLES_PATH        = "/home/tarso/Games/vpinball/build/tables/";
@@ -37,9 +37,9 @@ const std::string EXECUTABLE_SUB_CMD     = "-Play";
 
 // Per-table relative paths (inside each table’s folder)
 const std::string TABLE_IMAGE_PATH       = "images/table.png";
-const std::string TABLE_VIDEO_PATH       = "images/table.mp4";
+// const std::string TABLE_VIDEO_PATH       = "images/table.mp4";
 const std::string BACKGLASS_IMAGE_PATH   = "images/backglass.png";
-const std::string BACKGLASS_VIDEO_PATH   = "images/backglass.mp4";
+// const std::string BACKGLASS_VIDEO_PATH   = "images/backglass.mp4";
 const std::string DMD_VIDEO_PATH         = "images/dmd.mp4";
 const std::string WHEEL_IMAGE_PATH       = "images/wheel.png";
 
@@ -56,10 +56,10 @@ const int FONT_SIZE                      = 22;
 const int BACKGLASS_WINDOW_MONITOR       = 0;
 const int BACKGLASS_WINDOW_WIDTH         = 1024;
 const int BACKGLASS_WINDOW_HEIGHT        = 1024;
-const int BACKGLASS_IMAGE_WIDTH          = 1024;
-const int BACKGLASS_IMAGE_HEIGHT         = 768;
-const int DMD_IMAGE_WIDTH                = 1024;
-const int DMD_IMAGE_HEIGHT               = 256;
+const int BACKGLASS_MEDIA_WIDTH          = 1024;
+const int BACKGLASS_MEDIA_HEIGHT         = 768;
+const int DMD_MEDIA_WIDTH                = 1024;
+const int DMD_MEDIA_HEIGHT               = 256;
 
 // Fade transition settings
 const int FADE_DURATION_MS               = 300;   // total duration for fade-out/in phases
@@ -364,12 +364,12 @@ int main(int argc, char* argv[]) {
         
         // Render backglass image at top.
         if (backglassTexture) {
-            SDL_Rect backglassRect = {0, 0, BACKGLASS_IMAGE_WIDTH, BACKGLASS_IMAGE_HEIGHT};
+            SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
             SDL_RenderCopy(secondaryRenderer, backglassTexture, nullptr, &backglassRect);
         }
         // Render DMD image at bottom (positioned below backglass)
         if (dmdTexture) {
-            SDL_Rect dmdRect = {0, BACKGLASS_IMAGE_HEIGHT, DMD_IMAGE_WIDTH, DMD_IMAGE_HEIGHT};
+            SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
             SDL_RenderCopy(secondaryRenderer, dmdTexture, nullptr, &dmdRect);
         }
         
