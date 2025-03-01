@@ -1,4 +1,6 @@
-# As Simple As Possible Cabinet Front-End
+# As Simple As Possible Cabinet Front-End (in C++)
+
+This is a work in progress port of [asap-cabinet-fe](https://github.com/surtarso/asap-cabinet-fe) Python app to C++/SDL.
 
 ## How it works
 
