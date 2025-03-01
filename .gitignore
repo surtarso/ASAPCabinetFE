@@ -1,7 +1,11 @@
 # Custom
 compile.sh
 ASAPCabinetFE
-
+settings.json
+.vscode
+.vscode/*
+.vscode/settings.json
+*.vscode
 # Prerequisites
 *.d
 
