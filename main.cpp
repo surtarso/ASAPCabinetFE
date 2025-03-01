@@ -1,13 +1,10 @@
 // main.cpp
 // ASAP-CABINET-FE in C++/SDL2
-//
-// This example reimplements the main features of the Python app:
 // - Scans VPX_ROOT_FOLDER recursively for .vpx files
 // - For each table, loads images for the playfield, wheel, backglass and DMD
 // - Creates two windows: primary (playfield) and secondary (backglass)
 // - Uses left/right arrow keys to change tables with a fade transition
 // - Press Enter to launch the table via an external process
-//
 // Dependencies: sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 // Compile: g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
 // Compile(me): g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
