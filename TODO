@@ -10,6 +10,7 @@ UI:
 - add 'search button' by query
 
 Flares:
+- add flipper sound (snd/table_change.mp3) to table transition
 - add 'jump to letter'  navigation
 - add blinking arrows on sides to indicate table flow/keys
 - add splash screen on start

@@ -5,15 +5,15 @@
 // - Creates two windows: primary (playfield) and secondary (backglass)
 // - Uses left/right arrow keys to change tables with a fade transition
 // - Press Enter to launch the table via an external process
-// Dependencies: sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
-// Compile: g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
-// Compile(me): g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
-// Required libraries: SDL2, SDL2_image, SDL2_ttf (make sure these are installed)
+// Dependencies: sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+// Compile: g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
+// Required libraries: SDL2, SDL2_image, SDL2_ttf, SDL2_mixer (make sure these are installed)
 
 #include <algorithm>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -64,6 +64,9 @@ const int DMD_MEDIA_HEIGHT               = 256;
 // Fade transition settings
 const int FADE_DURATION_MS               = 300;   // total duration for fade-out/in phases
 const Uint8 FADE_TARGET_ALPHA            = 128;   // fade to 50% (128 out of 255)
+
+// Sound file path
+const std::string TABLE_CHANGE_SOUND_PATH = "snd/table_change.mp3";
 
 // ------------------ Data Structures ------------------
 
@@ -149,7 +152,7 @@ enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
 int main(int argc, char* argv[]) {
     // Initialize SDL, SDL_image, and SDL_ttf
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return 1;
     }
@@ -162,6 +165,10 @@ int main(int argc, char* argv[]) {
         std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
         IMG_Quit();
         SDL_Quit();
+        return 1;
+    }
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
         return 1;
     }
     
@@ -206,6 +213,13 @@ int main(int argc, char* argv[]) {
     if (!font) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
         // Continue without text if necessary
+    }
+    
+    // Load sound effect
+    Mix_Chunk* tableChangeSound = Mix_LoadWAV(TABLE_CHANGE_SOUND_PATH.c_str());
+    if (!tableChangeSound) {
+        std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
+        return 1;
     }
     
     // Load table list from VPX_TABLES_PATH
