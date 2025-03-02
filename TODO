@@ -1,10 +1,9 @@
 TODO - From urgent to least important.
 
 Main:
-- look for mp4 videos, fallback to .png images, fallback to default image.
+- add 'settings button' and panel
 
 UI:
-- add 'settings button' and panel
 - add 'search button' by query
 
 Flares:
@@ -13,3 +12,6 @@ Flares:
 - add blinking arrows on sides to indicate table flow/keys
 - add splash screen on start
 - add video default media
+
+On hold:
+- look for mp4 videos, fallback to .png images, fallback to default image.
