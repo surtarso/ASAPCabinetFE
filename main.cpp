@@ -173,9 +173,9 @@ int main(int argc, char* argv[]) {
     }
     
     // Create primary window (playfield)
-    SDL_Window* primaryWindow = SDL_CreateWindow("Primary Display (Table Viewer)",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window* primaryWindow = SDL_CreateWindow("Visual Pinball Player",
+        SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
+        MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (!primaryWindow) {
         std::cerr << "Failed to create primary window: " << SDL_GetError() << std::endl;
         return 1;
@@ -189,9 +189,9 @@ int main(int argc, char* argv[]) {
     }
     
     // Create secondary window (backglass)
-    SDL_Window* secondaryWindow = SDL_CreateWindow("Secondary Display (Backglass)",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        BACKGLASS_WINDOW_WIDTH, BACKGLASS_WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window* secondaryWindow = SDL_CreateWindow("B2SBackglass",
+        SDL_WINDOWPOS_CENTERED_DISPLAY(BACKGLASS_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
+        BACKGLASS_WINDOW_WIDTH, BACKGLASS_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (!secondaryWindow) {
         std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;
         SDL_DestroyRenderer(primaryRenderer);
