@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
         return 1;
     }
-    
+
     // Load table list from VPX_TABLES_PATH
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) {
@@ -288,19 +288,21 @@ int main(int argc, char* argv[]) {
             }
             else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
                 if (event.key.keysym.sym == SDLK_LEFT) {
-                    // Navigate left
+                    // Navigate LEFT
                     currentIndex = (currentIndex + tables.size() - 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
+                    Mix_PlayChannel(-1, tableChangeSound, 0); // Play the table change sound
                 }
                 else if (event.key.keysym.sym == SDLK_RIGHT) {
-                    // Navigate right
+                    // Navigate RIGHT
                     currentIndex = (currentIndex + 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
+                    Mix_PlayChannel(-1, tableChangeSound, 0); // Play the table change sound
                 }
                 else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
-                    // Launch the current table
+                    // LAUNCH the current table
                     launchTable(tables[currentIndex]);
                 }
                 else if (event.key.keysym.sym == SDLK_ESCAPE) {
@@ -325,6 +327,8 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_IN;
                     transitionStartTime = SDL_GetTicks();
                     currentAlpha = FADE_TARGET_ALPHA;
+                    // Play the table change sound
+                    // Mix_PlayChannel(-1, tableChangeSound, 0);
                 }
             }
             else if (transitionState == TransitionState::FADING_IN) {
