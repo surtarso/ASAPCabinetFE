@@ -24,33 +24,35 @@ namespace fs = std::filesystem;
 
 // ------------------ Configuration Constants ------------------
 
-// Default image paths
-const std::string DEFAULT_TABLE_PATH     = "img/default_table.png";
-const std::string DEFAULT_WHEEL_PATH     = "img/default_wheel.png";
-const std::string DEFAULT_BACKGLASS_PATH = "img/default_backglass.png";
-const std::string DEFAULT_DMD_PATH       = "img/default_dmd.png"; 
+// VPX table and executable paths
+const std::string VPX_TABLES_PATH         = "/home/tarso/Games/vpinball/build/tables/";
+const std::string VPX_EXECUTABLE_CMD      = "/home/tarso/Games/vpinball/build/VPinballX_GL";
+const std::string VPX_SUB_CMD             = "-Play";
 
-// Main paths and per-table image sub-paths
-const std::string VPX_TABLES_PATH        = "/home/tarso/Games/vpinball/build/tables/";
-const std::string EXECUTABLE_CMD         = "/home/tarso/Games/vpinball/build/VPinballX_GL";
-const std::string EXECUTABLE_SUB_CMD     = "-Play";
+// Default image paths
+const std::string DEFAULT_TABLE_IMAGE     = "img/default_table.png";
+const std::string DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
+const std::string DEFAULT_DMD_IMAGE       = "img/default_dmd.png";
+const std::string DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
 
 // Per-table relative paths (inside each table’s folder)
-const std::string TABLE_IMAGE_PATH       = "images/table.png";
-// const std::string TABLE_VIDEO_PATH       = "images/table.mp4";
-const std::string BACKGLASS_IMAGE_PATH   = "images/backglass.png";
-// const std::string BACKGLASS_VIDEO_PATH   = "images/backglass.mp4";
-const std::string DMD_VIDEO_PATH         = "images/dmd.mp4";
-const std::string WHEEL_IMAGE_PATH       = "images/wheel.png";
+const std::string CUSTOM_TABLE_IMAGE      = "images/table.png";
+const std::string CUSTOM_BACKGLASS_IMAGE  = "images/backglass.png";
+const std::string CUSTOM_DMD_IMAGE        = "images/dmd.png";
+const std::string CUSTOM_WHEEL_IMAGE      = "images/wheel.png";
+
+const std::string CUSTOM_TABLE_VIDEO      = "video/table.mp4";
+const std::string CUSTOM_BACKGLASS_VIDEO  = "video/backglass.mp4";
+const std::string CUSTOM_DMD_VIDEO        = "video/dmd.mp4";
 
 // Main window dimensions and UI constants
 const int MAIN_WINDOW_MONITOR            = 1;
 const int MAIN_WINDOW_WIDTH              = 1080;
 const int MAIN_WINDOW_HEIGHT             = 1920;
-const int WHEEL_IMAGE_SIZE               = 250;
+const int WHEEL_IMAGE_SIZE               = 300;
 const int WHEEL_IMAGE_MARGIN             = 24;
 const std::string FONT_PATH              = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-const int FONT_SIZE                      = 22;
+const int FONT_SIZE                      = 28;
 
 // Secondary window dimensions
 const int BACKGLASS_WINDOW_MONITOR       = 0;
@@ -71,13 +73,13 @@ const std::string TABLE_CHANGE_SOUND_PATH = "snd/table_change.mp3";
 // ------------------ Data Structures ------------------
 
 struct Table {
-    std::string tableName;
-    std::string vpxFile;
-    std::string folder;
-    std::string tableImg;
-    std::string wheelImg;
-    std::string backglassImg;
-    std::string dmdImg;
+    std::string tableName;        // Name of the table (derived from .vpx file name)
+    std::string vpxFile;          // Path to the .vpx file
+    std::string folder;           // Folder containing the .vpx file
+    std::string tableMedia;       // Path to the table media (image or video)
+    std::string wheelMedia;       // Path to the wheel image
+    std::string backglassMedia;   // Path to the backglass media (image or video)
+    std::string dmdMedia;         // Path to the DMD media (image or video)
 };
 
 // ------------------ Utility Functions ------------------
@@ -101,10 +103,10 @@ std::vector<Table> loadTableList() {
             table.folder = entry.path().parent_path().string();
             table.tableName = entry.path().stem().string();
             // Build per-table image paths with fallbacks:
-            table.tableImg = getImagePath(table.folder, TABLE_IMAGE_PATH, DEFAULT_TABLE_PATH);
-            table.wheelImg = getImagePath(table.folder, WHEEL_IMAGE_PATH, DEFAULT_WHEEL_PATH);
-            table.backglassImg = getImagePath(table.folder, BACKGLASS_IMAGE_PATH, DEFAULT_BACKGLASS_PATH);
-            table.dmdImg = getImagePath(table.folder, DMD_VIDEO_PATH, DEFAULT_DMD_PATH);
+            table.wheelMedia = getImagePath(table.folder, CUSTOM_WHEEL_IMAGE, DEFAULT_WHEEL_IMAGE);
+            table.tableMedia = getImagePath(table.folder, CUSTOM_TABLE_VIDEO, getImagePath(table.folder, CUSTOM_TABLE_IMAGE, DEFAULT_TABLE_IMAGE));
+            table.backglassMedia = getImagePath(table.folder, CUSTOM_BACKGLASS_VIDEO, getImagePath(table.folder, CUSTOM_BACKGLASS_IMAGE, DEFAULT_BACKGLASS_IMAGE));
+            table.dmdMedia = getImagePath(table.folder, CUSTOM_DMD_VIDEO, getImagePath(table.folder, CUSTOM_DMD_IMAGE, DEFAULT_DMD_IMAGE));
             tables.push_back(table);
         }
     }
@@ -141,7 +143,7 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::strin
 
 // Launches the table using system() call.
 void launchTable(const Table &table) {
-    std::string command = EXECUTABLE_CMD + " " + EXECUTABLE_SUB_CMD + " \"" + table.vpxFile + "\"";
+    std::string command = VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + table.vpxFile + "\"";
     std::cout << "Launching: " << command << std::endl;
     std::system(command.c_str());
 }
@@ -256,10 +258,10 @@ int main(int argc, char* argv[]) {
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
         
         const Table &tbl = tables[currentIndex];
-        tableTexture = loadTexture(primaryRenderer, tbl.tableImg, DEFAULT_TABLE_PATH);
-        wheelTexture = loadTexture(primaryRenderer, tbl.wheelImg, DEFAULT_WHEEL_PATH);
-        backglassTexture = loadTexture(secondaryRenderer, tbl.backglassImg, DEFAULT_BACKGLASS_PATH);
-        dmdTexture = loadTexture(secondaryRenderer, tbl.dmdImg, DEFAULT_DMD_PATH);
+        tableTexture = loadTexture(primaryRenderer, tbl.tableMedia, DEFAULT_TABLE_IMAGE);
+        wheelTexture = loadTexture(primaryRenderer, tbl.wheelMedia, DEFAULT_WHEEL_IMAGE);
+        backglassTexture = loadTexture(secondaryRenderer, tbl.backglassMedia, DEFAULT_BACKGLASS_IMAGE);
+        dmdTexture = loadTexture(secondaryRenderer, tbl.dmdMedia, DEFAULT_DMD_IMAGE);
         
         // Render table name text (if font loaded)
         if (font) {
@@ -371,8 +373,23 @@ int main(int argc, char* argv[]) {
         
         // Render table name text if available.
         if (tableNameTexture) {
+            // Create a black background rectangle that matches the text size
+            SDL_Rect backgroundRect = {tableNameRect.x - 5, tableNameRect.y - 5, tableNameRect.w + 10, tableNameRect.h + 10}; // Add padding
+
+            // Set the background rectangle's color and alpha
+            SDL_SetRenderDrawColor(primaryRenderer, 0, 0, 0, 128); // Black, alpha = 128 (semi-transparent)
+
+            // Render the background rectangle
+            SDL_RenderFillRect(primaryRenderer, &backgroundRect);
+
+            // Render the text on top of the background
             SDL_RenderCopy(primaryRenderer, tableNameTexture, nullptr, &tableNameRect);
         }
+
+        // // Render table name text if available.
+        // if (tableNameTexture) {
+        //     SDL_RenderCopy(primaryRenderer, tableNameTexture, nullptr, &tableNameRect);
+        // }
         
         SDL_RenderPresent(primaryRenderer);
         
