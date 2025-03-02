@@ -41,7 +41,7 @@ const std::string DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
 // Per-table relative paths (inside each table’s folder)
 const std::string CUSTOM_TABLE_IMAGE      = "images/table.png";
 const std::string CUSTOM_BACKGLASS_IMAGE  = "images/backglass.png";
-const std::string CUSTOM_DMD_IMAGE        = "images/dmd.png";
+const std::string CUSTOM_MARQUEE_IMAGE    = "images/marquee.png";
 const std::string CUSTOM_WHEEL_IMAGE      = "images/wheel.png";
 
 // Main window dimensions and UI constants
@@ -59,8 +59,8 @@ const int BACKGLASS_WINDOW_WIDTH         = 1024;
 const int BACKGLASS_WINDOW_HEIGHT        = 1024;
 const int BACKGLASS_MEDIA_WIDTH          = 1024;
 const int BACKGLASS_MEDIA_HEIGHT         = 768;
-const int DMD_MEDIA_WIDTH                = 1024;
-const int DMD_MEDIA_HEIGHT               = 256;
+const int MARQUEE_MEDIA_WIDTH            = 1024;
+const int MARQUEE_MEDIA_HEIGHT           = 256;
 
 // Fade transition settings
 const int FADE_DURATION_MS               = 300;   // total duration for fade-out/in phases
@@ -75,10 +75,10 @@ struct Table {
     std::string tableName;        // Name of the table (derived from .vpx file name)
     std::string vpxFile;          // Path to the .vpx file
     std::string folder;           // Folder containing the .vpx file
-    std::string tableImage;       // Path to the table media (image or video)
+    std::string tableImage;       // Path to the table image
     std::string wheelImage;       // Path to the wheel image
-    std::string backglassImage;   // Path to the backglass media (image or video)
-    std::string dmdImage;         // Path to the DMD media (image or video)
+    std::string backglassImage;   // Path to the backglass image
+    std::string marqueeImage;     // Path to the marquee image (defaults to DMD image)
 };
 
 // ------------------ Utility Functions ------------------
@@ -105,7 +105,7 @@ std::vector<Table> loadTableList() {
             table.wheelImage = getImagePath(table.folder, CUSTOM_WHEEL_IMAGE, DEFAULT_WHEEL_IMAGE);
             table.tableImage = getImagePath(table.folder, CUSTOM_TABLE_IMAGE, DEFAULT_TABLE_IMAGE);
             table.backglassImage = getImagePath(table.folder, CUSTOM_BACKGLASS_IMAGE, DEFAULT_BACKGLASS_IMAGE);
-            table.dmdImage = getImagePath(table.folder, CUSTOM_DMD_IMAGE, DEFAULT_DMD_IMAGE);
+            table.marqueeImage = getImagePath(table.folder, CUSTOM_MARQUEE_IMAGE, DEFAULT_DMD_IMAGE);
             tables.push_back(table);
         }
     }
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tableTexture = nullptr;
     SDL_Texture* wheelTexture = nullptr;
     SDL_Texture* backglassTexture = nullptr;
-    SDL_Texture* dmdTexture = nullptr;
+    SDL_Texture* marqueeTexture = nullptr;
     SDL_Texture* tableNameTexture = nullptr;
     SDL_Rect tableNameRect = {0, 0, 0, 0};
     
@@ -253,14 +253,14 @@ int main(int argc, char* argv[]) {
         if (tableTexture) { SDL_DestroyTexture(tableTexture); tableTexture = nullptr; }
         if (wheelTexture) { SDL_DestroyTexture(wheelTexture); wheelTexture = nullptr; }
         if (backglassTexture) { SDL_DestroyTexture(backglassTexture); backglassTexture = nullptr; }
-        if (dmdTexture) { SDL_DestroyTexture(dmdTexture); dmdTexture = nullptr; }
+        if (marqueeTexture) { SDL_DestroyTexture(marqueeTexture); marqueeTexture = nullptr; }
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
         
         const Table &tbl = tables[currentIndex];
         tableTexture = loadTexture(primaryRenderer, tbl.tableImage, DEFAULT_TABLE_IMAGE);
         wheelTexture = loadTexture(primaryRenderer, tbl.wheelImage, DEFAULT_WHEEL_IMAGE);
         backglassTexture = loadTexture(secondaryRenderer, tbl.backglassImage, DEFAULT_BACKGLASS_IMAGE);
-        dmdTexture = loadTexture(secondaryRenderer, tbl.dmdImage, DEFAULT_DMD_IMAGE);
+        marqueeTexture = loadTexture(secondaryRenderer, tbl.marqueeImage, DEFAULT_DMD_IMAGE);
         
         // Render table name text (if font loaded)
         if (font) {
@@ -347,7 +347,7 @@ int main(int argc, char* argv[]) {
         if (tableTexture) SDL_SetTextureAlphaMod(tableTexture, currentAlpha);
         if (wheelTexture) SDL_SetTextureAlphaMod(wheelTexture, currentAlpha);
         if (backglassTexture) SDL_SetTextureAlphaMod(backglassTexture, currentAlpha);
-        if (dmdTexture) SDL_SetTextureAlphaMod(dmdTexture, currentAlpha);
+        if (marqueeTexture) SDL_SetTextureAlphaMod(marqueeTexture, currentAlpha);
         if (tableNameTexture) SDL_SetTextureAlphaMod(tableNameTexture, currentAlpha);
         
         // ---------------- Render Primary Window ----------------
@@ -396,10 +396,10 @@ int main(int argc, char* argv[]) {
             SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
             SDL_RenderCopy(secondaryRenderer, backglassTexture, nullptr, &backglassRect);
         }
-        // Render DMD image at bottom (positioned below backglass)
-        if (dmdTexture) {
-            SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
-            SDL_RenderCopy(secondaryRenderer, dmdTexture, nullptr, &dmdRect);
+        // Render Marquee image at bottom (positioned below backglass)
+        if (marqueeTexture) {
+            SDL_Rect marqueeRect = {0, BACKGLASS_MEDIA_HEIGHT, MARQUEE_MEDIA_WIDTH, MARQUEE_MEDIA_HEIGHT};
+            SDL_RenderCopy(secondaryRenderer, marqueeTexture, nullptr, &marqueeRect);
         }
         
         SDL_RenderPresent(secondaryRenderer);
@@ -412,7 +412,7 @@ int main(int argc, char* argv[]) {
     if (tableTexture) SDL_DestroyTexture(tableTexture);
     if (wheelTexture) SDL_DestroyTexture(wheelTexture);
     if (backglassTexture) SDL_DestroyTexture(backglassTexture);
-    if (dmdTexture) SDL_DestroyTexture(dmdTexture);
+    if (marqueeTexture) SDL_DestroyTexture(marqueeTexture);
     if (tableNameTexture) SDL_DestroyTexture(tableNameTexture);
     
     if (font) TTF_CloseFont(font);
