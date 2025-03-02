@@ -5,9 +5,12 @@
 // - Creates two windows: primary (playfield) and secondary (backglass)
 // - Uses left/right arrow keys to change tables with a fade transition
 // - Press Enter to launch the table via an external process
-// Dependencies: sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
-// Compile: g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
 // Required libraries: SDL2, SDL2_image, SDL2_ttf, SDL2_mixer (make sure these are installed)
+
+// Dependencies:
+// sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+// Compile:
+// g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
 
 #include <algorithm>
 #include <SDL.h>
@@ -41,10 +44,6 @@ const std::string CUSTOM_BACKGLASS_IMAGE  = "images/backglass.png";
 const std::string CUSTOM_DMD_IMAGE        = "images/dmd.png";
 const std::string CUSTOM_WHEEL_IMAGE      = "images/wheel.png";
 
-const std::string CUSTOM_TABLE_VIDEO      = "video/table.mp4";
-const std::string CUSTOM_BACKGLASS_VIDEO  = "video/backglass.mp4";
-const std::string CUSTOM_DMD_VIDEO        = "video/dmd.mp4";
-
 // Main window dimensions and UI constants
 const int MAIN_WINDOW_MONITOR            = 1;
 const int MAIN_WINDOW_WIDTH              = 1080;
@@ -76,10 +75,10 @@ struct Table {
     std::string tableName;        // Name of the table (derived from .vpx file name)
     std::string vpxFile;          // Path to the .vpx file
     std::string folder;           // Folder containing the .vpx file
-    std::string tableMedia;       // Path to the table media (image or video)
-    std::string wheelMedia;       // Path to the wheel image
-    std::string backglassMedia;   // Path to the backglass media (image or video)
-    std::string dmdMedia;         // Path to the DMD media (image or video)
+    std::string tableImage;       // Path to the table media (image or video)
+    std::string wheelImage;       // Path to the wheel image
+    std::string backglassImage;   // Path to the backglass media (image or video)
+    std::string dmdImage;         // Path to the DMD media (image or video)
 };
 
 // ------------------ Utility Functions ------------------
@@ -103,10 +102,10 @@ std::vector<Table> loadTableList() {
             table.folder = entry.path().parent_path().string();
             table.tableName = entry.path().stem().string();
             // Build per-table image paths with fallbacks:
-            table.wheelMedia = getImagePath(table.folder, CUSTOM_WHEEL_IMAGE, DEFAULT_WHEEL_IMAGE);
-            table.tableMedia = getImagePath(table.folder, CUSTOM_TABLE_VIDEO, getImagePath(table.folder, CUSTOM_TABLE_IMAGE, DEFAULT_TABLE_IMAGE));
-            table.backglassMedia = getImagePath(table.folder, CUSTOM_BACKGLASS_VIDEO, getImagePath(table.folder, CUSTOM_BACKGLASS_IMAGE, DEFAULT_BACKGLASS_IMAGE));
-            table.dmdMedia = getImagePath(table.folder, CUSTOM_DMD_VIDEO, getImagePath(table.folder, CUSTOM_DMD_IMAGE, DEFAULT_DMD_IMAGE));
+            table.wheelImage = getImagePath(table.folder, CUSTOM_WHEEL_IMAGE, DEFAULT_WHEEL_IMAGE);
+            table.tableImage = getImagePath(table.folder, CUSTOM_TABLE_IMAGE, DEFAULT_TABLE_IMAGE);
+            table.backglassImage = getImagePath(table.folder, CUSTOM_BACKGLASS_IMAGE, DEFAULT_BACKGLASS_IMAGE);
+            table.dmdImage = getImagePath(table.folder, CUSTOM_DMD_IMAGE, DEFAULT_DMD_IMAGE);
             tables.push_back(table);
         }
     }
@@ -258,10 +257,10 @@ int main(int argc, char* argv[]) {
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
         
         const Table &tbl = tables[currentIndex];
-        tableTexture = loadTexture(primaryRenderer, tbl.tableMedia, DEFAULT_TABLE_IMAGE);
-        wheelTexture = loadTexture(primaryRenderer, tbl.wheelMedia, DEFAULT_WHEEL_IMAGE);
-        backglassTexture = loadTexture(secondaryRenderer, tbl.backglassMedia, DEFAULT_BACKGLASS_IMAGE);
-        dmdTexture = loadTexture(secondaryRenderer, tbl.dmdMedia, DEFAULT_DMD_IMAGE);
+        tableTexture = loadTexture(primaryRenderer, tbl.tableImage, DEFAULT_TABLE_IMAGE);
+        wheelTexture = loadTexture(primaryRenderer, tbl.wheelImage, DEFAULT_WHEEL_IMAGE);
+        backglassTexture = loadTexture(secondaryRenderer, tbl.backglassImage, DEFAULT_BACKGLASS_IMAGE);
+        dmdTexture = loadTexture(secondaryRenderer, tbl.dmdImage, DEFAULT_DMD_IMAGE);
         
         // Render table name text (if font loaded)
         if (font) {
@@ -385,11 +384,6 @@ int main(int argc, char* argv[]) {
             // Render the text on top of the background
             SDL_RenderCopy(primaryRenderer, tableNameTexture, nullptr, &tableNameRect);
         }
-
-        // // Render table name text if available.
-        // if (tableNameTexture) {
-        //     SDL_RenderCopy(primaryRenderer, tableNameTexture, nullptr, &tableNameRect);
-        // }
         
         SDL_RenderPresent(primaryRenderer);
         
