@@ -19,7 +19,7 @@ ASAP-CABINET-FE is a C++/SDL2 application that scans a specified folder for .vpx
 Install the following dependencies:
 
 ```sh
-sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 ```
 
 ## Compilation
@@ -27,13 +27,13 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 To compile the application, use the following command:
 
 ```sh
-g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
+g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
 ```
 
 For a specific setup, you can use:
 
 ```sh
-g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -o ASAPCabinetFE
+g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
 ```
 
 ## Required Libraries
@@ -43,3 +43,4 @@ Make sure the following libraries are installed:
 - SDL2
 - SDL2_image
 - SDL2_ttf
+- SDL2_mixer
