@@ -7,9 +7,9 @@ UI:
 - add 'search button' by query
 
 Flares:
-- add sound for table load (some sort of machine loading sound)
 - add 'jump to letter'  navigation
 - add blinking arrows on sides to indicate table flow/keys
+- simulate bumbs with bumb keys 4fun
 - add splash screen on start
 - add video default media
 
