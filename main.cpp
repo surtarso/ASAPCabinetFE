@@ -68,6 +68,7 @@ const Uint8 FADE_TARGET_ALPHA            = 128;   // fade to 50% (128 out of 255
 
 // Sound file path
 const std::string TABLE_CHANGE_SOUND_PATH = "snd/table_change.mp3";
+const std::string TABLE_LOAD_SOUND_PATH = "snd/table_load.mp3";
 
 // ------------------ Data Structures ------------------
 
@@ -222,6 +223,11 @@ int main(int argc, char* argv[]) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
         return 1;
     }
+    Mix_Chunk* tableLoadSound = Mix_LoadWAV(TABLE_LOAD_SOUND_PATH.c_str());
+    if (!tableLoadSound) {
+        std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
+        return 1;
+    }
 
     // Load table list from VPX_TABLES_PATH
     std::vector<Table> tables = loadTableList();
@@ -288,26 +294,27 @@ int main(int argc, char* argv[]) {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
-                if (event.key.keysym.sym == SDLK_LEFT) {
+                if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
                     // Navigate LEFT
+                    Mix_PlayChannel(-1, tableChangeSound, 0);
                     currentIndex = (currentIndex + tables.size() - 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
-                    Mix_PlayChannel(-1, tableChangeSound, 0); // Play the table change sound
+                    transitionStartTime = SDL_GetTicks(); // LEFT arrow/shift
                 }
-                else if (event.key.keysym.sym == SDLK_RIGHT) {
+                else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
                     // Navigate RIGHT
+                    Mix_PlayChannel(-1, tableChangeSound, 0);
                     currentIndex = (currentIndex + 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
-                    Mix_PlayChannel(-1, tableChangeSound, 0); // Play the table change sound
+                    transitionStartTime = SDL_GetTicks(); // RIGHT arrow/shift
                 }
                 else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
                     // LAUNCH the current table
-                    launchTable(tables[currentIndex]);
+                    Mix_PlayChannel(-1, tableLoadSound, 0);
+                    launchTable(tables[currentIndex]); // ENTER to launch
                 }
-                else if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
+                else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
+                    quit = true; // ESC or ´q' to quit
                 }
             }
         }
@@ -328,8 +335,6 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_IN;
                     transitionStartTime = SDL_GetTicks();
                     currentAlpha = FADE_TARGET_ALPHA;
-                    // Play the table change sound
-                    // Mix_PlayChannel(-1, tableChangeSound, 0);
                 }
             }
             else if (transitionState == TransitionState::FADING_IN) {
