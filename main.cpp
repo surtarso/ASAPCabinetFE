@@ -30,6 +30,8 @@ namespace fs = std::filesystem;
 const std::string VPX_TABLES_PATH    = "/home/tarso/Games/vpinball/build/tables/";
 const std::string VPX_EXECUTABLE_CMD = "/home/tarso/Games/vpinball/build/VPinballX_GL";
 const std::string VPX_SUB_CMD        = "-Play";
+const std::string VPX_START_ARGS     = "DRI_PRIME=1 gamemoderun";
+const std::string VPX_END_ARGS       = "";
 
 const std::string DEFAULT_TABLE_IMAGE     = "img/default_table.png";
 const std::string DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
@@ -57,9 +59,9 @@ const int WHEEL_IMAGE_MARGIN       = 24;
 const std::string FONT_PATH        = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
 const int FONT_SIZE                = 28;
 
-const int BACKGLASS_WINDOW_MONITOR = 0;
-const int BACKGLASS_WINDOW_WIDTH   = 1024;
-const int BACKGLASS_WINDOW_HEIGHT  = 1024;
+const int SECOND_WINDOW_MONITOR    = 0;
+const int SECOND_WINDOW_WIDTH      = 1024;
+const int SECOND_WINDOW_HEIGHT     = 1024;
 const int BACKGLASS_MEDIA_WIDTH    = 1024;
 const int BACKGLASS_MEDIA_HEIGHT   = 768;
 const int DMD_MEDIA_WIDTH          = 1024;
@@ -73,48 +75,52 @@ const std::string TABLE_LOAD_SOUND   = "snd/table_load.mp3";
 
 // ------------------ Data Structures ------------------
 
+// Structure to hold information about each pinball table
 struct Table {
-    std::string tableName;
-    std::string vpxFile;
-    std::string folder;
-    std::string tableImage;
-    std::string wheelImage;
-    std::string backglassImage;
-    std::string dmdImage;
-    std::string tableVideo;
-    std::string backglassVideo;
-    std::string dmdVideo;
+    std::string tableName;       // Name of the table
+    std::string vpxFile;         // Path to the .vpx file
+    std::string folder;          // Folder containing the table's assets
+    std::string tableImage;      // Path to the table image
+    std::string wheelImage;      // Path to the wheel image
+    std::string backglassImage;  // Path to the backglass image
+    std::string dmdImage;        // Path to the DMD image
+    std::string tableVideo;      // Path to the table video
+    std::string backglassVideo;  // Path to the backglass video
+    std::string dmdVideo;        // Path to the DMD video
 };
 
+// Structure to hold video context information for VLC video playback
 struct VideoContext {
-    SDL_Texture* texture;
-    Uint8* pixels;
-    int pitch;
-    SDL_mutex* mutex;
-    int width;
-    int height;
-    bool updated;
+    SDL_Texture* texture;  // SDL texture to render the video frame
+    Uint8* pixels;         // Pointer to the pixel data of the video frame
+    int pitch;             // Number of bytes in a row of pixel data
+    SDL_mutex* mutex;      // Mutex to synchronize access to the pixel data
+    int width;             // Width of the video frame
+    int height;            // Height of the video frame
+    bool updated;          // Flag to indicate if the video frame has been updated
 };
 
 // ------------------ Utility Functions ------------------
-
-std::string getImagePath(const std::string &root, const std::string &imagePath, const std::string &defaultPath) {
+// Get image path with fallback
+std::string getImagePath(const std::string &root, const std::string &imagePath, const std::string &defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
     if (fs::exists(imageFile))
         return imageFile.string();
-    return defaultPath;
+    return defaultImagePath;
 }
 
-std::string getVideoPath(const std::string &root, const std::string &videoPath, const std::string &defaultPath) {
+// Get video path with fallback
+std::string getVideoPath(const std::string &root, const std::string &videoPath, const std::string &defaultVideoPath) {
     fs::path videoFile = fs::path(root) / videoPath;
     if (fs::exists(videoFile))
         return videoFile.string();
-    else if (fs::exists(defaultPath))
-        return defaultPath;
+    else if (fs::exists(defaultVideoPath))
+        return defaultVideoPath;
     else
         return "";
 }
 
+// Load table list
 std::vector<Table> loadTableList() {
     std::vector<Table> tables;
     for (const auto &entry : fs::recursive_directory_iterator(VPX_TABLES_PATH)) {
@@ -139,6 +145,7 @@ std::vector<Table> loadTableList() {
     return tables;
 }
 
+// Load images texture with fallback
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string &path, const std::string &fallbackPath) {
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     if (!tex) {
@@ -148,6 +155,7 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string &path, const 
     return tex;
 }
 
+// Load font
 SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string &message, SDL_Color color, SDL_Rect &textRect) {
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     if (!surf) {
@@ -163,6 +171,7 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::strin
 
 // ----------------- Handle video playback (vlc) -----------------
 
+// Locks the video context mutex and provides access to the pixel data.
 void* lock(void* data, void** pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
     if (!ctx || !ctx->mutex) return nullptr;
@@ -171,6 +180,7 @@ void* lock(void* data, void** pixels) {
     return nullptr;
 }
 
+// Unlocks the video context and updates its state.
 void unlock(void* data, void* id, void* const* pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
     if (ctx) {
@@ -179,13 +189,10 @@ void unlock(void* data, void* id, void* const* pixels) {
     }
 }
 
+// Empty function needed for display operations.
 void display(void* data, void* id) {}
 
-void onMediaPlayerEndReached(const libvlc_event_t* event, void* data) {
-    libvlc_media_player_t* player = static_cast<libvlc_media_player_t*>(data);
-    if (player) libvlc_media_player_set_position(player, 0);
-}
-
+// Cleans up the resources associated with a VideoContext and libvlc_media_player_t.
 void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
     if (player) {
         libvlc_media_player_stop(player);
@@ -206,7 +213,21 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
     }
 }
 
-libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Renderer* renderer, 
+/**
+ * @brief Sets up a video player using libVLC and SDL.
+ * 
+ * This function initializes a video player with the given VLC instance and SDL renderer, 
+ * loads the specified video file, and prepares the video context for rendering.
+ * 
+ * @param vlcInstance A pointer to the libVLC instance.
+ * @param renderer A pointer to the SDL renderer.
+ * @param videoPath The file path to the video to be played.
+ * @param ctx A reference to the VideoContext structure to hold video rendering data.
+ * @param width The width of the video frame.
+ * @param height The height of the video frame.
+ * @return A pointer to the initialized libvlc_media_player_t, or nullptr if an error occurs.
+ */
+ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Renderer* renderer, 
                                       const std::string& videoPath, VideoContext& ctx, int width, int height) {
     libvlc_media_t* media = libvlc_media_new_path(vlcInstance, videoPath.c_str());
     if (!media) {
@@ -239,11 +260,11 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
         return nullptr;
     }
 
-    ctx.pitch = width * 4;
-    ctx.mutex = SDL_CreateMutex();
-    ctx.width = width;
-    ctx.height = height;
-    ctx.updated = false;
+    ctx.pitch = width * 4;           // Set the pitch (number of bytes in a row of pixel data) to width * 4 (BGRA format)
+    ctx.mutex = SDL_CreateMutex();   // Create a mutex to synchronize access to the pixel data
+    ctx.width = width;               // Set the width of the video frame
+    ctx.height = height;             // Set the height of the video frame
+    ctx.updated = false;             // Initialize the updated flag to false
 
     libvlc_video_set_callbacks(player, lock, unlock, display, &ctx);
     libvlc_video_set_format(player, "BGRA", width, height, width * 4);
@@ -261,7 +282,8 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
 // ---------------- Launch Table -----------------------
 
 void launchTable(const Table &table) {
-    std::string command = VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + table.vpxFile + "\"";
+    std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + 
+                          VPX_SUB_CMD + " \"" + table.vpxFile + "\" " + VPX_END_ARGS;
     std::cout << "Launching: " << command << std::endl;
     std::system(command.c_str());
 }
@@ -270,27 +292,49 @@ void launchTable(const Table &table) {
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
+// Main function for initializing and running the SDL application
+/**
+ * @brief Main function for initializing and running the SDL application.
+ * 
+ * This function initializes SDL, SDL_image, SDL_ttf, SDL_mixer, and libVLC libraries.
+ * It creates primary and secondary SDL windows and renderers, loads resources such as fonts and sounds,
+ * and handles the main event loop for user interactions.
+ * 
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line arguments.
+ * @return int Returns 0 on successful execution, or 1 on failure.
+ */
 int main(int argc, char* argv[]) {
+
+    // ------------------ Initialization ------------------
+    // ----- SDL init
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return 1;
     }
+
+    // ----- Images
     if (!(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) & (IMG_INIT_PNG | IMG_INIT_JPG))) {
         std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
         SDL_Quit();
         return 1;
     }
+
+    // ----- Font
     if (TTF_Init() != 0) {
         std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
         IMG_Quit();
         SDL_Quit();
         return 1;
     }
+
+    // ----- Audio player
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
         return 1;
     }
 
+    // ----- Videos (vlc)
     libvlc_instance_t* vlcInstance = libvlc_new(0, nullptr);
     if (!vlcInstance) {
         std::cerr << "Failed to initialize VLC instance." << std::endl;
@@ -301,6 +345,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // ----- Primary Window
     SDL_Window* primaryWindow = SDL_CreateWindow("Playfield",
         SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
         MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
@@ -326,9 +371,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
+    // ----- Secondary Window
     SDL_Window* secondaryWindow = SDL_CreateWindow("Backglass",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(BACKGLASS_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
-        BACKGLASS_WINDOW_WIDTH, BACKGLASS_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+        SDL_WINDOWPOS_CENTERED_DISPLAY(SECOND_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
+        SECOND_WINDOW_WIDTH, SECOND_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (!secondaryWindow) {
         std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;
         SDL_DestroyRenderer(primaryRenderer);
@@ -355,11 +401,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
+    // ----- Fonts
     TTF_Font* font = TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE);
     if (!font) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
     
+    // ----- Sounds
     Mix_Chunk* tableChangeSound = Mix_LoadWAV(TABLE_CHANGE_SOUND.c_str());
     if (!tableChangeSound) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
@@ -369,6 +417,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
     }
 
+    // ----- Table List
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) {
         std::cerr << "No .vpx files found in " << VPX_TABLES_PATH << std::endl;
@@ -387,22 +436,38 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    size_t currentIndex = 0;
-    SDL_Texture* tableTexture = nullptr;
-    SDL_Texture* wheelTexture = nullptr;
-    SDL_Texture* backglassTexture = nullptr;
-    SDL_Texture* dmdTexture = nullptr;
-    SDL_Texture* tableNameTexture = nullptr;
-    SDL_Rect tableNameRect = {0, 0, 0, 0};
+    // ------------------ Texture and State Variables ------------------
 
+    size_t currentIndex = 0;                 // Index of the currently selected table
+    SDL_Texture* tableTexture = nullptr;     // Texture for the table image
+    SDL_Texture* wheelTexture = nullptr;     // Texture for the wheel image
+    SDL_Texture* backglassTexture = nullptr; // Texture for the backglass image
+    SDL_Texture* dmdTexture = nullptr;       // Texture for the DMD image
+    SDL_Texture* tableNameTexture = nullptr; // Texture for the table name text
+    SDL_Rect tableNameRect = {0, 0, 0, 0};   // Rectangle for the table name text position and size
+
+    // VLC media players for table, backglass, and DMD videos
     libvlc_media_player_t* tableVideoPlayer = nullptr;
     libvlc_media_player_t* backglassVideoPlayer = nullptr;
     libvlc_media_player_t* dmdVideoPlayer = nullptr;
+
+    // Video contexts to hold texture and pixel data for rendering video frames
     VideoContext tableVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext backglassVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext dmdVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
 
+    // ------------------ Load Current Table Textures ------------------
+    /**
+     * @brief Loads the current table textures and sets up video players if necessary.
+     *
+     * This function performs the following tasks:
+     * - Cleans up existing video contexts and textures.
+     * - Loads new textures or sets up video players for the table, backglass, and DMD based on the current table's data.
+     * - Loads the wheel image texture.
+     * - Renders the table name texture if a font is available.
+     */
     auto loadCurrentTableTextures = [&]() {
+        // Cleanup 
         cleanupVideoContext(tableVideoCtx, tableVideoPlayer);
         cleanupVideoContext(backglassVideoCtx, backglassVideoPlayer);
         cleanupVideoContext(dmdVideoCtx, dmdVideoPlayer);
@@ -411,9 +476,11 @@ int main(int argc, char* argv[]) {
         if (backglassTexture) { SDL_DestroyTexture(backglassTexture); backglassTexture = nullptr; }
         if (dmdTexture) { SDL_DestroyTexture(dmdTexture); dmdTexture = nullptr; }
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
-
+        
+        // Get the current table
         const Table &tbl = tables[currentIndex];
 
+        // Load table media: prioritize custom video/image and fallback to default video/image
         if (!tbl.tableVideo.empty()) {
             tableVideoPlayer = setupVideoPlayer(vlcInstance, primaryRenderer, tbl.tableVideo, 
                                               tableVideoCtx, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
@@ -435,8 +502,10 @@ int main(int argc, char* argv[]) {
             dmdTexture = loadTexture(secondaryRenderer, tbl.dmdImage, DEFAULT_DMD_IMAGE);
         }
 
+        // Load wheel image
         wheelTexture = loadTexture(primaryRenderer, tbl.wheelImage, DEFAULT_WHEEL_IMAGE);
 
+        // Load Font
         if (font) {
             SDL_Color textColor = {255, 255, 255, 255};
             tableNameTexture = renderText(primaryRenderer, font, tbl.tableName, textColor, tableNameRect);
@@ -447,10 +516,10 @@ int main(int argc, char* argv[]) {
 
     loadCurrentTableTextures();
 
-    TransitionState transitionState = TransitionState::IDLE;
-    Uint32 transitionStartTime = 0;
-    bool quit = false;
-    SDL_Event event;
+    TransitionState transitionState = TransitionState::IDLE; // Initial transition state is idle
+    Uint32 transitionStartTime = 0;         // Variable to store the start time of the transition
+    bool quit = false;                      // Flag to indicate if the application should quit
+    SDL_Event event;                        // SDL event structure to handle events
 
     while (!quit) {
         while (SDL_PollEvent(&event)) {
@@ -458,6 +527,7 @@ int main(int argc, char* argv[]) {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
+                // Move LEFT
                 if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -467,6 +537,7 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Move Right
                 else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -476,16 +547,19 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Launch Table
                 else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
                     if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound, 0);
                     launchTable(tables[currentIndex]);
                 }
+                // Quit
                 else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                     quit = true;
                 }
             }
         }
 
+        // ------------------ Handle Transitions ------------------
         Uint8 currentAlpha = 255;
         Uint32 now = SDL_GetTicks();
         if (transitionState != TransitionState::IDLE) {
@@ -541,6 +615,7 @@ int main(int argc, char* argv[]) {
             SDL_UnlockMutex(dmdVideoCtx.mutex);
         }
 
+        // -------------------------- Render Primary Screen -----------------------
         SDL_SetRenderDrawColor(primaryRenderer, 32, 32, 32, 255);
         SDL_RenderClear(primaryRenderer);
         
@@ -569,6 +644,7 @@ int main(int argc, char* argv[]) {
         
         SDL_RenderPresent(primaryRenderer);
         
+        // ----------------------- Render Secondary Screen ------------------------
         SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
         SDL_RenderClear(secondaryRenderer);
         
@@ -588,6 +664,7 @@ int main(int argc, char* argv[]) {
         
         SDL_RenderPresent(secondaryRenderer);
         
+        // Delay to limit the frame rate to approximately 60 frames per second
         SDL_Delay(16);
     }
 
