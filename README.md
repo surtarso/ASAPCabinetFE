@@ -19,7 +19,7 @@ ASAP-CABINET-FE is a C++/SDL2 application that scans a specified folder for .vpx
 Install the following dependencies:
 
 ```sh
-sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+sudo apt-get -y build-essential install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 ```
 
 ## Compilation
