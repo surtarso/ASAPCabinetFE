@@ -2,16 +2,15 @@ TODO - From urgent to least important.
 
 Main:
 - add 'settings button' and panel
+- fix vlc screaming with me
 
 UI:
-- add 'search button' by query
+- add 'jump to letter'  navigation
 
 Flares:
-- add 'jump to letter'  navigation
 - add blinking arrows on sides to indicate table flow/keys
 - simulate bumbs with bumb keys 4fun
 - add splash screen on start
 - add video default media
 
 On hold:
-- look for mp4 videos, fallback to .png images, fallback to default image.
