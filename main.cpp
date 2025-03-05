@@ -212,14 +212,15 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
         return nullptr;
     }
 
-    ctx.texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    // Use BGRA instead of RGBA to match common VLC output
+    ctx.texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
     if (!ctx.texture) {
         std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
         libvlc_media_player_release(player);
         return nullptr;
     }
 
-    ctx.pixels = new (std::nothrow) Uint8[width * height * 4]; // RGBA: 4 bytes per pixel
+    ctx.pixels = new (std::nothrow) Uint8[width * height * 4]; // BGRA: 4 bytes per pixel
     if (!ctx.pixels) {
         std::cerr << "Failed to allocate video buffer" << std::endl;
         SDL_DestroyTexture(ctx.texture);
@@ -234,10 +235,7 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
     ctx.updated = false;
 
     libvlc_video_set_callbacks(player, lock, unlock, display, &ctx);
-    libvlc_video_set_format(player, "RGBA", width, height, width * 4);
-
-    libvlc_event_manager_t* eventManager = libvlc_media_player_event_manager(player);
-    libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, onMediaPlayerEndReached, player);
+    libvlc_video_set_format(player, "BGRA", width, height, width * 4);
 
     if (libvlc_media_player_play(player) < 0) {
         std::cerr << "Failed to play video: " << videoPath << std::endl;
