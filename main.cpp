@@ -36,6 +36,10 @@ const std::string DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
 const std::string DEFAULT_DMD_IMAGE       = "img/default_dmd.png";
 const std::string DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
 
+const std::string DEFAULT_TABLE_VIDEO     = "img/default_table.mp4";
+const std::string DEFAULT_BACKGLASS_VIDEO = "img/default_backglass.mp4";
+const std::string DEFAULT_DMD_VIDEO       = "img/default_dmd.mp4";
+
 const std::string CUSTOM_TABLE_IMAGE      = "images/table.png";
 const std::string CUSTOM_BACKGLASS_IMAGE  = "images/backglass.png";
 const std::string CUSTOM_DMD_IMAGE        = "images/marquee.png";
@@ -101,11 +105,14 @@ std::string getImagePath(const std::string &root, const std::string &imagePath, 
     return defaultPath;
 }
 
-std::string getVideoPath(const std::string &root, const std::string &videoPath) {
+std::string getVideoPath(const std::string &root, const std::string &videoPath, const std::string &defaultPath) {
     fs::path videoFile = fs::path(root) / videoPath;
     if (fs::exists(videoFile))
         return videoFile.string();
-    return "";
+    else if (fs::exists(defaultPath))
+        return defaultPath;
+    else
+        return "";
 }
 
 std::vector<Table> loadTableList() {
@@ -120,9 +127,9 @@ std::vector<Table> loadTableList() {
             table.wheelImage     = getImagePath(table.folder, CUSTOM_WHEEL_IMAGE, DEFAULT_WHEEL_IMAGE);
             table.backglassImage = getImagePath(table.folder, CUSTOM_BACKGLASS_IMAGE, DEFAULT_BACKGLASS_IMAGE);
             table.dmdImage       = getImagePath(table.folder, CUSTOM_DMD_IMAGE, DEFAULT_DMD_IMAGE);
-            table.tableVideo     = getVideoPath(table.folder, CUSTOM_TABLE_VIDEO);
-            table.backglassVideo = getVideoPath(table.folder, CUSTOM_BACKGLASS_VIDEO);
-            table.dmdVideo       = getVideoPath(table.folder, CUSTOM_DMD_VIDEO);
+            table.tableVideo     = getVideoPath(table.folder, CUSTOM_TABLE_VIDEO, DEFAULT_TABLE_VIDEO);
+            table.backglassVideo = getVideoPath(table.folder, CUSTOM_BACKGLASS_VIDEO, DEFAULT_BACKGLASS_VIDEO);
+            table.dmdVideo       = getVideoPath(table.folder, CUSTOM_DMD_VIDEO, DEFAULT_DMD_VIDEO);
             tables.push_back(table);
         }
     }
@@ -153,6 +160,8 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::strin
     SDL_FreeSurface(surf);
     return texture;
 }
+
+// ----------------- Handle video playback (vlc) -----------------
 
 void* lock(void* data, void** pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
@@ -248,6 +257,8 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
     SDL_Delay(100); // Wait for VLC to initialize
     return player;
 }
+
+// ---------------- Launch Table -----------------------
 
 void launchTable(const Table &table) {
     std::string command = VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + table.vpxFile + "\"";
@@ -579,6 +590,8 @@ int main(int argc, char* argv[]) {
         
         SDL_Delay(16);
     }
+
+    // ----------------- Cleanup ------------------------
 
     cleanupVideoContext(tableVideoCtx, tableVideoPlayer);
     cleanupVideoContext(backglassVideoCtx, backglassVideoPlayer);
