@@ -9,17 +9,17 @@ ASAP-CABINET-FE is a C++/SDL2 application that scans a specified folder for .vpx
 ## Features
 
 - Scans `VPX_ROOT_FOLDER` recursively for .vpx files
-- Loads images for the playfield, wheel, backglass, and DMD for each table
+- Loads images or videos for the playfield, wheel, backglass, and DMD for each table
 - Creates two windows: primary (playfield) and secondary (backglass)
-- Uses left/right arrow keys to change tables with a fade transition
-- Press Enter to launch the table via an external process
+- Uses left/right arrow/shift keys to change tables with a fade transition
+- Press Enter to launch the table via vpinballx_gl process
 
 ## Dependencies
 
 Install the following dependencies:
 
 ```sh
-sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 ```
 
 ## Compilation
@@ -27,13 +27,13 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer
 To compile the application, use the following command:
 
 ```sh
-g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
+g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
 
 For a specific setup, you can use:
 
 ```sh
-g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o ASAPCabinetFE
+g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
 
 ## Required Libraries
@@ -44,3 +44,4 @@ Make sure the following libraries are installed:
 - SDL2_image
 - SDL2_ttf
 - SDL2_mixer
+- VLC
