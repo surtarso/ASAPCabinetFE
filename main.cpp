@@ -6,24 +6,29 @@
 //                    and secondary (backglass with dmd)
 // - Uses left/right arrow/shift keys to change tables with a fade transition
 // - Press Enter to launch the table via vpinballx_gl, 'q'/esc to quit
+// - Uses VLC for video playback
+// - Handles video context cleanup and setup
+// - Loads textures with fallback options
+// - Renders text using SDL_ttf
 // Dependencies:
 // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev vlc
 // Compile:
 // g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+// Author: Tarso Galvão Mar/2025 | github.com/surtarso/ASAPCabinetFE
 
-#include <algorithm>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-#include <vlc/vlc.h>
-#include <iostream>
-#include <filesystem>
-#include <vector>
-#include <string>
-#include <cstdlib>
+#include <algorithm>    // For std::sort
+#include <SDL.h>        // For SDL main library
+#include <SDL_image.h>  // For SDL image loading
+#include <SDL_ttf.h>    // For SDL font rendering
+#include <SDL_mixer.h>  // For SDL audio mixing
+#include <vlc/vlc.h>    // For VLC video playback
+#include <iostream>     // For standard I/O operations
+#include <filesystem>   // For filesystem operations
+#include <vector>       // For std::vector
+#include <string>       // For std::string
+#include <cstdlib>      // For std::system
 
-namespace fs = std::filesystem;
+namespace fs = std::filesystem; // Alias for filesystem lib
 
 // ------------------ Configuration Constants ------------------
 
@@ -220,11 +225,11 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
  * loads the specified video file, and prepares the video context for rendering.
  * 
  * @param vlcInstance A pointer to the libVLC instance.
- * @param renderer A pointer to the SDL renderer.
- * @param videoPath The file path to the video to be played.
- * @param ctx A reference to the VideoContext structure to hold video rendering data.
- * @param width The width of the video frame.
- * @param height The height of the video frame.
+ * @param renderer    A pointer to the SDL renderer.
+ * @param videoPath   The file path to the video to be played.
+ * @param ctx         A reference to the VideoContext structure to hold video rendering data.
+ * @param width       The width of the video frame.
+ * @param height      The height of the video frame.
  * @return A pointer to the initialized libvlc_media_player_t, or nullptr if an error occurs.
  */
  libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Renderer* renderer, 
@@ -244,7 +249,6 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
         return nullptr;
     }
 
-    // Use BGRA instead of RGBA to match common VLC output
     ctx.texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
     if (!ctx.texture) {
         std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
@@ -331,6 +335,9 @@ int main(int argc, char* argv[]) {
     // ----- Audio player
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
         return 1;
     }
 
@@ -401,13 +408,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    // ----- Fonts
+    // ----- load Fonts
     TTF_Font* font = TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE);
     if (!font) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
     
-    // ----- Sounds
+    // ----- load Sounds
     Mix_Chunk* tableChangeSound = Mix_LoadWAV(TABLE_CHANGE_SOUND.c_str());
     if (!tableChangeSound) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
@@ -417,7 +424,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
     }
 
-    // ----- Table List
+    // ----- load Table List
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) {
         std::cerr << "No .vpx files found in " << VPX_TABLES_PATH << std::endl;
@@ -522,6 +529,7 @@ int main(int argc, char* argv[]) {
     SDL_Event event;                        // SDL event structure to handle events
 
     while (!quit) {
+        // --------------------- Handle Key presses ---------------------
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
@@ -585,14 +593,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (tableTexture) SDL_SetTextureAlphaMod(tableTexture, currentAlpha);
-        if (wheelTexture) SDL_SetTextureAlphaMod(wheelTexture, currentAlpha);
-        if (backglassTexture) SDL_SetTextureAlphaMod(backglassTexture, currentAlpha);
-        if (dmdTexture) SDL_SetTextureAlphaMod(dmdTexture, currentAlpha);
-        if (tableNameTexture) SDL_SetTextureAlphaMod(tableNameTexture, currentAlpha);
-        if (tableVideoCtx.texture) SDL_SetTextureAlphaMod(tableVideoCtx.texture, currentAlpha);
-        if (backglassVideoCtx.texture) SDL_SetTextureAlphaMod(backglassVideoCtx.texture, currentAlpha);
-        if (dmdVideoCtx.texture) SDL_SetTextureAlphaMod(dmdVideoCtx.texture, currentAlpha);
+        if (tableTexture)               SDL_SetTextureAlphaMod(tableTexture, currentAlpha);
+        if (wheelTexture)               SDL_SetTextureAlphaMod(wheelTexture, currentAlpha);
+        if (backglassTexture)           SDL_SetTextureAlphaMod(backglassTexture, currentAlpha);
+        if (dmdTexture)                 SDL_SetTextureAlphaMod(dmdTexture, currentAlpha);
+        if (tableNameTexture)           SDL_SetTextureAlphaMod(tableNameTexture, currentAlpha);
+        if (tableVideoCtx.texture)      SDL_SetTextureAlphaMod(tableVideoCtx.texture, currentAlpha);
+        if (backglassVideoCtx.texture)  SDL_SetTextureAlphaMod(backglassVideoCtx.texture, currentAlpha);
+        if (dmdVideoCtx.texture)        SDL_SetTextureAlphaMod(dmdVideoCtx.texture, currentAlpha);
 
         if (tableVideoPlayer && tableVideoCtx.texture && tableVideoCtx.updated && tableVideoCtx.pixels) {
             SDL_LockMutex(tableVideoCtx.mutex);
@@ -619,6 +627,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(primaryRenderer, 32, 32, 32, 255);
         SDL_RenderClear(primaryRenderer);
         
+        // Table Playfield
         SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
         if (tableVideoPlayer && tableVideoCtx.texture) {
             SDL_RenderCopy(primaryRenderer, tableVideoCtx.texture, nullptr, &tableRect);
@@ -626,6 +635,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(primaryRenderer, tableTexture, nullptr, &tableRect);
         }
         
+        // Wheel
         if (wheelTexture) {
             SDL_Rect wheelRect;
             wheelRect.w = WHEEL_IMAGE_SIZE;
@@ -635,6 +645,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(primaryRenderer, wheelTexture, nullptr, &wheelRect);
         }
         
+        // Table Title
         if (tableNameTexture) {
             SDL_Rect backgroundRect = {tableNameRect.x - 5, tableNameRect.y - 5, tableNameRect.w + 10, tableNameRect.h + 10};
             SDL_SetRenderDrawColor(primaryRenderer, 0, 0, 0, 128);
@@ -648,6 +659,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
         SDL_RenderClear(secondaryRenderer);
         
+        // Backglass
         SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
         if (backglassVideoPlayer && backglassVideoCtx.texture) {
             SDL_RenderCopy(secondaryRenderer, backglassVideoCtx.texture, nullptr, &backglassRect);
@@ -655,6 +667,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(secondaryRenderer, backglassTexture, nullptr, &backglassRect);
         }
 
+        // DMD
         SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
         if (dmdVideoPlayer && dmdVideoCtx.texture) {
             SDL_RenderCopy(secondaryRenderer, dmdVideoCtx.texture, nullptr, &dmdRect);
@@ -674,15 +687,17 @@ int main(int argc, char* argv[]) {
     cleanupVideoContext(backglassVideoCtx, backglassVideoPlayer);
     cleanupVideoContext(dmdVideoCtx, dmdVideoPlayer);
 
-    if (tableTexture) SDL_DestroyTexture(tableTexture);
-    if (wheelTexture) SDL_DestroyTexture(wheelTexture);
-    if (backglassTexture) SDL_DestroyTexture(backglassTexture);
-    if (dmdTexture) SDL_DestroyTexture(dmdTexture);
-    if (tableNameTexture) SDL_DestroyTexture(tableNameTexture);
+    if (tableTexture)       SDL_DestroyTexture(tableTexture);
+    if (wheelTexture)       SDL_DestroyTexture(wheelTexture);
+    if (backglassTexture)   SDL_DestroyTexture(backglassTexture);
+    if (dmdTexture)         SDL_DestroyTexture(dmdTexture);
+    if (tableNameTexture)   SDL_DestroyTexture(tableNameTexture);
 
     if (font) TTF_CloseFont(font);
+
     if (tableChangeSound) Mix_FreeChunk(tableChangeSound);
-    if (tableLoadSound) Mix_FreeChunk(tableLoadSound);
+    if (tableLoadSound)   Mix_FreeChunk(tableLoadSound);
+
     SDL_DestroyRenderer(secondaryRenderer);
     SDL_DestroyWindow(secondaryWindow);
     SDL_DestroyRenderer(primaryRenderer);
