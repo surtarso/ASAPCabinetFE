@@ -205,6 +205,8 @@ libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Rend
         return nullptr;
     }
 
+    libvlc_media_add_option(media, "input-repeat=65535"); // Loop indefinitely
+
     libvlc_media_player_t* player = libvlc_media_player_new_from_media(media);
     libvlc_media_release(media);
     if (!player) {
