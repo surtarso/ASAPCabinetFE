@@ -1,0 +1,34 @@
+name: C++ Compile Test
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ ".github/workflows/compile_test.yml", "main.cpp" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+        
+    - name: Compile
+      run: g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+
+
+    - name: Check Compilation
+      run: |
+        if [ -f ASAPCabinetFE ]; then
+          echo "Compilation successful!"
+        else
+          echo "Compilation failed!"
+          exit 1
+        fi
