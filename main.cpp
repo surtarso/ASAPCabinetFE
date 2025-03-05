@@ -11,7 +11,7 @@
 // - Loads textures with fallback options
 // - Renders text using SDL_ttf
 // Dependencies:
-// sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev vlc
+// sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 // Compile:
 // g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 // Author: Tarso Galvão Mar/2025 | github.com/surtarso/ASAPCabinetFE
