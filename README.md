@@ -4,7 +4,9 @@ This is a work in progress port of [asap-cabinet-fe](https://github.com/surtarso
 
 ## How it works
 
-ASAP-CABINET-FE is a C++/SDL2 application that scans a specified folder for .vpx files and displays images for the playfield, wheel, backglass, and DMD. It creates two windows: primary (playfield) and secondary (backglass). Users can change tables using the left/right arrow keys and launch the table via an external process (VPinballX_GL) by pressing Enter.
+For now, check [the original project repo](https://github.com/surtarso/asap-cabinet-fe) for info. The aim here is to mimic and improve in areas where it failed, like playing more video formats and image types, more custumizable keys and better code logic overall.
+
+<i>This port DOES NOT have a settings panel YET, so configure you paths in the main.cpp file before compiling.</i>
 
 ## Features
 
