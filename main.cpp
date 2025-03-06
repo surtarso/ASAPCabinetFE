@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
     DEFAULT_TABLE_VIDEO     = "img/default_table.mp4";
     DEFAULT_BACKGLASS_VIDEO = "img/default_backglass.mp4";
     DEFAULT_DMD_VIDEO       = "img/default_dmd.mp4";
-    FADE_DURATION_MS        = 300;
+    FADE_DURATION_MS        = 250;
     FADE_TARGET_ALPHA       = 128;
     TABLE_CHANGE_SOUND      = "snd/table_change.mp3";
     TABLE_LOAD_SOUND        = "snd/table_load.mp3";
@@ -665,12 +665,30 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                else if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_LCTRL) {
+                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
+                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
+                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
+                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
+                    currentIndex = (currentIndex + tables.size() - 10) % tables.size();
+                    transitionState = TransitionState::FADING_OUT;
+                    transitionStartTime = SDL_GetTicks();
+                }
                 else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
                     if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
                     if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
                     currentIndex = (currentIndex + 1) % tables.size();
+                    transitionState = TransitionState::FADING_OUT;
+                    transitionStartTime = SDL_GetTicks();
+                }
+                else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_RCTRL) {
+                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
+                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
+                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
+                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
+                    currentIndex = (currentIndex + 10) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }

@@ -2,9 +2,10 @@ TODO - From urgent to least important.
 
 Main:
 - fix vlc screaming with me
+- fix b2s dmd table images not effect transitioning
 
 UI:
-- add 'jump to letter'  navigation
+- add 'jump to letter'  navigation with spacebar
 
 Flares:
 - add blinking arrows on sides to indicate table flow/keys
