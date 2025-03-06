@@ -30,20 +30,21 @@
 #include <cstdlib>      // For std::system
 #include <fstream>      // For file I/O operations
 #include <map>          // For std::map container
+#include <memory>       // For std::unique_ptr
 
 
 namespace fs = std::filesystem; // Alias for filesystem lib
 
 // ------------------ Configuration Constants ------------------
 
-// Configuration Variables (no longer const)
+// Configuration Variables (Not in config.ini = set default later)
 std::string VPX_TABLES_PATH;
 std::string VPX_EXECUTABLE_CMD;
-std::string VPX_SUB_CMD;         // Not in config.ini, so we'll set a default later
+std::string VPX_SUB_CMD;             // Not in config.ini
 std::string VPX_START_ARGS;
 std::string VPX_END_ARGS;
 
-std::string DEFAULT_TABLE_IMAGE;     // Not in config.ini, set default later
+std::string DEFAULT_TABLE_IMAGE;     // Not in config.ini
 std::string DEFAULT_BACKGLASS_IMAGE; // Not in config.ini
 std::string DEFAULT_DMD_IMAGE;       // Not in config.ini
 std::string DEFAULT_WHEEL_IMAGE;     // Not in config.ini
@@ -75,10 +76,10 @@ int BACKGLASS_MEDIA_HEIGHT;
 int DMD_MEDIA_WIDTH;
 int DMD_MEDIA_HEIGHT;
 
-int FADE_DURATION_MS;         // Not in config.ini
-Uint8 FADE_TARGET_ALPHA;      // Not in config.ini
-std::string TABLE_CHANGE_SOUND; // Not in config.ini
-std::string TABLE_LOAD_SOUND;   // Not in config.ini
+int FADE_DURATION_MS;               // Not in config.ini
+Uint8 FADE_TARGET_ALPHA;            // Not in config.ini
+std::string TABLE_CHANGE_SOUND;     // Not in config.ini
+std::string TABLE_LOAD_SOUND;       // Not in config.ini
 
 // ------------------ Data Structures ------------------
 
@@ -360,7 +361,72 @@ std::map<std::string, std::map<std::string, std::string>> load_config(const std:
     return config;
 }
 
-// ------------------ Main Application ------------------
+// ----------------- Initialization Guard Functions -------------------
+
+// Guard for SDL initialization
+class SDLInitGuard {
+public:
+    bool success;
+    SDLInitGuard(Uint32 flags) : success(false) {
+        if (SDL_Init(flags) == 0) {
+            success = true;
+        } else {
+            std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+        }
+    }
+    ~SDLInitGuard() {
+        if (success) SDL_Quit();
+    }
+};
+    
+// Guard for IMG initialization
+class IMGInitGuard {
+public:
+    int flags;
+    IMGInitGuard(int flags) : flags(flags) {
+        if (!(IMG_Init(flags) & flags)) {
+            std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
+            this->flags = 0;
+        }
+    }
+    ~IMGInitGuard() {
+        if (flags) IMG_Quit();
+    }
+};
+
+// Guard for TTF initialization
+class TTFInitGuard {
+public:
+    bool success;
+    TTFInitGuard() : success(false) {
+        if (TTF_Init() == 0) {
+            success = true;
+        } else {
+            std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
+        }
+    }
+    ~TTFInitGuard() {
+        if (success) TTF_Quit();
+    }
+};
+
+// Guard for SDL_mixer initialization
+class MixerGuard {
+public:
+    bool success;
+    MixerGuard(int frequency, Uint16 format, int channels, int chunksize) : success(false) {
+        if (Mix_OpenAudio(frequency, format, channels, chunksize) == 0) {
+            success = true;
+        } else {
+            std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
+        }
+    }
+    ~MixerGuard() {
+        if (success) Mix_CloseAudio();
+    }
+};
+
+// -------------------------- Main Application --------------------------
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
@@ -377,15 +443,15 @@ enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
  * @return int Returns 0 on successful execution, or 1 on failure.
  */
 int main(int argc, char* argv[]) {
-    // ------------- Load the configuration --------------
+    // --------------- Load the configuration ----------------
     auto config = load_config("config.ini");
 
     // Assign VPX settings
-    VPX_TABLES_PATH    = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
-    VPX_EXECUTABLE_CMD = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
-    VPX_SUB_CMD        = "-Play"; // Not in config, use hardcoded default
-    VPX_START_ARGS     = get_string(config, "VPX", "StartArgs", "DRI_PRIME=1 gamemoderun");
-    VPX_END_ARGS       = get_string(config, "VPX", "EndArgs", "");
+    VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
+    VPX_EXECUTABLE_CMD     = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
+    VPX_SUB_CMD            = "-Play"; // Not in config, use hardcoded default
+    VPX_START_ARGS         = get_string(config, "VPX", "StartArgs", "DRI_PRIME=1 gamemoderun");
+    VPX_END_ARGS           = get_string(config, "VPX", "EndArgs", "");
 
     // Assign CustomMedia settings
     CUSTOM_TABLE_IMAGE     = get_string(config, "CustomMedia", "TableImage", "images/table.png");
@@ -397,20 +463,20 @@ int main(int argc, char* argv[]) {
     CUSTOM_DMD_VIDEO       = get_string(config, "CustomMedia", "DmdVideo", "video/dmd.mp4");
 
     // Assign WindowSettings
-    MAIN_WINDOW_MONITOR   = get_int(config, "WindowSettings", "MainMonitor", 1);
-    MAIN_WINDOW_WIDTH     = get_int(config, "WindowSettings", "MainWidth", 1080);
-    MAIN_WINDOW_HEIGHT    = get_int(config, "WindowSettings", "MainHeight", 1920);
-    SECOND_WINDOW_MONITOR = get_int(config, "WindowSettings", "SecondMonitor", 0);
-    SECOND_WINDOW_WIDTH   = get_int(config, "WindowSettings", "SecondWidth", 1024);
-    SECOND_WINDOW_HEIGHT  = get_int(config, "WindowSettings", "SecondHeight", 1024);
+    MAIN_WINDOW_MONITOR    = get_int(config, "WindowSettings", "MainMonitor", 1);
+    MAIN_WINDOW_WIDTH      = get_int(config, "WindowSettings", "MainWidth", 1080);
+    MAIN_WINDOW_HEIGHT     = get_int(config, "WindowSettings", "MainHeight", 1920);
+    SECOND_WINDOW_MONITOR  = get_int(config, "WindowSettings", "SecondMonitor", 0);
+    SECOND_WINDOW_WIDTH    = get_int(config, "WindowSettings", "SecondWidth", 1024);
+    SECOND_WINDOW_HEIGHT   = get_int(config, "WindowSettings", "SecondHeight", 1024);
 
     // Assign Font settings
-    FONT_PATH = get_string(config, "Font", "Path", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
-    FONT_SIZE = get_int(config, "Font", "Size", 28);
+    FONT_PATH              = get_string(config, "Font", "Path", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_SIZE              = get_int(config, "Font", "Size", 28);
 
     // Assign MediaDimensions
-    WHEEL_IMAGE_SIZE      = get_int(config, "MediaDimensions", "WheelImageSize", 300);
-    WHEEL_IMAGE_MARGIN    = get_int(config, "MediaDimensions", "WheelImageMargin", 24);
+    WHEEL_IMAGE_SIZE       = get_int(config, "MediaDimensions", "WheelImageSize", 300);
+    WHEEL_IMAGE_MARGIN     = get_int(config, "MediaDimensions", "WheelImageMargin", 24);
     BACKGLASS_MEDIA_WIDTH  = get_int(config, "MediaDimensions", "BackglassWidth", 1024);
     BACKGLASS_MEDIA_HEIGHT = get_int(config, "MediaDimensions", "BackglassHeight", 768);
     DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
@@ -429,212 +495,149 @@ int main(int argc, char* argv[]) {
     TABLE_CHANGE_SOUND      = "snd/table_change.mp3";
     TABLE_LOAD_SOUND        = "snd/table_load.mp3";
 
-    // ------------------ Initialization ------------------
-    // ----- SDL init
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
+// ------------------ Initialization ------------------
 
-    // ----- Images
-    if (!(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) & (IMG_INIT_PNG | IMG_INIT_JPG))) {
-        std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
-        SDL_Quit();
-        return 1;
-    }
+    // Library initialization guards
+    SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
+    if (!sdlInit.success) return 1;
 
-    // ----- Font
-    if (TTF_Init() != 0) {
-        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
-        IMG_Quit();
-        SDL_Quit();
-        return 1;
-    }
+    IMGInitGuard imgInit(IMG_INIT_PNG | IMG_INIT_JPG);
+    if (!imgInit.flags) return 1;
 
-    // ----- Audio player
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
-        return 1;
-    }
+    TTFInitGuard ttfInit;
+    if (!ttfInit.success) return 1;
 
-    // ----- Videos (vlc)
-    libvlc_instance_t* vlcInstance = libvlc_new(0, nullptr);
+    MixerGuard mixerGuard(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    if (!mixerGuard.success) return 1;
+
+    auto vlcInstance = std::unique_ptr<libvlc_instance_t, void(*)(libvlc_instance_t*)>(
+        libvlc_new(0, nullptr), libvlc_release);
     if (!vlcInstance) {
         std::cerr << "Failed to initialize VLC instance." << std::endl;
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
         return 1;
     }
 
-    // ----- Primary Window
-    SDL_Window* primaryWindow = SDL_CreateWindow("Playfield",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
-        MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+    auto primaryWindow = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
+        SDL_CreateWindow("Playfield",
+            SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
+            MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS),
+        SDL_DestroyWindow);
     if (!primaryWindow) {
         std::cerr << "Failed to create primary window: " << SDL_GetError() << std::endl;
-        libvlc_release(vlcInstance);
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
         return 1;
     }
-    
-    SDL_Renderer* primaryRenderer = SDL_CreateRenderer(primaryWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    auto primaryRenderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
+        SDL_CreateRenderer(primaryWindow.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        SDL_DestroyRenderer);
     if (!primaryRenderer) {
         std::cerr << "Failed to create primary renderer: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(primaryWindow);
-        libvlc_release(vlcInstance);
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
         return 1;
     }
-    
-    // ----- Secondary Window
-    SDL_Window* secondaryWindow = SDL_CreateWindow("Backglass",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(SECOND_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
-        SECOND_WINDOW_WIDTH, SECOND_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+
+    auto secondaryWindow = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
+        SDL_CreateWindow("Backglass",
+            SDL_WINDOWPOS_CENTERED_DISPLAY(SECOND_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
+            SECOND_WINDOW_WIDTH, SECOND_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS),
+        SDL_DestroyWindow);
     if (!secondaryWindow) {
         std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;
-        SDL_DestroyRenderer(primaryRenderer);
-        SDL_DestroyWindow(primaryWindow);
-        libvlc_release(vlcInstance);
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
         return 1;
     }
-    
-    SDL_Renderer* secondaryRenderer = SDL_CreateRenderer(secondaryWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    auto secondaryRenderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
+        SDL_CreateRenderer(secondaryWindow.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        SDL_DestroyRenderer);
     if (!secondaryRenderer) {
         std::cerr << "Failed to create secondary renderer: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(secondaryWindow);
-        SDL_DestroyRenderer(primaryRenderer);
-        SDL_DestroyWindow(primaryWindow);
-        libvlc_release(vlcInstance);
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
         return 1;
     }
-    
-    // ----- load Fonts
-    TTF_Font* font = TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE);
+
+    auto font = std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>(
+        TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE), TTF_CloseFont);
     if (!font) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
-    
-    // ----- load Sounds
-    Mix_Chunk* tableChangeSound = Mix_LoadWAV(TABLE_CHANGE_SOUND.c_str());
+
+    auto tableChangeSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(
+        Mix_LoadWAV(TABLE_CHANGE_SOUND.c_str()), Mix_FreeChunk);
     if (!tableChangeSound) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
     }
-    Mix_Chunk* tableLoadSound = Mix_LoadWAV(TABLE_LOAD_SOUND.c_str());
+
+    auto tableLoadSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(
+        Mix_LoadWAV(TABLE_LOAD_SOUND.c_str()), Mix_FreeChunk);
     if (!tableLoadSound) {
         std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
     }
 
-    // ----- load Table List
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) {
-        std::cerr << "No .vpx files found in " << VPX_TABLES_PATH << std::endl;
-        if (font) TTF_CloseFont(font);
-        if (tableChangeSound) Mix_FreeChunk(tableChangeSound);
-        if (tableLoadSound) Mix_FreeChunk(tableLoadSound);
-        SDL_DestroyRenderer(secondaryRenderer);
-        SDL_DestroyWindow(secondaryWindow);
-        SDL_DestroyRenderer(primaryRenderer);
-        SDL_DestroyWindow(primaryWindow);
-        libvlc_release(vlcInstance);
-        Mix_CloseAudio();
-        TTF_Quit();
-        IMG_Quit();
-        SDL_Quit();
+        std::cerr << "Edit config.ini, no .vpx files found in " << VPX_TABLES_PATH << std::endl;
         return 1;
     }
-    
+
     // ------------------ Texture and State Variables ------------------
 
-    size_t currentIndex = 0;                 // Index of the currently selected table
-    SDL_Texture* tableTexture = nullptr;     // Texture for the table image
-    SDL_Texture* wheelTexture = nullptr;     // Texture for the wheel image
-    SDL_Texture* backglassTexture = nullptr; // Texture for the backglass image
-    SDL_Texture* dmdTexture = nullptr;       // Texture for the DMD image
-    SDL_Texture* tableNameTexture = nullptr; // Texture for the table name text
-    SDL_Rect tableNameRect = {0, 0, 0, 0};   // Rectangle for the table name text position and size
+    size_t currentIndex = 0;
+    SDL_Texture* tableTexture = nullptr;
+    SDL_Texture* wheelTexture = nullptr;
+    SDL_Texture* backglassTexture = nullptr;
+    SDL_Texture* dmdTexture = nullptr;
+    SDL_Texture* tableNameTexture = nullptr;
+    SDL_Rect tableNameRect = {0, 0, 0, 0};
 
-    // VLC media players for table, backglass, and DMD videos
     libvlc_media_player_t* tableVideoPlayer = nullptr;
     libvlc_media_player_t* backglassVideoPlayer = nullptr;
     libvlc_media_player_t* dmdVideoPlayer = nullptr;
 
-    // Video contexts to hold texture and pixel data for rendering video frames
     VideoContext tableVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext backglassVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext dmdVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
 
     // ------------------ Load Current Table Textures ------------------
-    /**
-     * @brief Loads the current table textures and sets up video players if necessary.
-     *
-     * This function performs the following tasks:
-     * - Cleans up existing video contexts and textures.
-     * - Loads new textures or sets up video players for the table, backglass, and DMD based on the current table's data.
-     * - Loads the wheel image texture.
-     * - Renders the table name texture if a font is available.
-     */
     auto loadCurrentTableTextures = [&]() {
-        // Cleanup 
+        // Cleanup
         cleanupVideoContext(tableVideoCtx, tableVideoPlayer);
         cleanupVideoContext(backglassVideoCtx, backglassVideoPlayer);
         cleanupVideoContext(dmdVideoCtx, dmdVideoPlayer);
 
-        if (tableTexture) { SDL_DestroyTexture(tableTexture); tableTexture = nullptr; }
+        if (tableTexture)     { SDL_DestroyTexture(tableTexture); tableTexture = nullptr; }
         if (backglassTexture) { SDL_DestroyTexture(backglassTexture); backglassTexture = nullptr; }
-        if (dmdTexture) { SDL_DestroyTexture(dmdTexture); dmdTexture = nullptr; }
+        if (dmdTexture)       { SDL_DestroyTexture(dmdTexture); dmdTexture = nullptr; }
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
-        
-        // Get the current table
+
         const Table &tbl = tables[currentIndex];
 
-        // Load table media: prioritize custom video/image and fallback to default video/image
         if (!tbl.tableVideo.empty()) {
-            tableVideoPlayer = setupVideoPlayer(vlcInstance, primaryRenderer, tbl.tableVideo, 
-                                              tableVideoCtx, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
+            tableVideoPlayer = setupVideoPlayer(vlcInstance.get(), primaryRenderer.get(), 
+                                                tbl.tableVideo, tableVideoCtx, 
+                                                MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
         } else {
-            tableTexture = loadTexture(primaryRenderer, tbl.tableImage, DEFAULT_TABLE_IMAGE);
+            tableTexture = loadTexture(primaryRenderer.get(), tbl.tableImage, DEFAULT_TABLE_IMAGE);
         }
 
         if (!tbl.backglassVideo.empty()) {
-            backglassVideoPlayer = setupVideoPlayer(vlcInstance, secondaryRenderer, tbl.backglassVideo,
-                                                  backglassVideoCtx, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT);
+            backglassVideoPlayer = setupVideoPlayer(vlcInstance.get(), secondaryRenderer.get(), 
+                                                    tbl.backglassVideo, backglassVideoCtx, 
+                                                    BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT);
         } else {
-            backglassTexture = loadTexture(secondaryRenderer, tbl.backglassImage, DEFAULT_BACKGLASS_IMAGE);
+            backglassTexture = loadTexture(secondaryRenderer.get(), tbl.backglassImage, DEFAULT_BACKGLASS_IMAGE);
         }
 
         if (!tbl.dmdVideo.empty()) {
-            dmdVideoPlayer = setupVideoPlayer(vlcInstance, secondaryRenderer, tbl.dmdVideo,
-                                            dmdVideoCtx, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT);
+            dmdVideoPlayer = setupVideoPlayer(vlcInstance.get(), secondaryRenderer.get(), 
+                                            tbl.dmdVideo, dmdVideoCtx, 
+                                            DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT);
         } else {
-            dmdTexture = loadTexture(secondaryRenderer, tbl.dmdImage, DEFAULT_DMD_IMAGE);
+            dmdTexture = loadTexture(secondaryRenderer.get(), tbl.dmdImage, DEFAULT_DMD_IMAGE);
         }
 
-        // Load wheel image
-        wheelTexture = loadTexture(primaryRenderer, tbl.wheelImage, DEFAULT_WHEEL_IMAGE);
+        wheelTexture = loadTexture(primaryRenderer.get(), tbl.wheelImage, DEFAULT_WHEEL_IMAGE);
 
-        // Load Font
         if (font) {
             SDL_Color textColor = {255, 255, 255, 255};
-            tableNameTexture = renderText(primaryRenderer, font, tbl.tableName, textColor, tableNameRect);
+            tableNameTexture = renderText(primaryRenderer.get(), font.get(), tbl.tableName, textColor, tableNameRect);
             tableNameRect.x = 10;
             tableNameRect.y = MAIN_WINDOW_HEIGHT - tableNameRect.h - 20;
         }
@@ -642,44 +645,39 @@ int main(int argc, char* argv[]) {
 
     loadCurrentTableTextures();
 
-    TransitionState transitionState = TransitionState::IDLE; // Initial transition state is idle
-    Uint32 transitionStartTime = 0;         // Variable to store the start time of the transition
-    bool quit = false;                      // Flag to indicate if the application should quit
-    SDL_Event event;                        // SDL event structure to handle events
+    TransitionState transitionState = TransitionState::IDLE;
+    Uint32 transitionStartTime = 0;
+    bool quit = false;
+    SDL_Event event;
 
     while (!quit) {
-        // --------------------- Handle Key presses ---------------------
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
-                // Move LEFT
                 if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
                     if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound, 0);
+                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
                     currentIndex = (currentIndex + tables.size() - 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
-                // Move Right
                 else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
                     if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound, 0);
+                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
                     currentIndex = (currentIndex + 1) % tables.size();
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
-                // Launch Table
                 else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
-                    if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound, 0);
+                    if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
                     launchTable(tables[currentIndex]);
                 }
-                // Quit
                 else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                     quit = true;
                 }
@@ -712,14 +710,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (tableTexture)               SDL_SetTextureAlphaMod(tableTexture, currentAlpha);
-        if (wheelTexture)               SDL_SetTextureAlphaMod(wheelTexture, currentAlpha);
-        if (backglassTexture)           SDL_SetTextureAlphaMod(backglassTexture, currentAlpha);
-        if (dmdTexture)                 SDL_SetTextureAlphaMod(dmdTexture, currentAlpha);
-        if (tableNameTexture)           SDL_SetTextureAlphaMod(tableNameTexture, currentAlpha);
-        if (tableVideoCtx.texture)      SDL_SetTextureAlphaMod(tableVideoCtx.texture, currentAlpha);
-        if (backglassVideoCtx.texture)  SDL_SetTextureAlphaMod(backglassVideoCtx.texture, currentAlpha);
-        if (dmdVideoCtx.texture)        SDL_SetTextureAlphaMod(dmdVideoCtx.texture, currentAlpha);
+        if (tableTexture) SDL_SetTextureAlphaMod(tableTexture, currentAlpha);
+        if (wheelTexture) SDL_SetTextureAlphaMod(wheelTexture, currentAlpha);
+        if (backglassTexture) SDL_SetTextureAlphaMod(backglassTexture, currentAlpha);
+        if (dmdTexture) SDL_SetTextureAlphaMod(dmdTexture, currentAlpha);
+        if (tableNameTexture) SDL_SetTextureAlphaMod(tableNameTexture, currentAlpha);
+        if (tableVideoCtx.texture) SDL_SetTextureAlphaMod(tableVideoCtx.texture, currentAlpha);
+        if (backglassVideoCtx.texture) SDL_SetTextureAlphaMod(backglassVideoCtx.texture, currentAlpha);
+        if (dmdVideoCtx.texture) SDL_SetTextureAlphaMod(dmdVideoCtx.texture, currentAlpha);
 
         if (tableVideoPlayer && tableVideoCtx.texture && tableVideoCtx.updated && tableVideoCtx.pixels) {
             SDL_LockMutex(tableVideoCtx.mutex);
@@ -743,90 +741,70 @@ int main(int argc, char* argv[]) {
         }
 
         // -------------------------- Render Primary Screen -----------------------
-        SDL_SetRenderDrawColor(primaryRenderer, 32, 32, 32, 255);
-        SDL_RenderClear(primaryRenderer);
-        
-        // Table Playfield
+        SDL_SetRenderDrawColor(primaryRenderer.get(), 32, 32, 32, 255);
+        SDL_RenderClear(primaryRenderer.get());
+
         SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
         if (tableVideoPlayer && tableVideoCtx.texture) {
-            SDL_RenderCopy(primaryRenderer, tableVideoCtx.texture, nullptr, &tableRect);
+            SDL_RenderCopy(primaryRenderer.get(), tableVideoCtx.texture, nullptr, &tableRect);
         } else if (tableTexture) {
-            SDL_RenderCopy(primaryRenderer, tableTexture, nullptr, &tableRect);
+            SDL_RenderCopy(primaryRenderer.get(), tableTexture, nullptr, &tableRect);
         }
-        
-        // Wheel
+
         if (wheelTexture) {
             SDL_Rect wheelRect;
             wheelRect.w = WHEEL_IMAGE_SIZE;
             wheelRect.h = WHEEL_IMAGE_SIZE;
             wheelRect.x = MAIN_WINDOW_WIDTH - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN;
             wheelRect.y = MAIN_WINDOW_HEIGHT - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN;
-            SDL_RenderCopy(primaryRenderer, wheelTexture, nullptr, &wheelRect);
-        }
-        
-        // Table Title
-        if (tableNameTexture) {
-            SDL_Rect backgroundRect = {tableNameRect.x - 5, tableNameRect.y - 5, tableNameRect.w + 10, tableNameRect.h + 10};
-            SDL_SetRenderDrawColor(primaryRenderer, 0, 0, 0, 128);
-            SDL_RenderFillRect(primaryRenderer, &backgroundRect);
-            SDL_RenderCopy(primaryRenderer, tableNameTexture, nullptr, &tableNameRect);
-        }
-        
-        SDL_RenderPresent(primaryRenderer);
-        
-        // ----------------------- Render Secondary Screen ------------------------
-        SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
-        SDL_RenderClear(secondaryRenderer);
-        
-        // Backglass
-        SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
-        if (backglassVideoPlayer && backglassVideoCtx.texture) {
-            SDL_RenderCopy(secondaryRenderer, backglassVideoCtx.texture, nullptr, &backglassRect);
-        } else if (backglassTexture) {
-            SDL_RenderCopy(secondaryRenderer, backglassTexture, nullptr, &backglassRect);
+            SDL_RenderCopy(primaryRenderer.get(), wheelTexture, nullptr, &wheelRect);
         }
 
-        // DMD
+        if (tableNameTexture) {
+            SDL_Rect backgroundRect = {tableNameRect.x - 5, tableNameRect.y - 5, tableNameRect.w + 10, tableNameRect.h + 10};
+            SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 128);
+            SDL_RenderFillRect(primaryRenderer.get(), &backgroundRect);
+            SDL_RenderCopy(primaryRenderer.get(), tableNameTexture, nullptr, &tableNameRect);
+        }
+
+        SDL_RenderPresent(primaryRenderer.get());
+
+        // ----------------------- Render Secondary Screen ------------------------
+        SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
+        SDL_RenderClear(secondaryRenderer.get());
+
+        SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
+        if (backglassVideoPlayer && backglassVideoCtx.texture) {
+            SDL_RenderCopy(secondaryRenderer.get(), backglassVideoCtx.texture, nullptr, &backglassRect);
+        } else if (backglassTexture) {
+            SDL_RenderCopy(secondaryRenderer.get(), backglassTexture, nullptr, &backglassRect);
+        }
+
         SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
         if (dmdVideoPlayer && dmdVideoCtx.texture) {
-            SDL_RenderCopy(secondaryRenderer, dmdVideoCtx.texture, nullptr, &dmdRect);
+            SDL_RenderCopy(secondaryRenderer.get(), dmdVideoCtx.texture, nullptr, &dmdRect);
         } else if (dmdTexture) {
-            SDL_RenderCopy(secondaryRenderer, dmdTexture, nullptr, &dmdRect);
+            SDL_RenderCopy(secondaryRenderer.get(), dmdTexture, nullptr, &dmdRect);
         }
-        
-        SDL_RenderPresent(secondaryRenderer);
-        
-        // Delay to limit the frame rate to approximately 60 frames per second
+
+        SDL_RenderPresent(secondaryRenderer.get());
+
         SDL_Delay(16);
     }
 
     // ----------------- Cleanup ------------------------
-
+    // Only clean up resources not managed by unique_ptr
     cleanupVideoContext(tableVideoCtx, tableVideoPlayer);
     cleanupVideoContext(backglassVideoCtx, backglassVideoPlayer);
     cleanupVideoContext(dmdVideoCtx, dmdVideoPlayer);
 
-    if (tableTexture)       SDL_DestroyTexture(tableTexture);
-    if (wheelTexture)       SDL_DestroyTexture(wheelTexture);
-    if (backglassTexture)   SDL_DestroyTexture(backglassTexture);
-    if (dmdTexture)         SDL_DestroyTexture(dmdTexture);
-    if (tableNameTexture)   SDL_DestroyTexture(tableNameTexture);
+    if (tableTexture) SDL_DestroyTexture(tableTexture);
+    if (wheelTexture) SDL_DestroyTexture(wheelTexture);
+    if (backglassTexture) SDL_DestroyTexture(backglassTexture);
+    if (dmdTexture) SDL_DestroyTexture(dmdTexture);
+    if (tableNameTexture) SDL_DestroyTexture(tableNameTexture);
 
-    if (font) TTF_CloseFont(font);
-
-    if (tableChangeSound) Mix_FreeChunk(tableChangeSound);
-    if (tableLoadSound)   Mix_FreeChunk(tableLoadSound);
-
-    SDL_DestroyRenderer(secondaryRenderer);
-    SDL_DestroyWindow(secondaryWindow);
-    SDL_DestroyRenderer(primaryRenderer);
-    SDL_DestroyWindow(primaryWindow);
-    
-    libvlc_release(vlcInstance);
-    Mix_CloseAudio();
-    TTF_Quit();
-    IMG_Quit();
-    SDL_Quit();
-    
+    // No need to manually destroy font, sounds, renderers, windows, or call library quit functions
+    // (handled by unique_ptr and guard classes)
     return 0;
 }
