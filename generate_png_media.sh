@@ -9,7 +9,7 @@
 #   --now, -n             Generate both missing playfield and backglass images
 #   --tables-only, -t     Capture only missing table images
 #   --backglass-only, -b  Capture only missing backglass images
-#   --dry-run             Show what would be done for both images without changes
+#   --dry-run             Simulate --now mode, printing actions without executing them
 #   --wheel               List tables missing wheel.png image and exit
 #   --marquee             List tables missing marquee.png image and exit
 #   --force, -f           Generate both images, overwriting existing ones
@@ -77,18 +77,18 @@ check_imagemagick
 show_help() {
   echo -e "Create ${GREEN}PNG images ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
   echo -e "Opens all tables and screenshots playfield and backglass"
-  echo -e "Saves them in table folder following config.ini settings"
+  echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
   echo -e "${BLUE}Usage:${NC} $0 [${BLUE}--now${NC} | ${BLUE}--dry-run${NC} | ${BLUE}--tables-only${NC} | ${BLUE}--backglass-only${NC}] [${YELLOW}--wheel${NC}] [${YELLOW}--marquee${NC}] [${RED}--force${NC}] [${RED}--clean${NC}]"
   echo -e ""
-  echo -e "  ${BLUE}--now, -n             ${NC}Generate both missing playfield and backglass images"
-  echo -e "  ${BLUE}--tables-only, -t     ${NC}Capture only missing table images"
-  echo -e "  ${BLUE}--backglass-only, -b  ${NC}Capture only missing backglass images"
-  echo -e "  ${GREEN}--dry-run             ${NC}Show what would be done for both images without changes"
-  echo -e "  ${YELLOW}--wheel               ${NC}List tables missing wheel.png image and exit"
-  echo -e "  ${YELLOW}--marquee             ${NC}List tables missing marquee.png image and exit"
-  echo -e "  ${RED}--force, -f           ${NC}Generate both images, overwriting existing ones"
-  echo -e "  ${RED}--clean, -c           ${NC}Removes table.png and backglass.png created by this script"
-  echo -e "\n  ${NC}-h, --help            Show this help message and exit"
+  echo -e "  ${BLUE}--now, -n                Capture missing table and backglass images"
+  echo -e "  ${BLUE}--tables-only, -t        ${NC}Capture only missing table images"
+  echo -e "  ${BLUE}--backglass-only, -b     ${NC}Capture only missing backglass images"
+  echo -e "  ${GREEN}--dry-run                Simulate --now mode, printing actions without executing them"
+  echo -e "  ${YELLOW}--wheel                  ${NC}List tables missing wheel images and exit"
+  echo -e "  ${YELLOW}--marquee                ${NC}List tables missing marquee images and exit"
+  echo -e "  ${RED}--force, -f              ${NC}Force rebuilding media even if they already exist"
+  echo -e "  ${RED}--clean, -c              Removes all PNG images created by this script"
+  echo -e "\n  ${NC}-h, --help               Show this help message and exit"
   echo -e "\n${YELLOW}Note:${NC} No args shows this help."
   exit 0
 }
