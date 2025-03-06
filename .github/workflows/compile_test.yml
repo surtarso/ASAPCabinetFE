@@ -3,7 +3,7 @@ name: C++ Compile Test
 on:
   push:
     branches: [ "main" ]
-    paths: [ ".github/workflows/compile_test.yml", "main.cpp" ]
+    paths: [ ".github/workflows/compile_test.yml", "main.cpp", "config.cpp" ]
   pull_request:
     branches: [ "main" ]
 
