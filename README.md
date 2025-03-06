@@ -18,6 +18,14 @@ For now, check [the original project repo](https://github.com/surtarso/asap-cabi
 
 ## Dependencies
 
+Make sure the following libraries are installed:
+
+- SDL2
+- SDL2_image
+- SDL2_ttf
+- SDL2_mixer
+- VLC
+  
 Install the following dependencies:
 
 ```sh
@@ -38,12 +46,11 @@ For a specific setup, you can use:
 g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
 
-## Required Libraries
+## Usage
 
-Make sure the following libraries are installed:
+- Open **config.ini** and set your own paths.
+- Run `./ASAPCabinetFE`
 
-- SDL2
-- SDL2_image
-- SDL2_ttf
-- SDL2_mixer
-- VLC
+## Contribute
+
+Contributions are very welcome. Feel free to open issues and pull requests.
