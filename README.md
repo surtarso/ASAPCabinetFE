@@ -6,7 +6,7 @@ This is a work in progress port of [asap-cabinet-fe](https://github.com/surtarso
 
 For now, check [the original project repo](https://github.com/surtarso/asap-cabinet-fe) for info. The aim here is to mimic and improve in areas where it failed, like playing more video formats and image types, more custumizable keys and better code logic overall.
 
-<i>This port DOES NOT have a settings panel YET, so configure you paths in the main.cpp file before compiling.</i>
+<i>This port DOES NOT have a settings panel. Configure you paths in the **config.ini** file.</i>
 
 ## Features
 
