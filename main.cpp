@@ -10,6 +10,7 @@
 // - Handles video context cleanup and setup
 // - Loads textures with fallback options
 // - Renders text using SDL_ttf
+// - Settings are done via config.ini file.
 // Dependencies:
 // sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 // Compile:
@@ -27,56 +28,57 @@
 #include <vector>       // For std::vector
 #include <string>       // For std::string
 #include <cstdlib>      // For std::system
+#include <fstream>      // For file I/O operations
+#include <map>          // For std::map container
+
 
 namespace fs = std::filesystem; // Alias for filesystem lib
 
 // ------------------ Configuration Constants ------------------
 
-const std::string VPX_TABLES_PATH    = "/home/tarso/Games/vpinball/build/tables/";
-const std::string VPX_EXECUTABLE_CMD = "/home/tarso/Games/vpinball/build/VPinballX_GL";
-const std::string VPX_SUB_CMD        = "-Play";
-const std::string VPX_START_ARGS     = "DRI_PRIME=1 gamemoderun";
-const std::string VPX_END_ARGS       = "";
+// Configuration Variables (no longer const)
+std::string VPX_TABLES_PATH;
+std::string VPX_EXECUTABLE_CMD;
+std::string VPX_SUB_CMD;         // Not in config.ini, so we'll set a default later
+std::string VPX_START_ARGS;
+std::string VPX_END_ARGS;
 
-const std::string DEFAULT_TABLE_IMAGE     = "img/default_table.png";
-const std::string DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
-const std::string DEFAULT_DMD_IMAGE       = "img/default_dmd.png";
-const std::string DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
+std::string DEFAULT_TABLE_IMAGE;     // Not in config.ini, set default later
+std::string DEFAULT_BACKGLASS_IMAGE; // Not in config.ini
+std::string DEFAULT_DMD_IMAGE;       // Not in config.ini
+std::string DEFAULT_WHEEL_IMAGE;     // Not in config.ini
+std::string DEFAULT_TABLE_VIDEO;     // Not in config.ini
+std::string DEFAULT_BACKGLASS_VIDEO; // Not in config.ini
+std::string DEFAULT_DMD_VIDEO;       // Not in config.ini
 
-const std::string DEFAULT_TABLE_VIDEO     = "img/default_table.mp4";
-const std::string DEFAULT_BACKGLASS_VIDEO = "img/default_backglass.mp4";
-const std::string DEFAULT_DMD_VIDEO       = "img/default_dmd.mp4";
+std::string CUSTOM_TABLE_IMAGE;
+std::string CUSTOM_BACKGLASS_IMAGE;
+std::string CUSTOM_DMD_IMAGE;
+std::string CUSTOM_WHEEL_IMAGE;
+std::string CUSTOM_TABLE_VIDEO;
+std::string CUSTOM_BACKGLASS_VIDEO;
+std::string CUSTOM_DMD_VIDEO;
 
-const std::string CUSTOM_TABLE_IMAGE      = "images/table.png";
-const std::string CUSTOM_BACKGLASS_IMAGE  = "images/backglass.png";
-const std::string CUSTOM_DMD_IMAGE        = "images/marquee.png";
-const std::string CUSTOM_WHEEL_IMAGE      = "images/wheel.png";
+int MAIN_WINDOW_MONITOR;
+int MAIN_WINDOW_WIDTH;
+int MAIN_WINDOW_HEIGHT;
+int WHEEL_IMAGE_SIZE;
+int WHEEL_IMAGE_MARGIN;
+std::string FONT_PATH;
+int FONT_SIZE;
 
-const std::string CUSTOM_TABLE_VIDEO      = "video/table.mp4";
-const std::string CUSTOM_BACKGLASS_VIDEO  = "video/backglass.mp4";
-const std::string CUSTOM_DMD_VIDEO        = "video/dmd.mp4";
+int SECOND_WINDOW_MONITOR;
+int SECOND_WINDOW_WIDTH;
+int SECOND_WINDOW_HEIGHT;
+int BACKGLASS_MEDIA_WIDTH;
+int BACKGLASS_MEDIA_HEIGHT;
+int DMD_MEDIA_WIDTH;
+int DMD_MEDIA_HEIGHT;
 
-const int MAIN_WINDOW_MONITOR      = 1;
-const int MAIN_WINDOW_WIDTH        = 1080;
-const int MAIN_WINDOW_HEIGHT       = 1920;
-const int WHEEL_IMAGE_SIZE         = 300;
-const int WHEEL_IMAGE_MARGIN       = 24;
-const std::string FONT_PATH        = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-const int FONT_SIZE                = 28;
-
-const int SECOND_WINDOW_MONITOR    = 0;
-const int SECOND_WINDOW_WIDTH      = 1024;
-const int SECOND_WINDOW_HEIGHT     = 1024;
-const int BACKGLASS_MEDIA_WIDTH    = 1024;
-const int BACKGLASS_MEDIA_HEIGHT   = 768;
-const int DMD_MEDIA_WIDTH          = 1024;
-const int DMD_MEDIA_HEIGHT         = 256;
-
-const int FADE_DURATION_MS         = 300;
-const Uint8 FADE_TARGET_ALPHA      = 128;
-
-const std::string TABLE_CHANGE_SOUND = "snd/table_change.mp3";
-const std::string TABLE_LOAD_SOUND   = "snd/table_load.mp3";
+int FADE_DURATION_MS;         // Not in config.ini
+Uint8 FADE_TARGET_ALPHA;      // Not in config.ini
+std::string TABLE_CHANGE_SOUND; // Not in config.ini
+std::string TABLE_LOAD_SOUND;   // Not in config.ini
 
 // ------------------ Data Structures ------------------
 
@@ -292,6 +294,72 @@ void launchTable(const Table &table) {
     std::system(command.c_str());
 }
 
+// -------------------- Settings --------------------------
+
+// Helper functions to get values with defaults
+std::string get_string(const std::map<std::string, std::map<std::string, std::string>>& config, 
+        const std::string& section, const std::string& key, const std::string& default_value) {
+    if (config.count(section) && config.at(section).count(key)) {
+        return config.at(section).at(key);
+    }
+    return default_value;
+}
+
+int get_int(const std::map<std::string, std::map<std::string, std::string>>& config, 
+        const std::string& section, const std::string& key, int default_value) {
+    if (config.count(section) && config.at(section).count(key)) {
+        try {
+            return std::stoi(config.at(section).at(key));
+        } catch (const std::exception&) {
+            return default_value;
+        }
+    }
+    return default_value;
+}
+
+// Structure to hold all config data
+std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
+    std::map<std::string, std::map<std::string, std::string>> config;
+    std::ifstream file(filename);
+    std::string current_section;
+
+    if (!file.is_open()) {
+        std::cerr << "Could not open " << filename << ". Using defaults." << std::endl;
+        return config;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Skip empty lines or comments
+        if (line.empty() || line[0] == ';') continue;
+
+        // Check for section (e.g., [VPX])
+        if (line[0] == '[') {
+            size_t end = line.find(']');
+            if (end != std::string::npos) {
+                current_section = line.substr(1, end - 1);
+                config[current_section]; // Create section if it doesn't exist
+            }
+            continue;
+        }
+
+        // Parse key=value pairs
+        size_t eq_pos = line.find('=');
+        if (eq_pos != std::string::npos && !current_section.empty()) {
+            std::string key = line.substr(0, eq_pos);
+            std::string value = line.substr(eq_pos + 1);
+            // Remove any trailing or leading whitespace (basic cleanup)
+            key.erase(0, key.find_first_not_of(" \t"));
+            key.erase(key.find_last_not_of(" \t") + 1);
+            value.erase(0, value.find_first_not_of(" \t"));
+            value.erase(value.find_last_not_of(" \t") + 1);
+            config[current_section][key] = value;
+        }
+    }
+    file.close();
+    return config;
+}
+
 // ------------------ Main Application ------------------
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
@@ -309,6 +377,57 @@ enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
  * @return int Returns 0 on successful execution, or 1 on failure.
  */
 int main(int argc, char* argv[]) {
+    // ------------- Load the configuration --------------
+    auto config = load_config("config.ini");
+
+    // Assign VPX settings
+    VPX_TABLES_PATH    = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
+    VPX_EXECUTABLE_CMD = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
+    VPX_SUB_CMD        = "-Play"; // Not in config, use hardcoded default
+    VPX_START_ARGS     = get_string(config, "VPX", "StartArgs", "DRI_PRIME=1 gamemoderun");
+    VPX_END_ARGS       = get_string(config, "VPX", "EndArgs", "");
+
+    // Assign CustomMedia settings
+    CUSTOM_TABLE_IMAGE     = get_string(config, "CustomMedia", "TableImage", "images/table.png");
+    CUSTOM_BACKGLASS_IMAGE = get_string(config, "CustomMedia", "BackglassImage", "images/backglass.png");
+    CUSTOM_DMD_IMAGE       = get_string(config, "CustomMedia", "DmdImage", "images/marquee.png");
+    CUSTOM_WHEEL_IMAGE     = get_string(config, "CustomMedia", "WheelImage", "images/wheel.png");
+    CUSTOM_TABLE_VIDEO     = get_string(config, "CustomMedia", "TableVideo", "video/table.mp4");
+    CUSTOM_BACKGLASS_VIDEO = get_string(config, "CustomMedia", "BackglassVideo", "video/backglass.mp4");
+    CUSTOM_DMD_VIDEO       = get_string(config, "CustomMedia", "DmdVideo", "video/dmd.mp4");
+
+    // Assign WindowSettings
+    MAIN_WINDOW_MONITOR   = get_int(config, "WindowSettings", "MainMonitor", 1);
+    MAIN_WINDOW_WIDTH     = get_int(config, "WindowSettings", "MainWidth", 1080);
+    MAIN_WINDOW_HEIGHT    = get_int(config, "WindowSettings", "MainHeight", 1920);
+    SECOND_WINDOW_MONITOR = get_int(config, "WindowSettings", "SecondMonitor", 0);
+    SECOND_WINDOW_WIDTH   = get_int(config, "WindowSettings", "SecondWidth", 1024);
+    SECOND_WINDOW_HEIGHT  = get_int(config, "WindowSettings", "SecondHeight", 1024);
+
+    // Assign Font settings
+    FONT_PATH = get_string(config, "Font", "Path", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_SIZE = get_int(config, "Font", "Size", 28);
+
+    // Assign MediaDimensions
+    WHEEL_IMAGE_SIZE      = get_int(config, "MediaDimensions", "WheelImageSize", 300);
+    WHEEL_IMAGE_MARGIN    = get_int(config, "MediaDimensions", "WheelImageMargin", 24);
+    BACKGLASS_MEDIA_WIDTH  = get_int(config, "MediaDimensions", "BackglassWidth", 1024);
+    BACKGLASS_MEDIA_HEIGHT = get_int(config, "MediaDimensions", "BackglassHeight", 768);
+    DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
+    DMD_MEDIA_HEIGHT       = get_int(config, "MediaDimensions", "DmdHeight", 256);
+
+    // Set defaults for variables not in config.ini
+    DEFAULT_TABLE_IMAGE     = "img/default_table.png";
+    DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
+    DEFAULT_DMD_IMAGE       = "img/default_dmd.png";
+    DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
+    DEFAULT_TABLE_VIDEO     = "img/default_table.mp4";
+    DEFAULT_BACKGLASS_VIDEO = "img/default_backglass.mp4";
+    DEFAULT_DMD_VIDEO       = "img/default_dmd.mp4";
+    FADE_DURATION_MS        = 300;
+    FADE_TARGET_ALPHA       = 128;
+    TABLE_CHANGE_SOUND      = "snd/table_change.mp3";
+    TABLE_LOAD_SOUND        = "snd/table_load.mp3";
 
     // ------------------ Initialization ------------------
     // ----- SDL init
