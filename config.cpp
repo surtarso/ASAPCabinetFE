@@ -61,7 +61,7 @@ public:
             return;
         }
 
-        font = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16);
+        font = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12);
         if (!font) {
             std::cerr << "TTF_OpenFont failed: " << TTF_GetError() << std::endl;
             SDL_DestroyRenderer(renderer);
@@ -269,14 +269,14 @@ private:
                         }
 
                         // Save button
-                        SDL_Rect saveBtn = {10, 360, 80, 30};
+                        SDL_Rect saveBtn = {10, 360, 55, 25};
                         if (mouseX >= saveBtn.x && mouseX <= saveBtn.x + saveBtn.w &&
                             mouseY >= saveBtn.y && mouseY <= saveBtn.y + saveBtn.h) {
                             saveIniFile("config.ini");
                         }
 
                         // Exit button
-                        SDL_Rect exitBtn = {100, 360, 80, 30};
+                        SDL_Rect exitBtn = {75, 360, 55, 25};
                         if (mouseX >= exitBtn.x && mouseX <= exitBtn.x + exitBtn.w &&
                             mouseY >= exitBtn.y && mouseY <= exitBtn.y + exitBtn.h) {
                             running = false;
@@ -340,7 +340,7 @@ private:
             for (size_t i = 0; i < sections.size(); ++i) {
                 if (static_cast<int>(i) == dropdownHoverIndex) {
                     SDL_Rect highlight = {10, y, 190, 20};
-                    SDL_SetRenderDrawColor(renderer, 200, 200, 255, 255);
+                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                     SDL_RenderFillRect(renderer, &highlight);
                 }
                 renderText(sections[i], 15, y);
@@ -359,7 +359,7 @@ private:
                 renderText(key, 10, y - scrollOffset);
                 if (key == activeField) {
                     SDL_Rect fieldRect = {150, y - scrollOffset, 300, 20};
-                    SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
+                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                     SDL_RenderFillRect(renderer, &fieldRect);
                 }
                 renderText(value, 150, y - scrollOffset);
@@ -369,13 +369,13 @@ private:
         }
 
         // Render Save/Exit buttons
-        SDL_Rect saveBtn = {10, 360, 80, 30};
-        SDL_Rect exitBtn = {100, 360, 80, 30};
+        SDL_Rect saveBtn = {10, 360, 55, 25};
+        SDL_Rect exitBtn = {75, 360, 55, 25};
         SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
         SDL_RenderFillRect(renderer, &saveBtn);
         SDL_RenderFillRect(renderer, &exitBtn);
         renderText("Save", 20, 365);
-        renderText("Exit", 110, 365);
+        renderText("Exit", 90, 365);
 
         // Render tooltip
         if (!tooltipKey.empty() && explanations.count(tooltipKey)) {
