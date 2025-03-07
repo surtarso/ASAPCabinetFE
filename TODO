@@ -1,14 +1,12 @@
 TODO - From urgent to least important.
 
 Main:
+- make config panel look half-decent
 - fix vlc screaming with me
 - fix b2s dmd table images not effect transitioning
 - configurable keys
 
 UI:
-- add 'jump to letter'  navigation with spacebar
-
-Flares:
 - add blinking arrows on sides to indicate table flow/keys
 - add splash screen on start?
 
