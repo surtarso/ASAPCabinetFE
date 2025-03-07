@@ -1,21 +1,23 @@
-// main.cpp
-// ASAP-CABINET-FE in C++/SDL2
-// - Scans VPX_TABLES_PATH recursively for .vpx files
-// - For each table, loads filename. (videos)/images for the playfield, wheel, backglass and DMD
-// - Creates two windows: primary (table name/wheel/table playfield)
-//                    and secondary (backglass with dmd)
-// - Uses left/right arrow/shift keys to change tables with a fade transition
-// - Press Enter to launch the table via vpinballx_gl, 'q'/esc to quit
-// - Uses VLC for video playback
-// - Handles video context cleanup and setup
-// - Loads textures with fallback options
-// - Renders text using SDL_ttf
-// - Settings are done via config.ini file.
-// Dependencies:
-// sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
-// Compile:
-// g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
-// Author: Tarso Galvão Mar/2025 | github.com/surtarso/ASAPCabinetFE
+/**
+ * @file main.cpp
+ * @brief ASAP-CABINET-FE in C++/SDL2
+ * 
+ * This application scans the VPX_TABLES_PATH recursively for .vpx files and loads the corresponding 
+ * images and videos for the playfield, wheel, backglass, and DMD. It creates two windows: 
+ * a primary window displaying the table name, wheel, and playfield, and a secondary window 
+ * displaying the backglass and DMD. Users can change tables using the left/right arrow or shift keys 
+ * with a fade transition, and launch the table via vpinballx_gl by pressing Enter. The application 
+ * uses VLC for video playback, handles video context cleanup and setup, loads textures with fallback 
+ * options, and renders text using SDL_ttf. Settings are configured via a config.ini file.
+ * 
+ * Dependencies:
+ * - sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+ * 
+ * Compile:
+ * - g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+ * 
+ * Author: Tarso Galvão Mar/2025 | github.com/surtarso/ASAPCabinetFE
+ */
 
 #include <algorithm>    // For std::sort
 #include <SDL.h>        // For SDL main library
@@ -35,6 +37,7 @@
 
 namespace fs = std::filesystem; // Alias for filesystem lib
 
+// -------------------------------------------------------------
 // ------------------ Configuration Constants ------------------
 
 // Configuration Variables
@@ -81,7 +84,8 @@ Uint8 FADE_TARGET_ALPHA;
 std::string TABLE_CHANGE_SOUND;     
 std::string TABLE_LOAD_SOUND;       
 
-// ------------------ Data Structures ------------------
+// --------------------------------------------------------------
+// ---------------------- Data Structures -----------------------
 
 // Structure to hold information about each pinball table
 struct Table {
@@ -108,7 +112,8 @@ struct VideoContext {
     bool updated;          // Flag to indicate if the video frame has been updated
 };
 
-// ------------------ Utility Functions ------------------
+// -----------------------------------------------------------------------------------
+// --------------------------------- Utility Functions -------------------------------
 // Get image path with fallback
 std::string getImagePath(const std::string &root, const std::string &imagePath, const std::string &defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
@@ -128,7 +133,17 @@ std::string getVideoPath(const std::string &root, const std::string &videoPath, 
         return "";
 }
 
-// Load table list
+// ------------------- Load table list --------------------
+/**
+ * @brief Loads a list of tables from the directory specified by VPX_TABLES_PATH.
+ * 
+ * This function recursively iterates through the directory specified by VPX_TABLES_PATH,
+ * looking for files with the ".vpx" extension. For each valid file found, it creates a 
+ * Table object and populates its fields with relevant information such as file paths 
+ * for images and videos. The list of tables is then sorted by table name.
+ * 
+ * @return std::vector<Table> A sorted vector of Table objects.
+ */
 std::vector<Table> loadTableList() {
     std::vector<Table> tables;
     for (const auto &entry : fs::recursive_directory_iterator(VPX_TABLES_PATH)) {
@@ -153,7 +168,7 @@ std::vector<Table> loadTableList() {
     return tables;
 }
 
-// Load images texture with fallback
+// ------- Load images texture with fallback ----------
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string &path, const std::string &fallbackPath) {
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     if (!tex) {
@@ -163,7 +178,7 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string &path, const 
     return tex;
 }
 
-// Load font
+// ----------------- Load font --------------
 SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string &message, SDL_Color color, SDL_Rect &textRect) {
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     if (!surf) {
@@ -177,7 +192,8 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::strin
     return texture;
 }
 
-// ----------------- Handle video playback (vlc) -----------------
+// --------------------------------------------------------------------------------
+// ------------------------ Handle video playback (vlc) ---------------------------
 
 // Locks the video context mutex and provides access to the pixel data.
 void* lock(void* data, void** pixels) {
@@ -222,18 +238,22 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
 }
 
 /**
- * This function initializes a video player with the given VLC instance and SDL renderer, 
- * loads the specified video file, and prepares the video context for rendering.
- * 
+ * @brief Sets up a video player using libVLC and SDL.
+ *
+ * This function initializes a video player with the specified video file path, 
+ * using the provided libVLC instance and SDL renderer. It configures the video 
+ * player to loop indefinitely and sets up the necessary SDL texture and pixel 
+ * buffer for rendering the video frames.
+ *
  * @param vlcInstance A pointer to the libVLC instance.
- * @param renderer    A pointer to the SDL renderer.
- * @param videoPath   The file path to the video to be played.
- * @param ctx         A reference to the VideoContext structure to hold video rendering data.
- * @param width       The width of the video frame.
- * @param height      The height of the video frame.
+ * @param renderer A pointer to the SDL renderer.
+ * @param videoPath The file path to the video to be played.
+ * @param ctx A reference to the VideoContext structure to store video-related data.
+ * @param width The width of the video frame.
+ * @param height The height of the video frame.
  * @return A pointer to the initialized libvlc_media_player_t, or nullptr if an error occurs.
  */
- libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Renderer* renderer, 
+libvlc_media_player_t* setupVideoPlayer(libvlc_instance_t* vlcInstance, SDL_Renderer* renderer, 
                                       const std::string& videoPath, VideoContext& ctx, int width, int height) {
     libvlc_media_t* media = libvlc_media_new_path(vlcInstance, videoPath.c_str());
     if (!media) {
@@ -284,8 +304,20 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
     return player;
 }
 
-// ---------------- Launch Table -----------------------
+// -----------------------------------------------------------------------
+// --------------------------- Launch Table ------------------------------
 
+/**
+ * @brief Launches a VPX table using the specified command arguments.
+ * 
+ * This function constructs a command string to launch a VPX table using
+ * predefined command arguments and the file path of the table. It then
+ * outputs the command to the console and executes it using the system
+ * command.
+ * 
+ * @param table A reference to a Table object containing the file path
+ *              of the VPX table to be launched.
+ */
 void launchTable(const Table &table) {
     std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + 
                           VPX_SUB_CMD + " \"" + table.vpxFile + "\" " + VPX_END_ARGS;
@@ -293,7 +325,8 @@ void launchTable(const Table &table) {
     std::system(command.c_str());
 }
 
-// -------------------- Settings --------------------------
+//-------------------------------------------------------------------------
+// ----------------------------- Settings ---------------------------------
 
 // Helper functions to get values with defaults
 std::string get_string(const std::map<std::string, std::map<std::string, std::string>>& config, 
@@ -316,7 +349,22 @@ int get_int(const std::map<std::string, std::map<std::string, std::string>>& con
     return default_value;
 }
 
-// Structure to hold all config data
+// -------------- Structure to hold all config data --------------
+/**
+ * @brief Loads a configuration file and parses it into a nested map structure.
+ *
+ * This function reads a configuration file specified by the filename parameter.
+ * The file is expected to have sections denoted by square brackets (e.g., [SECTION])
+ * and key-value pairs within those sections (e.g., key=value). Comments and empty
+ * lines are ignored.
+ *
+ * @param filename The path to the configuration file to be loaded.
+ * @return A nested map where the outer map's keys are section names and the inner
+ *         map's keys and values are the key-value pairs within those sections.
+ *
+ * @note If the file cannot be opened, an empty configuration is returned and an
+ *       error message is printed to std::cerr.
+ */
 std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
     std::map<std::string, std::map<std::string, std::string>> config;
     std::ifstream file(filename);
@@ -359,9 +407,34 @@ std::map<std::string, std::map<std::string, std::string>> load_config(const std:
     return config;
 }
 
-// ----------------- Initialization Guard Classes -------------------
-
-// Guard for SDL initialization
+// -----------------------------------------------------------------------
+// --------------------- Initialization Guard Classes --------------------
+/**
+ * @class SDLInitGuard
+ * @brief A guard class to manage the initialization and cleanup of SDL.
+ *
+ * This class initializes SDL with the specified flags upon construction
+ * and ensures that SDL is properly cleaned up upon destruction if the
+ * initialization was successful.
+ *
+ * @public
+ * @var bool success
+ * Indicates whether SDL was successfully initialized.
+ *
+ * @public
+ * @fn SDLInitGuard(Uint32 flags)
+ * @brief Constructs an SDLInitGuard object and initializes SDL.
+ * 
+ * @param flags The SDL initialization flags.
+ *
+ * If SDL initialization fails, an error message is printed to std::cerr.
+ *
+ * @public
+ * @fn ~SDLInitGuard()
+ * @brief Destructs the SDLInitGuard object and cleans up SDL.
+ *
+ * If SDL was successfully initialized, SDL_Quit() is called to clean up.
+ */
 class SDLInitGuard {
 public:
     bool success;
@@ -376,8 +449,21 @@ public:
         if (success) SDL_Quit();
     }
 };
-    
-// Guard for IMG initialization
+
+/**
+ * @class IMGInitGuard
+ * @brief A guard class to manage the initialization and cleanup of the SDL_image library.
+ *
+ * This class ensures that the SDL_image library is properly initialized with the specified flags
+ * and automatically cleaned up when the object goes out of scope.
+ *
+ * @param flags The initialization flags for the SDL_image library.
+ *
+ * The constructor initializes the SDL_image library with the given flags. If the initialization
+ * fails, an error message is printed to std::cerr and the flags are set to 0.
+ *
+ * The destructor cleans up the SDL_image library if it was successfully initialized.
+ */
 class IMGInitGuard {
 public:
     int flags;
@@ -392,7 +478,25 @@ public:
     }
 };
 
-// Guard for TTF initialization
+/**
+ * @class TTFInitGuard
+ * @brief A guard class to manage the initialization and cleanup of the SDL_ttf library.
+ *
+ * This class ensures that the SDL_ttf library is properly initialized when an instance
+ * of the class is created and properly cleaned up when the instance is destroyed.
+ *
+ * @details
+ * The constructor attempts to initialize the SDL_ttf library by calling TTF_Init().
+ * If the initialization is successful, the `success` member is set to true. Otherwise,
+ * an error message is printed to the standard error output.
+ *
+ * The destructor checks if the initialization was successful (i.e., `success` is true).
+ * If so, it calls TTF_Quit() to clean up the SDL_ttf library.
+ *
+ * @note
+ * This class is useful for RAII (Resource Acquisition Is Initialization) to ensure
+ * that the SDL_ttf library is properly managed within a scope.
+ */
 class TTFInitGuard {
 public:
     bool success;
@@ -408,7 +512,21 @@ public:
     }
 };
 
-// Guard for SDL_mixer initialization
+/**
+ * @class MixerGuard
+ * @brief A RAII (Resource Acquisition Is Initialization) class to manage SDL_mixer audio initialization and cleanup.
+ *
+ * This class ensures that the SDL_mixer audio subsystem is properly initialized and closed.
+ * It attempts to open the audio with the specified parameters upon construction and closes
+ * the audio upon destruction if the initialization was successful.
+ *
+ * @param frequency The audio frequency in samples per second (Hz).
+ * @param format The audio format (e.g., AUDIO_S16SYS).
+ * @param channels The number of audio channels (1 for mono, 2 for stereo).
+ * @param chunksize The size of the audio chunks in bytes.
+ *
+ * @var success A boolean flag indicating whether the audio initialization was successful.
+ */
 class MixerGuard {
 public:
     bool success;
@@ -426,19 +544,22 @@ public:
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
-/**
- * @brief Main function for initializing and running the SDL application.
+/** ------------------------------------------------------------------------------------
+ * @brief Main loop of the application.
+ * -------------------------------------------------------------------------------------
+ * This loop handles the following tasks:
+ * - Polls and processes SDL events, including quitting the application and handling key presses for table navigation and launching.
+ * - Manages transitions between tables, including fading out the current table and fading in the new table.
+ * - Updates the alpha modulation of textures and video contexts based on the transition state.
+ * - Updates video textures if new frames are available.
+ * - Renders the primary screen, including the table playfield, wheel image, and table name.
+ * - Renders the secondary screen, including the backglass and DMD (Dot Matrix Display).
+ * - Delays to control the frame rate.
  * 
- * This function initializes SDL, SDL_image, SDL_ttf, SDL_mixer, and libVLC libraries.
- * It creates primary and secondary SDL windows and renderers, loads resources such as fonts and sounds,
- * and handles the main event loop for user interactions.
- * 
- * @param argc The number of command-line arguments.
- * @param argv The array of command-line arguments.
- * @return int Returns 0 on successful execution, or 1 on failure.
+ * The loop continues until the `quit` flag is set to true, typically by an SDL_QUIT event or pressing the escape key.
  */
-// -------------------------- Main Application --------------------------
 int main(int argc, char* argv[]) {
+    // -----------------------------------------------------------------------
     // --------------- Load the configuration from config.ini ----------------
     auto config = load_config("config.ini");
 
@@ -491,7 +612,8 @@ int main(int argc, char* argv[]) {
     TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
     TABLE_LOAD_SOUND        = get_string(config, "Internal", "TableLoadSound", "snd/table_load.mp3");
 
-// ------------------ Initialization ------------------
+    // ----------------------------------------------------
+    // ------------------ Initialization ------------------
 
     // Library initialization guards
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
@@ -598,7 +720,22 @@ int main(int argc, char* argv[]) {
     VideoContext backglassVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext dmdVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
 
-    // ------------------ Load Current Table Textures ------------------
+    // -----------------------------------------------------------------------------------
+    // -------------------------- Load Current Table Textures ----------------------------
+    /**
+     * @brief Loads the current table textures and video players.
+     * 
+     * This function performs the following tasks:
+     * - Cleans up existing video contexts and textures.
+     * - Loads the video or image textures for the table, backglass, and DMD (Dot Matrix Display).
+     * - Loads the wheel image texture.
+     * - Renders the table name text texture if a font is available.
+     * 
+     * The function uses the current index to retrieve the table information from the `tables` array.
+     * 
+     * @note This function assumes that `cleanupVideoContext`, `setupVideoPlayer`, `loadTexture`, and `renderText` 
+     * are defined elsewhere in the codebase.
+     */
     auto loadCurrentTableTextures = [&]() {
         // Cleanup
         cleanupVideoContext(tableVideoCtx, tableVideoPlayer);
@@ -649,12 +786,15 @@ int main(int argc, char* argv[]) {
 
     loadCurrentTableTextures();
 
-    TransitionState transitionState = TransitionState::IDLE;
-    Uint32 transitionStartTime = 0;
-    bool quit = false;
-    SDL_Event event;
+    TransitionState transitionState = TransitionState::IDLE; // Current state of the transition (idle, fading out, fading in)
+    Uint32 transitionStartTime = 0; // Timestamp when the transition started
+    bool quit = false; // Flag to indicate if the application should quit
+    SDL_Event event; // SDL event structure to handle events
 
+    //--------------------------------------------------------------------------
+    // ------------------------------ Main loop --------------------------------
     while (!quit) {
+        // Key Events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
@@ -762,6 +902,7 @@ int main(int argc, char* argv[]) {
             SDL_UnlockMutex(dmdVideoCtx.mutex);
         }
 
+        // ------------------------------------------------------------------------
         // -------------------------- Render Primary Screen -----------------------
         SDL_SetRenderDrawColor(primaryRenderer.get(), 32, 32, 32, 255);
         SDL_RenderClear(primaryRenderer.get());
@@ -791,6 +932,7 @@ int main(int argc, char* argv[]) {
 
         SDL_RenderPresent(primaryRenderer.get());
 
+        // ------------------------------------------------------------------------
         // ----------------------- Render Secondary Screen ------------------------
         SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
         SDL_RenderClear(secondaryRenderer.get());
