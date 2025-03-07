@@ -361,7 +361,7 @@ std::map<std::string, std::map<std::string, std::string>> load_config(const std:
     return config;
 }
 
-// ----------------- Initialization Guard Functions -------------------
+// ----------------- Initialization Guard Classes -------------------
 
 // Guard for SDL initialization
 class SDLInitGuard {
@@ -426,11 +426,8 @@ public:
     }
 };
 
-// -------------------------- Main Application --------------------------
-
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
-// Main function for initializing and running the SDL application
 /**
  * @brief Main function for initializing and running the SDL application.
  * 
@@ -442,6 +439,7 @@ enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
  * @param argv The array of command-line arguments.
  * @return int Returns 0 on successful execution, or 1 on failure.
  */
+// -------------------------- Main Application --------------------------
 int main(int argc, char* argv[]) {
     // --------------- Load the configuration ----------------
     auto config = load_config("config.ini");
@@ -449,8 +447,8 @@ int main(int argc, char* argv[]) {
     // Assign VPX settings
     VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
     VPX_EXECUTABLE_CMD     = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
-    VPX_SUB_CMD            = "-Play"; // Not in config, use hardcoded default
-    VPX_START_ARGS         = get_string(config, "VPX", "StartArgs", "DRI_PRIME=1 gamemoderun");
+    VPX_SUB_CMD            = get_string(config, "Internal", "SubCmd", "-Play");
+    VPX_START_ARGS         = get_string(config, "VPX", "StartArgs", "");
     VPX_END_ARGS           = get_string(config, "VPX", "EndArgs", "");
 
     // Assign CustomMedia settings
@@ -471,7 +469,7 @@ int main(int argc, char* argv[]) {
     SECOND_WINDOW_HEIGHT   = get_int(config, "WindowSettings", "SecondHeight", 1024);
 
     // Assign Font settings
-    FONT_PATH              = get_string(config, "Font", "Path", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_PATH              = get_string(config, "Internal", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
     FONT_SIZE              = get_int(config, "Font", "Size", 28);
 
     // Assign MediaDimensions
@@ -482,18 +480,18 @@ int main(int argc, char* argv[]) {
     DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
     DMD_MEDIA_HEIGHT       = get_int(config, "MediaDimensions", "DmdHeight", 256);
 
-    // Set defaults for variables not in config.ini
-    DEFAULT_TABLE_IMAGE     = "img/default_table.png";
-    DEFAULT_BACKGLASS_IMAGE = "img/default_backglass.png";
-    DEFAULT_DMD_IMAGE       = "img/default_dmd.png";
-    DEFAULT_WHEEL_IMAGE     = "img/default_wheel.png";
-    DEFAULT_TABLE_VIDEO     = "img/default_table.mp4";
-    DEFAULT_BACKGLASS_VIDEO = "img/default_backglass.mp4";
-    DEFAULT_DMD_VIDEO       = "img/default_dmd.mp4";
-    FADE_DURATION_MS        = 250;
-    FADE_TARGET_ALPHA       = 128;
-    TABLE_CHANGE_SOUND      = "snd/table_change.mp3";
-    TABLE_LOAD_SOUND        = "snd/table_load.mp3";
+    // Set defaults for variables
+    DEFAULT_TABLE_IMAGE     = get_string(config, "Internal", "DefaultTableImage", "img/default_table.png");
+    DEFAULT_BACKGLASS_IMAGE = get_string(config, "Internal", "DefaultBackglassImage", "img/default_backglass.png");
+    DEFAULT_DMD_IMAGE       = get_string(config, "Internal", "DefaultDmdImage", "img/default_dmd.png");
+    DEFAULT_WHEEL_IMAGE     = get_string(config, "Internal", "DefaultWheelImage", "img/default_wheel.png");
+    DEFAULT_TABLE_VIDEO     = get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
+    DEFAULT_BACKGLASS_VIDEO = get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
+    DEFAULT_DMD_VIDEO       = get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
+    FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 250);
+    FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 128));
+    TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
+    TABLE_LOAD_SOUND        = get_string(config, "Internal", "TableLoadSound", "snd/table_load.mp3");
 
 // ------------------ Initialization ------------------
 
@@ -579,18 +577,25 @@ int main(int argc, char* argv[]) {
 
     // ------------------ Texture and State Variables ------------------
 
+    // Index of the currently selected table
     size_t currentIndex = 0;
-    SDL_Texture* tableTexture = nullptr;
-    SDL_Texture* wheelTexture = nullptr;
-    SDL_Texture* backglassTexture = nullptr;
-    SDL_Texture* dmdTexture = nullptr;
-    SDL_Texture* tableNameTexture = nullptr;
+
+    // SDL textures for rendering images and videos
+    SDL_Texture* tableTexture = nullptr;       // Texture for the table playfield image or video
+    SDL_Texture* wheelTexture = nullptr;       // Texture for the wheel image
+    SDL_Texture* backglassTexture = nullptr;   // Texture for the backglass image or video
+    SDL_Texture* dmdTexture = nullptr;         // Texture for the DMD image or video
+    SDL_Texture* tableNameTexture = nullptr;   // Texture for rendering the table name text
+
+    // Rectangle to define the position and size of the table name text
     SDL_Rect tableNameRect = {0, 0, 0, 0};
 
+    // VLC media player instances for table, backglass, and DMD videos
     libvlc_media_player_t* tableVideoPlayer = nullptr;
     libvlc_media_player_t* backglassVideoPlayer = nullptr;
     libvlc_media_player_t* dmdVideoPlayer = nullptr;
 
+    // Video context structures to hold rendering data for table, backglass, and DMD videos
     VideoContext tableVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext backglassVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
     VideoContext dmdVideoCtx = {nullptr, nullptr, 0, nullptr, 0, 0, false};
@@ -607,7 +612,8 @@ int main(int argc, char* argv[]) {
         if (dmdTexture)       { SDL_DestroyTexture(dmdTexture); dmdTexture = nullptr; }
         if (tableNameTexture) { SDL_DestroyTexture(tableNameTexture); tableNameTexture = nullptr; }
 
-        const Table &tbl = tables[currentIndex];
+        // Start Loading
+        const Table &tbl = tables[currentIndex]; // Structure to hold information about each pinball table
 
         if (!tbl.tableVideo.empty()) {
             tableVideoPlayer = setupVideoPlayer(vlcInstance.get(), primaryRenderer.get(), 
