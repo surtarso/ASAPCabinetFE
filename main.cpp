@@ -37,20 +37,20 @@ namespace fs = std::filesystem; // Alias for filesystem lib
 
 // ------------------ Configuration Constants ------------------
 
-// Configuration Variables (Not in config.ini = set default later)
+// Configuration Variables
 std::string VPX_TABLES_PATH;
 std::string VPX_EXECUTABLE_CMD;
-std::string VPX_SUB_CMD;             // Not in config.ini
+std::string VPX_SUB_CMD;             
 std::string VPX_START_ARGS;
 std::string VPX_END_ARGS;
 
-std::string DEFAULT_TABLE_IMAGE;     // Not in config.ini
-std::string DEFAULT_BACKGLASS_IMAGE; // Not in config.ini
-std::string DEFAULT_DMD_IMAGE;       // Not in config.ini
-std::string DEFAULT_WHEEL_IMAGE;     // Not in config.ini
-std::string DEFAULT_TABLE_VIDEO;     // Not in config.ini
-std::string DEFAULT_BACKGLASS_VIDEO; // Not in config.ini
-std::string DEFAULT_DMD_VIDEO;       // Not in config.ini
+std::string DEFAULT_TABLE_IMAGE;     
+std::string DEFAULT_BACKGLASS_IMAGE; 
+std::string DEFAULT_DMD_IMAGE;       
+std::string DEFAULT_WHEEL_IMAGE;     
+std::string DEFAULT_TABLE_VIDEO;     
+std::string DEFAULT_BACKGLASS_VIDEO; 
+std::string DEFAULT_DMD_VIDEO;       
 
 std::string CUSTOM_TABLE_IMAGE;
 std::string CUSTOM_BACKGLASS_IMAGE;
@@ -76,10 +76,10 @@ int BACKGLASS_MEDIA_HEIGHT;
 int DMD_MEDIA_WIDTH;
 int DMD_MEDIA_HEIGHT;
 
-int FADE_DURATION_MS;               // Not in config.ini
-Uint8 FADE_TARGET_ALPHA;            // Not in config.ini
-std::string TABLE_CHANGE_SOUND;     // Not in config.ini
-std::string TABLE_LOAD_SOUND;       // Not in config.ini
+int FADE_DURATION_MS;               
+Uint8 FADE_TARGET_ALPHA;            
+std::string TABLE_CHANGE_SOUND;     
+std::string TABLE_LOAD_SOUND;       
 
 // ------------------ Data Structures ------------------
 
@@ -222,8 +222,6 @@ void cleanupVideoContext(VideoContext& ctx, libvlc_media_player_t*& player) {
 }
 
 /**
- * @brief Sets up a video player using libVLC and SDL.
- * 
  * This function initializes a video player with the given VLC instance and SDL renderer, 
  * loads the specified video file, and prepares the video context for rendering.
  * 
@@ -441,7 +439,7 @@ enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
  */
 // -------------------------- Main Application --------------------------
 int main(int argc, char* argv[]) {
-    // --------------- Load the configuration ----------------
+    // --------------- Load the configuration from config.ini ----------------
     auto config = load_config("config.ini");
 
     // Assign VPX settings
