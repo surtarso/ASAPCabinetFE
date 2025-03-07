@@ -10,6 +10,27 @@ struct ConfigSection {
     std::map<std::string, std::string> keyValues; // Key-value pairs
 };
 
+/**
+ * @class IniEditor
+ * @brief A class to edit INI configuration files with a graphical user interface using SDL2.
+ *
+ * The IniEditor class provides a graphical interface for editing INI configuration files.
+ * It uses SDL2 for rendering the UI and handling events, and SDL_ttf for text rendering.
+ *
+ * @details
+ * The class supports loading and saving INI files, displaying sections and key-value pairs,
+ * and providing tooltips for explanations of each configuration key. The user can interact
+ * with the UI to select sections, edit values, and save changes.
+ *
+ * @note
+ * - The class requires SDL2 and SDL_ttf libraries.
+ * - The font file path is hardcoded to "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf".
+ * - The class assumes a specific window size and layout for the UI elements.
+ *
+ * @example
+ * IniEditor editor("config.ini");
+ * editor.run();
+ */
 class IniEditor {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -105,69 +126,69 @@ public:
 
 private:
     void loadIniFile(const std::string& filename) {
-        std::ifstream file(filename);
+        std::ifstream file(filename); // Open the INI file
         if (!file.is_open()) {
-            std::cerr << "Failed to open " << filename << std::endl;
+            std::cerr << "Failed to open " << filename << std::endl; // Error if file cannot be opened
             return;
         }
         std::string line;
         while (std::getline(file, line)) {
             line.erase(0, line.find_first_not_of(" \t")); // Trim leading whitespace
             if (line.empty() || line[0] == ';') continue; // Skip comments/blank lines
-            if (line[0] == '[' && line.back() == ']') {
-                currentSection = line.substr(1, line.size() - 2);
-                sections.push_back(currentSection);
-                iniData[currentSection] = ConfigSection();
-            } else if (!currentSection.empty() && line.find('=') != std::string::npos) {
-                auto pos = line.find('=');
-                std::string key = line.substr(0, pos);
-                std::string value = line.substr(pos + 1);
-                key.erase(key.find_last_not_of(" \t") + 1); // Trim trailing whitespace
-                value.erase(0, value.find_first_not_of(" \t")); // Trim leading whitespace
-                iniData[currentSection].keyValues[key] = value;
+            if (line[0] == '[' && line.back() == ']') { // Section header
+                currentSection = line.substr(1, line.size() - 2); // Extract section name
+                sections.push_back(currentSection); // Add section to list
+                iniData[currentSection] = ConfigSection(); // Initialize section in map
+            } else if (!currentSection.empty() && line.find('=') != std::string::npos) { // Key-value pair
+                auto pos = line.find('='); // Find '=' character
+                std::string key = line.substr(0, pos); // Extract key
+                std::string value = line.substr(pos + 1); // Extract value
+                key.erase(key.find_last_not_of(" \t") + 1); // Trim trailing whitespace from key
+                value.erase(0, value.find_first_not_of(" \t")); // Trim leading whitespace from value
+                iniData[currentSection].keyValues[key] = value; // Store key-value pair in current section
             }
         }
-        file.close();
+        file.close(); // Close the file
     }
 
     void saveIniFile(const std::string& filename) {
-        std::vector<std::string> lines;
-        std::ifstream inFile(filename);
-        if (!inFile.is_open()) {
+        std::vector<std::string> lines; // Vector to store lines of the file
+        std::ifstream inFile(filename); // Open the file for reading
+        if (!inFile.is_open()) { // Check if the file is opened successfully
             std::cerr << "Failed to read " << filename << " for saving" << std::endl;
             return;
         }
-        std::string line, currentSection;
-        while (std::getline(inFile, line)) {
-            std::string trimmed = line;
-            trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-            if (trimmed.empty() || trimmed[0] == ';') {
-                lines.push_back(line);
-            } else if (trimmed[0] == '[' && trimmed.back() == ']') {
-                currentSection = trimmed.substr(1, trimmed.size() - 2);
-                lines.push_back(line);
-            } else if (!currentSection.empty() && line.find('=') != std::string::npos) {
-                auto pos = line.find('=');
-                std::string key = line.substr(0, pos);
-                key.erase(key.find_last_not_of(" \t") + 1);
-                if (iniData[currentSection].keyValues.count(key)) {
-                    lines.push_back(key + " = " + iniData[currentSection].keyValues[key]);
+        std::string line, currentSection; // Variables to store current line and section
+        while (std::getline(inFile, line)) { // Read the file line by line
+            std::string trimmed = line; // Copy the line to a new string
+            trimmed.erase(0, trimmed.find_first_not_of(" \t")); // Trim leading whitespace
+            if (trimmed.empty() || trimmed[0] == ';') { // Check if the line is empty or a comment
+                lines.push_back(line); // Add the line to the vector
+            } else if (trimmed[0] == '[' && trimmed.back() == ']') { // Check if the line is a section header
+                currentSection = trimmed.substr(1, trimmed.size() - 2); // Extract the section name
+                lines.push_back(line); // Add the section header to the vector
+            } else if (!currentSection.empty() && line.find('=') != std::string::npos) { // Check if the line is a key-value pair
+                auto pos = line.find('='); // Find the position of '='
+                std::string key = line.substr(0, pos); // Extract the key
+                key.erase(key.find_last_not_of(" \t") + 1); // Trim trailing whitespace from the key
+                if (iniData[currentSection].keyValues.count(key)) { // Check if the key exists in the current section
+                    lines.push_back(key + " = " + iniData[currentSection].keyValues[key]); // Add the updated key-value pair to the vector
                 } else {
-                    lines.push_back(line);
+                    lines.push_back(line); // Add the original line to the vector
                 }
             } else {
-                lines.push_back(line);
+                lines.push_back(line); // Add the line to the vector
             }
         }
-        inFile.close();
+        inFile.close(); // Close the input file
 
-        std::ofstream outFile(filename);
-        if (!outFile.is_open()) {
+        std::ofstream outFile(filename); // Open the file for writing
+        if (!outFile.is_open()) { // Check if the file is opened successfully
             std::cerr << "Failed to write " << filename << std::endl;
             return;
         }
-        for (const auto& l : lines) outFile << l << "\n";
-        outFile.close();
+        for (const auto& l : lines) outFile << l << "\n"; // Write each line to the output file
+        outFile.close(); // Close the output file
     }
 
     void initExplanations() {
@@ -340,10 +361,10 @@ private:
             for (size_t i = 0; i < sections.size(); ++i) {
                 if (static_cast<int>(i) == dropdownHoverIndex) {
                     SDL_Rect highlight = {10, y, 190, 20};
-                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Highlight color
                     SDL_RenderFillRect(renderer, &highlight);
                 }
-                renderText(sections[i], 15, y);
+                renderText(sections[i], 15, y); // Render section name
                 y += 20;
             }
         }
@@ -352,18 +373,18 @@ private:
         int y = 50;
         if (iniData.count(currentSection)) { // Check if section exists
             for (const auto& [key, value] : iniData[currentSection].keyValues) {
-                if (y + 20 - scrollOffset < 40 || y - scrollOffset > 400) {
+                if (y + 20 - scrollOffset < 40 || y - scrollOffset > 400) { // Skip rendering if out of view
                     y += 30;
                     continue;
                 }
-                renderText(key, 10, y - scrollOffset);
+                renderText(key, 10, y - scrollOffset); // Render key
                 if (key == activeField) {
                     SDL_Rect fieldRect = {150, y - scrollOffset, 300, 20};
-                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Active field color
                     SDL_RenderFillRect(renderer, &fieldRect);
                 }
-                renderText(value, 150, y - scrollOffset);
-                if (explanations.count(key)) renderText("?", 120, y - scrollOffset);
+                renderText(value, 150, y - scrollOffset); // Render value
+                if (explanations.count(key)) renderText("?", 120, y - scrollOffset); // Render tooltip indicator
                 y += 30;
             }
         }
@@ -371,16 +392,16 @@ private:
         // Render Save/Exit buttons
         SDL_Rect saveBtn = {10, 360, 55, 25};
         SDL_Rect exitBtn = {75, 360, 55, 25};
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Button color
         SDL_RenderFillRect(renderer, &saveBtn);
         SDL_RenderFillRect(renderer, &exitBtn);
-        renderText("Save", 20, 365);
-        renderText("Exit", 90, 365);
+        renderText("Save", 20, 365); // Render Save button text
+        renderText("Exit", 90, 365); // Render Exit button text
 
         // Render tooltip
         if (!tooltipKey.empty() && explanations.count(tooltipKey)) {
             SDL_Rect tooltipRect = {150, 50, 300, 100};
-            SDL_SetRenderDrawColor(renderer, 240, 240, 200, 255);
+            SDL_SetRenderDrawColor(renderer, 240, 240, 200, 255); // Tooltip background color
             SDL_RenderFillRect(renderer, &tooltipRect);
             std::string text = explanations[tooltipKey];
             int y = 55;
@@ -389,33 +410,33 @@ private:
                 size_t next = text.find('\n', pos);
                 if (next == std::string::npos) next = text.length();
                 std::string line = text.substr(pos, next - pos);
-                renderText(line, 155, y);
+                renderText(line, 155, y); // Render tooltip text line by line
                 y += 20;
                 pos = next + 1;
             }
         }
 
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer); // Present the rendered frame
     }
 
     void renderText(const std::string& text, int x, int y) {
-        if (!font || text.empty()) return;
-        SDL_Color color = {0, 0, 0, 255}; // Black
-        SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+        if (!font || text.empty()) return; // Check if font is loaded and text is not empty
+        SDL_Color color = {0, 0, 0, 255}; // Black color for text
+        SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color); // Render text to surface
         if (!surface) {
-            std::cerr << "TTF_RenderText_Solid failed: " << TTF_GetError() << std::endl;
+            std::cerr << "TTF_RenderText_Solid failed: " << TTF_GetError() << std::endl; // Error handling
             return;
         }
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); // Create texture from surface
         if (!texture) {
-            std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << std::endl;
-            SDL_FreeSurface(surface);
+            std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << std::endl; // Error handling
+            SDL_FreeSurface(surface); // Free surface if texture creation fails
             return;
         }
-        SDL_Rect dst = {x, y, surface->w, surface->h};
-        SDL_RenderCopy(renderer, texture, nullptr, &dst);
-        SDL_FreeSurface(surface);
-        SDL_DestroyTexture(texture);
+        SDL_Rect dst = {x, y, surface->w, surface->h}; // Destination rectangle for rendering
+        SDL_RenderCopy(renderer, texture, nullptr, &dst); // Copy texture to renderer
+        SDL_FreeSurface(surface); // Free the surface
+        SDL_DestroyTexture(texture); // Destroy the texture
     }
 };
 
