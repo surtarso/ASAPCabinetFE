@@ -33,6 +33,7 @@
 #include <fstream>      // For file I/O operations
 #include <map>          // For std::map container
 #include <memory>       // For std::unique_ptr
+#include <cctype>       // for toupper
 
 
 namespace fs = std::filesystem; // Alias for filesystem lib
@@ -101,6 +102,8 @@ struct Table {
     std::string dmdVideo;        // Path to the DMD video
 };
 
+std::map<char, int> letterIndex; // Declare letterIndex
+
 // Structure to hold video context information for VLC video playback
 struct VideoContext {
     SDL_Texture* texture;  // SDL texture to render the video frame
@@ -165,6 +168,16 @@ std::vector<Table> loadTableList() {
     std::sort(tables.begin(), tables.end(), [](const Table &a, const Table &b) {
         return a.tableName < b.tableName;
     });
+
+    // Build the letter index after loading and sorting
+    letterIndex.clear(); // Clear the map before building it.
+    for (int i = 0; i < tables.size(); ++i) {
+        char firstLetter = toupper(tables[i].tableName[0]);
+        if (letterIndex.find(firstLetter) == letterIndex.end()) {
+            letterIndex[firstLetter] = i;
+        }
+    }
+
     return tables;
 }
 
@@ -800,6 +813,7 @@ int main(int argc, char* argv[]) {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
+                // Left in 1's
                 if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -809,6 +823,7 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Left in 10's
                 else if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_LCTRL) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -818,6 +833,7 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Right in 1's
                 else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -827,6 +843,7 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Right in 10's
                 else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_RCTRL) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
                     if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
@@ -836,10 +853,74 @@ int main(int argc, char* argv[]) {
                     transitionState = TransitionState::FADING_OUT;
                     transitionStartTime = SDL_GetTicks();
                 }
+                // Letter Navigation (Left)
+                else if (event.key.keysym.sym == SDLK_SLASH) { // 'z' key (swapped as you mentioned)
+                    char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                    char nextLetter = currentLetter + 1;
+                    bool found = false;
+                
+                    for (; nextLetter <= 'Z'; ++nextLetter) {
+                        if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                            currentIndex = letterIndex[nextLetter];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) { // Wrap around
+                        for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
+                            if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                                currentIndex = letterIndex[nextLetter];
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) {
+                        if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
+                        if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
+                        if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
+                        if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
+                        transitionState = TransitionState::FADING_OUT;
+                        transitionStartTime = SDL_GetTicks();
+                    }
+                }
+                // Letter Navigation (Right)
+                else if (event.key.keysym.sym == SDLK_z) { // '/' key (swapped as you mentioned)
+                    char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                    char prevLetter = currentLetter - 1;
+                    bool found = false;
+                
+                    for (; prevLetter >= 'A'; --prevLetter) {
+                        if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                            currentIndex = letterIndex[prevLetter];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) { // Wrap around
+                        for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
+                            if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                                currentIndex = letterIndex[prevLetter];
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) {
+                        if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
+                        if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
+                        if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
+                        if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
+                        transitionState = TransitionState::FADING_OUT;
+                        transitionStartTime = SDL_GetTicks();
+                    }
+                }
+                // Launch Table
                 else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
                     if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
                     launchTable(tables[currentIndex]);
                 }
+                // Quit
                 else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                     quit = true;
                 }
