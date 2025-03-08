@@ -51,6 +51,22 @@ g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lS
 - Open **config.ini** and set your own paths.
 - Run `./ASAPCabinetFE`
 
+### Keymap (not yet configurable)
+
+| Action             | Key Combination | Description                               |
+|--------------------|-----------------|-------------------------------------------|
+| Scroll Table (One) | Left/Right Shift | Move to the previous/next table.         |
+| Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.           |
+| Scroll by Letter   | Z and /         | Scroll tables alphabetically (previous/next). |
+| Launch Table       | Enter           | Open the selected table.                 |
+| Quit               | ESC/q           | Exit the table navigation/application.   |
+
+## Generator tools:
+
+These will record your screen to create media for the front end. PNG's or MP4's will be saved to where you configure in config.ini
+
+Run them without args for help.
+
 ## Contribute
 
 Contributions are very welcome. Feel free to open issues and pull requests.
