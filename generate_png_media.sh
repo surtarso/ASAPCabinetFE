@@ -59,14 +59,14 @@ if [[ -f "$CONFIG_FILE" ]]; then
     WHEEL_IMAGE=$(get_ini_value "CustomMedia" "WheelImage")
     echo "WHEEL_IMAGE: $WHEEL_IMAGE"
     
-    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
-    echo "DMD_VIDEO: $DMD_VIDEO"
+    DMD_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
+    echo "DMD_IMAGE: $DMD_IMAGE"
     
-    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
-    echo "BACKGLASS_VIDEO: $BACKGLASS_VIDEO"
+    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
+    echo "BACKGLASS_IMAGE: $BACKGLASS_IMAGE"
     
-    TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
-    echo "TABLE_VIDEO: $TABLE_VIDEO"
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
+    echo "TABLE_IMAGE: $TABLE_IMAGE"
 else
     echo "ERROR: config.ini not found. Exiting..."
     exit 1
@@ -190,17 +190,8 @@ while [ "$#" -gt 0 ]; do
             exit 0
             ;;
         --clean|-c)
-            echo -e "${BLUE}Cleaning table.png and backglass.png images created by this script...${NC}"
-            for vpx_file in "$ROOT_FOLDER"/*/*.vpx; do
-                if [ -f "$vpx_file" ]; then
-                    table_dir=$(dirname "$vpx_file")
-                    images_dir="$table_dir/images"
-                    if [ -d "$images_dir" ]; then
-                        [ -f "$images_dir/table.png" ] && rm -f "$images_dir/table.png" && echo -e "${GREEN}Removed: $images_dir/table.png${NC}"
-                        [ -f "$images_dir/backglass.png" ] && rm -f "$images_dir/backglass.png" && echo -e "${GREEN}Removed: $images_dir/backglass.png${NC}"
-                    fi
-                fi
-            done
+            echo -e "${RED}Removing all table and backglass PNG files from all tables...${NC}"
+            find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_IMAGE")" -o -name "$(basename "$BACKGLASS_IMAGE")" \) -exec rm -v {} \;
             echo -e "${GREEN}Clean operation completed.${NC}"
             exit 0
             ;;
