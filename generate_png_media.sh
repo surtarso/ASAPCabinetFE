@@ -32,20 +32,43 @@ CONFIG_FILE="config.ini"
 
 # Function to get values from INI file
 get_ini_value() {
-    local key=$1
-    grep -oP "(?<=^$key=).*" "$CONFIG_FILE" | tr -d '[:space:]'
+    local section="$1"
+    local key="$2"
+    local value
+
+    echo "Searching for [$section] -> $key in $CONFIG_FILE" >&2  # Debugging output
+
+    value=$(awk -F= -v section="$section" -v key="$key" '
+        BEGIN { inside_section=0 }
+        /^\[.*\]$/ { inside_section=($0 == "[" section "]") }
+        inside_section && $1 ~ "^[ \t]*" key "[ \t]*$" { gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/\r/, "", $2); print $2; exit }
+    ' "$CONFIG_FILE")
+
+    echo "Found value: '$value'" >&2  # Debugging output
+    echo "$value"
 }
 
 # Load values from config.ini
 if [[ -f "$CONFIG_FILE" ]]; then
-    ROOT_FOLDER=$(get_ini_value "TablesPath")
-    VPX_EXECUTABLE=$(get_ini_value "ExecutableCmd")
-    WHEEL_IMAGE=$(get_ini_value "WheelImage")
-    DMD_IMAGE=$(get_ini_value "DmdImage")
-    BACKGLASS_IMAGE=$(get_ini_value "BackglassImage")
-    TABLE_IMAGE=$(get_ini_value "TableImage")
+    ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
+    echo "ROOT_FOLDER: $ROOT_FOLDER"
+    
+    VPX_EXECUTABLE=$(get_ini_value "VPX" "ExecutableCmd")
+    echo "VPX_EXECUTABLE: $VPX_EXECUTABLE"
+
+    WHEEL_IMAGE=$(get_ini_value "CustomMedia" "WheelImage")
+    echo "WHEEL_IMAGE: $WHEEL_IMAGE"
+    
+    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
+    echo "DMD_VIDEO: $DMD_VIDEO"
+    
+    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
+    echo "BACKGLASS_VIDEO: $BACKGLASS_VIDEO"
+    
+    TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
+    echo "TABLE_VIDEO: $TABLE_VIDEO"
 else
-    echo "${RED}ERROR: config.ini not found. Exiting...${NC}"
+    echo "ERROR: config.ini not found. Exiting..."
     exit 1
 fi
 
