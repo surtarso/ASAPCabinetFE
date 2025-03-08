@@ -259,8 +259,8 @@ fi
 # Clean mode: Remove generated MP4 videos.
 # -----------------------------------------------------------------------------
 if [ "$MODE" == "clean" ]; then
-    echo -e "${YELLOW}Cleaning all table and backglass MP4 files from all tables...${NC}"
-    find "$ROOT_FOLDER" -type f \( -name "table.mp4" -o -name "backglass.mp4" \) -exec rm -v {} \;
+    echo -e "${RED}Removing all table and backglass MP4 files from all tables...${NC}"
+    find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_VIDEO")" -o -name "$(basename "$BACKGLASS_VIDEO")" \) -exec rm -v {} \;
     exit 0
 fi
 
