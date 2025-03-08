@@ -10,5 +10,10 @@ UI:
 - add blinking arrows on sides to indicate table flow/keys
 - add splash screen on start?
 
+Tools:
+- count items on --lists
+- add 'none found' message to --lists
+- add dmd recording
+
 On hold:
 - create default videos
