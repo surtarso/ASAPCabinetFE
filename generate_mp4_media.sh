@@ -70,6 +70,9 @@ if [[ -f "$CONFIG_FILE" ]]; then
     
     TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
     echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
+
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
+    echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
 else
     echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
     exit 1
@@ -143,6 +146,22 @@ capture_window_to_mp4() {
         # Capture a screenshot of the window
         import -window "$WINDOW_ID" "$FRAME_FILE"
         sleep "$FRAME_INTERVAL"
+
+        # Save the middle frame with the same base name as OUTPUT_FILE
+        
+        if [[ $i -eq $((FRAME_COUNT / 2)) ]]; then
+            local BASE_NAME
+            local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
+            local IMAGE_DIR
+            local IMAGE_DIR=$(dirname "$TABLE_IMAGE")
+            mkdir -p "$IMAGE_DIR"  # Ensure the directory exists
+            cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png"
+            if [[ $? -ne 0 ]]; then
+                echo "${RED}Error: Failed to copy frame to ${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png${NC}" >&2
+            else
+                echo -e "Frame saved to ${GREEN}${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png${NC}"
+            fi
+        fi
     done
 
     # Assemble the screenshots into an MP4 video using ffmpeg
