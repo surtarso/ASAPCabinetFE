@@ -35,7 +35,6 @@
 #include <memory>       // For std::unique_ptr
 #include <cctype>       // for toupper
 
-
 namespace fs = std::filesystem; // Alias for filesystem lib
 
 // -------------------------------------------------------------
@@ -557,6 +556,7 @@ public:
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
 
+
 /** ------------------------------------------------------------------------------------
  * @brief Main loop of the application.
  * -------------------------------------------------------------------------------------
@@ -620,8 +620,8 @@ int main(int argc, char* argv[]) {
     DEFAULT_TABLE_VIDEO     = get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
     DEFAULT_BACKGLASS_VIDEO = get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
     DEFAULT_DMD_VIDEO       = get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
-    FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 250);
-    FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 128));
+    FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 1);
+    FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 255));
     TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
     TABLE_LOAD_SOUND        = get_string(config, "Internal", "TableLoadSound", "snd/table_load.mp3");
 
@@ -803,7 +803,15 @@ int main(int argc, char* argv[]) {
     Uint32 transitionStartTime = 0; // Timestamp when the transition started
     bool quit = false; // Flag to indicate if the application should quit
     SDL_Event event; // SDL event structure to handle events
-
+    
+    auto performTableTransition = [&]() {
+        if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
+        if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
+        if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
+        if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
+        transitionState = TransitionState::FADING_OUT;
+        transitionStartTime = SDL_GetTicks();
+    };
     //--------------------------------------------------------------------------
     // ------------------------------ Main loop --------------------------------
     while (!quit) {
@@ -812,56 +820,49 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT) {
                 quit = true;
             }
-            else if (event.type == SDL_KEYDOWN) { //# && transitionState == TransitionState::IDLE) {
+            else if (event.type == SDL_KEYDOWN) {
                 // Left in 1's
                 if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
-                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                    currentIndex = (currentIndex + tables.size() - 1) % tables.size();
-                    transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
+                    int newIndex = (currentIndex + tables.size() - 1) % tables.size();
+                    if (newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
+                    }
                 }
                 // Left in 10's
                 else if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_LCTRL) {
-                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                    currentIndex = (currentIndex + tables.size() - 10) % tables.size();
-                    transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
+                    int newIndex = (currentIndex + tables.size() - 10) % tables.size();
+                    if (newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
+                    }
                 }
                 // Right in 1's
                 else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_RSHIFT) {
-                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                    currentIndex = (currentIndex + 1) % tables.size();
-                    transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
+                    int newIndex = (currentIndex + 1) % tables.size();
+                    if (newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
+                    }
                 }
                 // Right in 10's
                 else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_RCTRL) {
-                    if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                    if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                    if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                    if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                    currentIndex = (currentIndex + 10) % tables.size();
-                    transitionState = TransitionState::FADING_OUT;
-                    transitionStartTime = SDL_GetTicks();
+                    int newIndex = (currentIndex + 10) % tables.size();
+                    if (newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
+                    }
                 }
-                // Letter Navigation (Left)
-                else if (event.key.keysym.sym == SDLK_SLASH) { // 'z' key (swapped as you mentioned)
+                // Letter Navigation (Next)
+                else if (event.key.keysym.sym == SDLK_SLASH) { // 'z' key
                     char currentLetter = toupper(tables[currentIndex].tableName[0]);
                     char nextLetter = currentLetter + 1;
                     bool found = false;
-                
+                    int newIndex = currentIndex;
+
                     for (; nextLetter <= 'Z'; ++nextLetter) {
                         if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                            currentIndex = letterIndex[nextLetter];
+                            newIndex = letterIndex[nextLetter];
                             found = true;
                             break;
                         }
@@ -869,30 +870,27 @@ int main(int argc, char* argv[]) {
                     if (!found) { // Wrap around
                         for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
                             if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                                currentIndex = letterIndex[nextLetter];
+                                newIndex = letterIndex[nextLetter];
                                 found = true;
                                 break;
                             }
                         }
                     }
-                    if (found) {
-                        if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                        if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                        if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                        if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                        transitionState = TransitionState::FADING_OUT;
-                        transitionStartTime = SDL_GetTicks();
+                    if (found && newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
                     }
                 }
-                // Letter Navigation (Right)
-                else if (event.key.keysym.sym == SDLK_z) { // '/' key (swapped as you mentioned)
+                // Letter Navigation (Previous)
+                else if (event.key.keysym.sym == SDLK_z) { // '/' key
                     char currentLetter = toupper(tables[currentIndex].tableName[0]);
                     char prevLetter = currentLetter - 1;
                     bool found = false;
-                
+                    int newIndex = currentIndex;
+
                     for (; prevLetter >= 'A'; --prevLetter) {
                         if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                            currentIndex = letterIndex[prevLetter];
+                            newIndex = letterIndex[prevLetter];
                             found = true;
                             break;
                         }
@@ -900,19 +898,15 @@ int main(int argc, char* argv[]) {
                     if (!found) { // Wrap around
                         for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
                             if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                                currentIndex = letterIndex[prevLetter];
+                                newIndex = letterIndex[prevLetter];
                                 found = true;
                                 break;
                             }
                         }
                     }
-                    if (found) {
-                        if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
-                        if (backglassVideoPlayer) libvlc_media_player_stop(backglassVideoPlayer);
-                        if (dmdVideoPlayer) libvlc_media_player_stop(dmdVideoPlayer);
-                        if (tableChangeSound) Mix_PlayChannel(-1, tableChangeSound.get(), 0);
-                        transitionState = TransitionState::FADING_OUT;
-                        transitionStartTime = SDL_GetTicks();
+                    if (found && newIndex != currentIndex) {
+                        performTableTransition();
+                        currentIndex = newIndex;
                     }
                 }
                 // Launch Table
