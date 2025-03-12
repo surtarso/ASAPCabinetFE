@@ -812,7 +812,7 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT) {
                 quit = true;
             }
-            else if (event.type == SDL_KEYDOWN && transitionState == TransitionState::IDLE) {
+            else if (event.type == SDL_KEYDOWN) { //# && transitionState == TransitionState::IDLE) {
                 // Left in 1's
                 if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_LSHIFT) {
                     if (tableVideoPlayer) libvlc_media_player_stop(tableVideoPlayer);
