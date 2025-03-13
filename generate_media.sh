@@ -12,12 +12,7 @@
 #                          Optionally provide a specific table path.
 #   --backglass-only, -b   Capture only the backglass window media.
 #                          Optionally provide a specific table path.
-#   --dry-run              Simulate --now mode, printing actions without executing them
-#   --tables               List tables missing 'table.mp4' videos and exit.
-#   --backglass            List tables missing 'backglass.mp4' videos and exit.
-#   --dmd                  List tables missing 'dmd.mp4' videos and exit.
 #   --force                Force rebuilding media even if they already exist.
-#   --clean                Removes all MP4 videos (created by this script).
 #   -h, --help             Show this help message and exit
 #
 # Dependencies: xdotool, ImageMagick, ffmpeg
@@ -36,7 +31,6 @@ NC="\033[0m"  # No Color
 CONFIG_FILE="config.ini"
 
 # Function to get values from INI file
-echo -e "${BLUE}Initializing variables...${NC}"
 get_ini_value() {
     local section="$1"
     local key="$2"
@@ -55,6 +49,8 @@ get_ini_value() {
 }
 
 # Load values from config.ini
+echo -e "${GREEN}Initializing variables...${NC}"
+echo -e "${RED}-------------------------------------------------------------${NC}"
 if [[ -f "$CONFIG_FILE" ]]; then
     ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
     echo -e "${YELLOW}ROOT_FOLDER: $ROOT_FOLDER${NC}"
@@ -62,8 +58,8 @@ if [[ -f "$CONFIG_FILE" ]]; then
     VPX_EXECUTABLE=$(get_ini_value "VPX" "ExecutableCmd")
     echo -e "${YELLOW}VPX_EXECUTABLE: $VPX_EXECUTABLE${NC}"
     
-    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
-    echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
+    # DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
+    # echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
     
     BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
     echo -e "${YELLOW}BACKGLASS_VIDEO: $BACKGLASS_VIDEO${NC}"
@@ -71,13 +67,15 @@ if [[ -f "$CONFIG_FILE" ]]; then
     TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
     echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
 
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
-    echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
+    IMAGES_DIR=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
+    echo -e "${YELLOW}IMAGES_DIR: $(dirname "$IMAGES_DIR")${NC}"
+
+    echo -e "${RED}-------------------------------------------------------------${NC}"
 else
     echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
+    echo -e "${RED}-------------------------------------------------------------${NC}"
     exit 1
 fi
-
 
 # ---------------------------------------------------------------------------
 # Configuration variables
@@ -152,14 +150,12 @@ capture_window_to_mp4() {
         if [[ $i -eq $((FRAME_COUNT / 2)) ]]; then
             local BASE_NAME
             local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
-            local IMAGE_DIR
-            local IMAGE_DIR=$(dirname "$TABLE_IMAGE")
-            mkdir -p "$IMAGE_DIR"  # Ensure the directory exists
-            cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png"
+            mkdir -p "$IMAGES_DIR"  # Ensure the directory exists
+            cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
             if [[ $? -ne 0 ]]; then
-                echo "${RED}Error: Failed to copy frame to ${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png${NC}" >&2
+                echo "${RED}Error: Failed to copy frame to ${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png${NC}" >&2
             else
-                echo -e "Frame saved to ${GREEN}${TABLE_DIR}/${IMAGE_DIR}/${BASE_NAME}.png${NC}"
+                echo -e "Frame saved to ${GREEN}${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png${NC}"
             fi
         fi
     done
@@ -176,20 +172,14 @@ capture_window_to_mp4() {
 # Usage function
 # -----------------------------------------------------------------------------
 usage() {
-    echo -e "\nCreates ${GREEN}MP4 videos ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
-    echo -e "Opens all tables and captures playfield and backglass. Will also save a screenshot of each video."
+    echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
     echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
-    echo -e "${BLUE}Usage:${NC} $0 [${BLUE}--now${NC} | ${BLUE}--dry-run${NC} | ${BLUE}--tables-only${NC}|${BLUE}-t${NC} [<table_path>] | ${BLUE}--backglass-only${NC}|${BLUE}-b${NC} [<table_path>]] [${YELLOW}--dmd${NC}] [${RED}--force${NC}] [${RED}--clean${NC}]"
+    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--now${NC}|${BLUE}-n${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${RED}--force${NC}|${RED}-f${NC}]"
     echo ""
-    echo -e "  ${BLUE}--now, -n                Capture missing table and backglass videos"
-    echo -e "  ${BLUE}--tables-only, -t${NC}        Capture only missing table videos. Optionally provide a specific table path"
-    echo -e "  ${BLUE}--backglass-only, -b${NC}     Capture only missing backglass videos. Optionally provide a specific table path"
-    echo -e "  ${GREEN}--dry-run                Simulate --now mode, printing actions without executing them"
-    echo -e "  ${YELLOW}--table${NC}                  List tables missing table videos and exit"
-    echo -e "  ${YELLOW}--backglass${NC}              List tables missing backglass videos and exit"
-    echo -e "  ${YELLOW}--dmd${NC}                    List tables missing DMD videos and exit"
-    echo -e "  ${RED}--force, -f${NC}              Force rebuilding media even if they already exist"
-    echo -e "  ${RED}--clean, -c              Removes all MP4 videos created by this script"
+    echo -e "  ${BLUE}--now, -n                Capture missing table and backglass media"
+    echo -e "  ${YELLOW}--tables-only, -t        Capture only missing table videos. Optionally provide a specific table path"
+    echo -e "  ${YELLOW}--backglass-only, -b     Capture only missing backglass videos. Optionally provide a specific table path"
+    echo -e "  ${RED}--force, -f              Force rebuilding media even if they already exist"
     echo -e "\n  ${NC}-h, --help               Show this help message and exit"
     echo -e "\n${YELLOW}Note:${NC} No args shows this help."
     exit 1
@@ -201,7 +191,6 @@ usage() {
 MODE=""
 SPECIFIC_PATH=""
 FORCE="false"
-DRY_RUN="false"  # New flag for dry-run mode
 
 if [ "$#" -eq 0 ]; then
     usage
@@ -214,11 +203,6 @@ while [ "$#" -gt 0 ]; do
             ;;
         --now|-n)
             MODE="now"
-            shift
-            ;;
-        --dry-run)
-            MODE="now"
-            DRY_RUN="true"
             shift
             ;;
         --tables-only|-t)
@@ -245,30 +229,6 @@ while [ "$#" -gt 0 ]; do
             echo -e "${RED}Removing all table and backglass MP4 files from all tables...${NC}"
             find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_VIDEO")" -o -name "$(basename "$BACKGLASS_VIDEO")" \) -exec rm -v {} \;
             echo -e "${GREEN}Media removed.${NC}"
-            exit 0
-            ;;
-        --dmd|--tables|--backglass)
-            case "$1" in
-                --dmd) VIDEO_TYPE="$DMD_VIDEO" ;;
-                --tables) VIDEO_TYPE="$TABLE_VIDEO" ;;
-                --backglass) VIDEO_TYPE="$BACKGLASS_VIDEO" ;;
-            esac
-
-            echo -e "${BLUE}Using tables directory: ${GREEN}$ROOT_FOLDER"
-            echo -e "${BLUE}Checking for tables missing ${GREEN}<table_folder>/$VIDEO_TYPE...${NC}\n"
-
-            for vpx_file in "$ROOT_FOLDER"/*/*.vpx; do
-                if [ -f "$vpx_file" ]; then
-                    table_dir=$(dirname "$vpx_file")
-                    mp4_file="$table_dir/$VIDEO_TYPE"
-                    if [ ! -f "$mp4_file" ]; then
-                        echo -e "${GREEN}->${YELLOW} '$(basename "$table_dir")'${NC}"
-                    fi
-                fi
-            done
-
-            echo -e "\n${BLUE}These tables have ${RED}no <table_folder>/$VIDEO_TYPE${BLUE} videos.${NC}"
-            echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$VIDEO_TYPE${NC}"
             exit 0
             ;;
         *)
@@ -338,12 +298,7 @@ while IFS= read -r VPX_PATH <&3; do
     BACKGLASS_MEDIA_FILE="${TABLE_DIR}/${BACKGLASS_VIDEO}"
 
     echo -e "${BLUE}Processing: $(basename "$TABLE_DIR")${NC}"
-    
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${YELLOW}[DRY RUN] Would create directory: $VIDEO_FOLDER${NC}"
-    else
-        mkdir -p "$VIDEO_FOLDER"
-    fi
+    mkdir -p "$VIDEO_FOLDER"
 
     # Skip processing if media exists (unless forcing rebuild)
     if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
@@ -356,20 +311,6 @@ while IFS= read -r VPX_PATH <&3; do
     fi
     if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
         echo -e "${YELLOW}Backglass MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-        continue
-    fi
-
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${YELLOW}[DRY RUN] Would launch VPX for $(basename "$TABLE_DIR")${NC}"
-        echo -e "${YELLOW}[DRY RUN] Would wait $SCREENSHOT_DELAY seconds for windows to load${NC}"
-        
-        if [[ "$MODE" == "now" ]]; then
-            echo -e "${YELLOW}[DRY RUN] Would capture table window to: $TABLE_MEDIA_FILE${NC}"
-            echo -e "${YELLOW}[DRY RUN] Would capture backglass window to: $BACKGLASS_MEDIA_FILE${NC}"
-        fi
-        
-        echo -e "${YELLOW}[DRY RUN] Would terminate VPX process${NC}"
-        echo -e "${GREEN}[DRY RUN] Finished processing table: $TABLE_NAME${NC}"
         continue
     fi
 

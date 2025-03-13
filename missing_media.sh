@@ -7,6 +7,9 @@
 #   --backglass           List tables missing 'backglass.png' image and exit
 #   --wheel               List tables missing 'wheel.png' image and exit
 #   --marquee             List tables missing 'marquee.png' image and exit
+#   --playfield           List tables missing 'table.mp4' video and exit
+#   --b2s                 List tables missing 'backglass.mp4' video and exit
+#   --dmd                 List tables missing 'marquee.mp4' video and exit
 #   -h, --help            Show this help message and exit
 # ----------------------------------------------------------
 # Tarso Galvão Feb/2025
@@ -48,14 +51,24 @@ if [[ -f "$CONFIG_FILE" ]]; then
     WHEEL_IMAGE=$(get_ini_value "CustomMedia" "WheelImage")
     echo -e "${YELLOW}WHEEL_IMAGE: $WHEEL_IMAGE${NC}"
     
-    DMD_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
-    echo -e "${YELLOW}DMD_IMAGE: $DMD_IMAGE${NC}"
+    MARQUEE_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
+    echo -e "${YELLOW}MARQUEE_IMAGE: $MARQUEE_IMAGE${NC}"
     
     BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
     echo -e "${YELLOW}BACKGLASS_IMAGE: $BACKGLASS_IMAGE${NC}"
     
     TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
     echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
+
+    TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
+    echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
+
+    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
+    echo -e "${YELLOW}BACKGLASS_VIDEO: $BACKGLASS_VIDEO${NC}"
+
+    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
+    echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
+
     echo -e "${RED}-------------------------------------------------------------${NC}"
 else
     echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
@@ -68,10 +81,13 @@ fi
 show_help() {
   echo -e "${BLUE}Options:${NC}"
   echo ""
-  echo -e "  ${YELLOW}--table                  ${NC}List tables missing table images and exit"
-  echo -e "  ${YELLOW}--backglass              ${NC}List tables missing backglass images and exit"
-  echo -e "  ${YELLOW}--wheel                  ${NC}List tables missing wheel images and exit"
-  echo -e "  ${YELLOW}--marquee                ${NC}List tables missing dmd images and exit"
+  echo -e "  ${YELLOW}--table                  ${NC}List tables missing playfield ${YELLOW}images${NC} and exit"
+  echo -e "  ${YELLOW}--backglass              ${NC}List tables missing backglass ${YELLOW}images${NC} and exit"
+  echo -e "  ${YELLOW}--wheel                  ${NC}List tables missing wheel ${YELLOW}images${NC} and exit"
+  echo -e "  ${YELLOW}--marquee                ${NC}List tables missing marquee ${YELLOW}images${NC} and exit"
+  echo -e "  ${GREEN}--playfield              ${NC}List tables missing playfield ${GREEN}videos${NC} and exit"
+  echo -e "  ${GREEN}--b2s                    ${NC}List tables missing backglass ${GREEN}videos${NC} and exit"
+  echo -e "  ${GREEN}--dmd                    ${NC}List tables missing dmd ${GREEN}videos${NC} and exit"
   echo -e "\n  ${NC}-h, --help               Show this help message and exit"
   echo -e "\n${YELLOW}Note:${NC} No args shows this help."
   exit 0
@@ -90,7 +106,7 @@ while [ "$#" -gt 0 ]; do
         --wheel|--marquee|--table|--backglass)
             case "$1" in
                 --wheel) IMAGE_TYPE="$WHEEL_IMAGE" ;;
-                --marquee) IMAGE_TYPE="$DMD_IMAGE" ;;
+                --marquee) IMAGE_TYPE="$MARQUEE_IMAGE" ;;
                 --table) IMAGE_TYPE="$TABLE_IMAGE" ;;
                 --backglass) IMAGE_TYPE="$BACKGLASS_IMAGE" ;;
             esac
@@ -98,18 +114,58 @@ while [ "$#" -gt 0 ]; do
             echo -e "${BLUE}Using tables directory: ${GREEN}$ROOT_FOLDER"
             echo -e "${BLUE}Checking for tables missing ${GREEN}<table_folder>/$IMAGE_TYPE...${NC}\n"
 
+            missing_count=0
+
             for vpx_file in "$ROOT_FOLDER"/*/*.vpx; do
                 if [ -f "$vpx_file" ]; then
                     table_dir=$(dirname "$vpx_file")
                     image_file="$table_dir/$IMAGE_TYPE"
                     if [ ! -f "$image_file" ]; then
                         echo -e "${GREEN}->${YELLOW} '$(basename "$table_dir")'${NC}"
+                        ((missing_count++))
                     fi
                 fi
             done
 
-            echo -e "\n${BLUE}These tables have ${RED}no <table_folder>/$IMAGE_TYPE${BLUE} images.${NC}"
-            echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$IMAGE_TYPE${NC}"
+            if [ $missing_count == 0 ]; then
+                echo -e "\n${BLUE}Woot! Missing ${GREEN}$missing_count${BLUE} images!${NC}"
+            else
+                echo -e "\n${BLUE}Missing ${RED}$missing_count${BLUE} image(s).${NC}"
+                echo -e "${BLUE}These tables have ${RED}no <table_folder>/$IMAGE_TYPE${BLUE} images.${NC}"
+                echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$IMAGE_TYPE${NC}"
+            fi
+            exit 0
+            ;;
+        --dmd|--playfield|--b2s)
+            case "$1" in
+                --dmd) VIDEO_TYPE="$DMD_VIDEO" ;;
+                --playfield) VIDEO_TYPE="$TABLE_VIDEO" ;;
+                --b2s) VIDEO_TYPE="$BACKGLASS_VIDEO" ;;
+            esac
+
+            echo -e "${BLUE}Using tables directory: ${GREEN}$ROOT_FOLDER"
+            echo -e "${BLUE}Checking for tables missing ${GREEN}<table_folder>/$VIDEO_TYPE...${NC}\n"
+
+            missing_count=0
+
+            for vpx_file in "$ROOT_FOLDER"/*/*.vpx; do
+                if [ -f "$vpx_file" ]; then
+                    table_dir=$(dirname "$vpx_file")
+                    mp4_file="$table_dir/$VIDEO_TYPE"
+                    if [ ! -f "$mp4_file" ]; then
+                        echo -e "${GREEN}->${YELLOW} '$(basename "$table_dir")'${NC}"
+                        ((missing_count++))
+                    fi
+                fi
+            done
+
+            if [ $missing_count == 0 ]; then
+                echo -e "\n${BLUE}Woot! Missing ${GREEN}$missing_count${BLUE} videos!${NC}"
+            else
+                echo -e "\n${BLUE}Missing ${RED}$missing_count${BLUE} video(s).${NC}"
+                echo -e "${BLUE}These tables have ${RED}no <table_folder>/$VIDEO_TYPE${BLUE} videos.${NC}"
+                echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$VIDEO_TYPE${NC}"
+            fi
             exit 0
             ;;
         *)
