@@ -799,6 +799,7 @@ int main(int argc, char* argv[]) {
 
     loadCurrentTableTextures();
 
+    // ------- Transition and Key Event Variables
     TransitionState transitionState = TransitionState::IDLE; // Current state of the transition (idle, fading out, fading in)
     Uint32 transitionStartTime = 0; // Timestamp when the transition started
     bool quit = false; // Flag to indicate if the application should quit
