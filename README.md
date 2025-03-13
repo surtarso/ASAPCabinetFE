@@ -9,7 +9,7 @@
 <p align="center"><i>Obs: Old video from Python version....</i></p>
 
 ## Features:
-- Full screen dual monitor display of table playfield, backglass and DMD
+- Full screen multi monitor display of table playfield, backglass and DMD
 - Navigate tables with titles and wheels
 - Extended settings for many display configurations
 - Extremely lightweight and simple
@@ -123,5 +123,6 @@ These tools record your screen to create media (PNGs or MP4s) for the frontend, 
   - *macOS*: Use Homebrew (e.g., `brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer libvlc glew`).
 
 ## Contribute
-Contributions are very welcome! Open issues or pull requests to help improve this port.
-There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe).
+Contributions are very welcome! Open issues or pull requests to help improve this app.
+
+PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe).
