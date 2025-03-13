@@ -59,7 +59,7 @@ IniEditor::IniEditor(const std::string& filename) : iniFilename(filename) {
 }
 
 IniEditor::~IniEditor() {
-    // No dynamic allocations
+    // No dynamic allocations to clean up
 }
 
 void IniEditor::loadIniFile(const std::string& filename) {
@@ -152,10 +152,10 @@ void IniEditor::saveIniFile(const std::string& filename) {
 }
 
 void IniEditor::initExplanations() {
-    explanations["TablesPath"] = "Specifies the absolute path to the folder containing VPX table files.\n1 - Must be a full path\n(e.g., /home/user/tables/).\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["ExecutableCmd"] = "Defines the absolute path to the VPinballX executable.\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["StartArgs"] = "Optional command-line arguments to prepend to the executable.\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["EndArgs"] = "Optional arguments to append after the table file in the command.\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
+    explanations["TablesPath"] = "Specifies the absolute path to the folder containing VPX table files.\n\nIt mmust be a full path.\n(e.g., /home/user/tables/).\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
+    explanations["ExecutableCmd"] = "Defines the absolute path to the VPinballX executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
+    explanations["StartArgs"] = "Optional command-line arguments to prepend to the executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
+    explanations["EndArgs"] = "Optional arguments to append after the table file in the command.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
     explanations["TableImage"] = "Relative path to the table's preview image.\nThese are relative to your table folder.\n(e.g., /path/to/tables/<table_folder>/).";
     explanations["BackglassImage"] = "Relative path to the backglass image.\nThese are relative to your table folder.\n(e.g., /path/to/tables/<table_folder>/).";
     explanations["WheelImage"] = "Relative path to the wheel image for the table.\nThese are relative to your table folder.\n(e.g., /path/to/tables/<table_folder>/).";
@@ -177,7 +177,7 @@ void IniEditor::initExplanations() {
     explanations["BackglassHeight"] = "Height of the backglass media in pixels.";
     explanations["DmdWidth"] = "Width of the DMD media in pixels.";
     explanations["DmdHeight"] = "Height of the DMD media in pixels.";
-    explanations["FadeTargetAlpha"] = "Goes from 0 (transparent) to 255.\nUse 128 for ~50 percent alpha";
+    explanations["FadeTargetAlpha"] = "Goes from 0 (transparent) to 255.\nUse 128 for ~50 percent alpha.";
     explanations["FadeDurationMs"] = "Table images switch transition time in ms\nSet to 1 if using videos.";
 }
 
