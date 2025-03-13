@@ -1,9 +1,9 @@
 #!/bin/bash
 # ----------------------------------------------------------
-# Creates images (playfield + backglass) for ASAPCabinetFE
+# Creates images and videos (playfield + backglass) for ASAPCabinetFE
 # Opens all tables and screenshots playfield and backglass
-# Saves them in table_name/images/ folder as:
-# table.png and backglass.png (as set in config.ini)
+# Saves them in table_name/images|video/ folder as:
+# table.png|mp4 and backglass.png|mp4 (as set in config.ini)
 # ----------------------------------------------------------
 # Options:
 #   --now                  Process both windows (default behavior if --now is used)
@@ -177,7 +177,7 @@ capture_window_to_mp4() {
 # -----------------------------------------------------------------------------
 usage() {
     echo -e "\nCreates ${GREEN}MP4 videos ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
-    echo -e "Opens all tables and captures playfield and backglass"
+    echo -e "Opens all tables and captures playfield and backglass. Will also save a screenshot of each video."
     echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
     echo -e "${BLUE}Usage:${NC} $0 [${BLUE}--now${NC} | ${BLUE}--dry-run${NC} | ${BLUE}--tables-only${NC}|${BLUE}-t${NC} [<table_path>] | ${BLUE}--backglass-only${NC}|${BLUE}-b${NC} [<table_path>]] [${YELLOW}--dmd${NC}] [${RED}--force${NC}] [${RED}--clean${NC}]"
     echo ""
