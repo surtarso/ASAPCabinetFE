@@ -1,72 +1,130 @@
-# As Simple As Possible Cabinet Front-End (in C++)
+<h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-This is a work in progress port of [asap-cabinet-fe](https://github.com/surtarso/asap-cabinet-fe) Python app to C++/SDL2.
+<p align="center">A multi monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
+<p align="center"><i>"As Simple As Possible".</i></p>
 
-## How it works
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/f376adfc-9481-4237-b67c-2585570cee4c" width="400" />
+</div>
+<p align="center"><i>Obs: Old video from Python version....</i></p>
 
-For now, check [the original project repo](https://github.com/surtarso/asap-cabinet-fe) for info. The aim here is to mimic and improve in areas where it failed, like playing more video formats and image types, more custumizable keys and better code logic overall.
+## Features:
+- Full screen multi monitor display of table playfield, backglass and DMD
+- Navigate tables with titles and wheels
+- Extended settings for many display configurations
+- Extremely lightweight and simple
+- No need to download artpacks, generate your own!*
+- Just what it takes to make a cabinet look good
 
-<i>This port DOES NOT have a settings panel. Configure you paths in the **config.ini** file.</i>
+*Playfield and Backglass from automated screenshots. (See [tools](#generator-tools)).
 
-## Features
+## How it works:
 
-- Scans `VPX_ROOT_FOLDER` recursively for .vpx files
-- Loads images or videos for the playfield, wheel, backglass, and DMD for each table
-- Creates two windows: primary (playfield) and secondary (backglass)
-- Uses left/right arrow/shift keys to change tables with a fade transition
-- Press Enter to launch the table via vpinballx_gl process
+- Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
+- Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
+- Creates two windows: primary (playfield) and secondary (backglass).
+- Uses left/right arrow/shift keys to change tables.
+- Press Enter to launch the table via a `vpinballx_gl` process.
 
-## Dependencies
+## Dependencies:
 
-Make sure the following libraries are installed:
+Ensure the following libraries are installed:
 
-- SDL2
-- SDL2_image
-- SDL2_ttf
-- SDL2_mixer
-- VLC
-  
-Install the following dependencies:
+- **SDL2**: Core library for graphics and input.
+- **SDL2_image**: Image loading support.
+- **SDL2_ttf**: Font rendering.
+- **SDL2_mixer**: Audio playback.
+- **VLC**: Video playback support.
+- **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
 
+### Installing Dependencies (Debian based)
+
+For `ASAPCabinetFE`:
 ```sh
-sudo apt-get -y build-essential install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+sudo apt-get update
+sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 ```
 
-## Compilation
-
-To compile the application, use the following command:
-
+For `config` (additional dependencies):
 ```sh
-g++ main.cpp -std=c++17 -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libfreetype6-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 ```
 
-For a specific setup, you can use:
+## Compilation and Running
 
+### 1. Clone the Repository
+```sh
+git clone https://github.com/surtarso/ASAPCabinetFE.git
+cd ASAPCabinetFE
+```
+
+### 2. Compiling `ASAPCabinetFE` (Main Frontend)
+Compile the main application:
 ```sh
 g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
+- Run it:
+  ```sh
+  ./ASAPCabinetFE
+  ```
+- *Note*: Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
+
+### 3. Compiling `config` (Configuration Editor)
+This is a a GUI to edit `config.ini`. It contains tooltip explanations for all variables.
+
+#### Install ImGui
+The `config` app uses ImGui, included as a submodule:
+```sh
+git submodule update --init --recursive
+```
+
+#### Compile
+```sh
+g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config
+```
+- Run it:
+  ```sh
+  ./config
+  ```
+- *Note*: It loads `config.ini` from the current directory by default.
 
 ## Usage
 
-- Open **config.ini** and set your own paths.
-- Run `./ASAPCabinetFE`
+1. **Configure Paths**:
+   - Edit `config.ini` manually or use the `config` editor.
+   - Set `VPX_ROOT_FOLDER` and paths for media (playfield, backglass, etc.).
 
-### Keymap (not yet configurable)
+2. **Run the Frontend**:
+   ```sh
+   ./ASAPCabinetFE
+   ```
 
-| Action             | Key Combination | Description                               |
-|--------------------|-----------------|-------------------------------------------|
-| Scroll Table (One) | Left/Right Shift | Move to the previous/next table.         |
-| Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.           |
-| Scroll by Letter   | Z and /         | Scroll tables alphabetically (previous/next). |
-| Launch Table       | Enter           | Open the selected table.                 |
-| Quit               | ESC/q           | Exit the table navigation/application.   |
+### Keymap (Not Yet Configurable)
+| Action             | Key Combination  | Description                               |
+|--------------------|------------------|-------------------------------------------|
+| Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
+| Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.          |
+| Scroll by Letter   | Z and /          | Scroll tables alphabetically (prev/next). |
+| Launch Table       | Enter            | Open the selected table.                  |
+| Quit               | ESC or q         | Exit the table navigation/application.    |
 
-## Generator tools:
+## Generator Tools
+These tools record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
 
-These will record your screen to create media for the front end. PNG's or MP4's will be saved to where you configure in config.ini
-
-Run them without args for help.
+## Troubleshooting
+- **Compilation Fails**:
+  - Verify all dependencies are installed.
+  - Ensure the ImGui submodule is initialized (`imgui` directory should not be empty).
+- **Runtime Errors**:
+  - Check that `config.ini` exists and is readable/writable.
+  - Install missing runtime libraries (e.g., `sudo apt-get install libsdl2-2.0-0`).
+- **Other Platforms**:
+  - *Windows*: Use MinGW/MSYS2 with equivalent libraries.
+  - *macOS*: Use Homebrew (e.g., `brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer libvlc glew`).
 
 ## Contribute
+Contributions are very welcome! Open issues or pull requests to help improve this app.
 
-Contributions are very welcome. Feel free to open issues and pull requests.
+If you need help installing and configuring Visual Pinball X check my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check my [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to ease the process of settings tables up.
+
+PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe).
