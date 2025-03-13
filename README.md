@@ -8,7 +8,7 @@
 
 <p align="center"><i>"As Simple As Possible".</i></p>
 
-## Features:
+## Features
 - Full screen multi monitor display of table playfield, backglass and DMD
 - Navigate tables with titles and wheels
 - Extended settings for many display configurations
@@ -18,7 +18,7 @@
 
 *Playfield and Backglass from automated screenshots. (See [tools](#generator-tools)).
 
-## How it works:
+## How it works
 
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
@@ -26,7 +26,7 @@
 - Uses left/right arrow/shift keys to change tables.
 - Press Enter to launch the table via a `vpinballx_gl` process.
 
-## Dependencies:
+## Dependencies
 > [!IMPORTANT]
 > Ensure the following libraries are installed:
 > - **SDL2**: Core library for graphics and input.
