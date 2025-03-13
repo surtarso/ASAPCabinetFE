@@ -216,8 +216,9 @@ void IniEditor::drawGUI() {
                 ImGui::TextColored(ImVec4(0, 1, 0, 1), "[?]");
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
-                    ImGui::Dummy(ImVec2(300.0f, 0.0f));
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f); // Approx 300px with typical font size
                     ImGui::TextWrapped("%s", explanations[kv.first].c_str());
+                    ImGui::PopTextWrapPos();
                     ImGui::EndTooltip();
                 }
             }
