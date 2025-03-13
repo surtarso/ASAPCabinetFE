@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Dependencies
       run: |
@@ -38,17 +38,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential git libsdl2-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libfreetype6-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
-        git clone https://github.com/ocornut/imgui.git
         
     - name: Compile
       run: g++ config.cpp -std=c++17 imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config
-
 
     - name: Check Compilation
       run: |
