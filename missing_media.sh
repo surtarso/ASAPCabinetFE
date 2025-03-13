@@ -98,8 +98,6 @@ if [ "$#" -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     show_help
 fi
 
-MODE="none" # Default: no action unless specified
-
 # Parse arguments
 while [ "$#" -gt 0 ]; do
     case "$1" in  
@@ -174,8 +172,3 @@ while [ "$#" -gt 0 ]; do
             ;;
     esac
 done
-
-# If no mode was set, show help
-if [ "$MODE" == "none" ]; then
-    show_help
-fi
