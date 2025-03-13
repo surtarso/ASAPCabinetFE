@@ -16,7 +16,7 @@
 - No need to download artpacks, generate your own!*
 - Just what it takes to make a cabinet look good
 
-*Playfield and Backglass from automated screenshots. See [tools](#generator-tools).
+*Playfield and Backglass from automated screenshots. (See [tools](#generator-tools)).
 
 ## How it works:
 
@@ -35,7 +35,7 @@ Ensure the following libraries are installed:
 - **SDL2_ttf**: Font rendering.
 - **SDL2_mixer**: Audio playback.
 - **VLC**: Video playback support.
-- **OpenGL**: Required for the `config` editor (via ImGui).
+- **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
 
 ### Installing Dependencies (Debian based)
 
@@ -67,7 +67,7 @@ g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lS
   ```sh
   ./ASAPCabinetFE
   ```
-- *Note*: Ensure `config.ini` is configured with your paths (see Usage).
+- *Note*: Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
 
 ### 3. Compiling `config` (Configuration Editor)
 This is a a GUI to edit `config.ini`. It contains tooltip explanations for all variables.
@@ -124,5 +124,7 @@ These tools record your screen to create media (PNGs or MP4s) for the frontend, 
 
 ## Contribute
 Contributions are very welcome! Open issues or pull requests to help improve this app.
+
+If you need help installing and configuring Visual Pinball X check my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check my [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to ease the process of settings tables up.
 
 PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe).
