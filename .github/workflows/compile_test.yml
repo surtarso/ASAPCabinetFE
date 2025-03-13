@@ -33,6 +33,12 @@ jobs:
           exit 1
         fi
 
+    - name: Upload ASAPCabinetFE Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ASAPCabinetFE
+        path: ASAPCabinetFE
+
   compile_config:
     runs-on: ubuntu-latest
 
@@ -58,3 +64,9 @@ jobs:
           echo "Compilation failed!"
           exit 1
         fi
+        
+    - name: Upload config Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: config
+        path: config
