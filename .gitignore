@@ -12,6 +12,7 @@ videocompile.sh
 videomain.cpp
 config
 config.py
+imgui.ini
 
 # Prerequisites
 *.d
