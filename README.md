@@ -72,6 +72,9 @@ g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lS
 ### 3. Compiling `config` (Configuration Editor)
 This is a a GUI to edit `config.ini`. It contains tooltip explanations for all variables.
 
+![image](https://github.com/user-attachments/assets/89efac26-cf71-454e-9559-171c44209160)
+
+
 #### Install ImGui
 The `config` app uses ImGui, included as a submodule:
 ```sh
