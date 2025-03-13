@@ -18,15 +18,15 @@
 
 *Playfield and Backglass from automated screenshots. See [tools](#generator-tools).
 
-## Features
+## How it works:
 
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
 - Creates two windows: primary (playfield) and secondary (backglass).
-- Uses left/right arrow/shift keys to change tables with a fade transition.
+- Uses left/right arrow/shift keys to change tables.
 - Press Enter to launch the table via a `vpinballx_gl` process.
 
-## Dependencies
+## Dependencies:
 
 Ensure the following libraries are installed:
 
@@ -37,7 +37,7 @@ Ensure the following libraries are installed:
 - **VLC**: Video playback support.
 - **OpenGL**: Required for the `config` editor (via ImGui).
 
-### Installing Dependencies (Ubuntu)
+### Installing Dependencies (Debian based)
 
 For `ASAPCabinetFE`:
 ```sh
