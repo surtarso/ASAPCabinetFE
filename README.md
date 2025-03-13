@@ -1,12 +1,12 @@
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-<p align="center">A multi monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
-<p align="center"><i>"As Simple As Possible".</i></p>
+<p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/f376adfc-9481-4237-b67c-2585570cee4c" width="400" />
+  <video src="https://github.com/user-attachments/assets/019e4170-94f2-464c-9209-4754ba87a029" width="400" />
 </div>
-<p align="center"><i>Obs: Old video from Python version....</i></p>
+
+<p align="center"><i>"As Simple As Possible".</i></p>
 
 ## Features:
 - Full screen multi monitor display of table playfield, backglass and DMD
@@ -99,7 +99,7 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
    ./ASAPCabinetFE
    ```
 
-### Keymap (Not Yet Configurable)
+### Keymap (No`t Yet Configurable)
 | Action             | Key Combination  | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
@@ -109,7 +109,9 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
 | Quit               | ESC or q         | Exit the table navigation/application.    |
 
 ## Generator Tools
-These tools record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
+These tools help you record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
+
+`./generate_media.sh` and `missing_media.sh`
 
 ## Troubleshooting
 - **Compilation Fails**:
