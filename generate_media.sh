@@ -106,28 +106,28 @@ capture_window_to_mp4() {
     local WINDOW_ID="$1"
     local OUTPUT_FILE="$2"
 
-    # Get window geometry from xdotool
-    local GEOM
-    GEOM=$(xdotool getwindowgeometry "$WINDOW_ID")
-    # Example GEOM output:
-    #   Window 41943048
-    #   Position: 384,0 (screen: 0)
-    #   Geometry: 1080x1920
+    # # Get window geometry from xdotool
+    # local GEOM
+    # GEOM=$(xdotool getwindowgeometry "$WINDOW_ID")
+    # # Example GEOM output:
+    # #   Window 41943048
+    # #   Position: 384,0 (screen: 0)
+    # #   Geometry: 1080x1920
 
-    # Parse the window position (replace comma with space)
-    local POSITION
-    POSITION=$(echo "$GEOM" | grep "Position:" | awk '{print $2}' | tr ',' ' ')
-    local X Y
-    read -r X Y <<< "$POSITION"
+    # # Parse the window position (replace comma with space)
+    # local POSITION
+    # POSITION=$(echo "$GEOM" | grep "Position:" | awk '{print $2}' | tr ',' ' ')
+    # local X Y
+    # read -r X Y <<< "$POSITION"
 
-    # Parse the window size
-    local SIZE
-    SIZE=$(echo "$GEOM" | grep "Geometry:" | awk '{print $2}')
-    local WIDTH HEIGHT
-    WIDTH=$(echo "$SIZE" | cut -dx -f1)
-    HEIGHT=$(echo "$SIZE" | cut -dx -f2)
+    # # Parse the window size
+    # local SIZE
+    # SIZE=$(echo "$GEOM" | grep "Geometry:" | awk '{print $2}')
+    # local WIDTH HEIGHT
+    # WIDTH=$(echo "$SIZE" | cut -dx -f1)
+    # HEIGHT=$(echo "$SIZE" | cut -dx -f2)
 
-    echo -e "${BLUE}Capturing window ID $WINDOW_ID at ${WIDTH}x${HEIGHT} from position ${X},${Y}${NC}"
+    # echo -e "${BLUE}Capturing window ID $WINDOW_ID at ${WIDTH}x${HEIGHT} from position ${X},${Y}${NC}"
 
     # Ensure the window is active and raised
     xdotool windowactivate "$WINDOW_ID" > /dev/null 2>&1
@@ -316,10 +316,21 @@ while IFS= read -r VPX_PATH <&3; do
         continue
     fi
 
+    # Define a log file to capture VPX output for error checking
+    LOG_FILE="/tmp/vpx_log_$(date +%s).txt"
+
     # Launch VPX in its own process group so that we can later terminate it
     echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
-    setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" > /dev/null 2>&1 &
+    setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" > "$LOG_FILE" 2>&1 &
     VPX_PID=$!
+
+    # Initial check to ensure VPX starts successfully
+    sleep 3  # Wait 3 seconds to give VPX time to initialize
+    if ! kill -0 "$VPX_PID" 2>/dev/null; then
+        echo -e "${RED}Error: VPX failed to start or crashed immediately.${NC}"
+        # Optionally, add more error handling here (e.g., exit or notify)
+        exit 1
+    fi
 
     # Wait for VPX windows to load
     sleep "$SCREENSHOT_DELAY"
@@ -362,6 +373,23 @@ while IFS= read -r VPX_PATH <&3; do
     sleep 2
     if kill -0 -- -"$VPX_PID" 2>/dev/null; then
         kill -9 -- -"$VPX_PID" 2>/dev/null
+    fi
+
+    # Wait for VPX to complete and capture its exit status
+    wait "$VPX_PID"
+    EXIT_STATUS=$?
+
+    # Check the exit status and log file for errors
+    if [ "$EXIT_STATUS" -ne 0 ]; then
+        echo -e "${RED}Error: VPX exited with error code $EXIT_STATUS.${NC}"
+        # Optionally, add error handling here (e.g., notify or log)
+    elif grep -q "Error" "$LOG_FILE" 2>/dev/null; then
+        echo -e "${RED}Error: VPX encountered an issue according to the log.${NC}"
+        # Optionally, add error handling here
+    else
+        echo -e "${GREEN}VPX exited normally.${NC}"
+        # Clean up the log file if no errors occurred
+        rm "$LOG_FILE"
     fi
 
     echo -e "${GREEN}Finished processing table: $TABLE_NAME${NC}"
