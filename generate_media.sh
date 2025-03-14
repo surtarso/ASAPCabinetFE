@@ -164,7 +164,8 @@ capture_window_to_mp4() {
 
     # Assemble the screenshots into an MP4 video using ffmpeg
     ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${TMP_DIR}/frame_%d.png" \
-      -c:v libx264 -pix_fmt yuv420p "$OUTPUT_FILE" < /dev/null
+      -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
+      "$OUTPUT_FILE" < /dev/null
 
     # Remove the temporary directory and its contents
     rm -rf "$TMP_DIR"
