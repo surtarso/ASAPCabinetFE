@@ -67,8 +67,8 @@ if [[ -f "$CONFIG_FILE" ]]; then
     TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
     echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
 
-    IMAGES_DIR=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
-    echo -e "${YELLOW}IMAGES_DIR: $(dirname "$IMAGES_DIR")${NC}"
+    IMAGES_FOLDER=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
+    echo -e "${YELLOW}IMAGES_DIR: $(dirname "$IMAGES_FOLDER")${NC}"
 
     echo -e "${RED}-------------------------------------------------------------${NC}"
 else
@@ -150,6 +150,8 @@ capture_window_to_mp4() {
         if [[ $i -eq $((FRAME_COUNT / 2)) ]]; then
             local BASE_NAME
             local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
+            local IMAGES_DIR
+            local IMAGES_DIR=$(dirname "$IMAGES_FOLDER")
             mkdir -p "$IMAGES_DIR"  # Ensure the directory exists
             cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
             if [[ $? -ne 0 ]]; then
