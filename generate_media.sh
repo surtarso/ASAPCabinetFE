@@ -106,28 +106,28 @@ capture_window_to_mp4() {
     local WINDOW_ID="$1"
     local OUTPUT_FILE="$2"
 
-    # # Get window geometry from xdotool
-    # local GEOM
-    # GEOM=$(xdotool getwindowgeometry "$WINDOW_ID")
-    # # Example GEOM output:
-    # #   Window 41943048
-    # #   Position: 384,0 (screen: 0)
-    # #   Geometry: 1080x1920
+    # Get window geometry from xdotool
+    local GEOM
+    GEOM=$(xdotool getwindowgeometry "$WINDOW_ID")
+    # Example GEOM output:
+    #   Window 41943048
+    #   Position: 384,0 (screen: 0)
+    #   Geometry: 1080x1920
 
-    # # Parse the window position (replace comma with space)
-    # local POSITION
-    # POSITION=$(echo "$GEOM" | grep "Position:" | awk '{print $2}' | tr ',' ' ')
-    # local X Y
-    # read -r X Y <<< "$POSITION"
+    # Parse the window position (replace comma with space)
+    local POSITION
+    POSITION=$(echo "$GEOM" | grep "Position:" | awk '{print $2}' | tr ',' ' ')
+    local X Y
+    read -r X Y <<< "$POSITION"
 
-    # # Parse the window size
-    # local SIZE
-    # SIZE=$(echo "$GEOM" | grep "Geometry:" | awk '{print $2}')
-    # local WIDTH HEIGHT
-    # WIDTH=$(echo "$SIZE" | cut -dx -f1)
-    # HEIGHT=$(echo "$SIZE" | cut -dx -f2)
+    # Parse the window size
+    local SIZE
+    SIZE=$(echo "$GEOM" | grep "Geometry:" | awk '{print $2}')
+    local WIDTH HEIGHT
+    WIDTH=$(echo "$SIZE" | cut -dx -f1)
+    HEIGHT=$(echo "$SIZE" | cut -dx -f2)
 
-    # echo -e "${BLUE}Capturing window ID $WINDOW_ID at ${WIDTH}x${HEIGHT} from position ${X},${Y}${NC}"
+    echo -e "${BLUE}Capturing window ID $WINDOW_ID at ${WIDTH}x${HEIGHT} from position ${X},${Y}${NC}"
 
     # Ensure the window is active and raised
     xdotool windowactivate "$WINDOW_ID" > /dev/null 2>&1
