@@ -1,14 +1,14 @@
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-<p align="center">A multi monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
-<p align="center"><i>"As Simple As Possible".</i></p>
+<p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/f376adfc-9481-4237-b67c-2585570cee4c" width="400" />
+  <video src="https://github.com/user-attachments/assets/019e4170-94f2-464c-9209-4754ba87a029" width="400" />
 </div>
-<p align="center"><i>Obs: Old video from Python version....</i></p>
 
-## Features:
+<p align="center"><i>"As Simple As Possible".</i></p>
+
+## Features
 - Full screen multi monitor display of table playfield, backglass and DMD
 - Navigate tables with titles and wheels
 - Extended settings for many display configurations
@@ -18,7 +18,7 @@
 
 *Playfield and Backglass from automated screenshots. (See [tools](#generator-tools)).
 
-## How it works:
+## How it works
 
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
@@ -26,16 +26,15 @@
 - Uses left/right arrow/shift keys to change tables.
 - Press Enter to launch the table via a `vpinballx_gl` process.
 
-## Dependencies:
-
-Ensure the following libraries are installed:
-
-- **SDL2**: Core library for graphics and input.
-- **SDL2_image**: Image loading support.
-- **SDL2_ttf**: Font rendering.
-- **SDL2_mixer**: Audio playback.
-- **VLC**: Video playback support.
-- **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
+## Dependencies
+> [!IMPORTANT]
+> Ensure the following libraries are installed:
+> - **SDL2**: Core library for graphics and input.
+> - **SDL2_image**: Image loading support.
+> - **SDL2_ttf**: Font rendering.
+> - **SDL2_mixer**: Audio playback.
+> - **VLC**: Video playback support.
+> - **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
 
 ### Installing Dependencies (Debian based)
 
@@ -63,14 +62,20 @@ Compile the main application:
 ```sh
 g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
+> [!WARNING]
+> Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
+
 - Run it:
   ```sh
   ./ASAPCabinetFE
   ```
-- *Note*: Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
-
+  
 ### 3. Compiling `config` (Configuration Editor)
-This is a a GUI to edit `config.ini`. It contains tooltip explanations for all variables.
+
+![image](https://github.com/user-attachments/assets/89efac26-cf71-454e-9559-171c44209160)
+
+> [!TIP]
+> This GUI contains tooltip explanations for all variables in config.ini.
 
 #### Install ImGui
 The `config` app uses ImGui, included as a submodule:
@@ -86,7 +91,8 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
   ```sh
   ./config
   ```
-- *Note*: It loads `config.ini` from the current directory by default.
+> [!NOTE]
+> It loads `config.ini` from the current directory by default.
 
 ## Usage
 
@@ -99,7 +105,7 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
    ./ASAPCabinetFE
    ```
 
-### Keymap (Not Yet Configurable)
+### Keymap (No`t Yet Configurable)
 | Action             | Key Combination  | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
@@ -109,8 +115,12 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
 | Quit               | ESC or q         | Exit the table navigation/application.    |
 
 ## Generator Tools
-These tools record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
+These tools help you record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
 
+`./generate_media.sh` and `missing_media.sh`
+
+> [!CAUTION]
+> Make sure `config.ini` is properly configured before generating media.
 ## Troubleshooting
 - **Compilation Fails**:
   - Verify all dependencies are installed.
