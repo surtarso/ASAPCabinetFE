@@ -152,7 +152,7 @@ capture_window_to_mp4() {
             local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
             local IMAGES_DIR
             local IMAGES_DIR=$(dirname "$IMAGES_FOLDER")
-            mkdir -p "$IMAGES_DIR"  # Ensure the directory exists
+            mkdir -p "$TABLE_DIR/$IMAGES_DIR"  # Ensure the directory exists
             cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
             if [[ $? -ne 0 ]]; then
                 echo "${RED}Error: Failed to copy frame to ${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png${NC}" >&2
