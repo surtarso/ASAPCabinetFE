@@ -190,12 +190,12 @@ capture_window_to_mp4() {
 usage() {
     echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
     echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
-    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--now${NC}|${BLUE}-n${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
+    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--missing${NC}|${BLUE}-m${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
     echo ""
-    echo -e "  ${BLUE}--now, -n                Capture missing table and backglass media"
+    echo -e "  ${BLUE}--missing, -m            Capture missing table and backglass media"
     echo -e "  ${YELLOW}--tables-only, -t        Capture only missing table videos. Optionally provide a specific table path"
     echo -e "  ${YELLOW}--backglass-only, -b     Capture only missing backglass videos. Optionally provide a specific table path"
-    echo -e "  ${GREEN}--image-only, -i         Capture only images (skip videos)"
+    echo -e "  ${GREEN}--image-only, -i         Capture only images (skip videos). Optionally provide a specific table path"
     echo -e "  ${RED}--force, -f              Force rebuilding media even if they already exist"
     echo -e "\n  ${NC}-h, --help               Show this help message and exit"
     echo -e "\n${YELLOW}Note:${NC} You can combine args"
@@ -218,7 +218,7 @@ while [ "$#" -gt 0 ]; do
         --help|-h)
             usage
             ;;
-        --now|-n)
+        --missing|-m)
             MODE="now"
             shift
             ;;
@@ -241,6 +241,10 @@ while [ "$#" -gt 0 ]; do
         --image-only|-i)
             NO_VIDEO="true"
             shift
+            if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
+                SPECIFIC_PATH="$1"
+                shift
+            fi
             ;;
         --force|-f)
             FORCE="true"
@@ -321,10 +325,11 @@ while IFS= read -r VPX_PATH <&3; do
     BACKGLASS_IMAGE_FILE="${TABLE_DIR}/${BACKGLASS_IMAGE}"
 
     echo -e "${BLUE}Processing: $(basename "$TABLE_DIR")${NC}"
-    mkdir -p "$VIDEO_FOLDER"
 
     # Skip processing if media exists (unless forcing rebuild)
     if [ "$NO_VIDEO" == "false" ]; then
+        mkdir -p "$VIDEO_FOLDER"
+
         if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
             echo -e "${YELLOW}Both MP4 files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
             continue
@@ -338,6 +343,8 @@ while IFS= read -r VPX_PATH <&3; do
             continue
         fi
     else
+        mkdir -p "$IMAGES_FOLDER"
+
         if [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
             echo -e "${YELLOW}Both PNG files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
             continue
@@ -380,7 +387,9 @@ while IFS= read -r VPX_PATH <&3; do
         if [ -n "$WINDOW_ID_VPX" ]; then
             capture_window_to_mp4 "$WINDOW_ID_VPX" "$TABLE_MEDIA_FILE" &
             capture_pids+=($!)
-            echo -e "${GREEN}Saved table MP4 video: $TABLE_MEDIA_FILE${NC}"
+            if [ "$NO_VIDEO" == "false" ]; then
+                echo -e "${GREEN}Saved table MP4 video: $TABLE_MEDIA_FILE${NC}"
+            fi
         else
             echo -e "${RED}Error: '$WINDOW_TITLE_VPX' window not found.${NC}"
         fi
@@ -392,7 +401,9 @@ while IFS= read -r VPX_PATH <&3; do
         if [ -n "$WINDOW_ID_BACKGLASS" ]; then
             capture_window_to_mp4 "$WINDOW_ID_BACKGLASS" "$BACKGLASS_MEDIA_FILE" &
             capture_pids+=($!)
-            echo -e "${GREEN}Saved backglass MP4 video: $BACKGLASS_MEDIA_FILE${NC}"
+            if [ "$NO_VIDEO" == "false" ]; then
+                echo -e "${GREEN}Saved backglass MP4 video: $BACKGLASS_MEDIA_FILE${NC}"
+            fi
         else
             echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' window not found.${NC}"
         fi
