@@ -17,7 +17,7 @@ YELLOW="\033[1;33m"
 BLUE="\033[0;34m"
 NC="\033[0m"  # No Color
 
-# Function to get values from INI file
+# INI file
 CONFIG_FILE="config.ini"
 
 # Function to get values from INI file
@@ -54,7 +54,7 @@ fi
 # ---------------------------------------------------------------------------
 # Configuration variables
 # ---------------------------------------------------------------------------
-SCREENSHOT_DELAY=12       # Seconds to wait after launching VPX for tables to load
+LOAD_DELAY=12       # Seconds to wait after launching VPX for tables to load
 
 # Screenshot-based MP4 video settings:
 SCREENSHOT_FPS=12         # Set frames per second here
@@ -62,7 +62,6 @@ RECORDING_DURATION=4      # Seconds of video recording
 
 FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
 FRAME_INTERVAL=0.1        # Seconds between screenshots (1/SCREENSHOT_FPS)
-NO_VIDEO="false"          # Dont chage this here, use --image-only | -i
 
 # Window titles to capture:
 WINDOW_TITLE_VPX="Visual Pinball Player"
@@ -104,20 +103,29 @@ capture_window_to_mp4() {
         sleep "$FRAME_INTERVAL"
 
         # Save the middle frame with the same base name as OUTPUT_FILE
-        
         if [[ $i -eq $((FRAME_COUNT / 2)) || "$NO_VIDEO" == "true" ]]; then
             local BASE_NAME
             BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
             local IMAGES_DIR
             IMAGES_DIR=$(dirname "$TABLE_IMAGE")
+            local DEST_FILE="${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
+
+            # Skip if file exists and FORCE is "false"
+            if [[ -f "$DEST_FILE" && "$FORCE" == "false" ]]; then
+                echo -e "Skipping image capture:${YELLOW} ${DEST_FILE}${NC} already exists."
+                continue
+            fi
+
             mkdir -p "$TABLE_DIR/$IMAGES_DIR"  # Ensure the directory exists
-            cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
+            cp "$FRAME_FILE" "$DEST_FILE"
+            
             if [[ $? -ne 0 ]]; then
-                echo "${RED}Error: Failed to copy frame to ${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png${NC}" >&2
+                echo -e "${RED}Error: Failed to copy frame to ${DEST_FILE}${NC}" >&2
             else
-                echo -e "Frame saved to ${GREEN}${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png${NC}"
+                echo -e "Frame saved to ${GREEN}${DEST_FILE}${NC}"
             fi
         fi
+
     done
 
     if [ "$NO_VIDEO" == "false" ]; then
@@ -157,6 +165,7 @@ usage() {
 MODE=""
 SPECIFIC_PATH=""
 FORCE="false"
+NO_VIDEO="false"
 
 if [ "$#" -eq 0 ]; then
     usage
@@ -311,13 +320,12 @@ while IFS= read -r VPX_PATH <&3; do
     sleep 3  # Wait 3 seconds to give VPX time to initialize
     if ! kill -0 "$VPX_PID" 2>/dev/null; then
         echo -e "${RED}Error: VPX failed to start or crashed immediately.${NC}"
-        # Optionally, add more error handling here (e.g., exit or notify)
         exit 1
     fi
 
     # Wait for VPX windows to load
-    echo -e "${GREEN}Waiting $SCREENSHOT_DELAY seconds for table to load...${NC}"
-    sleep "$SCREENSHOT_DELAY"
+    echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
+    sleep "$LOAD_DELAY"
     echo -e "${YELLOW}Starting screen capture...${NC}"
 
     # Array to collect capture process IDs
@@ -371,17 +379,14 @@ while IFS= read -r VPX_PATH <&3; do
     # Check the exit status and log file for errors
     if [ "$EXIT_STATUS" -ne 0 ]; then
         echo -e "${RED}Error: VPX exited with error code $EXIT_STATUS.${NC}"
-        # Optionally, add error handling here (e.g., notify or log)
     elif grep -q "Error" "$LOG_FILE" 2>/dev/null; then
         echo -e "${RED}Error: VPX encountered an issue according to the log.${NC}"
-        # Optionally, add error handling here
     else
         echo -e "${GREEN}VPX exited normally.${NC}"
-        # Clean up the log file if no errors occurred
         rm "$LOG_FILE"
     fi
 
     echo -e "${GREEN}Finished processing table: $TABLE_NAME${NC}"
 done 3< <(echo "$VPX_LIST")
 
-echo -e "${GREEN}Finished processing all VPX files.${NC}"
+echo -e "${GREEN}Finished processing all media.${NC}"
