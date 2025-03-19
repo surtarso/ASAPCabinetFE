@@ -5,16 +5,6 @@
 # Saves them in table_name/images|video/ folder as:
 # table.png|mp4 and backglass.png|mp4 (as set in config.ini)
 # ----------------------------------------------------------
-# Options:
-#   --now                  Process both windows (default behavior if --now is used)
-#                          (Only create media for missing files unless --force is used)
-#   --tables-only, -t      Capture only the table window media.
-#                          Optionally provide a specific table path.
-#   --backglass-only, -b   Capture only the backglass window media.
-#                          Optionally provide a specific table path.
-#   --force                Force rebuilding media even if they already exist.
-#   -h, --help             Show this help message and exit
-#
 # Dependencies: xdotool, ImageMagick, ffmpeg
 # Author: Tarso Galvão, Feb/2025
 
@@ -36,48 +26,26 @@ get_ini_value() {
     local key="$2"
     local value
 
-    echo "Searching for [$section] -> $key in $CONFIG_FILE" >&2  # Debugging output
-
     value=$(awk -F= -v section="$section" -v key="$key" '
         BEGIN { inside_section=0 }
         /^\[.*\]$/ { inside_section=($0 == "[" section "]") }
         inside_section && $1 ~ "^[ \t]*" key "[ \t]*$" { gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/\r/, "", $2); print $2; exit }
     ' "$CONFIG_FILE")
 
-    echo -e "Found value: '$value'" >&2  # Debugging output
     echo -e "$value"
 }
 
 # Load values from config.ini
-echo -e "${GREEN}Initializing variables...${NC}"
-echo -e "${RED}-------------------------------------------------------------${NC}"
 if [[ -f "$CONFIG_FILE" ]]; then
     ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
-    echo -e "${YELLOW}ROOT_FOLDER: $ROOT_FOLDER${NC}"
-    
     VPX_EXECUTABLE=$(get_ini_value "VPX" "ExecutableCmd")
-    echo -e "${YELLOW}VPX_EXECUTABLE: $VPX_EXECUTABLE${NC}"
-    
-    # DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
-    # echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
-    
     BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
-    echo -e "${YELLOW}BACKGLASS_VIDEO: $BACKGLASS_VIDEO${NC}"
-    
     TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
-    echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
-
-    IMAGES_FOLDER=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
-    echo -e "${YELLOW}IMAGES_DIR: $(dirname "$IMAGES_FOLDER")${NC}"
-
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
-    echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
-
-    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage") # ref for images folder
-    echo -e "${YELLOW}BACKGLASS_IMAGE: $BACKGLASS_IMAGE${NC}"
-
-    echo -e "${RED}-------------------------------------------------------------${NC}"
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
+    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
+    echo -e "${GREEN}Loaded config.ini${NC}"
 else
+    echo -e "${RED}-------------------------------------------------------------${NC}"
     echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
     echo -e "${RED}-------------------------------------------------------------${NC}"
     exit 1
@@ -115,30 +83,9 @@ capture_window_to_mp4() {
     if [ "$NO_VIDEO" == "true" ]; then
         FRAME_COUNT=1
         FRAME_INTERVAL=0
+    else
+        mkdir -p "$VIDEO_DIR"
     fi
-
-    # Get window geometry from xdotool
-    local GEOM
-    GEOM=$(xdotool getwindowgeometry "$WINDOW_ID")
-    # Example GEOM output:
-    #   Window 41943048
-    #   Position: 384,0 (screen: 0)
-    #   Geometry: 1080x1920
-
-    # Parse the window position (replace comma with space)
-    local POSITION
-    POSITION=$(echo "$GEOM" | grep "Position:" | awk '{print $2}' | tr ',' ' ')
-    local X Y
-    read -r X Y <<< "$POSITION"
-
-    # Parse the window size
-    local SIZE
-    SIZE=$(echo "$GEOM" | grep "Geometry:" | awk '{print $2}')
-    local WIDTH HEIGHT
-    WIDTH=$(echo "$SIZE" | cut -dx -f1)
-    HEIGHT=$(echo "$SIZE" | cut -dx -f2)
-
-    echo -e "${BLUE}Capturing window ID $WINDOW_ID at ${WIDTH}x${HEIGHT} from position ${X},${Y}${NC}"
 
     # Ensure the window is active and raised
     xdotool windowactivate "$WINDOW_ID" > /dev/null 2>&1
@@ -160,9 +107,9 @@ capture_window_to_mp4() {
         
         if [[ $i -eq $((FRAME_COUNT / 2)) || "$NO_VIDEO" == "true" ]]; then
             local BASE_NAME
-            local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
+            BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
             local IMAGES_DIR
-            local IMAGES_DIR=$(dirname "$IMAGES_FOLDER")
+            IMAGES_DIR=$(dirname "$TABLE_IMAGE")
             mkdir -p "$TABLE_DIR/$IMAGES_DIR"  # Ensure the directory exists
             cp "$FRAME_FILE" "${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
             if [[ $? -ne 0 ]]; then
@@ -174,14 +121,16 @@ capture_window_to_mp4() {
     done
 
     if [ "$NO_VIDEO" == "false" ]; then
+        echo -e "${YELLOW}Assembling video...${NC}"
         # Assemble the screenshots into an MP4 video using ffmpeg
         ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${TMP_DIR}/frame_%d.png" \
         -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
-        "$OUTPUT_FILE" < /dev/null
+        "$OUTPUT_FILE" 2>&1 | sed -u 's/\r/\n/g' | tail -n 1
     fi
 
     # Remove the temporary directory and its contents
     rm -rf "$TMP_DIR"
+    echo -e "Done."
 }
 
 # -----------------------------------------------------------------------------
@@ -250,12 +199,6 @@ while [ "$#" -gt 0 ]; do
             FORCE="true"
             shift
             ;;
-        # --clean|-c)
-        #     echo -e "${RED}Removing all table and backglass MP4 files from all tables...${NC}"
-        #     find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_VIDEO")" -o -name "$(basename "$BACKGLASS_VIDEO")" \) -exec rm -v {} \;
-        #     echo -e "${GREEN}Media removed.${NC}"
-        #     exit 0
-        #     ;;
         *)
             echo -e "\n${RED}Unknown option: $1${NC}"
             usage
@@ -318,7 +261,8 @@ while IFS= read -r VPX_PATH <&3; do
     # Derive table name and video folder
     TABLE_NAME=$(basename "$VPX_PATH" .vpx)
     TABLE_DIR=$(dirname "$VPX_PATH")
-    VIDEO_FOLDER="${TABLE_DIR}/${TABLE_VIDEO%/*}"
+    IMAGES_DIR=$(dirname "$TABLE_IMAGE")
+    VIDEO_DIR="${TABLE_DIR}/${TABLE_VIDEO%/*}"
     TABLE_MEDIA_FILE="${TABLE_DIR}/${TABLE_VIDEO}"
     BACKGLASS_MEDIA_FILE="${TABLE_DIR}/${BACKGLASS_VIDEO}"
     TABLE_IMAGE_FILE="${TABLE_DIR}/${TABLE_IMAGE}"
@@ -328,8 +272,6 @@ while IFS= read -r VPX_PATH <&3; do
 
     # Skip processing if media exists (unless forcing rebuild)
     if [ "$NO_VIDEO" == "false" ]; then
-        mkdir -p "$VIDEO_FOLDER"
-
         if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
             echo -e "${YELLOW}Both MP4 files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
             continue
@@ -343,8 +285,6 @@ while IFS= read -r VPX_PATH <&3; do
             continue
         fi
     else
-        mkdir -p "$IMAGES_FOLDER"
-
         if [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
             echo -e "${YELLOW}Both PNG files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
             continue
@@ -376,7 +316,9 @@ while IFS= read -r VPX_PATH <&3; do
     fi
 
     # Wait for VPX windows to load
+    echo -e "${GREEN}Waiting $SCREENSHOT_DELAY seconds for table to load...${NC}"
     sleep "$SCREENSHOT_DELAY"
+    echo -e "${YELLOW}Starting screen capture...${NC}"
 
     # Array to collect capture process IDs
     capture_pids=()
@@ -388,7 +330,7 @@ while IFS= read -r VPX_PATH <&3; do
             capture_window_to_mp4 "$WINDOW_ID_VPX" "$TABLE_MEDIA_FILE" &
             capture_pids+=($!)
             if [ "$NO_VIDEO" == "false" ]; then
-                echo -e "${GREEN}Saved table MP4 video: $TABLE_MEDIA_FILE${NC}"
+                echo -e "Will save table MP4 video to ${GREEN}$TABLE_MEDIA_FILE${NC}"
             fi
         else
             echo -e "${RED}Error: '$WINDOW_TITLE_VPX' window not found.${NC}"
@@ -402,7 +344,7 @@ while IFS= read -r VPX_PATH <&3; do
             capture_window_to_mp4 "$WINDOW_ID_BACKGLASS" "$BACKGLASS_MEDIA_FILE" &
             capture_pids+=($!)
             if [ "$NO_VIDEO" == "false" ]; then
-                echo -e "${GREEN}Saved backglass MP4 video: $BACKGLASS_MEDIA_FILE${NC}"
+                echo -e "Will save backglass MP4 video to ${GREEN}$BACKGLASS_MEDIA_FILE${NC}"
             fi
         else
             echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' window not found.${NC}"
