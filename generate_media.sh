@@ -70,6 +70,12 @@ if [[ -f "$CONFIG_FILE" ]]; then
     IMAGES_FOLDER=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
     echo -e "${YELLOW}IMAGES_DIR: $(dirname "$IMAGES_FOLDER")${NC}"
 
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage") # ref for images folder
+    echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
+
+    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage") # ref for images folder
+    echo -e "${YELLOW}BACKGLASS_IMAGE: $BACKGLASS_IMAGE${NC}"
+
     echo -e "${RED}-------------------------------------------------------------${NC}"
 else
     echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
@@ -80,15 +86,15 @@ fi
 # ---------------------------------------------------------------------------
 # Configuration variables
 # ---------------------------------------------------------------------------
+SCREENSHOT_DELAY=12       # Seconds to wait after launching VPX for tables to load
 
-SCREENSHOT_DELAY=12       # Seconds to wait after launching VPX
-RECORDING_DURATION=4      # Seconds of recording
+# Screenshot-based MP4 video settings:
+SCREENSHOT_FPS=12         # Set frames per second here
+RECORDING_DURATION=4      # Seconds of video recording
 
-# Screenshot-based MP4 settings:
-# Adjust SCREENSHOT_FPS as needed (set to 10 frames per second here)
-SCREENSHOT_FPS=12
 FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
 FRAME_INTERVAL=0.1        # Seconds between screenshots (1/SCREENSHOT_FPS)
+NO_VIDEO="false"          # Dont chage this here, use --image-only | -i
 
 # Window titles to capture:
 WINDOW_TITLE_VPX="Visual Pinball Player"
@@ -105,6 +111,11 @@ WINDOW_TITLE_BACKGLASS="B2SBackglass"
 capture_window_to_mp4() {
     local WINDOW_ID="$1"
     local OUTPUT_FILE="$2"
+
+    if [ "$NO_VIDEO" == "true" ]; then
+        FRAME_COUNT=1
+        FRAME_INTERVAL=0
+    fi
 
     # Get window geometry from xdotool
     local GEOM
@@ -147,7 +158,7 @@ capture_window_to_mp4() {
 
         # Save the middle frame with the same base name as OUTPUT_FILE
         
-        if [[ $i -eq $((FRAME_COUNT / 2)) ]]; then
+        if [[ $i -eq $((FRAME_COUNT / 2)) || "$NO_VIDEO" == "true" ]]; then
             local BASE_NAME
             local BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
             local IMAGES_DIR
@@ -162,10 +173,12 @@ capture_window_to_mp4() {
         fi
     done
 
-    # Assemble the screenshots into an MP4 video using ffmpeg
-    ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${TMP_DIR}/frame_%d.png" \
-      -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
-      "$OUTPUT_FILE" < /dev/null
+    if [ "$NO_VIDEO" == "false" ]; then
+        # Assemble the screenshots into an MP4 video using ffmpeg
+        ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${TMP_DIR}/frame_%d.png" \
+        -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
+        "$OUTPUT_FILE" < /dev/null
+    fi
 
     # Remove the temporary directory and its contents
     rm -rf "$TMP_DIR"
@@ -177,14 +190,15 @@ capture_window_to_mp4() {
 usage() {
     echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
     echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
-    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--now${NC}|${BLUE}-n${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${RED}--force${NC}|${RED}-f${NC}]"
+    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--now${NC}|${BLUE}-n${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
     echo ""
     echo -e "  ${BLUE}--now, -n                Capture missing table and backglass media"
     echo -e "  ${YELLOW}--tables-only, -t        Capture only missing table videos. Optionally provide a specific table path"
     echo -e "  ${YELLOW}--backglass-only, -b     Capture only missing backglass videos. Optionally provide a specific table path"
+    echo -e "  ${GREEN}--image-only, -i         Capture only images (skip videos)"
     echo -e "  ${RED}--force, -f              Force rebuilding media even if they already exist"
     echo -e "\n  ${NC}-h, --help               Show this help message and exit"
-    echo -e "\n${YELLOW}Note:${NC} No args shows this help."
+    echo -e "\n${YELLOW}Note:${NC} You can combine args"
     exit 1
 }
 
@@ -224,16 +238,20 @@ while [ "$#" -gt 0 ]; do
                 shift
             fi
             ;;
+        --image-only|-i)
+            NO_VIDEO="true"
+            shift
+            ;;
         --force|-f)
             FORCE="true"
             shift
             ;;
-        --clean|-c)
-            echo -e "${RED}Removing all table and backglass MP4 files from all tables...${NC}"
-            find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_VIDEO")" -o -name "$(basename "$BACKGLASS_VIDEO")" \) -exec rm -v {} \;
-            echo -e "${GREEN}Media removed.${NC}"
-            exit 0
-            ;;
+        # --clean|-c)
+        #     echo -e "${RED}Removing all table and backglass MP4 files from all tables...${NC}"
+        #     find "$ROOT_FOLDER" -type f \( -name "$(basename "$TABLE_VIDEO")" -o -name "$(basename "$BACKGLASS_VIDEO")" \) -exec rm -v {} \;
+        #     echo -e "${GREEN}Media removed.${NC}"
+        #     exit 0
+        #     ;;
         *)
             echo -e "\n${RED}Unknown option: $1${NC}"
             usage
@@ -299,22 +317,39 @@ while IFS= read -r VPX_PATH <&3; do
     VIDEO_FOLDER="${TABLE_DIR}/${TABLE_VIDEO%/*}"
     TABLE_MEDIA_FILE="${TABLE_DIR}/${TABLE_VIDEO}"
     BACKGLASS_MEDIA_FILE="${TABLE_DIR}/${BACKGLASS_VIDEO}"
+    TABLE_IMAGE_FILE="${TABLE_DIR}/${TABLE_IMAGE}"
+    BACKGLASS_IMAGE_FILE="${TABLE_DIR}/${BACKGLASS_IMAGE}"
 
     echo -e "${BLUE}Processing: $(basename "$TABLE_DIR")${NC}"
     mkdir -p "$VIDEO_FOLDER"
 
     # Skip processing if media exists (unless forcing rebuild)
-    if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-        echo -e "${YELLOW}Both MP4 files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
-        continue
-    fi
-    if [[ "$MODE" == "tables-only" && -f "$TABLE_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-        echo -e "${YELLOW}Table MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-        continue
-    fi
-    if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-        echo -e "${YELLOW}Backglass MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-        continue
+    if [ "$NO_VIDEO" == "false" ]; then
+        if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Both MP4 files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
+        if [[ "$MODE" == "tables-only" && -f "$TABLE_MEDIA_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Table MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
+        if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Backglass MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
+    else
+        if [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Both PNG files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
+        if [[ "$MODE" == "tables-only" && -f "$TABLE_IMAGE_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Table PNG file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
+        if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
+            echo -e "${YELLOW}Backglass PNG file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
+            continue
+        fi
     fi
 
     # Define a log file to capture VPX output for error checking
