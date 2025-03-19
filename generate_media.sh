@@ -268,7 +268,7 @@ fi
 echo -e "${GREEN}Processing VPX files...${NC}"
 
 while IFS= read -r VPX_PATH <&3; do
-    ERROR_TABLE="false"
+    SKIP_ERROR_TABLE="false"
     # Derive table name and video folder
     TABLE_NAME=$(basename "$VPX_PATH" .vpx)
     TABLE_DIR=$(dirname "$VPX_PATH")
@@ -313,19 +313,18 @@ while IFS= read -r VPX_PATH <&3; do
     # Launch VPX in its own process group so that we can later terminate it
     echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
     setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" > "$LOG_FILE" 2>&1 &
-    VPX_PID=$!
+    VPINBALLX_PID=$!
 
     # Initial check to ensure VPX starts successfully
     sleep 3  # Wait 3 seconds to give VPX time to initialize
-    if ! kill -0 "$VPX_PID" 2>/dev/null; then
+    if ! kill -0 "$VPINBALLX_PID" 2>/dev/null; then
         EXIT_CODE=$?  # Capture the exit code
         echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start. Exit code: $EXIT_CODE" >> "$LOG_FILE"
-        echo -e "${RED}Error: VPX failed to start or crashed immediately.${NC}"
-        ERROR_TABLE="true"
-        # exit 1
+        echo -e "${RED}Error: VPX failed to start or crashed immediately. Check error.log${NC}"
+        SKIP_ERROR_TABLE="true"
     fi
 
-    if [ "$ERROR_TABLE" == "false" ]; then
+    if [ "$SKIP_ERROR_TABLE" == "false" ]; then
         # Wait for VPX windows to load
         echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
         sleep "$LOAD_DELAY"
@@ -368,15 +367,15 @@ while IFS= read -r VPX_PATH <&3; do
         done
 
         # Terminate the entire VPX process group
-        echo -e "${YELLOW}Terminating VPX process group (PGID: $VPX_PID)${NC}"
-        kill -TERM -- -"$VPX_PID" 2>/dev/null
+        echo -e "${YELLOW}Terminating VPX process group (PGID: $VPINBALLX_PID)${NC}"
+        kill -TERM -- -"$VPINBALLX_PID" 2>/dev/null
         sleep 2
-        if kill -0 -- -"$VPX_PID" 2>/dev/null; then
-            kill -9 -- -"$VPX_PID" 2>/dev/null
+        if kill -0 -- -"$VPINBALLX_PID" 2>/dev/null; then
+            kill -9 -- -"$VPINBALLX_PID" 2>/dev/null
         fi
 
         # Wait for VPX to complete and capture its exit status
-        wait "$VPX_PID"
+        wait "$VPINBALLX_PID"
         EXIT_STATUS=$?
 
         # Check the exit status and log file for errors
