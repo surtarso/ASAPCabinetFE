@@ -19,6 +19,7 @@ NC="\033[0m"  # No Color
 
 # INI file
 CONFIG_FILE="config.ini"
+LOG_FILE="error.log"
 
 # Function to get values from INI file
 get_ini_value() {
@@ -68,14 +69,14 @@ WINDOW_TITLE_VPX="Visual Pinball Player"
 WINDOW_TITLE_BACKGLASS="B2SBackglass"
 
 # -----------------------------------------------------------------------------
-# Function: capture_window_to_mp4
+# Function: capture_vpx_window
 # Captures a window by taking a series of screenshots and then assembling them
 # into an MP4 video.
 # Parameters:
 #   $1 - Window ID to capture.
 #   $2 - Output file for the video.
 # -----------------------------------------------------------------------------
-capture_window_to_mp4() {
+capture_vpx_window() {
     local WINDOW_ID="$1"
     local OUTPUT_FILE="$2"
 
@@ -267,6 +268,7 @@ fi
 echo -e "${GREEN}Processing VPX files...${NC}"
 
 while IFS= read -r VPX_PATH <&3; do
+    ERROR_TABLE="false"
     # Derive table name and video folder
     TABLE_NAME=$(basename "$VPX_PATH" .vpx)
     TABLE_DIR=$(dirname "$VPX_PATH")
@@ -308,9 +310,6 @@ while IFS= read -r VPX_PATH <&3; do
         fi
     fi
 
-    # Define a log file to capture VPX output for error checking
-    LOG_FILE="/tmp/vpx_log_$(date +%s).txt"
-
     # Launch VPX in its own process group so that we can later terminate it
     echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
     setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" > "$LOG_FILE" 2>&1 &
@@ -319,71 +318,72 @@ while IFS= read -r VPX_PATH <&3; do
     # Initial check to ensure VPX starts successfully
     sleep 3  # Wait 3 seconds to give VPX time to initialize
     if ! kill -0 "$VPX_PID" 2>/dev/null; then
+        EXIT_CODE=$?  # Capture the exit code
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start. Exit code: $EXIT_CODE" >> "$LOG_FILE"
         echo -e "${RED}Error: VPX failed to start or crashed immediately.${NC}"
-        exit 1
+        ERROR_TABLE="true"
+        # exit 1
     fi
 
-    # Wait for VPX windows to load
-    echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
-    sleep "$LOAD_DELAY"
-    echo -e "${YELLOW}Starting screen capture...${NC}"
+    if [ "$ERROR_TABLE" == "false" ]; then
+        # Wait for VPX windows to load
+        echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
+        sleep "$LOAD_DELAY"
+        echo -e "${YELLOW}Starting screen capture...${NC}"
 
-    # Array to collect capture process IDs
-    capture_pids=()
+        # Array to collect capture process IDs
+        capture_pids=()
 
-    # Capture table window if needed
-    if [[ "$MODE" == "now" || "$MODE" == "tables-only" ]]; then
-        WINDOW_ID_VPX=$(xdotool search --name "$WINDOW_TITLE_VPX" | head -n 1)
-        if [ -n "$WINDOW_ID_VPX" ]; then
-            capture_window_to_mp4 "$WINDOW_ID_VPX" "$TABLE_MEDIA_FILE" &
-            capture_pids+=($!)
-            if [ "$NO_VIDEO" == "false" ]; then
-                echo -e "Will save table MP4 video to ${GREEN}$TABLE_MEDIA_FILE${NC}"
+        # Capture table window if needed
+        if [[ "$MODE" == "now" || "$MODE" == "tables-only" ]]; then
+            WINDOW_ID_VPX=$(xdotool search --name "$WINDOW_TITLE_VPX" | head -n 1)
+            if [ -n "$WINDOW_ID_VPX" ]; then
+                capture_vpx_window "$WINDOW_ID_VPX" "$TABLE_MEDIA_FILE" &
+                capture_pids+=($!)
+                if [ "$NO_VIDEO" == "false" ]; then
+                    echo -e "Will save table MP4 video to ${GREEN}$TABLE_MEDIA_FILE${NC}"
+                fi
+            else
+                echo -e "${RED}Error: '$WINDOW_TITLE_VPX' window not found.${NC}"
             fi
-        else
-            echo -e "${RED}Error: '$WINDOW_TITLE_VPX' window not found.${NC}"
         fi
-    fi
 
-    # Capture backglass window if needed
-    if [[ "$MODE" == "now" || "$MODE" == "backglass-only" ]]; then
-        WINDOW_ID_BACKGLASS=$(xdotool search --name "$WINDOW_TITLE_BACKGLASS" | head -n 1)
-        if [ -n "$WINDOW_ID_BACKGLASS" ]; then
-            capture_window_to_mp4 "$WINDOW_ID_BACKGLASS" "$BACKGLASS_MEDIA_FILE" &
-            capture_pids+=($!)
-            if [ "$NO_VIDEO" == "false" ]; then
-                echo -e "Will save backglass MP4 video to ${GREEN}$BACKGLASS_MEDIA_FILE${NC}"
+        # Capture backglass window if needed
+        if [[ "$MODE" == "now" || "$MODE" == "backglass-only" ]]; then
+            WINDOW_ID_BACKGLASS=$(xdotool search --name "$WINDOW_TITLE_BACKGLASS" | head -n 1)
+            if [ -n "$WINDOW_ID_BACKGLASS" ]; then
+                capture_vpx_window "$WINDOW_ID_BACKGLASS" "$BACKGLASS_MEDIA_FILE" &
+                capture_pids+=($!)
+                if [ "$NO_VIDEO" == "false" ]; then
+                    echo -e "Will save backglass MP4 video to ${GREEN}$BACKGLASS_MEDIA_FILE${NC}"
+                fi
+            else
+                echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' window not found.${NC}"
             fi
-        else
-            echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' window not found.${NC}"
         fi
-    fi
 
-    # Wait for capture processes to finish
-    for pid in "${capture_pids[@]}"; do
-        wait "$pid"
-    done
+        # Wait for capture processes to finish
+        for pid in "${capture_pids[@]}"; do
+            wait "$pid"
+        done
 
-    # Terminate the entire VPX process group
-    echo -e "${YELLOW}Terminating VPX process group (PGID: $VPX_PID)${NC}"
-    kill -TERM -- -"$VPX_PID" 2>/dev/null
-    sleep 2
-    if kill -0 -- -"$VPX_PID" 2>/dev/null; then
-        kill -9 -- -"$VPX_PID" 2>/dev/null
-    fi
+        # Terminate the entire VPX process group
+        echo -e "${YELLOW}Terminating VPX process group (PGID: $VPX_PID)${NC}"
+        kill -TERM -- -"$VPX_PID" 2>/dev/null
+        sleep 2
+        if kill -0 -- -"$VPX_PID" 2>/dev/null; then
+            kill -9 -- -"$VPX_PID" 2>/dev/null
+        fi
 
-    # Wait for VPX to complete and capture its exit status
-    wait "$VPX_PID"
-    EXIT_STATUS=$?
+        # Wait for VPX to complete and capture its exit status
+        wait "$VPX_PID"
+        EXIT_STATUS=$?
 
-    # Check the exit status and log file for errors
-    if [ "$EXIT_STATUS" -ne 0 ]; then
-        echo -e "${RED}Error: VPX exited with error code $EXIT_STATUS.${NC}"
-    elif grep -q "Error" "$LOG_FILE" 2>/dev/null; then
-        echo -e "${RED}Error: VPX encountered an issue according to the log.${NC}"
-    else
-        echo -e "${GREEN}VPX exited normally.${NC}"
-        rm "$LOG_FILE"
+        # Check the exit status and log file for errors
+        if [ "$EXIT_STATUS" -ne 0 ]; then
+            echo -e "${RED}Error: VPX exited with error code $EXIT_STATUS.${NC}"
+            echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to exit normally. Exit code: $EXIT_CODE" >> "$LOG_FILE"
+        fi
     fi
 
     echo -e "${GREEN}Finished processing table: $TABLE_NAME${NC}"
