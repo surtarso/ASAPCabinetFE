@@ -115,7 +115,7 @@ capture_vpx_window() {
 # Function to check if .vbs indicates a DMD
 has_dmd_from_vbs() {
     local vbs_file="$1"
-    if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD" "$vbs_file"; then
+    if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD|UltraDMD" "$vbs_file"; then
         return 0  # DMD present
     else
         return 1  # No DMD
@@ -248,6 +248,7 @@ while IFS= read -r VPX_PATH <&3; do
         }
     fi
 
+    # Check VBScript if there's a DMD present
     if [[ -f "$VBS_FILE" ]]; then
         if has_dmd_from_vbs "$VBS_FILE"; then
             echo "DMD detected in $TABLE_NAME via .vbs"
@@ -261,6 +262,7 @@ while IFS= read -r VPX_PATH <&3; do
         CAPTURE_DMD="check_later"
     fi
 
+    # in DMD-only mode, skip launching vpx if there was no DMD detected in VBScript
     if [[ "$MODE" != "dmd-only" || "$CAPTURE_DMD" != "false" ]]; then
         # Launch VPX
         echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
@@ -271,18 +273,18 @@ while IFS= read -r VPX_PATH <&3; do
         continue  # Skip to next table
     fi
 
-    sleep 3
+    sleep 3 # check for some start error on vpinballx side
     if ! kill -0 "$VPINBALLX_PID" 2>/dev/null; then
         echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start" >> "$LOG_FILE"
         echo -e "${RED}Error: VPX failed to start. Check $LOG_FILE${NC}"
-        continue
+        continue # Skip to next table
     fi
 
     echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
     sleep "$LOAD_DELAY"
     echo -e "${YELLOW}Starting screen capture...${NC}"
 
-    # Capture windows
+    # Capture windows PIDs
     capture_pids=()
 
     # Capture Table window
