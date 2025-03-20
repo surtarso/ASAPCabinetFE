@@ -13,10 +13,8 @@
 - Navigate tables with titles and wheels
 - Extended settings for many display configurations
 - Extremely lightweight and simple
-- No need to download artpacks, generate your own!*
+- No need to download artpacks, generate your own! (See [tools](#generator-tools))
 - Just what it takes to make a cabinet look good
-
-*Playfield and Backglass from automated screenshots. (See [tools](#generator-tools)).
 
 ## How it works
 
