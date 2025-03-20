@@ -101,7 +101,7 @@ g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/img
    ./ASAPCabinetFE
    ```
 
-### Keymap (No`t Yet Configurable)
+### Keymap (Not Yet Configurable)
 | Action             | Key Combination  | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
