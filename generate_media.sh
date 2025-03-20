@@ -19,7 +19,11 @@ NC="\033[0m"  # No Color
 
 # **File Paths**
 CONFIG_FILE="config.ini"
-LOG_FILE="error.log"
+
+mkdir -p logs/
+ERROR_LOG_FILE="logs/error.log"
+VPX_LOG_FILE="logs/VPinballX.log"
+CAPTURE_LOG="logs/capture.log"
 
 # **Configuration Variables**
 LOAD_DELAY=12             # Seconds to wait after launching VPX for tables to load
@@ -27,11 +31,11 @@ SCREENSHOT_FPS=12         # Frames per second for video
 RECORDING_DURATION=4      # Seconds of video recording
 FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
 FRAME_INTERVAL=0.1        # Seconds between screenshots (approx 10 FPS, adjusted by ffmpeg)
+
 WINDOW_TITLE_VPX="Visual Pinball Player"
 WINDOW_TITLE_BACKGLASS="B2SBackglass"
 WINDOW_TITLE_DMD=("FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
 
-# **Function: get_ini_value**
 # Reads a value from the specified section and key in the INI file
 get_ini_value() {
     local section="$1"
@@ -61,7 +65,6 @@ else
     exit 1
 fi
 
-# **Function: capture_vpx_window**
 # Captures screenshots of a window and assembles them into a video or saves a single image
 capture_vpx_window() {
     local window_id="$1"
@@ -91,7 +94,7 @@ capture_vpx_window() {
         # Capture screenshots
         for ((i = 0; i < FRAME_COUNT; i++)); do
             local frame_file="${tmp_dir}/frame_${i}.png"
-            import -window "$window_id" "$frame_file"
+            import -window "$window_id" "$frame_file" >> $CAPTURE_LOG
             sleep "$FRAME_INTERVAL"
 
             # Save the middle frame as image_output
@@ -106,7 +109,7 @@ capture_vpx_window() {
         echo -e "${YELLOW}Assembling video...${NC}"
         ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${tmp_dir}/frame_%d.png" \
             -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
-            "$video_output" 2>&1 | sed -u 's/\r/\n/g' | tail -n 1
+            "$video_output" >> $CAPTURE_LOG 2>&1
 
         rm -rf "$tmp_dir"
     fi
@@ -122,7 +125,6 @@ has_dmd_from_vbs() {
     fi
 }
 
-# **Function: usage**
 # Displays help message
 usage() {
     echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass + DMD)${NC} for \033[4mASAPCabinetFE\033[0m"
@@ -258,7 +260,7 @@ while IFS= read -r VPX_PATH <&3; do
             CAPTURE_DMD="false"
         fi
     else
-        echo "No .vbs file found for $TABLE_NAME, will check via VPX"
+        echo "No .vbs file found for $TABLE_NAME, will check for a DMD via VPX"
         CAPTURE_DMD="check_later"
     fi
 
@@ -266,7 +268,7 @@ while IFS= read -r VPX_PATH <&3; do
     if [[ "$MODE" != "dmd-only" || "$CAPTURE_DMD" != "false" ]]; then
         # Launch VPX
         echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
-        setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" >"$LOG_FILE" 2>&1 &
+        setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" >"$VPX_LOG_FILE" 2>&1 &
         VPINBALLX_PID=$!
     else
         echo -e "${YELLOW}Skipping $TABLE_NAME in dmd-only mode (no DMD in .vbs)${NC}"
@@ -275,8 +277,8 @@ while IFS= read -r VPX_PATH <&3; do
 
     sleep 3 # check for some start error on vpinballx side
     if ! kill -0 "$VPINBALLX_PID" 2>/dev/null; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start" >> "$LOG_FILE"
-        echo -e "${RED}Error: VPX failed to start. Check $LOG_FILE${NC}"
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start" >> "$ERROR_LOG_FILE"
+        echo -e "${RED}Error: VPX failed to start. Check $ERROR_LOG_FILE${NC}"
         continue # Skip to next table
     fi
 
@@ -329,37 +331,53 @@ while IFS= read -r VPX_PATH <&3; do
         fi
     fi
 
-    # Capture DMD window
+    # Capture DMD windows
     if [[ "$MODE" == "now" || "$MODE" == "dmd-only" ]]; then
         if [[ "$CAPTURE_DMD" != "false" ]]; then
             if [[ "$NO_VIDEO" == "false" ]]; then
-                check_file="$DMD_VIDEO_FILE"
+                base_file="$DMD_VIDEO_FILE"  # e.g., video/dmd.mp4
             else
-                check_file="$DMD_IMAGE_FILE"
+                base_file="$DMD_IMAGE_FILE"  # e.g., images/marquee.png
             fi
-            if [[ ! -f "$check_file" || "$FORCE" == "true" ]]; then
-                if [[ "$CAPTURE_DMD" == "true" || "$CAPTURE_DMD" == "check_later" ]]; then
-                    for dmd_name in "${WINDOW_TITLE_DMD[@]}"; do
-                        window_ids=$(xdotool search --name "$dmd_name")
-                        if [[ -n "$window_ids" ]]; then
-                            for window_id in $window_ids; do
-                                if xwininfo -id "$window_id" | grep -q "Map State: IsViewable"; then
-                                    capture_vpx_window "$window_id" "$DMD_VIDEO_FILE" "$DMD_IMAGE_FILE" &
+            if [[ "$CAPTURE_DMD" == "true" || "$CAPTURE_DMD" == "check_later" ]]; then
+                dmd_count=0  # Counter for naming additional DMDs
+                for dmd_name in "${WINDOW_TITLE_DMD[@]}"; do
+                    window_ids=$(xdotool search --name "$dmd_name")
+                    if [[ -n "$window_ids" ]]; then
+                        for window_id in $window_ids; do
+                            if xwininfo -id "$window_id" | grep -q "Map State: IsViewable"; then
+                                # Determine output file name based on dmd_count
+                                if [[ $dmd_count -eq 0 ]]; then
+                                    check_file="$base_file"
+                                    video_output="$DMD_VIDEO_FILE"
+                                    image_output="$DMD_IMAGE_FILE"
+                                else
+                                    # Construct extra file names (e.g., dmd_extra, dmd_extra2)
+                                    extra_suffix="_extra"
+                                    [[ $dmd_count -gt 1 ]] && extra_suffix="_extra$dmd_count"
+                                    check_file="${base_file%.*}${extra_suffix}.${base_file##*.}"
+                                    video_output="${DMD_VIDEO_FILE%.*}${extra_suffix}.${DMD_VIDEO_FILE##*.}"
+                                    image_output="${DMD_IMAGE_FILE%.*}${extra_suffix}.${DMD_IMAGE_FILE##*.}"
+                                fi
+
+                                # Capture if file doesn’t exist or force is enabled
+                                if [[ ! -f "$check_file" || "$FORCE" == "true" ]]; then
+                                    capture_vpx_window "$window_id" "$video_output" "$image_output" &
                                     capture_pids+=($!)
                                     echo -e "Capturing DMD ($dmd_name) to ${GREEN}$check_file${NC}"
-                                    CAPTURE_DMD="done"  # Mark as captured
-                                    break 2  # Exit both loops after first visible DMD
+                                    CAPTURE_DMD="done"  # Mark that at least one DMD was captured
+                                else
+                                    echo -e "${YELLOW}DMD media ($dmd_name) already exists at $check_file, skipping.${NC}"
                                 fi
-                            done
-                        fi
-                    done
-                    if [[ "$CAPTURE_DMD" == "check_later" ]]; then
-                        echo -e "${YELLOW}No visible DMD windows found for $TABLE_NAME${NC}"
-                        CAPTURE_DMD="false"  # No DMD found after checking
+                                ((dmd_count++))  # Increment counter for next DMD
+                            fi
+                        done
                     fi
+                done
+                if [[ "$CAPTURE_DMD" == "check_later" && $dmd_count -eq 0 ]]; then
+                    echo -e "${YELLOW}No visible DMD windows found for $TABLE_NAME${NC}"
+                    CAPTURE_DMD="false"  # No DMDs found after checking
                 fi
-            else
-                echo -e "${YELLOW}DMD media already exists, skipping.${NC}"
             fi
         else
             echo -e "${YELLOW}Skipping DMD capture (no DMD in .vbs)${NC}"
@@ -379,8 +397,8 @@ while IFS= read -r VPX_PATH <&3; do
 
     wait "$VPINBALLX_PID" 2>/dev/null
     [[ $? -ne 0 ]] && {
-        echo -e "${RED}Error: VPX exited with error. Check $LOG_FILE${NC}"
-        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed" >> "$LOG_FILE"
+        echo -e "${RED}Error: VPX exited with error. Check $ERROR_LOG_FILE${NC}"
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to exit gracefully. Status: $?" >> "$ERROR_LOG_FILE"
     }
 
     echo -e "${GREEN}Finished: $TABLE_NAME${NC}"
