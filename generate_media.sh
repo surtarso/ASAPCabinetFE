@@ -1,391 +1,387 @@
 #!/bin/bash
 # ----------------------------------------------------------
-# Creates images and videos (playfield + backglass) for ASAPCabinetFE
-# Opens all tables and screenshots playfield and backglass
-# Saves them in table_name/images|video/ folder as:
-# table.png|mp4 and backglass.png|mp4 (as set in config.ini)
+# Creates images and videos (playfield + backglass + DMD) for ASAPCabinetFE
+# Opens all tables and screenshots playfield, backglass, and visible DMD windows
+# Saves them in table_name/images|video/ folder as specified in config.ini
 # ----------------------------------------------------------
-# Dependencies: xdotool, ImageMagick, ffmpeg
+# Dependencies: xdotool, ImageMagick, ffmpeg, xwininfo
 # Author: Tarso Galvão, Feb/2025
 
-#set -x
+# Uncomment the line below for debugging
+# set -x
 
-# ANSI color codes for output
+# **Color Codes for Output**
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 BLUE="\033[0;34m"
 NC="\033[0m"  # No Color
 
-# INI file
+# **File Paths**
 CONFIG_FILE="config.ini"
 LOG_FILE="error.log"
 
-# Function to get values from INI file
+# **Configuration Variables**
+LOAD_DELAY=12             # Seconds to wait after launching VPX for tables to load
+SCREENSHOT_FPS=12         # Frames per second for video
+RECORDING_DURATION=4      # Seconds of video recording
+FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
+FRAME_INTERVAL=0.1        # Seconds between screenshots (approx 10 FPS, adjusted by ffmpeg)
+WINDOW_TITLE_VPX="Visual Pinball Player"
+WINDOW_TITLE_BACKGLASS="B2SBackglass"
+WINDOW_TITLE_DMD=("FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
+
+# **Function: get_ini_value**
+# Reads a value from the specified section and key in the INI file
 get_ini_value() {
     local section="$1"
     local key="$2"
-    local value
-
-    value=$(awk -F= -v section="$section" -v key="$key" '
+    awk -F= -v section="$section" -v key="$key" '
         BEGIN { inside_section=0 }
         /^\[.*\]$/ { inside_section=($0 == "[" section "]") }
         inside_section && $1 ~ "^[ \t]*" key "[ \t]*$" { gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/\r/, "", $2); print $2; exit }
-    ' "$CONFIG_FILE")
-
-    echo -e "$value"
+    ' "$CONFIG_FILE"
 }
 
-# Load values from config.ini
+# **Load Configuration from config.ini**
 if [[ -f "$CONFIG_FILE" ]]; then
     ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
     VPX_EXECUTABLE=$(get_ini_value "VPX" "ExecutableCmd")
-    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
     TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
     TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
+    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
     BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
+    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
+    DMD_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
     echo -e "${GREEN}Loaded config.ini${NC}"
 else
     echo -e "${RED}-------------------------------------------------------------${NC}"
-    echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
+    echo -e "${RED}Error: config.ini not found. Exiting...${NC}"
     echo -e "${RED}-------------------------------------------------------------${NC}"
     exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Configuration variables
-# ---------------------------------------------------------------------------
-LOAD_DELAY=12       # Seconds to wait after launching VPX for tables to load
-
-# Screenshot-based MP4 video settings:
-SCREENSHOT_FPS=12         # Set frames per second here
-RECORDING_DURATION=4      # Seconds of video recording
-
-FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
-FRAME_INTERVAL=0.1        # Seconds between screenshots (1/SCREENSHOT_FPS)
-
-# Window titles to capture:
-WINDOW_TITLE_VPX="Visual Pinball Player"
-WINDOW_TITLE_BACKGLASS="B2SBackglass"
-
-# -----------------------------------------------------------------------------
-# Function: capture_vpx_window
-# Captures a window by taking a series of screenshots and then assembling them
-# into an MP4 video.
-# Parameters:
-#   $1 - Window ID to capture.
-#   $2 - Output file for the video.
-# -----------------------------------------------------------------------------
+# **Function: capture_vpx_window**
+# Captures screenshots of a window and assembles them into a video or saves a single image
 capture_vpx_window() {
-    local WINDOW_ID="$1"
-    local OUTPUT_FILE="$2"
+    local window_id="$1"
+    local video_output="$2"
+    local image_output="$3"
 
-    if [ "$NO_VIDEO" == "true" ]; then
-        FRAME_COUNT=1
-        FRAME_INTERVAL=0
-    else
-        mkdir -p "$VIDEO_DIR"
-    fi
-
-    # Ensure the window is active and raised
-    xdotool windowactivate "$WINDOW_ID" > /dev/null 2>&1
-    xdotool windowraise "$WINDOW_ID" > /dev/null 2>&1
+    # Activate and raise the window
+    xdotool windowactivate "$window_id" >/dev/null 2>&1
+    xdotool windowraise "$window_id" >/dev/null 2>&1
     sleep 0.5
 
-    # Create a temporary directory for screenshots
-    local TMP_DIR
-    TMP_DIR=$(mktemp -d --tmpdir frame_tmp_XXXXXX)
+    if [[ "$NO_VIDEO" == "true" ]]; then
+        # Ensure the image directory exists
+        mkdir -p "$(dirname "$image_output")"
+        # Capture one frame and save to image_output
+        import -window "$window_id" "$image_output"
+        echo -e "Saved image to ${GREEN}$image_output${NC}"
+    else
+        # Ensure directories exist
+        mkdir -p "$(dirname "$video_output")"
+        mkdir -p "$(dirname "$image_output")"
 
-    local i
-    for (( i=0; i<FRAME_COUNT; i++ )); do
-        local FRAME_FILE="${TMP_DIR}/frame_${i}.png"
-        # Capture a screenshot of the window
-        import -window "$WINDOW_ID" "$FRAME_FILE"
-        sleep "$FRAME_INTERVAL"
+        # Create temporary directory for screenshots
+        local tmp_dir
+        tmp_dir=$(mktemp -d --tmpdir frame_tmp_XXXXXX)
 
-        # Save the middle frame with the same base name as OUTPUT_FILE
-        if [[ $i -eq $((FRAME_COUNT / 2)) || "$NO_VIDEO" == "true" ]]; then
-            local BASE_NAME
-            BASE_NAME=$(basename "$OUTPUT_FILE" .mp4)
-            local IMAGES_DIR
-            IMAGES_DIR=$(dirname "$TABLE_IMAGE")
-            local DEST_FILE="${TABLE_DIR}/${IMAGES_DIR}/${BASE_NAME}.png"
+        # Capture screenshots
+        for ((i = 0; i < FRAME_COUNT; i++)); do
+            local frame_file="${tmp_dir}/frame_${i}.png"
+            import -window "$window_id" "$frame_file"
+            sleep "$FRAME_INTERVAL"
 
-            # Skip if file exists and FORCE is "false"
-            if [[ -f "$DEST_FILE" && "$FORCE" == "false" ]]; then
-                echo -e "Skipping image capture:${YELLOW} ${DEST_FILE}${NC} already exists."
-                continue
+            # Save the middle frame as image_output
+            if [[ $i -eq $((FRAME_COUNT / 2)) ]]; then
+                cp "$frame_file" "$image_output" && echo -e "Frame saved to ${GREEN}$image_output${NC}" || {
+                    echo -e "${RED}Error: Failed to copy frame to $image_output${NC}" >&2
+                }
             fi
+        done
 
-            mkdir -p "$TABLE_DIR/$IMAGES_DIR"  # Ensure the directory exists
-            cp "$FRAME_FILE" "$DEST_FILE"
-            
-            if [[ $? -ne 0 ]]; then
-                echo -e "${RED}Error: Failed to copy frame to ${DEST_FILE}${NC}" >&2
-            else
-                echo -e "Frame saved to ${GREEN}${DEST_FILE}${NC}"
-            fi
-        fi
-
-    done
-
-    if [ "$NO_VIDEO" == "false" ]; then
+        # Assemble video
         echo -e "${YELLOW}Assembling video...${NC}"
-        # Assemble the screenshots into an MP4 video using ffmpeg
-        ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${TMP_DIR}/frame_%d.png" \
-        -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
-        "$OUTPUT_FILE" 2>&1 | sed -u 's/\r/\n/g' | tail -n 1
-    fi
+        ffmpeg -y -framerate "$SCREENSHOT_FPS" -i "${tmp_dir}/frame_%d.png" \
+            -vf "tmix=frames=3:weights=1 1 1" -r 30 -c:v libx264 -pix_fmt yuv420p \
+            "$video_output" 2>&1 | sed -u 's/\r/\n/g' | tail -n 1
 
-    # Remove the temporary directory and its contents
-    rm -rf "$TMP_DIR"
-    echo -e "Done."
+        rm -rf "$tmp_dir"
+    fi
 }
 
-# -----------------------------------------------------------------------------
-# Usage function
-# -----------------------------------------------------------------------------
+# Function to check if .vbs indicates a DMD
+has_dmd_from_vbs() {
+    local vbs_file="$1"
+    if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD" "$vbs_file"; then
+        return 0  # DMD present
+    else
+        return 1  # No DMD
+    fi
+}
+
+# **Function: usage**
+# Displays help message
 usage() {
-    echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass)${NC} for \033[4mASAPCabinetFE\033[0m"
-    echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} following ${YELLOW}config.ini${NC} settings"
-    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--missing${NC}|${BLUE}-m${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
-    echo ""
-    echo -e "  ${BLUE}--missing, -m            Capture missing table and backglass media"
-    echo -e "  ${YELLOW}--tables-only, -t        Capture only missing table videos. Optionally provide a specific table path"
-    echo -e "  ${YELLOW}--backglass-only, -b     Capture only missing backglass videos. Optionally provide a specific table path"
-    echo -e "  ${GREEN}--image-only, -i         Capture only images (skip videos). Optionally provide a specific table path"
-    echo -e "  ${RED}--force, -f              Force rebuilding media even if they already exist"
-    echo -e "\n  ${NC}-h, --help               Show this help message and exit"
-    echo -e "\n${YELLOW}Note:${NC} You can combine args"
+    echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass + DMD)${NC} for \033[4mASAPCabinetFE\033[0m"
+    echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} per ${YELLOW}config.ini${NC}"
+    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--missing${NC}|${BLUE}-m${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>] | ${YELLOW}--dmd-only${NC}|${YELLOW}-d${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
+    echo -e "\nOptions:"
+    echo -e "  ${BLUE}--missing, -m            Capture missing table, backglass, and DMD media"
+    echo -e "  ${YELLOW}--tables-only, -t        Capture only table media (optional path)"
+    echo -e "  ${YELLOW}--backglass-only, -b     Capture only backglass media (optional path)"
+    echo -e "  ${YELLOW}--dmd-only, -d           Capture only DMD media (optional path)"
+    echo -e "  ${GREEN}--image-only, -i         Capture images only (optional path)"
+    echo -e "  ${RED}--force, -f              Force rebuild even if files exist"
+    echo -e "  ${NC}-h, --help               Show this help"
+    echo -e "\n${YELLOW}Note:${NC} Combine options as needed"
     exit 1
 }
 
-# -----------------------------------------------------------------------------
-# Parse command-line arguments
-# -----------------------------------------------------------------------------
+# **Parse Command-Line Arguments**
 MODE=""
 SPECIFIC_PATH=""
 FORCE="false"
 NO_VIDEO="false"
 
-if [ "$#" -eq 0 ]; then
-    usage
-fi
+[[ $# -eq 0 ]] && usage
 
-while [ "$#" -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
-        --help|-h)
-            usage
-            ;;
-        --missing|-m)
-            MODE="now"
-            shift
-            ;;
+        --help|-h) usage ;;
+        --missing|-m) MODE="now"; shift ;;
         --tables-only|-t)
             MODE="tables-only"
             shift
-            if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
-                SPECIFIC_PATH="$1"
-                shift
-            fi
+            [[ $# -gt 0 && "$1" != -* ]] && { SPECIFIC_PATH="$1"; shift; }
             ;;
         --backglass-only|-b)
             MODE="backglass-only"
             shift
-            if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
-                SPECIFIC_PATH="$1"
-                shift
-            fi
+            [[ $# -gt 0 && "$1" != -* ]] && { SPECIFIC_PATH="$1"; shift; }
+            ;;
+        --dmd-only|-d)
+            MODE="dmd-only"
+            shift
+            [[ $# -gt 0 && "$1" != -* ]] && { SPECIFIC_PATH="$1"; shift; }
             ;;
         --image-only|-i)
             NO_VIDEO="true"
             shift
-            if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
-                SPECIFIC_PATH="$1"
-                shift
-            fi
+            [[ $# -gt 0 && "$1" != -* ]] && { SPECIFIC_PATH="$1"; shift; }
             ;;
-        --force|-f)
-            FORCE="true"
-            shift
-            ;;
-        *)
-            echo -e "\n${RED}Unknown option: $1${NC}"
-            usage
-            ;;
+        --force|-f) FORCE="true"; shift ;;
+        *) echo -e "\n${RED}Unknown option: $1${NC}"; usage ;;
     esac
 done
 
-# If no valid mode is set, display help
-if [ -z "$MODE" ]; then
-    usage
-fi
+[[ -z "$MODE" ]] && usage
 
-# -----------------------------------------------------------------------------
-# Dependency checks: Ensure required commands are available.
-# -----------------------------------------------------------------------------
-command -v xdotool >/dev/null 2>&1 || {
-    echo -e "${RED}Error: xdotool is not installed. Please install it (e.g., sudo apt install xdotool).${NC}"
-    exit 1
-}
+# **Check Dependencies**
+for cmd in xdotool import ffmpeg xwininfo; do
+    command -v "$cmd" >/dev/null 2>&1 || {
+        echo -e "${RED}Error: $cmd is not installed. Install it (e.g., sudo apt install ${cmd%% *}).${NC}"
+        exit 1
+    }
+done
 
-command -v import >/dev/null 2>&1 || {
-    echo -e "${RED}Error: ImageMagick (import) is not installed. Please install it (e.g., sudo apt install imagemagick).${NC}"
-    exit 1
-}
-
-command -v ffmpeg >/dev/null 2>&1 || {
-    echo -e "${RED}Error: ffmpeg is not installed. Please install it (e.g., sudo apt install ffmpeg).${NC}"
-    exit 1
-}
-
-# -----------------------------------------------------------------------------
-# Build list of VPX files to process.
-# If a specific table path is provided, use it; otherwise process all tables.
-# -----------------------------------------------------------------------------
-VPX_LIST=""
-if [ -n "$SPECIFIC_PATH" ]; then
-    if [ -d "$SPECIFIC_PATH" ]; then
-        VPX_FILE=$(find "$SPECIFIC_PATH" -maxdepth 1 -type f -name "*.vpx" | head -n 1)
-        if [ -z "$VPX_FILE" ]; then
-            echo -e "${RED}Error: No .vpx file found in directory $SPECIFIC_PATH${NC}"
-            exit 1
-        fi
-        VPX_LIST="$VPX_FILE"
-    elif [ -f "$SPECIFIC_PATH" ]; then
+# **Build VPX File List**
+if [[ -n "$SPECIFIC_PATH" ]]; then
+    if [[ -d "$SPECIFIC_PATH" ]]; then
+        VPX_LIST=$(find "$SPECIFIC_PATH" -maxdepth 1 -type f -name "*.vpx" | head -n 1)
+        [[ -z "$VPX_LIST" ]] && { echo -e "${RED}Error: No .vpx file in $SPECIFIC_PATH${NC}"; exit 1; }
+    elif [[ -f "$SPECIFIC_PATH" ]]; then
         VPX_LIST="$SPECIFIC_PATH"
     else
-        echo -e "${RED}Error: Specified path '$SPECIFIC_PATH' is not valid.${NC}"
+        echo -e "${RED}Error: Invalid path '$SPECIFIC_PATH'${NC}"
         exit 1
     fi
 else
     VPX_LIST=$(find "$ROOT_FOLDER" -name "*.vpx")
 fi
 
-# -----------------------------------------------------------------------------
-# Process each VPX file (each table)
-# -----------------------------------------------------------------------------
+# **Process VPX Files**
 echo -e "${GREEN}Processing VPX files...${NC}"
-
 while IFS= read -r VPX_PATH <&3; do
-    SKIP_ERROR_TABLE="false"
-    # Derive table name and video folder
     TABLE_NAME=$(basename "$VPX_PATH" .vpx)
     TABLE_DIR=$(dirname "$VPX_PATH")
-    IMAGES_DIR=$(dirname "$TABLE_IMAGE")
-    VIDEO_DIR="${TABLE_DIR}/${TABLE_VIDEO%/*}"
-    TABLE_MEDIA_FILE="${TABLE_DIR}/${TABLE_VIDEO}"
-    BACKGLASS_MEDIA_FILE="${TABLE_DIR}/${BACKGLASS_VIDEO}"
+    TABLE_VIDEO_FILE="${TABLE_DIR}/${TABLE_VIDEO}"
     TABLE_IMAGE_FILE="${TABLE_DIR}/${TABLE_IMAGE}"
+    BACKGLASS_VIDEO_FILE="${TABLE_DIR}/${BACKGLASS_VIDEO}"
     BACKGLASS_IMAGE_FILE="${TABLE_DIR}/${BACKGLASS_IMAGE}"
+    DMD_VIDEO_FILE="${TABLE_DIR}/${DMD_VIDEO}"
+    DMD_IMAGE_FILE="${TABLE_DIR}/${DMD_IMAGE}"
+
+    VBS_FILE="${TABLE_DIR}/${TABLE_NAME}.vbs"
+    CAPTURE_DMD="check_needed"
 
     echo -e "${BLUE}Processing: $(basename "$TABLE_DIR")${NC}"
 
-    # Skip processing if media exists (unless forcing rebuild)
-    if [ "$NO_VIDEO" == "false" ]; then
-        if [[ "$MODE" == "now" && -f "$TABLE_MEDIA_FILE" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Both MP4 files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
-        fi
-        if [[ "$MODE" == "tables-only" && -f "$TABLE_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Table MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
-        fi
-        if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_MEDIA_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Backglass MP4 file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
+    # Skip if media exists and not forcing
+    if [[ "$NO_VIDEO" == "false" ]]; then
+        [[ "$MODE" == "now" && -f "$TABLE_VIDEO_FILE" && -f "$BACKGLASS_VIDEO_FILE" && -f "$DMD_VIDEO_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}All MP4s exist, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "tables-only" && -f "$TABLE_VIDEO_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}Table MP4 exists, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_VIDEO_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}Backglass MP4 exists, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "dmd-only" && -f "$DMD_VIDEO_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}DMD MP4 exists, skipping.${NC}"; continue
+        }
+    else
+        [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && -f "$DMD_IMAGE_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}All PNGs exist, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "tables-only" && -f "$TABLE_IMAGE_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}Table PNG exists, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}Backglass PNG exists, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "dmd-only" && -f "$DMD_IMAGE_FILE" && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}DMD PNG exists, skipping.${NC}"; continue
+        }
+    fi
+
+    if [[ -f "$VBS_FILE" ]]; then
+        if has_dmd_from_vbs "$VBS_FILE"; then
+            echo "DMD detected in $TABLE_NAME via .vbs"
+            CAPTURE_DMD="true"
+        else
+            echo "No DMD detected in $TABLE_NAME via .vbs"
+            CAPTURE_DMD="false"
         fi
     else
-        if [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Both PNG files already exist for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
-        fi
-        if [[ "$MODE" == "tables-only" && -f "$TABLE_IMAGE_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Table PNG file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
-        fi
-        if [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]]; then
-            echo -e "${YELLOW}Backglass PNG file already exists for $(basename "$TABLE_DIR"), skipping.${NC}"
-            continue
-        fi
+        echo "No .vbs file found for $TABLE_NAME, will check via VPX"
+        CAPTURE_DMD="check_later"
     fi
 
-    # Launch VPX in its own process group so that we can later terminate it
-    echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
-    setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" > "$LOG_FILE" 2>&1 &
-    VPINBALLX_PID=$!
+    if [[ "$MODE" != "dmd-only" || "$CAPTURE_DMD" != "false" ]]; then
+        # Launch VPX
+        echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
+        setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" >"$LOG_FILE" 2>&1 &
+        VPINBALLX_PID=$!
+    else
+        echo -e "${YELLOW}Skipping $TABLE_NAME in dmd-only mode (no DMD in .vbs)${NC}"
+        continue  # Skip to next table
+    fi
 
-    # Initial check to ensure VPX starts successfully
-    sleep 3  # Wait 3 seconds to give VPX time to initialize
+    sleep 3
     if ! kill -0 "$VPINBALLX_PID" 2>/dev/null; then
-        EXIT_CODE=$?  # Capture the exit code
-        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start. Exit code: $EXIT_CODE" >> "$LOG_FILE"
-        echo -e "${RED}Error: VPX failed to start or crashed immediately. Check error.log${NC}"
-        SKIP_ERROR_TABLE="true"
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start" >> "$LOG_FILE"
+        echo -e "${RED}Error: VPX failed to start. Check $LOG_FILE${NC}"
+        continue
     fi
 
-    if [ "$SKIP_ERROR_TABLE" == "false" ]; then
-        # Wait for VPX windows to load
-        echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
-        sleep "$LOAD_DELAY"
-        echo -e "${YELLOW}Starting screen capture...${NC}"
+    echo -e "${GREEN}Waiting $LOAD_DELAY seconds for table to load...${NC}"
+    sleep "$LOAD_DELAY"
+    echo -e "${YELLOW}Starting screen capture...${NC}"
 
-        # Array to collect capture process IDs
-        capture_pids=()
+    # Capture windows
+    capture_pids=()
 
-        # Capture table window if needed
-        if [[ "$MODE" == "now" || "$MODE" == "tables-only" ]]; then
-            WINDOW_ID_VPX=$(xdotool search --name "$WINDOW_TITLE_VPX" | head -n 1)
-            if [ -n "$WINDOW_ID_VPX" ]; then
-                capture_vpx_window "$WINDOW_ID_VPX" "$TABLE_MEDIA_FILE" &
-                capture_pids+=($!)
-                if [ "$NO_VIDEO" == "false" ]; then
-                    echo -e "Will save table MP4 video to ${GREEN}$TABLE_MEDIA_FILE${NC}"
-                fi
+    # Capture Table window
+    if [[ "$MODE" == "now" || "$MODE" == "tables-only" ]]; then
+        WINDOW_ID_VPX=$(xdotool search --name "$WINDOW_TITLE_VPX" | head -n 1)
+        if [[ -n "$WINDOW_ID_VPX" ]]; then
+            if [[ "$NO_VIDEO" == "false" ]]; then
+                check_file="$TABLE_VIDEO_FILE"
             else
-                echo -e "${RED}Error: '$WINDOW_TITLE_VPX' window not found.${NC}"
+                check_file="$TABLE_IMAGE_FILE"
             fi
-        fi
-
-        # Capture backglass window if needed
-        if [[ "$MODE" == "now" || "$MODE" == "backglass-only" ]]; then
-            WINDOW_ID_BACKGLASS=$(xdotool search --name "$WINDOW_TITLE_BACKGLASS" | head -n 1)
-            if [ -n "$WINDOW_ID_BACKGLASS" ]; then
-                capture_vpx_window "$WINDOW_ID_BACKGLASS" "$BACKGLASS_MEDIA_FILE" &
+            if [[ ! -f "$check_file" || "$FORCE" == "true" ]]; then
+                capture_vpx_window "$WINDOW_ID_VPX" "$TABLE_VIDEO_FILE" "$TABLE_IMAGE_FILE" &
                 capture_pids+=($!)
-                if [ "$NO_VIDEO" == "false" ]; then
-                    echo -e "Will save backglass MP4 video to ${GREEN}$BACKGLASS_MEDIA_FILE${NC}"
-                fi
+                echo -e "Capturing table to ${GREEN}$check_file${NC}"
             else
-                echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' window not found.${NC}"
+                echo -e "${YELLOW}Table media already exists, skipping.${NC}"
             fi
-        fi
-
-        # Wait for capture processes to finish
-        for pid in "${capture_pids[@]}"; do
-            wait "$pid"
-        done
-
-        # Terminate the entire VPX process group
-        echo -e "${YELLOW}Terminating VPX process group (PGID: $VPINBALLX_PID)${NC}"
-        kill -TERM -- -"$VPINBALLX_PID" 2>/dev/null
-        sleep 2
-        if kill -0 -- -"$VPINBALLX_PID" 2>/dev/null; then
-            kill -9 -- -"$VPINBALLX_PID" 2>/dev/null
-        fi
-
-        # Wait for VPX to complete and capture its exit status
-        wait "$VPINBALLX_PID"
-        EXIT_STATUS=$?
-
-        # Check the exit status and log file for errors
-        if [ "$EXIT_STATUS" -ne 0 ]; then
-            echo -e "${RED}Error: VPX exited with error code $EXIT_STATUS.${NC}"
-            echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to exit normally. Exit code: $EXIT_CODE" >> "$LOG_FILE"
+        else
+            echo -e "${RED}Error: '$WINDOW_TITLE_VPX' not found${NC}"
         fi
     fi
 
-    echo -e "${GREEN}Finished processing table: $TABLE_NAME${NC}"
+    # Capture Backglass window
+    if [[ "$MODE" == "now" || "$MODE" == "backglass-only" ]]; then
+        WINDOW_ID_BACKGLASS=$(xdotool search --name "$WINDOW_TITLE_BACKGLASS" | head -n 1)
+        if [[ -n "$WINDOW_ID_BACKGLASS" ]]; then
+            if [[ "$NO_VIDEO" == "false" ]]; then
+                check_file="$BACKGLASS_VIDEO_FILE"
+            else
+                check_file="$BACKGLASS_IMAGE_FILE"
+            fi
+            if [[ ! -f "$check_file" || "$FORCE" == "true" ]]; then
+                capture_vpx_window "$WINDOW_ID_BACKGLASS" "$BACKGLASS_VIDEO_FILE" "$BACKGLASS_IMAGE_FILE" &
+                capture_pids+=($!)
+                echo -e "Capturing backglass to ${GREEN}$check_file${NC}"
+            else
+                echo -e "${YELLOW}Backglass media already exists, skipping.${NC}"
+            fi
+        else
+            echo -e "${RED}Error: '$WINDOW_TITLE_BACKGLASS' not found${NC}"
+        fi
+    fi
+
+    # Capture DMD window
+    if [[ "$MODE" == "now" || "$MODE" == "dmd-only" ]]; then
+        if [[ "$CAPTURE_DMD" != "false" ]]; then
+            if [[ "$NO_VIDEO" == "false" ]]; then
+                check_file="$DMD_VIDEO_FILE"
+            else
+                check_file="$DMD_IMAGE_FILE"
+            fi
+            if [[ ! -f "$check_file" || "$FORCE" == "true" ]]; then
+                if [[ "$CAPTURE_DMD" == "true" || "$CAPTURE_DMD" == "check_later" ]]; then
+                    for dmd_name in "${WINDOW_TITLE_DMD[@]}"; do
+                        window_ids=$(xdotool search --name "$dmd_name")
+                        if [[ -n "$window_ids" ]]; then
+                            for window_id in $window_ids; do
+                                if xwininfo -id "$window_id" | grep -q "Map State: IsViewable"; then
+                                    capture_vpx_window "$window_id" "$DMD_VIDEO_FILE" "$DMD_IMAGE_FILE" &
+                                    capture_pids+=($!)
+                                    echo -e "Capturing DMD ($dmd_name) to ${GREEN}$check_file${NC}"
+                                    CAPTURE_DMD="done"  # Mark as captured
+                                    break 2  # Exit both loops after first visible DMD
+                                fi
+                            done
+                        fi
+                    done
+                    if [[ "$CAPTURE_DMD" == "check_later" ]]; then
+                        echo -e "${YELLOW}No visible DMD windows found for $TABLE_NAME${NC}"
+                        CAPTURE_DMD="false"  # No DMD found after checking
+                    fi
+                fi
+            else
+                echo -e "${YELLOW}DMD media already exists, skipping.${NC}"
+            fi
+        else
+            echo -e "${YELLOW}Skipping DMD capture (no DMD in .vbs)${NC}"
+        fi
+    fi
+
+    # Wait for all captures to finish
+    for pid in "${capture_pids[@]}"; do
+        wait "$pid"
+    done
+
+    # Terminate VPX
+    echo -e "${YELLOW}Terminating VPX (PGID: $VPINBALLX_PID)${NC}"
+    kill -TERM -- -"$VPINBALLX_PID" 2>/dev/null
+    sleep 2
+    kill -0 -- -"$VPINBALLX_PID" 2>/dev/null && kill -9 -- -"$VPINBALLX_PID" 2>/dev/null
+
+    wait "$VPINBALLX_PID" 2>/dev/null
+    [[ $? -ne 0 ]] && {
+        echo -e "${RED}Error: VPX exited with error. Check $LOG_FILE${NC}"
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed" >> "$LOG_FILE"
+    }
+
+    echo -e "${GREEN}Finished: $TABLE_NAME${NC}"
 done 3< <(echo "$VPX_LIST")
 
-echo -e "${GREEN}Finished processing all media.${NC}"
+echo -e "${GREEN}All media processed.${NC}"
