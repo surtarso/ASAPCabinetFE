@@ -20,9 +20,7 @@
 
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
-- Creates two windows: primary (playfield) and secondary (backglass).
-- Uses left/right arrow/shift keys to change tables.
-- Press Enter to launch the table via a `vpinballx_gl` process.
+- Creates two windows: primary (Playfield + Wheel) and secondary (B2SBackglass + DMD).
 
 ## Dependencies
 > [!IMPORTANT]
@@ -135,4 +133,4 @@ Contributions are very welcome! Open issues or pull requests to help improve thi
 
 If you need help installing and configuring Visual Pinball X check my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check my [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to ease the process of settings tables up.
 
-PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe).
+_PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe)._
