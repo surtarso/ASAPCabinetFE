@@ -16,8 +16,15 @@
 - No need to download artpacks, generate your own! (See [tools](#generator-tools))
 - Just what it takes to make a cabinet look good
 
-## How it works
+## TL:DR
+```sh
+git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
+./compile.sh
+./config
+./ASAPCabinetFE
+```
 
+## How it works
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
 - Creates two windows: primary (Playfield + Wheel) and secondary (B2SBackglass + DMD).
@@ -33,7 +40,6 @@
 > - **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
 
 ### Installing Dependencies (Debian based)
-
 For `ASAPCabinetFE`:
 ```sh
 sudo apt-get update
