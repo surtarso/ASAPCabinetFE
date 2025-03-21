@@ -56,7 +56,7 @@ cd ASAPCabinetFE
 ### 2. Compiling `ASAPCabinetFE` (Main Frontend)
 Compile the main application:
 ```sh
-g++ main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+g++ src/main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
 ```
 > [!WARNING]
 > Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
@@ -81,7 +81,7 @@ git submodule update --init --recursive
 
 #### Compile
 ```sh
-g++ config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config
+g++ src/config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config
 ```
 - Run it:
   ```sh

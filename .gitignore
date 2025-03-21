@@ -13,6 +13,9 @@ videomain.cpp
 config
 config.py
 imgui.ini
+screenshot_daemon
+screenshot_daemon.sh
+video_daemon.sh
 
 # Prerequisites
 *.d
