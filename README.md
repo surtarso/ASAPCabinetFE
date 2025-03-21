@@ -111,12 +111,35 @@ g++ src/config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends
 | Quit               | ESC or q         | Exit the table navigation/application.    |
 
 ## Generator Tools
-These tools help you record your screen to create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`. Run them without arguments for help.
-
-`./generate_media.sh` and `missing_media.sh`
-
 > [!CAUTION]
 > Make sure `config.ini` is properly configured before generating media.
+
+**1.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`.
+```sh
+./generate_media.sh --help
+```
+
+**2.** Use the standalone screenshot tool to take planned screenshots
+
+Install dependencies
+```sh
+sudo apt install -y build-essential libsdl2-dev libsdl2-ttf-dev xdotool imagemagick
+```
+
+Compile
+```sh
+g++ src/screenshot_daemon.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_ttf -pthread -o screenshot_daemon
+```
+Run it:
+```sh
+./screenshot_daemon /path/to/table.vpx
+```
+
+**3.** Use the missing media tool to find those sneaky tables without art.
+```sh
+./missing_media.sh --help
+```
+
 ## Troubleshooting
 - **Compilation Fails**:
   - Verify all dependencies are installed.
