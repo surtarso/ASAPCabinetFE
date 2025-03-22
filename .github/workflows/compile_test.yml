@@ -47,8 +47,10 @@ jobs:
     
     - name: Test Version Flag
       run: |
+        # Extract version from CMakeLists.txt
+        VERSION=$(grep "project(ASAPCabinetFE VERSION" ../CMakeLists.txt | sed 's/.*VERSION \([^ ]*\).*/\1/')
+        EXPECTED_OUTPUT="ASAPCabinetFE version $VERSION"
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
-        EXPECTED_OUTPUT="ASAPCabinetFE version 2.0.0"
         if [ "$VERSION_OUTPUT" = "$EXPECTED_OUTPUT" ]; then
           echo "Version check passed: $VERSION_OUTPUT"
         else
