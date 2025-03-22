@@ -19,6 +19,7 @@
 #include "input_manager.h"
 #include "screenshot_utils.h"
 
+#define ASAPCAB_VERSION "2.0.0"
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
 
 void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer) {
@@ -35,7 +36,13 @@ void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // Check for --version flag
+    if (argc == 2 && std::string(argv[1]) == "--version") {
+        std::cout << "ASAPCabinetFE version " << ASAPCAB_VERSION << std::endl;
+        return 0;
+    }
+    
     initialize_config("config.ini");
 
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
