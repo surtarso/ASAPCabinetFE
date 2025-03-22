@@ -132,6 +132,8 @@ SDL_Keycode get_key(const std::map<std::string, std::map<std::string, std::strin
 }
 
 void initialize_config(const std::string& filename) {
+    // auto config = load_config(filename);
+    std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);  // Extract dir from config path
     auto config = load_config(filename);
 
     VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
