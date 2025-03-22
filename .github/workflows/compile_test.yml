@@ -3,10 +3,10 @@ name: C++ Compile Test
 on:
   push:
     branches: [ "main" ]
-    paths: 
+    paths:
       - ".github/workflows/compile_test.yml"
       - "src/**"              # Watch all source files
-      - "Makefile"            # Watch the Makefile
+      - "CMakeLists.txt"      # Watch CMakeLists.txt instead of Makefile
       - "src/imgui/**"        # Watch ImGui files
   pull_request:
     branches: [ "main" ]
@@ -24,14 +24,21 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+        sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 
-    - name: Compile with Makefile
-      run: make clean && make release
+    - name: Configure with CMake
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+
+    - name: Compile with CMake
+      run: |
+        cd build
+        make -j$(nproc)
 
     - name: Check Compilation
       run: |
-        if [ -f ASAPCabinetFE ]; then
+        if [ -f build/ASAPCabinetFE ]; then
           echo "Compilation successful!"
         else
           echo "Compilation failed!"
@@ -40,7 +47,7 @@ jobs:
     
     - name: Test Version Flag
       run: |
-        VERSION_OUTPUT=$(./ASAPCabinetFE --version)
+        VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
         EXPECTED_OUTPUT="ASAPCabinetFE version 2.0.0"
         if [ "$VERSION_OUTPUT" = "$EXPECTED_OUTPUT" ]; then
           echo "Version check passed: $VERSION_OUTPUT"

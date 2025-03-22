@@ -40,7 +40,7 @@ make release
 ### Installing Dependencies (Debian based)
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 ```
 
 ### Compiling and Running
@@ -53,7 +53,9 @@ cd ASAPCabinetFE
 
 Build it
 ```sh
-make release
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
 ```
 > [!WARNING]
 > Ensure `config.ini` is configured with your paths.
