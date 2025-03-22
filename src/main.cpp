@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
         std::cout << "ASAPCabinetFE version " << ASAPCAB_VERSION << std::endl;
         return 0;
     }
-    
+
     initialize_config("config.ini");
 
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
@@ -203,7 +203,11 @@ int main(int argc, char* argv[]) {
                         if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
                         std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
                         std::cout << "Launching: " << command << std::endl;
-                        std::system(command.c_str());
+                        int result = std::system(command.c_str());
+                        if (result != 0) {
+                            std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
+                            // Continue running—failure isn’t fatal to frontend
+                        }
                     }
                     else if (inputManager.isScreenshotMode(event)) {
                         std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;

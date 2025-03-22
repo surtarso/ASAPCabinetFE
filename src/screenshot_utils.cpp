@@ -277,7 +277,11 @@ void launch_screenshot_mode(const std::string& vpx_file) {
     }
 
     std::cout << "Killing VPX processes..." << std::endl;
-    std::system("pkill -9 -f VPinballX_GL >/dev/null 2>&1");
+    int pkill_result = std::system("pkill -9 -f VPinballX_GL >/dev/null 2>&1");
+    if (pkill_result != 0 && pkill_result != 256) {  // 256 means "no processes matched"
+        std::cerr << "Warning: pkill failed with code " << pkill_result << std::endl;
+    }
+    
     kill(vpx_pid, SIGKILL);
     waitpid(vpx_pid, nullptr, 0);
 
