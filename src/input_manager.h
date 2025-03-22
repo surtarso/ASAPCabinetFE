@@ -17,6 +17,7 @@ public:
     bool isQuit(const SDL_Event& event);
     bool isConfigSave(const SDL_Event& event);
     bool isConfigClose(const SDL_Event& event);
+    bool isScreenshotMode(const SDL_Event& event);  // Add this
 
 private:
     bool isKeyPressed(const SDL_Event& event, SDL_Keycode key);
