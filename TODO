@@ -1,8 +1,16 @@
 TODO
 
+- create a make install target
+
 UI:
+- remove flicker from table switch
 - add blinking arrows on sides to indicate table flow/keys
-- add splash screen on start?
 
 On hold:
 - create default videos
+- better sounds
+- better default images
+- add splash screen on start?
+
+Later:
+- adapt to be crossplatform
