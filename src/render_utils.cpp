@@ -3,20 +3,34 @@
 #include <stdio.h>  // For stderr redirection
 
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path) {
-    // Redirect stderr to /dev/null (Unix) or nul (Windows) during loading
+    // Redirect stderr to suppress SDL_Image errors
+    FILE* redirected;
 #ifdef _WIN32
-    freopen("nul", "w", stderr);  // Windows
+    redirected = freopen("nul", "w", stderr);  // Windows
+    if (!redirected) {
+        std::cerr << "Warning: Failed to redirect stderr to nul" << std::endl;
+    }
 #else
-    freopen("/dev/null", "w", stderr);  // Linux/Mac
+    redirected = freopen("/dev/null", "w", stderr);  // Linux/Mac
+    if (!redirected) {
+        std::cerr << "Warning: Failed to redirect stderr to /dev/null" << std::endl;
+    }
 #endif
 
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     
     // Restore stderr to console
+    FILE* restored;
 #ifdef _WIN32
-    freopen("CON", "w", stderr);  // Windows
+    restored = freopen("CON", "w", stderr);  // Windows
+    if (!restored) {
+        std::cerr << "Warning: Failed to restore stderr to CON" << std::endl;
+    }
 #else
-    freopen("/dev/tty", "w", stderr);  // Linux/Mac
+    restored = freopen("/dev/tty", "w", stderr);  // Linux/Mac
+    if (!restored) {
+        std::cerr << "Warning: Failed to restore stderr to /dev/tty" << std::endl;
+    }
 #endif
 
     if (!tex) {
