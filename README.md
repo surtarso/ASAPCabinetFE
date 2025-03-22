@@ -22,7 +22,7 @@ sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libs
 git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j$(nproc)
 ./ASAPCabinetFE
 ```
 
@@ -61,7 +61,7 @@ Build it
 ```sh
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j$(nproc)
 ```
 > [!WARNING]
 > Ensure `config.ini` is configured with your paths.
