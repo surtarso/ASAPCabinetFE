@@ -37,3 +37,16 @@ jobs:
           echo "Compilation failed!"
           exit 1
         fi
+    
+    - name: Test Version Flag
+      run: |
+        VERSION_OUTPUT=$(./ASAPCabinetFE --version)
+        EXPECTED_OUTPUT="ASAPCabinetFE version 2.0.0"
+        if [ "$VERSION_OUTPUT" = "$EXPECTED_OUTPUT" ]; then
+          echo "Version check passed: $VERSION_OUTPUT"
+        else
+          echo "Version check failed!"
+          echo "Expected: $EXPECTED_OUTPUT"
+          echo "Got: $VERSION_OUTPUT"
+          exit 1
+        fi
