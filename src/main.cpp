@@ -1,5 +1,7 @@
 #include <iostream>
 #include <memory>
+#include <unistd.h>  // For readlink
+#include <limits.h>  // For PATH_MAX
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -22,6 +24,23 @@
 
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
 
+// Get the directory containing the executable
+std::string getExecutableDir() {
+    char path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    if (count == -1) {
+        std::cerr << "Warning: Couldn’t determine executable path, using './'" << std::endl;
+        return "./";
+    }
+    path[count] = '\0';
+    std::string fullPath = std::string(path);
+    size_t lastSlash = fullPath.find_last_of('/');
+    if (lastSlash == std::string::npos) {
+        return "./";
+    }
+    return fullPath.substr(0, lastSlash + 1);  // Include trailing /
+}
+
 int main(int argc, char* argv[]) {
     // Check for --version flag
     if (argc == 2 && std::string(argv[1]) == "--version") {
@@ -29,7 +48,10 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    initialize_config("config.ini");
+    // initialize_config("config.ini");
+    std::string exeDir = getExecutableDir();
+    std::string configPath = exeDir + "config.ini";
+    initialize_config(configPath);  // Pass full path
 
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
     CHECK_SDL(sdlInit.success, "SDL_Init failed");
@@ -72,16 +94,19 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDLRenderer2_Init(primaryRenderer.get());
 
     bool showConfig = false;
-    IniEditor configEditor("config.ini", showConfig);
+    // IniEditor configEditor("config.ini", showConfig);
+    IniEditor configEditor(configPath, showConfig);
 
     auto font = std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>(TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE), TTF_CloseFont);
     if (!font) std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+    
+    std::string tableChangeSoundPath = exeDir + TABLE_CHANGE_SOUND;
+    auto tableChangeSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(tableChangeSoundPath.c_str()), Mix_FreeChunk);
+    if (!tableChangeSound) std::cerr << "Mix_LoadWAV Error at " << tableChangeSoundPath << ": " << Mix_GetError() << std::endl;
 
-    auto tableChangeSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(TABLE_CHANGE_SOUND.c_str()), Mix_FreeChunk);
-    if (!tableChangeSound) std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
-
-    auto tableLoadSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(TABLE_LOAD_SOUND.c_str()), Mix_FreeChunk);
-    if (!tableLoadSound) std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
+    std::string tableLoadSoundPath = exeDir + TABLE_LOAD_SOUND;
+    auto tableLoadSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(tableLoadSoundPath.c_str()), Mix_FreeChunk);
+    if (!tableLoadSound) std::cerr << "Mix_LoadWAV Error at " << tableLoadSoundPath << ": " << Mix_GetError() << std::endl;
 
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) { std::cerr << "Edit config.ini, no .vpx files found in " << VPX_TABLES_PATH << std::endl; return 1; }
