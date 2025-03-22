@@ -15,7 +15,7 @@ struct ConfigSection {
 class IniEditor {
 public:
     IniEditor(const std::string& filename, bool& showFlag);
-    ~IniEditor();  // Added destructor declaration
+    ~IniEditor();  // destructor declaration
     void drawGUI();
     void handleEvent(const SDL_Event& event);
 

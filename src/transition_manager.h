@@ -3,9 +3,9 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include "video.h"
-#include "asset_manager.h"
-#include "config.h"
+#include "render/video_player.h"
+#include "table/asset_manager.h"
+#include "config/config_loader.h"
 #include <functional>
 
 enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
@@ -20,14 +20,14 @@ public:
     void updateTransition(Uint32 currentTime, AssetManager& assets);
     void loadNewContent(std::function<void()> loadCallback);
     bool isTransitionActive() const;
-    bool shouldMaskFrame() const;  // New method
+    bool shouldMaskFrame() const;
 
 private:
     TransitionState state;
     Uint32 startTime;
     Uint8 currentAlpha;
     bool loadPending;
-    bool maskFrame;  // New flag
+    bool maskFrame;
 };
 
 #endif // TRANSITION_MANAGER_H

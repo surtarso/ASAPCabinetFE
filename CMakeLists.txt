@@ -14,16 +14,16 @@ configure_file(
 
 # Define source files
 set(SOURCES
-    src/asset_manager.cpp
-    src/config.cpp
-    src/config_gui.cpp
-    src/input_manager.cpp
     src/main.cpp
-    src/render_utils.cpp
-    src/screenshot_utils.cpp
-    src/table_utils.cpp
     src/transition_manager.cpp
-    src/video.cpp
+    src/capture/screenshot_manager.cpp
+    src/config/config_loader.cpp
+    src/config/config_gui.cpp
+    src/input/input_manager.cpp
+    src/table/asset_manager.cpp
+    src/table/table_manager.cpp
+    src/render/renderer.cpp
+    src/render/video_player.cpp
     src/imgui/imgui.cpp
     src/imgui/imgui_draw.cpp
     src/imgui/imgui_widgets.cpp
@@ -38,6 +38,11 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     src
+    src/capture
+    src/config
+    src/input
+    src/table
+    src/render
     src/imgui
     src/imgui/backends
     ${CMAKE_BINARY_DIR}  # Where version.h is generated

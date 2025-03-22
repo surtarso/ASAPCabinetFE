@@ -1,4 +1,4 @@
-#include "asset_manager.h"
+#include "table/asset_manager.h"
 #include <iostream>
 
 AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_Font* f)
