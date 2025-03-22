@@ -1,6 +1,7 @@
 // Tarso Galvão Mar/2025
 
 #include "config/config_gui.h"
+#include "config/tooltips.h"
 #include "config/config_loader.h"
 #include "input/input_manager.h"
 #include "imgui.h"
@@ -8,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <cstring>
@@ -118,33 +120,7 @@ void IniEditor::saveIniFile(const std::string& filename) {
 }
 
 void IniEditor::initExplanations() {
-    explanations["TablesPath"] = "Specifies the absolute path to the folder containing VPX table files.\n\nIt must be a full path.\n(e.g., /home/user/tables/).\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["ExecutableCmd"] = "Defines the absolute path to the VPinballX executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["StartArgs"] = "Optional command-line arguments to prepend to the executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["EndArgs"] = "Optional arguments to append after the table file in the command.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["TableImage"] = "Relative path to the table's preview image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["BackglassImage"] = "Relative path to the backglass image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["WheelImage"] = "Relative path to the wheel image for the table.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["DmdImage"] = "Relative path to the DMD or marquee image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["TableVideo"] = "Relative path to the table preview video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["BackglassVideo"] = "Relative path to the backglass video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["DmdVideo"] = "Relative path to the DMD video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["MainMonitor"] = "Index of the monitor for the table playfield window.\nYou can use 'xrandr' to get yours.";
-    explanations["MainWidth"] = "Width of the main window in pixels.\nThis should be relative to your playfield media width.";
-    explanations["MainHeight"] = "Height of the main window in pixels.\nThis should be relative to your playfield media height.";
-    explanations["SecondMonitor"] = "Index of the monitor for the backglass/DMD window.\nYou can use 'xrandr' to get yours.";
-    explanations["SecondWidth"] = "Width of the secondary window in pixels.\nThis should be relative to your backglass + DMD media width.";
-    explanations["SecondHeight"] = "Height of the secondary window in pixels.\nThis should be relative to your backglass + DMD media height.";
-    explanations["Path"] = "Absolute path to the font file used in the UI.";
-    explanations["Size"] = "Font size in points for table title text rendering.";
-    explanations["WheelImageSize"] = "Size of the wheel image in pixels.\nThis considers a square image.";
-    explanations["WheelImageMargin"] = "Margin around the wheel image in pixels.";
-    explanations["BackglassWidth"] = "Width of the backglass media in pixels.";
-    explanations["BackglassHeight"] = "Height of the backglass media in pixels.";
-    explanations["DmdWidth"] = "Width of the DMD media in pixels.";
-    explanations["DmdHeight"] = "Height of the DMD media in pixels.";
-    explanations["FadeTargetAlpha"] = "Goes from 0 (transparent) to 255.\nUse 128 for ~50 percent alpha.";
-    explanations["FadeDurationMs"] = "Table images switch transition time in ms\nSet to 1 if using videos.";
+    explanations = Tooltips::getTooltips();  // Qualified with Tooltips::
 }
 
 void IniEditor::drawGUI() {
