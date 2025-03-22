@@ -58,6 +58,7 @@ SDL_Keycode KEY_TOGGLE_CONFIG;
 SDL_Keycode KEY_QUIT;
 SDL_Keycode KEY_CONFIG_SAVE;
 SDL_Keycode KEY_CONFIG_CLOSE;
+SDL_Keycode KEY_SCREENSHOT_MODE;
 
 std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
     std::map<std::string, std::map<std::string, std::string>> config;
@@ -188,7 +189,8 @@ void initialize_config(const std::string& filename) {
     KEY_QUIT               = get_key(config, "Keybinds", "Quit", SDLK_q);
     KEY_CONFIG_SAVE        = get_key(config, "Keybinds", "ConfigSave", SDLK_SPACE);
     KEY_CONFIG_CLOSE       = get_key(config, "Keybinds", "ConfigClose", SDLK_q);
-
+    KEY_SCREENSHOT_MODE    = get_key(config, "Keybinds", "ScreenshotMode", SDLK_s);
+    
     // Debug keybinds
     // std::cout << "KEY_PREVIOUS_TABLE: " << KEY_PREVIOUS_TABLE << std::endl;
     // std::cout << "KEY_NEXT_TABLE: " << KEY_NEXT_TABLE << std::endl;
