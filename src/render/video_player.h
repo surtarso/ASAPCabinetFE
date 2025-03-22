@@ -19,5 +19,5 @@ struct VideoContext {
 
 VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, int width, int height);
 void cleanupVideoContext(VideoContext* ctx);
-
+void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer);
 #endif

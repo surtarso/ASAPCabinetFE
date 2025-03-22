@@ -20,22 +20,7 @@
 #include "capture/screenshot_manager.h"
 #include "version.h"
 
-// #define ASAPCAB_VERSION "2.0.0"
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
-
-void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer) {
-    (void)renderer;  // Silence warning
-    if (video && video->texture && video->pixels && video->mutex && video->player) {
-        if (SDL_LockMutex(video->mutex) == 0) {
-            if (SDL_UpdateTexture(video->texture, nullptr, video->pixels, video->pitch) != 0) {
-                std::cerr << "SDL_UpdateTexture failed: " << SDL_GetError() << std::endl;
-            }
-            SDL_UnlockMutex(video->mutex);
-        } else {
-            std::cerr << "SDL_LockMutex failed: " << SDL_GetError() << std::endl;
-        }
-    }
-}
 
 int main(int argc, char* argv[]) {
     // Check for --version flag
