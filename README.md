@@ -73,30 +73,19 @@ make release
 | Quit               | ESC or q         | Exit the table config/application.        |
 | Config             | c                | Open config                               |
 | Save config        | Spacebar         | Saves configuration to config.ini         |
+| Launch in SS mode  | s                | Open the selected table in ss mode.       |
 
 ## Generator Tools
 > [!CAUTION]
 > Make sure `config.ini` is properly configured before generating media.
 
-**1.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`.
+**1.** Use the screenshot tool to take planned screenshots
+
+Start the table with 's' instead of 'enter´. Once inside the game, use 's' for screenshot and 'q' to return to the main app.
+
+**2.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`.
 ```sh
 ./generate_media.sh --help
-```
-
-**2.** Use the standalone screenshot tool to take planned screenshots
-
-Install dependencies
-```sh
-sudo apt install -y build-essential libsdl2-dev libsdl2-ttf-dev xdotool imagemagick
-```
-
-Compile
-```sh
-g++ src/screenshot_daemon.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_ttf -pthread -o screenshot_daemon
-```
-Run it:
-```sh
-./screenshot_daemon /path/to/table.vpx
 ```
 
 **3.** Use the missing media tool to find those sneaky tables without art.
