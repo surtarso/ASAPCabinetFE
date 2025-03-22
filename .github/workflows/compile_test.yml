@@ -47,8 +47,8 @@ jobs:
     
     - name: Test Version Flag
       run: |
-        # Extract version from CMakeLists.txt
-        VERSION=$(grep "project(ASAPCabinetFE VERSION" ../CMakeLists.txt | sed 's/.*VERSION \([^ ]*\).*/\1/')
+       # Extract version from CMakeLists.txt using absolute path
+        VERSION=$(grep "project(ASAPCabinetFE VERSION" ${GITHUB_WORKSPACE}/CMakeLists.txt | sed 's/.*VERSION \([^ ]*\).*/\1/')
         EXPECTED_OUTPUT="ASAPCabinetFE version $VERSION"
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
         if [ "$VERSION_OUTPUT" = "$EXPECTED_OUTPUT" ]; then
