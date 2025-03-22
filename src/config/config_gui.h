@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 struct ConfigSection {
@@ -26,7 +27,7 @@ private:
 
     std::map<std::string, ConfigSection> iniData;
     std::vector<std::string> sections;
-    std::map<std::string, std::string> explanations;
+    std::unordered_map<std::string, std::string> explanations;
     std::string currentSection;
     std::string iniFilename;
     bool& showFlag;
