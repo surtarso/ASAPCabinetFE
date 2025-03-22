@@ -15,6 +15,9 @@ imgui.ini
 screenshot_daemon
 screenshot_daemon.sh
 video_daemon.sh
+compile.sh
+screenshot_daemon.cpp
+
 
 # Prerequisites
 *.d
