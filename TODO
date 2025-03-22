@@ -1,16 +1,23 @@
 TODO
 
+- load config changes without restarting app
+- add 1st run setup
 - create a make install target
+- incorporate generate_media.sh?
 
 UI:
+- add keybind-assign UI
+- add table info from vpx (vpxtool?)
 - remove flicker from table switch
 - add blinking arrows on sides to indicate table flow/keys
 
 On hold:
+- default app icon
+- better default images
 - create default videos
 - better sounds
-- better default images
 - add splash screen on start?
 
 Later:
+- release artifacts in CI
 - adapt to be crossplatform
