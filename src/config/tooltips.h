@@ -142,84 +142,84 @@ namespace Tooltips {
             {"PreviousTable",
                 "Key to select the previous table in the list.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: LSHIFT, a, UP, 1\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"NextTable",
                 "Key to select the next table in the list.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: RSHIFT, b, DOWN, 2\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"FastPrevTable",
-                "Key to quickly jump to the previous table group.\n"
+                "Key to quickly jump back 10 tables.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: LCTRL, LEFT, 3\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"FastNextTable",
-                "Key to quickly jump to the next table group.\n"
+                "Key to quickly jump foward 10 tables.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: RCTRL, RIGHT, 4\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"JumpNextLetter",
                 "Key to jump to the next table starting with a different letter.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: slash, n, 5\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"JumpPrevLetter",
                 "Key to jump to the previous table starting with a different letter.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: z, p, 6\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"LaunchTable",
                 "Key to launch the selected table.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: RETURN, SPACE, l\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"ToggleConfig",
                 "Key to open or close the configuration menu.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: c, TAB, 7\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"Quit",
-                "Key to exit the application.\n"
+                "Key to exit menus and application.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: q, ESCAPE, 8\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"ConfigSave",
                 "Key to save changes in the configuration menu.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: SPACE, s, 9\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"ConfigClose",
                 "Key to close the configuration menu without saving.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: q, ESCAPE, 0\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             },
             {"ScreenshotMode",
                 "Key to toggle screenshot mode.\n"
                 "\n"
-                "Uses SDL2 key names (case-sensitive, remove 'SDL_' prefix).\n"
+                "SDL2 keys are case-sensitive.\n"
                 "Examples: s, F1, m\n"
                 "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
             }
