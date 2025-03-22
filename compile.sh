@@ -37,43 +37,20 @@ check_file_exists() {
     fi
 }
 
-# Header
-echo -e "${GREEN}ASAPCabinetFE Compilation Script${NC}"
-echo -e "${YELLOW}This script will compile the FrontEnd, Configuration, and Screenshot Daemon.${NC}"
 
 # Check all unique dependencies
 echo -e "${YELLOW}Checking dependencies${NC}"
-check_dependencies build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libgl1-mesa-dev xdotool imagemagick
+check_dependencies build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev xdotool imagemagick
 
 # Check for main source files and imgui directory
 echo -e "${YELLOW}Checking source files${NC}"
-check_file_exists src/main.cpp
-check_file_exists src/config.cpp
-check_file_exists src/screenshot_daemon.cpp
-if [ ! -d "imgui" ]; then
+
+check_file_exists screenshot_daemon.cpp
+if [ ! -d "src/imgui" ]; then
     echo -e "${RED}imgui directory does not exist.${NC}"
     exit 1
 fi
 
-# Compile FrontEnd
-echo -e "${GREEN}Compiling FrontEnd${NC}"
-g++ src/main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE > logs/compile_frontend.log 2>&1
-if [ $? -ne 0 ]; then
-    echo -e "${RED}FrontEnd compilation failed. Check compile_frontend.log for details.${NC}"
-    exit 1
-else
-    echo -e "${GREEN}FrontEnd compiled successfully.${NC}"
-fi
-
-# Compile Configuration
-echo -e "${GREEN}Compiling Configuration${NC}"
-g++ src/config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config > logs/compile_config.log 2>&1
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Configuration compilation failed. Check compile_config.log for details.${NC}"
-    exit 1
-else
-    echo -e "${GREEN}Configuration compiled successfully.${NC}"
-fi
 
 # Compile Screenshot Daemon
 echo -e "${GREEN}Compiling Screenshot Daemon${NC}"
