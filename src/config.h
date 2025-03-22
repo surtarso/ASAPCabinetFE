@@ -58,8 +58,9 @@ extern SDL_Keycode KEY_JUMP_PREV_LETTER;
 extern SDL_Keycode KEY_LAUNCH_TABLE;
 extern SDL_Keycode KEY_TOGGLE_CONFIG;
 extern SDL_Keycode KEY_QUIT;
-extern SDL_Keycode KEY_CONFIG_SAVE;  // New: Save config
-extern SDL_Keycode KEY_CONFIG_CLOSE; // New: Close config
+extern SDL_Keycode KEY_CONFIG_SAVE; 
+extern SDL_Keycode KEY_CONFIG_CLOSE;
+extern SDL_Keycode KEY_SCREENSHOT_MODE;
 
 void initialize_config(const std::string& filename);
 std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename);

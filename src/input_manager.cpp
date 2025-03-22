@@ -54,5 +54,5 @@ bool InputManager::isConfigClose(const SDL_Event& event) {
 }
 
 bool InputManager::isScreenshotMode(const SDL_Event& event) {
-    return isKeyPressed(event, SDLK_s);  // Temporary hardcoded S
+    return isKeyPressed(event, KEY_SCREENSHOT_MODE);
 }
