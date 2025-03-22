@@ -37,29 +37,3 @@ jobs:
           echo "Compilation failed!"
           exit 1
         fi
-
-  compile_screenshotdaemon:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-
-    - name: Install System Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libsdl2-dev libsdl2-ttf-dev
-
-    - name: Compile
-      run: g++ screenshot_daemon.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_ttf -pthread -o screenshot_daemon
-
-    - name: Check Compilation
-      run: |
-        if [ -f screenshot_daemon ]; then
-          echo "Compilation successful!"
-        else
-          echo "Compilation failed!"
-          exit 1
-        fi
