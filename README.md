@@ -18,8 +18,11 @@
 
 ## TL:DR
 ```sh
+sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
 git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
-make release
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
 ./ASAPCabinetFE
 ```
 
@@ -40,7 +43,7 @@ make release
 ### Installing Dependencies (Debian based)
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
+sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
 ```
 
 ### Compiling and Running
