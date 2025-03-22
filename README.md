@@ -39,6 +39,9 @@ make
 > - **SDL2_ttf**: Font rendering.
 > - **SDL2_mixer**: Audio playback.
 > - **VLC**: Video playback support.
+> - **xdotools**: Screen manipulation.
+> - **ImageMagick**: Screen capture.
+> - **FFMpeg**: Video assembly.
 
 ### Installing Dependencies (Debian based)
 ```sh
