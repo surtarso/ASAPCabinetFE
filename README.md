@@ -8,14 +8,6 @@
 
 <p align="center"><i>"As Simple As Possible".</i></p>
 
-## Features
-- Full screen multi monitor display of table playfield, backglass and DMD
-- Navigate tables with titles and wheels
-- Extended settings for many display configurations
-- Extremely lightweight and simple
-- No need to download artpacks, generate your own! (See [tools](#generator-tools))
-- Just what it takes to make a cabinet look good
-
 ## TL:DR
 ```sh
 sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
@@ -25,6 +17,14 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 ./ASAPCabinetFE
 ```
+
+## Features
+- Full screen multi monitor display of table playfield, backglass and DMD
+- Navigate tables with titles and wheels
+- Extended settings for many display configurations
+- Extremely lightweight and simple
+- No need to download artpacks, generate your own! (See [tools](#generator-tools))
+- Just what it takes to make a cabinet look good
 
 ## How it works
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
