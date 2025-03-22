@@ -19,8 +19,7 @@
 ## TL:DR
 ```sh
 git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
-./compile.sh
-./config
+make release
 ./ASAPCabinetFE
 ```
 
@@ -37,84 +36,43 @@ git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && 
 > - **SDL2_ttf**: Font rendering.
 > - **SDL2_mixer**: Audio playback.
 > - **VLC**: Video playback support.
-> - **OpenGL**: Required for the `config` editor (via [ImGui](#install-imgui)).
 
 ### Installing Dependencies (Debian based)
-For `ASAPCabinetFE`:
 ```sh
 sudo apt-get update
 sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
 ```
 
-For `config` (additional dependencies):
-```sh
-sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libfreetype6-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
-```
+### Compiling and Running
 
-## Compilation and Running
-
-### 1. Clone the Repository
+Clone the Repository
 ```sh
-git clone https://github.com/surtarso/ASAPCabinetFE.git
+git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git
 cd ASAPCabinetFE
 ```
 
-### 2. Compiling `ASAPCabinetFE` (Main Frontend)
-Compile the main application:
+Build it
 ```sh
-g++ src/main.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lvlc -o ASAPCabinetFE
+make release
 ```
 > [!WARNING]
-> Ensure `config.ini` is configured with your paths (see [Usage](#usage)).
+> Ensure `config.ini` is configured with your paths.
 
 - Run it:
   ```sh
   ./ASAPCabinetFE
   ```
-  
-### 3. Compiling `config` (Configuration Editor)
 
-![image](https://github.com/user-attachments/assets/89efac26-cf71-454e-9559-171c44209160)
-
-> [!TIP]
-> This GUI contains tooltip explanations for all variables in config.ini.
-
-#### Install ImGui
-The `config` app uses ImGui, included as a submodule:
-```sh
-git submodule update --init --recursive
-```
-
-#### Compile
-```sh
-g++ src/config.cpp imgui/*.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp -std=c++17 -I/usr/include/SDL2 -D_REENTRANT -Iimgui -Iimgui/backends -lSDL2 -lGL -o config
-```
-- Run it:
-  ```sh
-  ./config
-  ```
-> [!NOTE]
-> It loads `config.ini` from the current directory by default.
-
-## Usage
-
-1. **Configure Paths**:
-   - Edit `config.ini` manually or use the `config` editor.
-   - Set `VPX_ROOT_FOLDER` and paths for media (playfield, backglass, etc.).
-
-2. **Run the Frontend**:
-   ```sh
-   ./ASAPCabinetFE
-   ```
-
-### Keymap (Not Yet Configurable)
+### Default Keymap
 | Action             | Key Combination  | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
 | Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.          |
 | Scroll by Letter   | Z and /          | Scroll tables alphabetically (prev/next). |
 | Launch Table       | Enter            | Open the selected table.                  |
-| Quit               | ESC or q         | Exit the table navigation/application.    |
+| Quit               | ESC or q         | Exit the table config/application.        |
+| Config             | c                | Open config                               |
+| Save config        | Spacebar         | Saves configuration to config.ini         |
 
 ## Generator Tools
 > [!CAUTION]
