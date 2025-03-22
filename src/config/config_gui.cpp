@@ -1,8 +1,8 @@
 // Tarso Galvão Mar/2025
 
-#include "config_gui.h"
-#include "config.h"
-#include "input_manager.h"
+#include "config/config_gui.h"
+#include "config/config_loader.h"
+#include "input/input_manager.h"
 #include "imgui.h"
 #include <fstream>
 #include <sstream>

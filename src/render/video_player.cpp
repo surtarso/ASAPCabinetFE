@@ -1,4 +1,4 @@
-#include "video.h"
+#include "render/video_player.h"
 #include <iostream>
 
 void* lock(void* data, void** pixels) {

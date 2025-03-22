@@ -1,4 +1,4 @@
-#include "screenshot_utils.h"
+#include "capture/screenshot_manager.h"
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
@@ -7,7 +7,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-#include "config.h"
+#include "config/config_loader.h"
 #include <SDL2/SDL_ttf.h>
 
 const std::string VPX_LOG_FILE = "logs/VPinballX.log";

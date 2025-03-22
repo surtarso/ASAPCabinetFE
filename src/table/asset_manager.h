@@ -6,9 +6,9 @@
 #include <vlc/vlc.h>
 #include <memory>
 #include <vector>
-#include "table_utils.h"
-#include "render_utils.h"
-#include "video.h"
+#include "table/table_manager.h"
+#include "render/renderer.h"
+#include "render/video_player.h"
 
 class AssetManager {
 public:
