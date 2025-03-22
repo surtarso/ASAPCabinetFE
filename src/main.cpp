@@ -17,6 +17,7 @@
 #include "transition_manager.h"
 #include "asset_manager.h"
 #include "input_manager.h"
+#include "screenshot_utils.h"
 
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
 
@@ -196,6 +197,10 @@ int main() {
                         std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
                         std::cout << "Launching: " << command << std::endl;
                         std::system(command.c_str());
+                    }
+                    else if (inputManager.isScreenshotMode(event)) {
+                        std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;
+                        launch_screenshot_mode(tables[currentIndex].vpxFile);
                     }
                     else if (inputManager.isQuit(event)) quit = true;
                 }
