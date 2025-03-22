@@ -17,6 +17,7 @@ screenshot_daemon.sh
 video_daemon.sh
 compile.sh
 screenshot_daemon.cpp
+logs/
 
 
 # Prerequisites
