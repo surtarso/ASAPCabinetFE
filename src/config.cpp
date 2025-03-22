@@ -1,335 +1,196 @@
-// config.cpp
-// As Simple As Possible Cabinet Front End - Configuration
-// Reads and saves a local config.ini file while listing in sections with explanations.
-// Tarso Galvão Mar/2025
-
-#include <SDL.h>
-#include <SDL_opengl.h>
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_opengl3.h"
+#include "config.h"
 #include <fstream>
-#include <sstream>
 #include <iostream>
-#include <map>
-#include <vector>
-#include <string>
-#include <cstring>
 
-// Structure representing a configuration section (a set of key-value pairs)
-struct ConfigSection {
-    std::vector<std::pair<std::string, std::string>> keyValues; // Changed to vector to preserve order
-    std::map<std::string, size_t> keyToLineIndex;               // Still using map for quick lookup
-};
+// Configuration Variable Definitions
+std::string VPX_TABLES_PATH;
+std::string VPX_EXECUTABLE_CMD;
+std::string VPX_SUB_CMD;
+std::string VPX_START_ARGS;
+std::string VPX_END_ARGS;
 
-// --------------- IniEditor Class ------------------
-class IniEditor {
-public:
-    IniEditor(const std::string& filename);           // Loads the INI file.
-    ~IniEditor();                                     // Destructor.
-    void run();                                       // Runs the main GUI loop.
+std::string DEFAULT_TABLE_IMAGE;
+std::string DEFAULT_BACKGLASS_IMAGE;
+std::string DEFAULT_DMD_IMAGE;
+std::string DEFAULT_WHEEL_IMAGE;
+std::string DEFAULT_TABLE_VIDEO;
+std::string DEFAULT_BACKGLASS_VIDEO;
+std::string DEFAULT_DMD_VIDEO;
 
-private:
-    void loadIniFile(const std::string& filename);    // Loads the INI file into memory.
-    void saveIniFile(const std::string& filename);    // Saves the current configuration back to the INI file.
-    void initExplanations();                          // Initializes tooltips.
-    void drawGUI();                                   // Draws the ImGui GUI.
+std::string CUSTOM_TABLE_IMAGE;
+std::string CUSTOM_BACKGLASS_IMAGE;
+std::string CUSTOM_DMD_IMAGE;
+std::string CUSTOM_WHEEL_IMAGE;
+std::string CUSTOM_TABLE_VIDEO;
+std::string CUSTOM_BACKGLASS_VIDEO;
+std::string CUSTOM_DMD_VIDEO;
 
-    // Data members
-    std::map<std::string, ConfigSection> iniData;     // Map of section name to key-values.
-    std::vector<std::string> sections;                // List of section names.
-    std::map<std::string, std::string> explanations;  // Explanations for config keys.
-    std::string currentSection;                       // Currently selected section.
-    std::string iniFilename;                          // Name/path of the INI file.
-    bool exitRequested = false;                       // Flag to exit the main loop.
-    std::vector<std::string> originalLines;           // Stores the original file content
-    std::map<size_t, std::pair<std::string, std::string>> lineToKey; // Maps line index to {section, key}
-    bool showSavedMessage = false;                    // Controls display of "Saved!" message
-    double savedMessageTimer = 0.0;                   // Tracks when the save message was triggered
-};
+int MAIN_WINDOW_MONITOR;
+int MAIN_WINDOW_WIDTH;
+int MAIN_WINDOW_HEIGHT;
+int WHEEL_IMAGE_SIZE;
+int WHEEL_IMAGE_MARGIN;
+std::string FONT_PATH;
+int FONT_SIZE;
 
-// ---------------- Implementation ----------------
+int SECOND_WINDOW_MONITOR;
+int SECOND_WINDOW_WIDTH;
+int SECOND_WINDOW_HEIGHT;
+int BACKGLASS_MEDIA_WIDTH;
+int BACKGLASS_MEDIA_HEIGHT;
+int DMD_MEDIA_WIDTH;
+int DMD_MEDIA_HEIGHT;
 
-IniEditor::IniEditor(const std::string& filename) : iniFilename(filename) {
-    loadIniFile(filename);
-    initExplanations();
-    if (!sections.empty()) {
-        currentSection = sections[0];
-    }
-}
+int FADE_DURATION_MS;
+Uint8 FADE_TARGET_ALPHA;
+std::string TABLE_CHANGE_SOUND;
+std::string TABLE_LOAD_SOUND;
 
-IniEditor::~IniEditor() {
-    // No dynamic allocations to clean up
-}
+// Keybinds Definitions
+SDL_Keycode KEY_PREVIOUS_TABLE;
+SDL_Keycode KEY_NEXT_TABLE;
+SDL_Keycode KEY_FAST_PREV_TABLE;
+SDL_Keycode KEY_FAST_NEXT_TABLE;
+SDL_Keycode KEY_JUMP_NEXT_LETTER;
+SDL_Keycode KEY_JUMP_PREV_LETTER;
+SDL_Keycode KEY_LAUNCH_TABLE;
+SDL_Keycode KEY_TOGGLE_CONFIG;
+SDL_Keycode KEY_QUIT;
+SDL_Keycode KEY_CONFIG_SAVE;
+SDL_Keycode KEY_CONFIG_CLOSE;
 
-void IniEditor::loadIniFile(const std::string& filename) {
+std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
+    std::map<std::string, std::map<std::string, std::string>> config;
     std::ifstream file(filename);
+    std::string current_section;
+
     if (!file.is_open()) {
-        std::cerr << "Could not open " << filename << std::endl;
-        return;
+        std::cerr << "Could not open " << filename << ". Using defaults." << std::endl;
+        return config;
     }
 
-    // Read all lines into originalLines
     std::string line;
     while (std::getline(file, line)) {
-        originalLines.push_back(line);
-    }
-    file.close();
-
-    // Parse the lines to populate iniData, sections, and line mappings
-    std::string currentSectionName;
-    size_t lineIndex = 0;
-    for (const auto& line : originalLines) {
-        // Trim leading whitespace
-        size_t start = line.find_first_not_of(" \t");
-        if (start == std::string::npos) {
-            lineIndex++;
+        if (line.empty() || line[0] == ';') continue;
+        if (line[0] == '[') {
+            size_t end = line.find(']');
+            if (end != std::string::npos) {
+                current_section = line.substr(1, end - 1);
+                config[current_section];
+            }
             continue;
         }
-        std::string trimmedLine = line.substr(start);
-
-        // Skip empty lines or comments (but they’re preserved in originalLines)
-        if (trimmedLine.empty() || trimmedLine[0] == ';') {
-            lineIndex++;
-            continue;
-        }
-
-        // Check for section header
-        if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
-            currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
-            sections.push_back(currentSectionName);
-            iniData[currentSectionName] = ConfigSection();
-        } else if (!currentSectionName.empty()) {
-            // Parse key=value pairs
-            size_t pos = trimmedLine.find('=');
-            if (pos != std::string::npos) {
-                std::string key = trimmedLine.substr(0, pos);
-                std::string value = trimmedLine.substr(pos + 1);
-                // Trim trailing whitespace from key
-                size_t endKey = key.find_last_not_of(" \t");
-                if (endKey != std::string::npos)
-                    key = key.substr(0, endKey + 1);
-                // Trim leading whitespace from value
-                size_t startValue = value.find_first_not_of(" \t");
-                if (startValue != std::string::npos)
-                    value = value.substr(startValue);
-                // Append to vector to preserve order
-                iniData[currentSectionName].keyValues.emplace_back(key, value);
-                // Record the line index for this key
-                iniData[currentSectionName].keyToLineIndex[key] = lineIndex;
-                lineToKey[lineIndex] = {currentSectionName, key};
-            }
-        }
-        lineIndex++;
-    }
-}
-
-void IniEditor::saveIniFile(const std::string& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Could not write " << filename << std::endl;
-        return;
-    }
-
-    // Write back the original lines, updating only key-value pair lines
-    for (size_t i = 0; i < originalLines.size(); ++i) {
-        if (lineToKey.find(i) != lineToKey.end()) {
-            // This line is a key-value pair; write the updated value
-            auto [section, key] = lineToKey[i];
-            // Find the key in the vector (since keys might not be unique, use line index)
-            for (const auto& kv : iniData[section].keyValues) {
-                if (kv.first == key && iniData[section].keyToLineIndex[key] == i) {
-                    file << key << " = " << kv.second << "\n";
-                    break;
-                }
-            }
-        } else {
-            // This line is a comment, blank line, or section header; preserve it
-            file << originalLines[i] << "\n";
+        size_t eq_pos = line.find('=');
+        if (eq_pos != std::string::npos && !current_section.empty()) {
+            std::string key = line.substr(0, eq_pos);
+            std::string value = line.substr(eq_pos + 1);
+            key.erase(0, key.find_first_not_of(" \t"));
+            key.erase(key.find_last_not_of(" \t") + 1);
+            value.erase(0, value.find_first_not_of(" \t"));
+            value.erase(value.find_last_not_of(" \t") + 1);
+            config[current_section][key] = value;
         }
     }
     file.close();
+    return config;
 }
 
-void IniEditor::initExplanations() {
-    explanations["TablesPath"] = "Specifies the absolute path to the folder containing VPX table files.\n\nIt mmust be a full path.\n(e.g., /home/user/tables/).\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["ExecutableCmd"] = "Defines the absolute path to the VPinballX executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["StartArgs"] = "Optional command-line arguments to prepend to the executable.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["EndArgs"] = "Optional arguments to append after the table file in the command.\n\nFinal command:\nStartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs";
-    explanations["TableImage"] = "Relative path to the table's preview image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["BackglassImage"] = "Relative path to the backglass image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["WheelImage"] = "Relative path to the wheel image for the table.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["DmdImage"] = "Relative path to the DMD or marquee image.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["TableVideo"] = "Relative path to the table preview video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["BackglassVideo"] = "Relative path to the backglass video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["DmdVideo"] = "Relative path to the DMD video.\nThese are relative to your table folder.\n/path/to/tables/<table_folder>/";
-    explanations["MainMonitor"] = "Index of the monitor for the table playfield window.\nYou can use 'xrandr' to get yours.";
-    explanations["MainWidth"] = "Width of the main window in pixels.\nThis should be relative to your playfield media width.";
-    explanations["MainHeight"] = "Height of the main window in pixels.\nThis should be relative to your playfield media height.";
-    explanations["SecondMonitor"] = "Index of the monitor for the backglass/DMD window.\nYou can use 'xrandr' to get yours.";
-    explanations["SecondWidth"] = "Width of the secondary window in pixels.\nThis should be relative to your backglass + DMD media widht.";
-    explanations["SecondHeight"] = "Height of the secondary window in pixels.\nThis should be relative to your backglass + DMD media height.";
-    explanations["Path"] = "Absolute path to the font file used in the UI.";
-    explanations["Size"] = "Font size in points for table title text rendering.";
-    explanations["WheelImageSize"] = "Size of the wheel image in pixels.\nThis considers a square image.";
-    explanations["WheelImageMargin"] = "Margin around the wheel image in pixels.";
-    explanations["BackglassWidth"] = "Width of the backglass media in pixels.";
-    explanations["BackglassHeight"] = "Height of the backglass media in pixels.";
-    explanations["DmdWidth"] = "Width of the DMD media in pixels.";
-    explanations["DmdHeight"] = "Height of the DMD media in pixels.";
-    explanations["FadeTargetAlpha"] = "Goes from 0 (transparent) to 255.\nUse 128 for ~50 percent alpha.";
-    explanations["FadeDurationMs"] = "Table images switch transition time in ms\nSet to 1 if using videos.";
+std::string get_string(const std::map<std::string, std::map<std::string, std::string>>& config,
+                       const std::string& section, const std::string& key, const std::string& default_value) {
+    if (config.count(section) && config.at(section).count(key)) {
+        return config.at(section).at(key);
+    }
+    return default_value;
 }
 
-void IniEditor::drawGUI() {
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_Always);
-    
-    ImGui::Begin("ASAPCabinetFE Configuration", nullptr, 
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-
-    if (ImGui::BeginCombo("Section", currentSection.c_str())) {
-        for (const auto& section : sections) {
-            bool is_selected = (currentSection == section);
-            if (ImGui::Selectable(section.c_str(), is_selected))
-                currentSection = section;
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-    }
-
-    float buttonHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y;
-    float availableHeight = ImGui::GetContentRegionAvail().y;
-    float childHeight = availableHeight - buttonHeight;
-    if (childHeight < 0) childHeight = 0;
-
-    ImGui::BeginChild("KeyValues", ImVec2(0, childHeight), true);
-    if (iniData.find(currentSection) != iniData.end()) {
-        for (auto& kv : iniData[currentSection].keyValues) { // Iterate over vector instead of map
-            ImGui::PushID(kv.first.c_str());
-            
-            ImGui::Text("%s", kv.first.c_str());
-            
-            ImGui::SameLine(150);
-            if (explanations.find(kv.first) != explanations.end()) {
-                ImGui::TextColored(ImVec4(0, 1, 0, 1), "[?]");
-                if (ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f); // Approx 300px with typical font size
-                    ImGui::TextWrapped("%s", explanations[kv.first].c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::EndTooltip();
-                }
-            }
-            
-            ImGui::SameLine(200);
-            char buf[256];
-            std::strncpy(buf, kv.second.c_str(), sizeof(buf));
-            buf[sizeof(buf) - 1] = '\0';
-            if (ImGui::InputText("", buf, sizeof(buf))) {
-                kv.second = std::string(buf); // Update the value directly in the vector
-            }
-            
-            ImGui::PopID();
-            ImGui::NewLine();
-        }
-    } else {
-        ImGui::Text("No section data available.");
-    }
-    ImGui::EndChild();
-
-    if (ImGui::Button("Save")) {
-        saveIniFile(iniFilename);
-        showSavedMessage = true;
-        savedMessageTimer = ImGui::GetTime();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Exit")) {
-        exitRequested = true;
-    }
-
-    ImGui::SameLine();
-    if (showSavedMessage) {
-        ImGui::Text("Saved!");
-        if (ImGui::GetTime() - savedMessageTimer > 2.0) {
-            showSavedMessage = false;
+int get_int(const std::map<std::string, std::map<std::string, std::string>>& config,
+            const std::string& section, const std::string& key, int default_value) {
+    if (config.count(section) && config.at(section).count(key)) {
+        try {
+            return std::stoi(config.at(section).at(key));
+        } catch (const std::exception&) {
+            return default_value;
         }
     }
-
-    ImGui::End();
+    return default_value;
 }
 
-void IniEditor::run() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        std::cerr << "Error: " << SDL_GetError() << std::endl;
-        return;
+SDL_Keycode get_key(const std::map<std::string, std::map<std::string, std::string>>& config,
+                    const std::string& section, const std::string& key, SDL_Keycode default_value) {
+    if (config.count(section) && config.at(section).count(key)) {
+        SDL_Keycode sdlKey = SDL_GetKeyFromName(config.at(section).at(key).c_str());
+        if (sdlKey != SDLK_UNKNOWN) {
+            // std::cout << "Loaded " << section << ":" << key << " = " << config.at(section).at(key)
+                    //   << " (SDL Key: " << sdlKey << ")" << std::endl;
+            return sdlKey;
+        } //else {
+        //     std::cerr << "Unknown key: " << config.at(section).at(key) << " for " << key << std::endl;
+        // }
     }
-
-    const char* glsl_version = "#version 130";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-
-    SDL_Window* window = SDL_CreateWindow("ASAPCabinetFE Configuration",
-                                          SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED,
-                                          800, 600,
-                                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1);
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    exitRequested = false;
-    bool done = false;
-    while (!done && !exitRequested) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT)
-                done = true;
-            if (event.type == SDL_WINDOWEVENT &&
-                event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                event.window.windowID == SDL_GetWindowID(window))
-                done = true;
-        }
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-
-        drawGUI();
-
-        ImGui::Render();
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(window);
-    }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    return default_value;
 }
 
-// ---------------- Main Entry Point ----------------
+void initialize_config(const std::string& filename) {
+    auto config = load_config(filename);
 
-int main(int, char**) {
-    IniEditor editor("config.ini");
-    editor.run();
-    return 0;
+    VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
+    VPX_EXECUTABLE_CMD     = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
+    VPX_SUB_CMD            = get_string(config, "Internal", "SubCmd", "-Play");
+    VPX_START_ARGS         = get_string(config, "VPX", "StartArgs", "");
+    VPX_END_ARGS           = get_string(config, "VPX", "EndArgs", "");
+
+    CUSTOM_TABLE_IMAGE     = get_string(config, "CustomMedia", "TableImage", "images/table.png");
+    CUSTOM_BACKGLASS_IMAGE = get_string(config, "CustomMedia", "BackglassImage", "images/backglass.png");
+    CUSTOM_DMD_IMAGE       = get_string(config, "CustomMedia", "DmdImage", "images/marquee.png");
+    CUSTOM_WHEEL_IMAGE     = get_string(config, "CustomMedia", "WheelImage", "images/wheel.png");
+    CUSTOM_TABLE_VIDEO     = get_string(config, "CustomMedia", "TableVideo", "video/table.mp4");
+    CUSTOM_BACKGLASS_VIDEO = get_string(config, "CustomMedia", "BackglassVideo", "video/backglass.mp4");
+    CUSTOM_DMD_VIDEO       = get_string(config, "CustomMedia", "DmdVideo", "video/dmd.mp4");
+
+    MAIN_WINDOW_MONITOR    = get_int(config, "WindowSettings", "MainMonitor", 1);
+    MAIN_WINDOW_WIDTH      = get_int(config, "WindowSettings", "MainWidth", 1080);
+    MAIN_WINDOW_HEIGHT     = get_int(config, "WindowSettings", "MainHeight", 1920);
+    SECOND_WINDOW_MONITOR  = get_int(config, "WindowSettings", "SecondMonitor", 0);
+    SECOND_WINDOW_WIDTH    = get_int(config, "WindowSettings", "SecondWidth", 1024);
+    SECOND_WINDOW_HEIGHT   = get_int(config, "WindowSettings", "SecondHeight", 1024);
+
+    FONT_PATH              = get_string(config, "Internal", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_SIZE              = get_int(config, "Font", "Size", 28);
+
+    WHEEL_IMAGE_SIZE       = get_int(config, "MediaDimensions", "WheelImageSize", 300);
+    WHEEL_IMAGE_MARGIN     = get_int(config, "MediaDimensions", "WheelImageMargin", 24);
+    BACKGLASS_MEDIA_WIDTH  = get_int(config, "MediaDimensions", "BackglassWidth", 1024);
+    BACKGLASS_MEDIA_HEIGHT = get_int(config, "MediaDimensions", "BackglassHeight", 768);
+    DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
+    DMD_MEDIA_HEIGHT       = get_int(config, "MediaDimensions", "DmdHeight", 256);
+
+    DEFAULT_TABLE_IMAGE     = get_string(config, "Internal", "DefaultTableImage", "img/default_table.png");
+    DEFAULT_BACKGLASS_IMAGE = get_string(config, "Internal", "DefaultBackglassImage", "img/default_backglass.png");
+    DEFAULT_DMD_IMAGE       = get_string(config, "Internal", "DefaultDmdImage", "img/default_dmd.png");
+    DEFAULT_WHEEL_IMAGE     = get_string(config, "Internal", "DefaultWheelImage", "img/default_wheel.png");
+    DEFAULT_TABLE_VIDEO     = get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
+    DEFAULT_BACKGLASS_VIDEO = get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
+    DEFAULT_DMD_VIDEO       = get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
+    FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 1);
+    FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 255));
+    TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
+    TABLE_LOAD_SOUND        = get_string(config, "Internal", "TableLoadSound", "snd/table_load.mp3");
+
+    // Load keybinds
+    KEY_PREVIOUS_TABLE     = get_key(config, "Keybinds", "PreviousTable", SDLK_LSHIFT);
+    KEY_NEXT_TABLE         = get_key(config, "Keybinds", "NextTable", SDLK_RSHIFT);
+    KEY_FAST_PREV_TABLE    = get_key(config, "Keybinds", "FastPrevTable", SDLK_LCTRL);
+    KEY_FAST_NEXT_TABLE    = get_key(config, "Keybinds", "FastNextTable", SDLK_RCTRL);
+    KEY_JUMP_NEXT_LETTER   = get_key(config, "Keybinds", "JumpNextLetter", SDLK_SLASH);
+    KEY_JUMP_PREV_LETTER   = get_key(config, "Keybinds", "JumpPrevLetter", SDLK_z);
+    KEY_LAUNCH_TABLE       = get_key(config, "Keybinds", "LaunchTable", SDLK_RETURN);
+    KEY_TOGGLE_CONFIG      = get_key(config, "Keybinds", "ToggleConfig", SDLK_c);
+    KEY_QUIT               = get_key(config, "Keybinds", "Quit", SDLK_q);
+    KEY_CONFIG_SAVE        = get_key(config, "Keybinds", "ConfigSave", SDLK_SPACE);
+    KEY_CONFIG_CLOSE       = get_key(config, "Keybinds", "ConfigClose", SDLK_q);
+
+    // Debug keybinds
+    // std::cout << "KEY_PREVIOUS_TABLE: " << KEY_PREVIOUS_TABLE << std::endl;
+    // std::cout << "KEY_NEXT_TABLE: " << KEY_NEXT_TABLE << std::endl;
+    // std::cout << "KEY_LAUNCH_TABLE: " << KEY_LAUNCH_TABLE << std::endl;
 }
