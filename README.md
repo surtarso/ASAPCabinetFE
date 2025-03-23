@@ -31,7 +31,7 @@ make -j$(nproc)
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
 - Creates two windows: primary (Playfield + Wheel) and secondary (B2SBackglass + DMD).
 
-## Dependencies
+### Dependencies
 > [!IMPORTANT]
 > Ensure the following libraries are installed:
 > - **SDL2**: Core library for graphics and input.
