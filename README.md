@@ -63,10 +63,8 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 ```
-> [!WARNING]
-> Ensure `config.ini` is configured with your paths.
 
-- Run it:
+- Run it and configure your paths:
   ```sh
   ./ASAPCabinetFE
   ```
@@ -84,8 +82,8 @@ make -j$(nproc)
 | Launch in SS mode  | s                | Open the selected table in ss mode.       |
 
 ## Generator Tools
-> [!CAUTION]
-> Make sure `config.ini` is properly configured before generating media.
+> [!WARNING]
+> Make sure your paths are properly configured before generating media.
 
 **1.** Use the screenshot tool to take planned screenshots
 
