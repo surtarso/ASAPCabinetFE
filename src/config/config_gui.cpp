@@ -124,13 +124,17 @@ void IniEditor::initExplanations() {
 }
 
 void IniEditor::drawGUI() {
-    ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Once); // Once to allow resizing
-    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag);
+    // Center the window on the screen
+    float windowWidth = 800.0f;
+    float windowHeight = 500.0f;
+    ImGui::SetNextWindowPos(ImVec2((MAIN_WINDOW_WIDTH - windowWidth) / 2.0f, (MAIN_WINDOW_HEIGHT - windowHeight) / 2.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once); // Keep initial size, allow resizing
+    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar); // No title bar
     ImGui::SetWindowFocus();
 
-    // Left column: Section listbox
+    // Left column: Section listbox, stretch to available height
     ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
-    if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, 0))) { // Auto-height
+    if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, ImGui::GetContentRegionAvail().y))) { // Full available height
         for (const auto& section : sections) {
             bool is_selected = (currentSection == section);
             if (ImGui::Selectable(section.c_str(), is_selected)) {
