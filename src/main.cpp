@@ -212,6 +212,8 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDLRenderer2_Init(primaryRenderer.get());
 
     bool showConfig = false;
+    bool lastShowConfig = false;  // Track the previous state of showConfig for detecting changes
+
     IniEditor configEditor(configPath, showConfig);
 
     auto font = std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>(TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE), TTF_CloseFont);
@@ -243,7 +245,10 @@ int main(int argc, char* argv[]) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) quit = true;
             if (event.type == SDL_KEYDOWN) {
-                if (inputManager.isToggleConfig(event)) showConfig = !showConfig;
+                if (inputManager.isToggleConfig(event)) {
+                    showConfig = !showConfig;
+                    std::cout << "Toggled showConfig to: " << (showConfig ? 1 : 0) << std::endl;
+                }
 
                 if (showConfig) {
                     configEditor.handleEvent(event);
@@ -339,7 +344,7 @@ int main(int argc, char* argv[]) {
                     }
                     else if (inputManager.isScreenshotMode(event)) {
                         std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;
-                        screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);  // Use class method
+                        screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
                     }
                     else if (inputManager.isQuit(event)) quit = true;
                 }
@@ -437,6 +442,30 @@ int main(int argc, char* argv[]) {
         if (!transitionManager.isTransitionActive()) {
             assets.clearOldVideoPlayers();
         }
+
+        // Detect if the config GUI was just closed
+        if (lastShowConfig && !showConfig && configChangesPending) {
+            std::cout << "Config GUI closed with pending changes. Reloading UI..." << std::endl;
+            // Reload config
+            initialize_config(configPath);
+            // Update windows
+            SDL_SetWindowSize(primaryWindow.get(), MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
+            SDL_SetWindowPosition(primaryWindow.get(), SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED);
+            SDL_SetWindowSize(secondaryWindow.get(), SECOND_WINDOW_WIDTH, SECOND_WINDOW_HEIGHT);
+            SDL_SetWindowPosition(secondaryWindow.get(), SDL_WINDOWPOS_CENTERED_DISPLAY(SECOND_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED);
+            // Reload font with new size
+            font.reset(TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE));
+            if (!font) std::cerr << "Failed to reload font: " << TTF_GetError() << std::endl;
+            // Update assets with new font and dimensions
+            assets = AssetManager(primaryRenderer.get(), secondaryRenderer.get(), font.get());
+            assets.loadTableAssets(currentIndex, tables);
+            configChangesPending = false;
+            std::cout << "UI reloaded: MainWidth=" << MAIN_WINDOW_WIDTH << ", MainHeight=" << MAIN_WINDOW_HEIGHT
+                      << ", SecondWidth=" << SECOND_WINDOW_WIDTH << ", SecondHeight=" << SECOND_WINDOW_HEIGHT
+                      << ", FontSize=" << FONT_SIZE << ", WheelImageSize=" << WHEEL_IMAGE_SIZE << std::endl;
+        }
+
+        lastShowConfig = showConfig;
     }
 
     cleanupVideoContext(assets.getTableVideoPlayer());

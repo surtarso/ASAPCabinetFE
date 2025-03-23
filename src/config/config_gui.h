@@ -16,9 +16,11 @@ struct ConfigSection {
 class IniEditor {
 public:
     IniEditor(const std::string& filename, bool& showFlag);
-    ~IniEditor();  // destructor declaration
+    ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
+    bool hasChangesMade() const { return hasChanges; }
+    void resetChanges() { hasChanges = false; }
 
 private:
     void loadIniFile(const std::string& filename);
@@ -33,8 +35,10 @@ private:
     bool& showFlag;
     std::vector<std::string> originalLines;
     std::map<size_t, std::pair<std::string, std::string>> lineToKey;
-    bool showSavedMessage = false;
-    double savedMessageTimer = 0.0;
+    bool hasChanges = false;  // Track if changes were made
 };
+
+// Declare the global configChangesPending variable
+extern bool configChangesPending;
 
 #endif // CONFIG_GUI_H
