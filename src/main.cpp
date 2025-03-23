@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <filesystem>  // For checking paths
 #include <unistd.h>  // For readlink
 #include <limits.h>  // For PATH_MAX
 #include <SDL.h>
@@ -41,6 +42,118 @@ std::string getExecutableDir() {
     return fullPath.substr(0, lastSlash + 1);  // Include trailing /
 }
 
+// Check if config is valid
+bool isConfigValid() {
+    // Check VPX executable
+    if (VPX_EXECUTABLE_CMD.empty() || !std::filesystem::exists(VPX_EXECUTABLE_CMD)) {
+        std::cerr << "Invalid VPX executable path: " << VPX_EXECUTABLE_CMD << std::endl;
+        return false;
+    }
+
+    // Check table path for existence and .vpx files recursively
+    if (VPX_TABLES_PATH.empty() || !std::filesystem::exists(VPX_TABLES_PATH)) {
+        std::cerr << "Invalid table path: " << VPX_TABLES_PATH << std::endl;
+        return false;
+    }
+    bool hasVpxFiles = false;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(VPX_TABLES_PATH)) {
+        if (entry.path().extension() == ".vpx") {
+            hasVpxFiles = true;
+            break;
+        }
+    }
+    if (!hasVpxFiles) {
+        std::cerr << "No .vpx files found in table path or subdirectories: " << VPX_TABLES_PATH << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+// Run initial config GUI if needed
+void runInitialConfig(const std::string& configPath) {
+    SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    if (!sdlInit.success) {
+        std::cerr << "SDL_Init failed for config: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    auto window = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
+        SDL_CreateWindow("ASAPCabinetFE Setup",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            800, 500, SDL_WINDOW_SHOWN),
+        SDL_DestroyWindow);
+    if (!window) {
+        std::cerr << "Failed to create config window: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    auto renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
+        SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED),
+        SDL_DestroyRenderer);
+    if (!renderer) {
+        std::cerr << "Failed to create config renderer: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForSDLRenderer(window.get(), renderer.get());
+    ImGui_ImplSDLRenderer2_Init(renderer.get());
+
+    // Temporarily override MAIN_WINDOW_WIDTH and MAIN_WINDOW_HEIGHT
+    int originalWidth = MAIN_WINDOW_WIDTH;
+    int originalHeight = MAIN_WINDOW_HEIGHT;
+    MAIN_WINDOW_WIDTH = 800;
+    MAIN_WINDOW_HEIGHT = 500;
+
+    bool showConfig = true;
+    IniEditor configEditor(configPath, showConfig);
+
+    while (true) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            configEditor.handleEvent(event);
+            if (event.type == SDL_QUIT) {
+                std::cerr << "Config window closed without saving. Exiting..." << std::endl;
+                exit(1);
+            }
+        }
+
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        configEditor.drawGUI();
+
+        ImGui::Render();
+        SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
+        SDL_RenderClear(renderer.get());
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer.get());
+        SDL_RenderPresent(renderer.get());
+
+        if (!showConfig) {
+            initialize_config(configPath);
+            if (isConfigValid()) {
+                break;
+            } else {
+                std::cerr << "Config still invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
+                showConfig = true;
+            }
+        }
+    }
+
+    // Restore original window dimensions
+    MAIN_WINDOW_WIDTH = originalWidth;
+    MAIN_WINDOW_HEIGHT = originalHeight;
+
+    ImGui_ImplSDLRenderer2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+}
+
 int main(int argc, char* argv[]) {
     // Check for --version flag
     if (argc == 2 && std::string(argv[1]) == "--version") {
@@ -51,6 +164,12 @@ int main(int argc, char* argv[]) {
     std::string exeDir = getExecutableDir();
     std::string configPath = exeDir + "config.ini";
     initialize_config(configPath);  // Pass full path
+
+    // Check config and run setup if needed
+    if (!isConfigValid()) {
+        std::cout << "Invalid config detected. Launching setup..." << std::endl;
+        runInitialConfig(configPath);
+    }
 
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
     CHECK_SDL(sdlInit.success, "SDL_Init failed");

@@ -12,7 +12,7 @@
 
 ScreenshotManager::ScreenshotManager(const std::string& exeDir) 
     : vpxLogFile(exeDir + "logs/VPinballX.log") {  // Set log path with exeDir
-    std::cout << "ScreenshotManager initialized with VPX_LOG_FILE: " << vpxLogFile << std::endl;
+    // std::cout << "ScreenshotManager initialized with VPX_LOG_FILE: " << vpxLogFile << std::endl;
 }
 
 std::string ScreenshotManager::shellEscape(const std::string& str) {
