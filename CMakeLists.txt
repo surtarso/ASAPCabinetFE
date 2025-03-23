@@ -80,6 +80,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 # Build type-specific flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(${PROJECT_NAME} PRIVATE -g)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG_LOGGING)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${PROJECT_NAME} PRIVATE -O2)
 endif()
