@@ -7,8 +7,6 @@ TODO
 
 UI:
 - add new vars explanations
-- remove topbar from config
-- expand section-menu to window height
 - add keybind-assign UI
 - add table info from vpx (vpxtool?)
 - remove flicker from table switch
