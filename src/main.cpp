@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // initialize_config("config.ini");
     std::string exeDir = getExecutableDir();
     std::string configPath = exeDir + "config.ini";
     initialize_config(configPath);  // Pass full path
@@ -94,7 +93,6 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDLRenderer2_Init(primaryRenderer.get());
 
     bool showConfig = false;
-    // IniEditor configEditor("config.ini", showConfig);
     IniEditor configEditor(configPath, showConfig);
 
     auto font = std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>(TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE), TTF_CloseFont);
@@ -115,6 +113,7 @@ int main(int argc, char* argv[]) {
     AssetManager assets(primaryRenderer.get(), secondaryRenderer.get(), font.get());
     TransitionManager transitionManager;
     InputManager inputManager;
+    ScreenshotManager screenshotManager(exeDir);  // Instantiate with exeDir
     bool quit = false;
     SDL_Event event;
 
@@ -217,12 +216,11 @@ int main(int argc, char* argv[]) {
                         int result = std::system(command.c_str());
                         if (result != 0) {
                             std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
-                            // Continue running—failure isn’t fatal to frontend
                         }
                     }
                     else if (inputManager.isScreenshotMode(event)) {
                         std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;
-                        launch_screenshot_mode(tables[currentIndex].vpxFile);
+                        screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);  // Use class method
                     }
                     else if (inputManager.isQuit(event)) quit = true;
                 }
@@ -255,7 +253,6 @@ int main(int argc, char* argv[]) {
 
         SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
         if (transitionManager.shouldMaskFrame()) {
-            // Mask with black during the glitchy frame
             SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 255);
             SDL_RenderClear(primaryRenderer.get());
         } else if (transitionManager.isTransitionActive() && oldTableVideo && oldTableVideo->texture) {
