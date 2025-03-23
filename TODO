@@ -3,6 +3,7 @@ TODO
 - load config changes without restarting app
 - add 1st run setup
 - create a make install target
+- add pup windows to capture
 - incorporate generate_media.sh?
 
 UI:

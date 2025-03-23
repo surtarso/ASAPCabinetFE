@@ -71,7 +71,7 @@ void ScreenshotManager::captureScreenshot(const std::string& windowName, const s
     if (std::system(cmd.c_str()) != 0) {
         std::cerr << "Warning: Failed to raise window " << windowName << std::endl;
     }
-    usleep(500000);
+    usleep(400000);
 
     cmd = "mkdir -p " + shellEscape(outputPath.substr(0, outputPath.find_last_of('/')));
     if (std::system(cmd.c_str()) != 0) {
@@ -91,10 +91,10 @@ void ScreenshotManager::captureAllScreenshots(const std::string& tableImage, con
     std::vector<std::thread> threads;
 
     threads.emplace_back([&]() {
-        captureScreenshot("Visual Pinball Player", tableImage);
+        captureScreenshot("Visual Pinball Player", tableImage); // add PUPPlayfield
     });
 
-    if (isWindowVisibleLog("B2SBackglass")) {
+    if (isWindowVisibleLog("B2SBackglass")) { // add PUPBackglass
         threads.emplace_back([&]() {
             captureScreenshot("B2SBackglass", backglassImage);
         });
@@ -102,7 +102,9 @@ void ScreenshotManager::captureAllScreenshots(const std::string& tableImage, con
         std::cerr << "Warning: Backglass window not visible in VPX log." << std::endl;
     }
 
-    std::string dmdWindows[] = {"FlexDMD", "PinMAME", "B2SDMD"};
+    // PUPTopper too
+
+    std::string dmdWindows[] = {"FlexDMD", "PinMAME", "B2SDMD", "PUPDMD", "PUPFullDMD"};
     bool dmdCaptured = false;
     for (const auto& dmd : dmdWindows) {
         if (isWindowVisibleLog(dmd)) {
@@ -159,7 +161,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         exit(1);
     }
 
-    sleep(5);  // Wait for VPX to load
+    sleep(4);  // Wait for VPX to load
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -176,15 +178,19 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         return;
     }
 
+    int windowWidth = 215;
+    int windowHeight = 35;
     SDL_Window* window = SDL_CreateWindow("VPX Screenshot",
-                                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                          100, 35, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
-    if (!window) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-        TTF_Quit();
-        SDL_Quit();
-        kill(vpxPid, SIGKILL);
-        waitpid(vpxPid, nullptr, 0);
+        SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR),
+        windowWidth, windowHeight, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
+    
+        if (!window) {
+            std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+            TTF_Quit();
+            SDL_Quit();
+            kill(vpxPid, SIGKILL);
+            waitpid(vpxPid, nullptr, 0);
         return;
     }
 
@@ -212,7 +218,10 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Screenshot", white);
+    // SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Screenshot", white);
+    std::string buttonText = "'" + keycodeToString(KEY_SCREENSHOT_KEY) + "' to Screenshot, '" +
+                         keycodeToString(KEY_SCREENSHOT_QUIT) + "' to Quit";
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, buttonText.c_str(), white);
     if (!textSurface) {
         std::cerr << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
         TTF_CloseFont(font);
@@ -244,7 +253,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         std::cerr << "Warning: Failed to activate VPX Screenshot window." << std::endl;
     }
 
-    SDL_Rect button = {0, 0, 100, 35};
+    SDL_Rect button = {0, 0, windowWidth, windowHeight};
     std::cout << "Screenshot mode active. Press 'S' to capture, 'Q' to quit." << std::endl;
 
     bool running = true;
@@ -294,4 +303,9 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     // No TTF_Quit() or SDL_Quit()—leave SDL alive for frontend
+}
+
+std::string ScreenshotManager::keycodeToString(SDL_Keycode key) {
+    const char* keyName = SDL_GetKeyName(key);
+    return std::string(keyName);
 }
