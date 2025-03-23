@@ -7,8 +7,14 @@ std::map<char, int> letterIndex; // Definition here
 
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
-    if (fs::exists(imageFile))
+    // std::cout << "Checking custom path: " << imageFile.string() << std::endl;
+    if (fs::exists(imageFile)) {
         return imageFile.string();
+    }
+    // std::cout << "Falling back to default: " << defaultImagePath << std::endl;
+    if (!fs::exists(defaultImagePath)) {
+        std::cerr << "Default image not found: " << defaultImagePath << std::endl;
+    }
     return defaultImagePath;
 }
 
