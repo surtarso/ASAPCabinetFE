@@ -243,6 +243,7 @@ int main(int argc, char* argv[]) {
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) quit = true;
+
             if (event.type == SDL_KEYDOWN) {
                 if (inputManager.isToggleConfig(event)) {
                     showConfig = !showConfig;
@@ -250,8 +251,16 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (showConfig) {
+                    // When config GUI is open, let it handle events
                     configEditor.handleEvent(event);
-                } else {
+                    // Skip InputManager processing unless we're capturing a key
+                    if (!configEditor.isCapturingKey()) {
+                        continue;
+                    }
+                }
+
+                // When config GUI is not open, process InputManager events
+                if (!showConfig) {
                     if (inputManager.isPreviousTable(event)) {
                         size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
                         if (newIndex != currentIndex) {
@@ -345,7 +354,10 @@ int main(int argc, char* argv[]) {
                         std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;
                         screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
                     }
-                    else if (inputManager.isQuit(event)) quit = true;
+                    else if (inputManager.isQuit(event)) {
+                        quit = true;
+                        std::cout << "Quit triggered via keybind" << std::endl;
+                    }
                 }
             }
         }
