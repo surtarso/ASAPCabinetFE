@@ -1,6 +1,6 @@
 #include "render/renderer.h"
 #include <iostream>
-// #include <stdio.h>  // Remove if we ditch stderr redirection
+#include <stdio.h>  // stderr redirection
 
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path) {
     // Log the path we’re trying to load
