@@ -212,7 +212,6 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDLRenderer2_Init(primaryRenderer.get());
 
     bool showConfig = false;
-    bool lastShowConfig = false;  // Track the previous state of showConfig for detecting changes
 
     IniEditor configEditor(configPath, showConfig);
 
@@ -443,9 +442,9 @@ int main(int argc, char* argv[]) {
             assets.clearOldVideoPlayers();
         }
 
-        // Detect if the config GUI was just closed
-        if (lastShowConfig && !showConfig && configChangesPending) {
-            std::cout << "Config GUI closed with pending changes. Reloading UI..." << std::endl;
+        // Check if a UI reload is pending
+        if (configChangesPending) {
+            std::cout << "Reloading UI due to config changes..." << std::endl;
             // Reload config
             initialize_config(configPath);
             // Update windows
@@ -464,8 +463,6 @@ int main(int argc, char* argv[]) {
                       << ", SecondWidth=" << SECOND_WINDOW_WIDTH << ", SecondHeight=" << SECOND_WINDOW_HEIGHT
                       << ", FontSize=" << FONT_SIZE << ", WheelImageSize=" << WHEEL_IMAGE_SIZE << std::endl;
         }
-
-        lastShowConfig = showConfig;
     }
 
     cleanupVideoContext(assets.getTableVideoPlayer());
