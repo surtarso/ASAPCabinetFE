@@ -1,5 +1,6 @@
 TODO
 
+- move debug logs to debug build
 - create a make install target
 - add pup windows to capture
 - incorporate generate_media.sh?
