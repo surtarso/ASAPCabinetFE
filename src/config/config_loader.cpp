@@ -134,6 +134,7 @@ SDL_Keycode get_key(const std::map<std::string, std::map<std::string, std::strin
 void initialize_config(const std::string& filename) {
     // auto config = load_config(filename);
     std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);  // Extract dir from config path
+    // std::cout << "exeDir: " << exeDir << std::endl;
     auto config = load_config(filename);
 
     VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
@@ -167,13 +168,13 @@ void initialize_config(const std::string& filename) {
     DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
     DMD_MEDIA_HEIGHT       = get_int(config, "MediaDimensions", "DmdHeight", 256);
 
-    DEFAULT_TABLE_IMAGE     = get_string(config, "Internal", "DefaultTableImage", "img/default_table.png");
-    DEFAULT_BACKGLASS_IMAGE = get_string(config, "Internal", "DefaultBackglassImage", "img/default_backglass.png");
-    DEFAULT_DMD_IMAGE       = get_string(config, "Internal", "DefaultDmdImage", "img/default_dmd.png");
-    DEFAULT_WHEEL_IMAGE     = get_string(config, "Internal", "DefaultWheelImage", "img/default_wheel.png");
-    DEFAULT_TABLE_VIDEO     = get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
-    DEFAULT_BACKGLASS_VIDEO = get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
-    DEFAULT_DMD_VIDEO       = get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
+    DEFAULT_TABLE_IMAGE     = exeDir + get_string(config, "Internal", "DefaultTableImage", "img/default_table.png");
+    DEFAULT_BACKGLASS_IMAGE = exeDir + get_string(config, "Internal", "DefaultBackglassImage", "img/default_backglass.png");
+    DEFAULT_DMD_IMAGE       = exeDir + get_string(config, "Internal", "DefaultDmdImage", "img/default_dmd.png");
+    DEFAULT_WHEEL_IMAGE     = exeDir + get_string(config, "Internal", "DefaultWheelImage", "img/default_wheel.png");
+    DEFAULT_TABLE_VIDEO     = exeDir + get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
+    DEFAULT_BACKGLASS_VIDEO = exeDir + get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
+    DEFAULT_DMD_VIDEO       = exeDir + get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
     FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 1);
     FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 255));
     TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
@@ -194,6 +195,7 @@ void initialize_config(const std::string& filename) {
     KEY_SCREENSHOT_MODE    = get_key(config, "Keybinds", "ScreenshotMode", SDLK_s);
     
     // Debug keybinds
+    // std::cout << "DEFAULT_DMD_IMAGE: " << DEFAULT_DMD_IMAGE << std::endl;
     // std::cout << "KEY_PREVIOUS_TABLE: " << KEY_PREVIOUS_TABLE << std::endl;
     // std::cout << "KEY_NEXT_TABLE: " << KEY_NEXT_TABLE << std::endl;
     // std::cout << "KEY_LAUNCH_TABLE: " << KEY_LAUNCH_TABLE << std::endl;
