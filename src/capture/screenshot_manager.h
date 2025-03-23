@@ -5,11 +5,18 @@
 #include <string>
 #include <vector>
 
-std::string shell_escape(const std::string& str);
-bool is_window_visible_log(const std::string& title);
-void capture_screenshot(const std::string& window_name, const std::string& output_path);
-void capture_all_screenshots(const std::string& table_image, const std::string& backglass_image, 
-                            const std::string& dmd_image, SDL_Window* window);
-void launch_screenshot_mode(const std::string& vpx_file);
+class ScreenshotManager {
+public:
+    ScreenshotManager(const std::string& exeDir);  // Constructor takes exeDir
+    void launchScreenshotMode(const std::string& vpxFile);  // Main entry for screenshot mode
+    void captureScreenshot(const std::string& windowName, const std::string& outputPath);  // Capture single screenshot
+    void captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage, 
+                               const std::string& dmdImage, SDL_Window* window);  // Capture all needed screenshots
+
+private:
+    std::string vpxLogFile;  // Member variable for log path
+    std::string shellEscape(const std::string& str);  // Escape shell strings
+    bool isWindowVisibleLog(const std::string& title);  // Check log for window visibility
+};
 
 #endif // SCREENSHOT_UTILS_H
