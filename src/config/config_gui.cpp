@@ -14,6 +14,9 @@
 #include <string>
 #include <cstring>
 
+// Define the global configChangesPending variable
+bool configChangesPending = false;
+
 // Constructor
 IniEditor::IniEditor(const std::string& filename, bool& showFlag) 
     : iniFilename(filename), showFlag(showFlag) {
@@ -38,6 +41,7 @@ void IniEditor::loadIniFile(const std::string& filename) {
 
     // Read all lines into originalLines
     std::string line;
+    originalLines.clear();
     while (std::getline(file, line)) {
         originalLines.push_back(line);
     }
@@ -46,6 +50,9 @@ void IniEditor::loadIniFile(const std::string& filename) {
     // Parse the lines to populate iniData, sections, and line mappings
     std::string currentSectionName;
     size_t lineIndex = 0;
+    iniData.clear();
+    sections.clear();
+    lineToKey.clear();
     for (const auto& line : originalLines) {
         // Trim leading whitespace
         size_t start = line.find_first_not_of(" \t");
@@ -89,11 +96,8 @@ void IniEditor::loadIniFile(const std::string& filename) {
         }
         lineIndex++;
     }
-    // Post-load debug
-    // std::cout << "Total sections loaded: " << sections.size() << std::endl;
-    // for (const auto& sec : sections) {
-    //     std::cout << "Section: " << sec << ", Keys: " << iniData[sec].keyValues.size() << std::endl;
-    // }
+    hasChanges = false;
+    std::cout << "Loaded config file: " << filename << std::endl;
 }
 
 void IniEditor::saveIniFile(const std::string& filename) {
@@ -103,11 +107,13 @@ void IniEditor::saveIniFile(const std::string& filename) {
         return;
     }
 
+    std::cout << "Saving config to " << filename << ":" << std::endl;
     for (size_t i = 0; i < originalLines.size(); ++i) {
         if (lineToKey.find(i) != lineToKey.end()) {
             auto [section, key] = lineToKey[i];
             for (const auto& kv : iniData[section].keyValues) {
                 if (kv.first == key && iniData[section].keyToLineIndex[key] == i) {
+                    std::cout << key << " = " << kv.second << std::endl;
                     file << key << " = " << kv.second << "\n";
                     break;
                 }
@@ -117,10 +123,11 @@ void IniEditor::saveIniFile(const std::string& filename) {
         }
     }
     file.close();
+    std::cout << "Config saved to " << filename << std::endl;
 }
 
 void IniEditor::initExplanations() {
-    explanations = Tooltips::getTooltips();  // Qualified with Tooltips::
+    explanations = Tooltips::getTooltips();
 }
 
 void IniEditor::drawGUI() {
@@ -128,18 +135,17 @@ void IniEditor::drawGUI() {
     float windowWidth = 800.0f;
     float windowHeight = 500.0f;
     ImGui::SetNextWindowPos(ImVec2((MAIN_WINDOW_WIDTH - windowWidth) / 2.0f, (MAIN_WINDOW_HEIGHT - windowHeight) / 2.0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once); // Keep initial size, allow resizing
-    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar); // No title bar
+    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
+    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar);
     ImGui::SetWindowFocus();
 
-    // Left column: Section listbox, stretch to available height
+    // Left column: Section listbox
     ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
-    if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, ImGui::GetContentRegionAvail().y))) { // Full available height
+    if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, ImGui::GetContentRegionAvail().y))) {
         for (const auto& section : sections) {
             bool is_selected = (currentSection == section);
             if (ImGui::Selectable(section.c_str(), is_selected)) {
                 currentSection = section;
-                // std::cout << "User selected section: " << section << std::endl;
             }
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
@@ -171,6 +177,8 @@ void IniEditor::drawGUI() {
             buf[sizeof(buf) - 1] = '\0';
             if (ImGui::InputText(("##" + kv.first).c_str(), buf, sizeof(buf))) {
                 kv.second = std::string(buf);
+                hasChanges = true;
+                std::cout << "Field modified: " << kv.first << " = " << kv.second << ", hasChanges set to true" << std::endl;
             }
         }
     } else {
@@ -181,9 +189,25 @@ void IniEditor::drawGUI() {
     // Buttons at the bottom
     if (ImGui::Button("Save")) {
         saveIniFile(iniFilename);
+        hasChanges = false;  // Reset hasChanges after saving
+        configChangesPending = true;  // Set the flag to trigger a reload
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reload UI")) {
+        if (hasChanges) {
+            saveIniFile(iniFilename);
+            hasChanges = false;
+        }
+        configChangesPending = true;
+        showFlag = false;  // Close the config GUI to trigger the reload
     }
     ImGui::SameLine();
     if (ImGui::Button("Close")) {
+        if (hasChanges) {
+            saveIniFile(iniFilename);
+            hasChanges = false;
+            configChangesPending = true;
+        }
         showFlag = false;
     }
 
@@ -191,12 +215,20 @@ void IniEditor::drawGUI() {
 }
 
 void IniEditor::handleEvent(const SDL_Event& event) {
-    InputManager input; // Use InputManager
+    InputManager input;
     if (input.isConfigSave(event)) {
         saveIniFile(iniFilename);
-        std::cout << "Config saved to " << iniFilename << std::endl;
+        hasChanges = false;
+        configChangesPending = true;
+        std::cout << "Config saved to " << iniFilename << " via keybind" << std::endl;
     }
     if (input.isConfigClose(event)) {
+        if (hasChanges) {
+            saveIniFile(iniFilename);
+            hasChanges = false;
+            configChangesPending = true;
+            std::cout << "Config saved to " << iniFilename << " on close" << std::endl;
+        }
         showFlag = false;
     }
 }
