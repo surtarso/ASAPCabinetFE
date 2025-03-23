@@ -1,8 +1,8 @@
 #include "config/config_loader.h"
-#include <fstream>
-#include <iostream>
+#include <fstream>  // For reading the config file
+#include <iostream>  // For printing messages
 
-// Configuration Variable Definitions
+// Define all the global variables declared in config_loader.h
 std::string VPX_TABLES_PATH;
 std::string VPX_EXECUTABLE_CMD;
 std::string VPX_SUB_CMD;
@@ -46,7 +46,7 @@ Uint8 FADE_TARGET_ALPHA;
 std::string TABLE_CHANGE_SOUND;
 std::string TABLE_LOAD_SOUND;
 
-// Keybinds Definitions
+// Keybinds for the main application
 SDL_Keycode KEY_PREVIOUS_TABLE;
 SDL_Keycode KEY_NEXT_TABLE;
 SDL_Keycode KEY_FAST_PREV_TABLE;
@@ -60,89 +60,94 @@ SDL_Keycode KEY_CONFIG_SAVE;
 SDL_Keycode KEY_CONFIG_CLOSE;
 SDL_Keycode KEY_SCREENSHOT_MODE;
 
-std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
-    std::map<std::string, std::map<std::string, std::string>> config;
-    std::ifstream file(filename);
-    std::string current_section;
+// Keybinds for screenshot mode
+SDL_Keycode KEY_SCREENSHOT_KEY;    // Added for taking screenshots
+SDL_Keycode KEY_SCREENSHOT_QUIT;   // Added for quitting screenshot mode
 
-    if (!file.is_open()) {
+// load_config: Reads the config.ini file and organizes it into a map.
+std::map<std::string, std::map<std::string, std::string>> load_config(const std::string& filename) {
+    std::map<std::string, std::map<std::string, std::string>> config;  // A nested map: sections -> keys -> values
+    std::ifstream file(filename);  // Open the config file
+    std::string current_section;  // Track the current [Section]
+
+    if (!file.is_open()) {  // If the file didn’t open
         std::cerr << "Could not open " << filename << ". Using defaults." << std::endl;
-        return config;
+        return config;  // Return an empty config
     }
 
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty() || line[0] == ';') continue;
-        if (line[0] == '[') {
-            size_t end = line.find(']');
+    std::string line;  // Store each line of the file
+    while (std::getline(file, line)) {  // Read the file line by line
+        if (line.empty() || line[0] == ';') continue;  // Skip empty lines or comments
+        if (line[0] == '[') {  // If it’s a section header
+            size_t end = line.find(']');  // Find the closing bracket
             if (end != std::string::npos) {
-                current_section = line.substr(1, end - 1);
-                config[current_section];
+                current_section = line.substr(1, end - 1);  // Extract the section name
+                config[current_section];  // Create an empty map for this section
             }
             continue;
         }
-        size_t eq_pos = line.find('=');
-        if (eq_pos != std::string::npos && !current_section.empty()) {
-            std::string key = line.substr(0, eq_pos);
-            std::string value = line.substr(eq_pos + 1);
-            key.erase(0, key.find_first_not_of(" \t"));
-            key.erase(key.find_last_not_of(" \t") + 1);
-            value.erase(0, value.find_first_not_of(" \t"));
-            value.erase(value.find_last_not_of(" \t") + 1);
-            config[current_section][key] = value;
+        size_t eq_pos = line.find('=');  // Find the equals sign
+        if (eq_pos != std::string::npos && !current_section.empty()) {  // If it’s a key=value line
+            std::string key = line.substr(0, eq_pos);  // Everything before the =
+            std::string value = line.substr(eq_pos + 1);  // Everything after the =
+            key.erase(0, key.find_first_not_of(" \t"));  // Trim leading whitespace
+            key.erase(key.find_last_not_of(" \t") + 1);  // Trim trailing whitespace
+            value.erase(0, value.find_first_not_of(" \t"));  // Trim leading whitespace
+            value.erase(value.find_last_not_of(" \t") + 1);  // Trim trailing whitespace
+            config[current_section][key] = value;  // Store the key-value pair
         }
     }
-    file.close();
-    return config;
+    file.close();  // Close the file
+    return config;  // Return the parsed config
 }
 
+// get_string: Gets a string value from the config, or a default if not found.
 std::string get_string(const std::map<std::string, std::map<std::string, std::string>>& config,
                        const std::string& section, const std::string& key, const std::string& default_value) {
-    if (config.count(section) && config.at(section).count(key)) {
-        return config.at(section).at(key);
+    if (config.count(section) && config.at(section).count(key)) {  // If the section and key exist
+        return config.at(section).at(key);  // Return the value
     }
-    return default_value;
+    return default_value;  // Otherwise, return the default
 }
 
+// get_int: Gets an integer value from the config, or a default if not found or invalid.
 int get_int(const std::map<std::string, std::map<std::string, std::string>>& config,
             const std::string& section, const std::string& key, int default_value) {
-    if (config.count(section) && config.at(section).count(key)) {
+    if (config.count(section) && config.at(section).count(key)) {  // If the section and key exist
         try {
-            return std::stoi(config.at(section).at(key));
-        } catch (const std::exception&) {
-            return default_value;
+            return std::stoi(config.at(section).at(key));  // Convert string to int
+        } catch (const std::exception&) {  // If conversion fails
+            return default_value;  // Return the default
         }
     }
-    return default_value;
+    return default_value;  // Return the default if not found
 }
 
+// get_key: Gets an SDL keycode from the config, or a default if not found or invalid.
 SDL_Keycode get_key(const std::map<std::string, std::map<std::string, std::string>>& config,
                     const std::string& section, const std::string& key, SDL_Keycode default_value) {
-    if (config.count(section) && config.at(section).count(key)) {
-        SDL_Keycode sdlKey = SDL_GetKeyFromName(config.at(section).at(key).c_str());
-        if (sdlKey != SDLK_UNKNOWN) {
-            // std::cout << "Loaded " << section << ":" << key << " = " << config.at(section).at(key)
-                    //   << " (SDL Key: " << sdlKey << ")" << std::endl;
-            return sdlKey;
-        } //else {
-        //     std::cerr << "Unknown key: " << config.at(section).at(key) << " for " << key << std::endl;
-        // }
+    if (config.count(section) && config.at(section).count(key)) {  // If the section and key exist
+        SDL_Keycode sdlKey = SDL_GetKeyFromName(config.at(section).at(key).c_str());  // Convert name to keycode
+        if (sdlKey != SDLK_UNKNOWN) {  // If it’s a valid key
+            return sdlKey;  // Return it
+        }
     }
-    return default_value;
+    return default_value;  // Return the default if not found or invalid
 }
 
+// initialize_config: Loads the config file and sets all global variables.
 void initialize_config(const std::string& filename) {
-    // auto config = load_config(filename);
-    std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);  // Extract dir from config path
-    // std::cout << "exeDir: " << exeDir << std::endl;
-    auto config = load_config(filename);
+    std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);  // Get the directory of config.ini
+    auto config = load_config(filename);  // Load the config into a map
 
+    // Set VPX settings
     VPX_TABLES_PATH        = get_string(config, "VPX", "TablesPath", "/home/tarso/Games/vpinball/build/tables/");
     VPX_EXECUTABLE_CMD     = get_string(config, "VPX", "ExecutableCmd", "/home/tarso/Games/vpinball/build/VPinballX_GL");
     VPX_SUB_CMD            = get_string(config, "Internal", "SubCmd", "-Play");
     VPX_START_ARGS         = get_string(config, "VPX", "StartArgs", "");
     VPX_END_ARGS           = get_string(config, "VPX", "EndArgs", "");
 
+    // Set custom media paths
     CUSTOM_TABLE_IMAGE     = get_string(config, "CustomMedia", "TableImage", "images/table.png");
     CUSTOM_BACKGLASS_IMAGE = get_string(config, "CustomMedia", "BackglassImage", "images/backglass.png");
     CUSTOM_DMD_IMAGE       = get_string(config, "CustomMedia", "DmdImage", "images/marquee.png");
@@ -151,6 +156,7 @@ void initialize_config(const std::string& filename) {
     CUSTOM_BACKGLASS_VIDEO = get_string(config, "CustomMedia", "BackglassVideo", "video/backglass.mp4");
     CUSTOM_DMD_VIDEO       = get_string(config, "CustomMedia", "DmdVideo", "video/dmd.mp4");
 
+    // Set window settings
     MAIN_WINDOW_MONITOR    = get_int(config, "WindowSettings", "MainMonitor", 1);
     MAIN_WINDOW_WIDTH      = get_int(config, "WindowSettings", "MainWidth", 1080);
     MAIN_WINDOW_HEIGHT     = get_int(config, "WindowSettings", "MainHeight", 1920);
@@ -158,9 +164,11 @@ void initialize_config(const std::string& filename) {
     SECOND_WINDOW_WIDTH    = get_int(config, "WindowSettings", "SecondWidth", 1024);
     SECOND_WINDOW_HEIGHT   = get_int(config, "WindowSettings", "SecondHeight", 1024);
 
+    // Set font settings
     FONT_PATH              = get_string(config, "Internal", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
     FONT_SIZE              = get_int(config, "Font", "Size", 28);
 
+    // Set media dimensions
     WHEEL_IMAGE_SIZE       = get_int(config, "MediaDimensions", "WheelImageSize", 300);
     WHEEL_IMAGE_MARGIN     = get_int(config, "MediaDimensions", "WheelImageMargin", 24);
     BACKGLASS_MEDIA_WIDTH  = get_int(config, "MediaDimensions", "BackglassWidth", 1024);
@@ -168,6 +176,7 @@ void initialize_config(const std::string& filename) {
     DMD_MEDIA_WIDTH        = get_int(config, "MediaDimensions", "DmdWidth", 1024);
     DMD_MEDIA_HEIGHT       = get_int(config, "MediaDimensions", "DmdHeight", 256);
 
+    // Set default media paths (relative to exeDir)
     DEFAULT_TABLE_IMAGE     = exeDir + get_string(config, "Internal", "DefaultTableImage", "img/default_table.png");
     DEFAULT_BACKGLASS_IMAGE = exeDir + get_string(config, "Internal", "DefaultBackglassImage", "img/default_backglass.png");
     DEFAULT_DMD_IMAGE       = exeDir + get_string(config, "Internal", "DefaultDmdImage", "img/default_dmd.png");
@@ -175,12 +184,14 @@ void initialize_config(const std::string& filename) {
     DEFAULT_TABLE_VIDEO     = exeDir + get_string(config, "Internal", "DefaultTableVideo", "img/default_table.mp4");
     DEFAULT_BACKGLASS_VIDEO = exeDir + get_string(config, "Internal", "DefaultBackglassVideo", "img/default_backglass.mp4");
     DEFAULT_DMD_VIDEO       = exeDir + get_string(config, "Internal", "DefaultDmdVideo", "img/default_dmd.mp4");
+
+    // Set fade and sound settings
     FADE_DURATION_MS        = get_int(config, "Internal", "FadeDurationMs", 1);
     FADE_TARGET_ALPHA       = static_cast<Uint8>(get_int(config, "Internal", "FadeTargetAlpha", 255));
     TABLE_CHANGE_SOUND      = get_string(config, "Internal", "TableChangeSound", "snd/table_change.mp3");
     TABLE_LOAD_SOUND        = get_string(config, "Internal", "TableLoadSound", "snd/table_load.mp3");
 
-    // Load keybinds
+    // Load keybinds for the main application
     KEY_PREVIOUS_TABLE     = get_key(config, "Keybinds", "PreviousTable", SDLK_LSHIFT);
     KEY_NEXT_TABLE         = get_key(config, "Keybinds", "NextTable", SDLK_RSHIFT);
     KEY_FAST_PREV_TABLE    = get_key(config, "Keybinds", "FastPrevTable", SDLK_LCTRL);
@@ -193,10 +204,8 @@ void initialize_config(const std::string& filename) {
     KEY_CONFIG_SAVE        = get_key(config, "Keybinds", "ConfigSave", SDLK_SPACE);
     KEY_CONFIG_CLOSE       = get_key(config, "Keybinds", "ConfigClose", SDLK_q);
     KEY_SCREENSHOT_MODE    = get_key(config, "Keybinds", "ScreenshotMode", SDLK_s);
-    
-    // Debug keybinds
-    // std::cout << "DEFAULT_DMD_IMAGE: " << DEFAULT_DMD_IMAGE << std::endl;
-    // std::cout << "KEY_PREVIOUS_TABLE: " << KEY_PREVIOUS_TABLE << std::endl;
-    // std::cout << "KEY_NEXT_TABLE: " << KEY_NEXT_TABLE << std::endl;
-    // std::cout << "KEY_LAUNCH_TABLE: " << KEY_LAUNCH_TABLE << std::endl;
+
+    // Load keybinds for screenshot mode
+    KEY_SCREENSHOT_KEY     = get_key(config, "Keybinds", "ScreenshotKey", SDLK_s);  // Default to 'S'
+    KEY_SCREENSHOT_QUIT    = get_key(config, "Keybinds", "ScreenshotQuit", SDLK_q); // Default to 'Q'
 }
