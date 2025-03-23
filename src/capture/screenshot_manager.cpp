@@ -254,7 +254,8 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     SDL_Rect button = {0, 0, windowWidth, windowHeight};
-    std::cout << "Screenshot mode active. Press 'S' to capture, 'Q' to quit." << std::endl;
+    std::cout << "Screenshot mode active. Press '" << keycodeToString(KEY_SCREENSHOT_KEY) 
+              << "' to capture, '" << keycodeToString(KEY_SCREENSHOT_QUIT) << "' to quit." << std::endl;
 
     bool running = true;
     SDL_Event event;
@@ -263,10 +264,10 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
             if (event.type == SDL_QUIT) {
                 running = false;
             } else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_s) {
+                if (event.key.keysym.sym == KEY_SCREENSHOT_KEY) {
                     std::cout << "Capturing screenshots..." << std::endl;
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                } else if (event.key.keysym.sym == SDLK_q) {
+                } else if (event.key.keysym.sym == KEY_SCREENSHOT_QUIT) {
                     running = false;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
