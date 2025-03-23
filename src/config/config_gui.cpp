@@ -193,25 +193,13 @@ void IniEditor::drawGUI() {
         configChangesPending = true;  // Set the flag to trigger a reload
     }
     ImGui::SameLine();
-    if (ImGui::Button("Reload UI")) {
-        if (hasChanges) {
-            saveIniFile(iniFilename);
-            hasChanges = false;
-        }
-        configChangesPending = true;
-        showFlag = false;  // Close the config GUI to trigger the reload
-    }
-    ImGui::SameLine();
     if (ImGui::Button("Close")) {
-        if (hasChanges) {
-            saveIniFile(iniFilename);
-            hasChanges = false;
-            configChangesPending = true;
-        }
-        showFlag = false;
+        loadIniFile(iniFilename);  // Reload the config file to discard changes
+        hasChanges = false;  // Reset hasChanges
+        showFlag = false;  // Close the config GUI
     }
 
-    ImGui::End();
+    ImGui::End();  // Close the main window
 }
 
 void IniEditor::handleEvent(const SDL_Event& event) {
@@ -223,12 +211,8 @@ void IniEditor::handleEvent(const SDL_Event& event) {
         std::cout << "Config saved to " << iniFilename << " via keybind" << std::endl;
     }
     if (input.isConfigClose(event)) {
-        if (hasChanges) {
-            saveIniFile(iniFilename);
-            hasChanges = false;
-            configChangesPending = true;
-            std::cout << "Config saved to " << iniFilename << " on close" << std::endl;
-        }
-        showFlag = false;
+        loadIniFile(iniFilename);  // Reload the config file to discard changes
+        hasChanges = false;  // Reset hasChanges
+        showFlag = false;  // Close the config GUI
     }
 }
