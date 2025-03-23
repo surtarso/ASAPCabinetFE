@@ -1,16 +1,18 @@
 #ifndef CONFIG_GUI_H
 #define CONFIG_GUI_H
 
-#include "imgui.h"
-#include <SDL.h>
 #include <string>
+#include <vector>
 #include <map>
 #include <unordered_map>
-#include <vector>
+#include "SDL.h"
+
+// Declare configChangesPending as extern so it can be accessed in main.cpp
+extern bool configChangesPending;
 
 struct ConfigSection {
-    std::vector<std::pair<std::string, std::string>> keyValues;
-    std::map<std::string, size_t> keyToLineIndex;
+    std::vector<std::pair<std::string, std::string>> keyValues; // Preserve order
+    std::unordered_map<std::string, size_t> keyToLineIndex;     // Map key to its line index
 };
 
 class IniEditor {
@@ -19,26 +21,32 @@ public:
     ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
-    bool hasChangesMade() const { return hasChanges; }
-    void resetChanges() { hasChanges = false; }
+
+    // Public getter for isCapturingKey_
+    bool isCapturingKey() const { return isCapturingKey_; }
 
 private:
-    void loadIniFile(const std::string& filename);
-    void saveIniFile(const std::string& filename);
-    void initExplanations();
-
-    std::map<std::string, ConfigSection> iniData;
-    std::vector<std::string> sections;
-    std::unordered_map<std::string, std::string> explanations;
-    std::string currentSection;
     std::string iniFilename;
     bool& showFlag;
     std::vector<std::string> originalLines;
-    std::map<size_t, std::pair<std::string, std::string>> lineToKey;
-    bool hasChanges = false;  // Track if changes were made
-};
+    std::map<std::string, ConfigSection> iniData;
+    std::vector<std::string> sections;
+    std::string currentSection;
+    std::unordered_map<size_t, std::pair<std::string, std::string>> lineToKey;
+    std::unordered_map<std::string, std::string> explanations;
+    bool hasChanges = false;
 
-// Declare the global configChangesPending variable
-extern bool configChangesPending;
+    // Key capture state
+    bool isCapturingKey_ = false;
+    std::string capturingKeyName_;
+    std::string capturedKeyName_;
+
+    // Save message timer
+    float saveMessageTimer_ = 0.0f; // Timer for displaying "Saved successfully"
+
+    void loadIniFile(const std::string& filename);
+    void saveIniFile(const std::string& filename);
+    void initExplanations();
+};
 
 #endif // CONFIG_GUI_H
