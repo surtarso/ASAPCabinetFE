@@ -15,7 +15,7 @@ configure_file(
 # Define source files
 set(SOURCES
     src/main.cpp
-    
+    src/core/app.cpp
     src/capture/screenshot_manager.cpp
     src/config/config_loader.cpp
     src/config/config_gui.cpp
@@ -39,6 +39,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     src
+    src/core
     src/capture
     src/config
     src/input
