@@ -1,5 +1,5 @@
 #include "table/table_manager.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include <algorithm>
 #include <iostream>
 #include <cctype>

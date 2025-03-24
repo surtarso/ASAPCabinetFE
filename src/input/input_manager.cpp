@@ -1,6 +1,6 @@
 #include "input/input_manager.h"
 #include "config/config_loader.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include <iostream>
 
 bool InputManager::isKeyPressed(const SDL_Event& event, SDL_Keycode key) {

@@ -32,12 +32,12 @@
  #include "render/video_player.h" // For VideoContext (video playback setup).
  #include "table/table_manager.h" // For Table, loadTableList (table management).
  #include "render/renderer.h"     // For Renderer (rendering assets).
- #include "sdl_guards.h"          // For SDL guards (resource management).
+ #include "utils/sdl_guards.h"          // For SDL guards (resource management).
  #include "transition_manager.h"  // For TransitionManager (fade transitions).
  #include "table/asset_manager.h" // For AssetManager (loading table assets).
  #include "input/input_manager.h" // For InputManager (handling user input).
  #include "capture/screenshot_manager.h" // For ScreenshotManager (capturing screenshots).
- #include "logging.h"             // For LOG_DEBUG (debug logging).
+ #include "utils/logging.h"             // For LOG_DEBUG (debug logging).
  #include "version.h"             // For VERSION (application version).
  #include "config/config_manager.h"
  
@@ -422,9 +422,6 @@
          VideoContext* tableVideo = assets.getTableVideoPlayer();
          VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
          VideoContext* dmdVideo = assets.getDmdVideoPlayer();
-         VideoContext* oldTableVideo = assets.getOldTableVideoPlayer();
-         VideoContext* oldBackglassVideo = assets.getOldBackglassVideoPlayer();
-         VideoContext* oldDmdVideo = assets.getOldDmdVideoPlayer();
  
          Uint32 now = SDL_GetTicks();
          transitionManager.updateTransition(now, assets);

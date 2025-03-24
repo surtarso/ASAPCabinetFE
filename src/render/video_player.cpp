@@ -1,5 +1,5 @@
 #include "render/video_player.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include <iostream>
 
 void* lock(void* data, void** pixels) {

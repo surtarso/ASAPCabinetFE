@@ -1,5 +1,5 @@
 #include "render/renderer.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include <iostream>
 #include <stdio.h>  // stderr redirection
 

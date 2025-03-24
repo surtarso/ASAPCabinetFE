@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 #include "config/config_loader.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
 
 ScreenshotManager::ScreenshotManager(const std::string& exeDir) 

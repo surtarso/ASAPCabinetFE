@@ -43,6 +43,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src/input
     src/table
     src/render
+    src/utils
     src/imgui
     src/imgui/backends
     ${CMAKE_BINARY_DIR}  # Where version.h is generated

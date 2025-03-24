@@ -1,6 +1,6 @@
 #include "table/asset_manager.h"
 #include "config/config_loader.h" // Add this to access FONT_COLOR
-#include "logging.h"
+#include "utils/logging.h"
 #include <iostream>
 
 // Constructor: Initializes AssetManager with renderers and font, sets up smart pointers for textures.
