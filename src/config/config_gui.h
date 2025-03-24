@@ -1,3 +1,8 @@
+// Manages the configuration GUI (IniEditor class).
+// Handles user interaction for editing the config file (e.g., keybindings, settings).
+// Sets the configChangesPending flag (an extern global) when changes are saved, signaling that the app needs to reload the config.
+// Responsibilities: GUI rendering, event handling for config editing, saving changes to the config file.
+
 #ifndef CONFIG_GUI_H
 #define CONFIG_GUI_H
 

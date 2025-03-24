@@ -1,3 +1,8 @@
+// Defines global variables for all config settings (e.g., VPX_TABLES_PATH, MAIN_WINDOW_WIDTH, KEY_PREVIOUS_TABLE).
+// Provides functions to load and parse the config file (load_config, get_string, get_int, get_key).
+// Includes initialize_config to load the config file and update the global variables.
+// Responsibilities: Parsing the config file, providing access to config values, updating global variables.
+
 #ifndef CONFIG_LOADER_H
 #define CONFIG_LOADER_H
 
