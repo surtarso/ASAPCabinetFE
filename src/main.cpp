@@ -1,28 +1,43 @@
-#include <iostream>
-#include <memory>
-#include <filesystem>  // For checking paths
-#include <unistd.h>  // For readlink
-#include <limits.h>  // For PATH_MAX
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-#include <vlc/vlc.h>
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
-#include "config/config_gui.h"
-#include "config/config_loader.h"
-#include "render/video_player.h"
-#include "table/table_manager.h"
-#include "render/renderer.h"
-#include "sdl_guards.h"
-#include "transition_manager.h"
-#include "table/asset_manager.h"
-#include "input/input_manager.h"
-#include "capture/screenshot_manager.h"
-#include "logging.h"
-#include "version.h"
+/*
+ * main.cpp - Main entry point for ASAPCabinetFE.
+ *
+ * ASAPCabinetFE is a frontend for virtual pinball cabinets, designed to manage and display
+ * Visual Pinball X (VPX) tables with support for dual-monitor setups (playfield and backglass/DMD).
+ * It provides a user-friendly interface for navigating tables, configuring settings, playing videos,
+ * and capturing screenshots, with smooth transitions and audio feedback.
+ *
+ * This file initializes SDL, ImGui, and other subsystems, sets up the main windows and renderers,
+ * loads table assets, and runs the main loop to handle user input, rendering, and transitions.
+ * It also manages configuration through a GUI and supports dynamic reloading of settings.
+ * 
+ * Tarso Galvão Mar/2025
+ */
+
+#include <iostream>             // For std::cout, std::cerr (console output).
+#include <memory>               // For std::unique_ptr (smart pointers).
+#include <filesystem>           // For std::filesystem (path checking).
+#include <unistd.h>             // For readlink (symbolic link resolution).
+#include <limits.h>             // For PATH_MAX (path length limits).
+#include <SDL.h>                // For SDL core functionality (window, events).
+#include <SDL_image.h>          // For SDL_image (loading image textures).
+#include <SDL_ttf.h>            // For SDL_ttf (rendering text with fonts).
+#include <SDL_mixer.h>          // For SDL_mixer (audio playback).
+#include <vlc/vlc.h>            // For libvlc (video playback).
+#include "imgui.h"              // For ImGui (GUI framework).
+#include "imgui_impl_sdl2.h"    // For ImGui SDL2 backend (event handling).
+#include "imgui_impl_sdlrenderer2.h" // For ImGui SDL_Renderer backend (rendering).
+#include "config/config_gui.h"   // For IniEditor (configuration GUI).
+#include "config/config_loader.h" // For config loading (keybindings, settings).
+#include "render/video_player.h" // For VideoContext (video playback setup).
+#include "table/table_manager.h" // For Table, loadTableList (table management).
+#include "render/renderer.h"     // For Renderer (rendering assets).
+#include "sdl_guards.h"          // For SDL guards (resource management).
+#include "transition_manager.h"  // For TransitionManager (fade transitions).
+#include "table/asset_manager.h" // For AssetManager (loading table assets).
+#include "input/input_manager.h" // For InputManager (handling user input).
+#include "capture/screenshot_manager.h" // For ScreenshotManager (capturing screenshots).
+#include "logging.h"             // For LOG_DEBUG (debug logging).
+#include "version.h"             // For VERSION (application version).
 
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
 
@@ -71,14 +86,16 @@ bool isConfigValid() {
     return true;
 }
 
-// Run initial config GUI if needed
+// Runs initial config GUI if config is invalid, ensuring required settings are set.
 void runInitialConfig(const std::string& configPath) {
+    // Initialize SDL for video and timer.
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     if (!sdlInit.success) {
         LOG_DEBUG("SDL_Init failed for config: " << SDL_GetError());
         exit(1);
     }
 
+    // Create config window (800x500, centered).
     auto window = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
         SDL_CreateWindow("ASAPCabinetFE Setup",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -89,6 +106,7 @@ void runInitialConfig(const std::string& configPath) {
         exit(1);
     }
 
+    // Create renderer for config window.
     auto renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
         SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED),
         SDL_DestroyRenderer);
@@ -97,21 +115,22 @@ void runInitialConfig(const std::string& configPath) {
         exit(1);
     }
 
+    // Initialize ImGui for config GUI.
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(window.get(), renderer.get());
     ImGui_ImplSDLRenderer2_Init(renderer.get());
 
-    // Temporarily override MAIN_WINDOW_WIDTH and MAIN_WINDOW_HEIGHT
+    // Temporarily override window dimensions for config GUI.
     int originalWidth = MAIN_WINDOW_WIDTH;
     int originalHeight = MAIN_WINDOW_HEIGHT;
     MAIN_WINDOW_WIDTH = 800;
     MAIN_WINDOW_HEIGHT = 500;
 
+    // Run config editor until valid config is saved.
     bool showConfig = true;
     IniEditor configEditor(configPath, showConfig);
-
     while (true) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -123,102 +142,122 @@ void runInitialConfig(const std::string& configPath) {
             }
         }
 
+        // Render config GUI.
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
-
         configEditor.drawGUI();
-
         ImGui::Render();
         SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
         SDL_RenderClear(renderer.get());
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer.get());
         SDL_RenderPresent(renderer.get());
 
+        // Check if config is valid after saving; loop until valid.
         if (!showConfig) {
             initialize_config(configPath);
             if (isConfigValid()) {
                 break;
             } else {
                 std::cerr << "Config still invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
-                showConfig = true;
+                showConfig = true; // Reopen GUI if config is invalid.
             }
         }
     }
 
-    // Restore original window dimensions
+    // Restore original window dimensions.
     MAIN_WINDOW_WIDTH = originalWidth;
     MAIN_WINDOW_HEIGHT = originalHeight;
 
+    // Cleanup ImGui.
     ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
+// Main entry point.
 int main(int argc, char* argv[]) {
-    // Check for --version flag
+    // ----- Handle Command-Line Arguments -----
+    // Check for --version flag and exit if present.
     if (argc == 2 && std::string(argv[1]) == "--version") {
         std::cout << "ASAPCabinetFE version " << PROJECT_VERSION << std::endl;
         return 0;
     }
 
+    // ----- Initialize Configuration -----
+    // Determine executable directory and load config.
     std::string exeDir = getExecutableDir();
     std::string configPath = exeDir + "config.ini";
     initialize_config(configPath);  // Pass full path
 
-    // Check config and run setup if needed
+    // Check config validity and run setup if needed.
     if (!isConfigValid()) {
         std::cout << "Invalid config detected. Launching setup..." << std::endl;
         runInitialConfig(configPath);
     }
 
+    // ----- Initialize SDL and Subsystems -----
+    // Initialize SDL for video, timer, and audio.
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
     CHECK_SDL(sdlInit.success, "SDL_Init failed");
 
+    // Initialize SDL_image for PNG/JPG support.
     IMGInitGuard imgInit(IMG_INIT_PNG | IMG_INIT_JPG);
     CHECK_SDL(imgInit.flags, "IMG_Init failed");
 
+    // Initialize SDL_ttf for font rendering.
     TTFInitGuard ttfInit;
     CHECK_SDL(ttfInit.success, "TTF_Init failed");
 
+    // Initialize SDL_mixer for audio playback.
     MixerGuard mixerGuard(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     CHECK_SDL(mixerGuard.success, "Mix_OpenAudio failed");
 
+    // ----- Create Windows and Renderers -----
+    // Create primary window (playfield).
     auto primaryWindow = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
         SDL_CreateWindow("Playfield", SDL_WINDOWPOS_CENTERED_DISPLAY(MAIN_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
             MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS),
         SDL_DestroyWindow);
     CHECK_SDL(primaryWindow, "Failed to create primary window");
 
+    // Create primary renderer with VSync.
     auto primaryRenderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
         SDL_CreateRenderer(primaryWindow.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         SDL_DestroyRenderer);
     CHECK_SDL(primaryRenderer, "Failed to create primary renderer");
 
+    // Create secondary window (backglass).
     auto secondaryWindow = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
         SDL_CreateWindow("Backglass", SDL_WINDOWPOS_CENTERED_DISPLAY(SECOND_WINDOW_MONITOR), SDL_WINDOWPOS_CENTERED,
             SECOND_WINDOW_WIDTH, SECOND_WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS),
         SDL_DestroyWindow);
     CHECK_SDL(secondaryWindow, "Failed to create secondary window");
 
+    // Create secondary renderer with VSync.
     auto secondaryRenderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>(
         SDL_CreateRenderer(secondaryWindow.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         SDL_DestroyRenderer);
     CHECK_SDL(secondaryRenderer, "Failed to create secondary renderer");
 
+    // ----- Initialize ImGui -----
+    // Set up ImGui for GUI rendering.
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(primaryWindow.get(), primaryRenderer.get());
     ImGui_ImplSDLRenderer2_Init(primaryRenderer.get());
 
+    // ----- Load Resources and Managers -----
+    // Initialize config editor.
     bool showConfig = false;
-
     IniEditor configEditor(configPath, showConfig);
 
+    // Load font for rendering table names.
     auto font = std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>(TTF_OpenFont(FONT_PATH.c_str(), FONT_SIZE), TTF_CloseFont);
     if (!font) std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     
+    // Load sound effects for table changes and launches.
     std::string tableChangeSoundPath = exeDir + TABLE_CHANGE_SOUND;
     auto tableChangeSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(tableChangeSoundPath.c_str()), Mix_FreeChunk);
     if (!tableChangeSound) std::cerr << "Mix_LoadWAV Error at " << tableChangeSoundPath << ": " << Mix_GetError() << std::endl;
@@ -227,6 +266,7 @@ int main(int argc, char* argv[]) {
     auto tableLoadSound = std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(Mix_LoadWAV(tableLoadSoundPath.c_str()), Mix_FreeChunk);
     if (!tableLoadSound) std::cerr << "Mix_LoadWAV Error at " << tableLoadSoundPath << ": " << Mix_GetError() << std::endl;
 
+    // Load table list and initialize assets.
     std::vector<Table> tables = loadTableList();
     if (tables.empty()) { std::cerr << "Edit config.ini, no .vpx files found in " << VPX_TABLES_PATH << std::endl; return 1; }
 
@@ -240,27 +280,30 @@ int main(int argc, char* argv[]) {
 
     assets.loadTableAssets(currentIndex, tables);
 
+    // ----- Main Loop -----
     while (!quit) {
+        // ----- Event Handling -----
+        // Process SDL events (input, quit, etc.).
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) quit = true;
 
             if (event.type == SDL_KEYDOWN) {
+                // Toggle config GUI visibility.
                 if (inputManager.isToggleConfig(event)) {
                     showConfig = !showConfig;
                     LOG_DEBUG("Toggled showConfig to: " << (showConfig ? 1 : 0));
                 }
 
+                // Handle events in config GUI if open.
                 if (showConfig) {
-                    // When config GUI is open, let it handle events
                     configEditor.handleEvent(event);
-                    // Skip InputManager processing unless we're capturing a key
                     if (!configEditor.isCapturingKey()) {
-                        continue;
+                        continue; // Skip other input processing during key capture.
                     }
                 }
 
-                // When config GUI is not open, process InputManager events
+                // Process input for table navigation and actions.
                 if (!showConfig) {
                     if (inputManager.isPreviousTable(event)) {
                         size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
@@ -363,10 +406,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        // ----- ImGui Frame Setup -----
+        // Prepare ImGui for rendering.
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
+        // ----- Update Video and Transitions -----
+        // Update video textures and transition effects.
         VideoContext* tableVideo = assets.getTableVideoPlayer();
         VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
         VideoContext* dmdVideo = assets.getDmdVideoPlayer();
@@ -384,6 +431,8 @@ int main(int argc, char* argv[]) {
             updateVideoTexture(dmdVideo, secondaryRenderer.get());
         }
 
+        // ----- Render Primary Window (Playfield) -----
+        // Clear and render playfield content (table, wheel, name).
         SDL_SetRenderDrawColor(primaryRenderer.get(), 32, 32, 32, 255);
         SDL_RenderClear(primaryRenderer.get());
 
@@ -416,12 +465,16 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(primaryRenderer.get(), assets.getTableNameTexture(), nullptr, &nameRect);
         }
 
+        // Render config GUI if open.
         if (showConfig) configEditor.drawGUI();
 
+        // Finalize ImGui rendering for primary window.
         ImGui::Render();
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), primaryRenderer.get());
         SDL_RenderPresent(primaryRenderer.get());
 
+        // ----- Render Secondary Window (Backglass/DMD) -----
+        // Clear and render backglass and DMD content.
         SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
         SDL_RenderClear(secondaryRenderer.get());
 
@@ -451,11 +504,13 @@ int main(int argc, char* argv[]) {
 
         SDL_RenderPresent(secondaryRenderer.get());
 
+        // Clean up old video players after transition.
         if (!transitionManager.isTransitionActive()) {
             assets.clearOldVideoPlayers();
         }
 
-        // Check if a UI reload is pending
+        // ----- Handle Config Changes -----
+        // Reload UI if config changes are pending.
         if (configChangesPending) {
             LOG_DEBUG("Reloading UI due to config changes...");
             // Reload config
@@ -478,6 +533,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // ----- Cleanup -----
+    // Clean up video players and ImGui before exiting.
     cleanupVideoContext(assets.getTableVideoPlayer());
     cleanupVideoContext(assets.getBackglassVideoPlayer());
     cleanupVideoContext(assets.getDmdVideoPlayer());
