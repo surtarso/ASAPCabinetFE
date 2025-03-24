@@ -1,8 +1,3 @@
-// Manages the configuration GUI (IniEditor class).
-// Handles user interaction for editing the config file (e.g., keybindings, settings).
-// Sets the configChangesPending flag (an extern global) when changes are saved, signaling that the app needs to reload the config.
-// Responsibilities: GUI rendering, event handling for config editing, saving changes to the config file.
-
 #ifndef CONFIG_GUI_H
 #define CONFIG_GUI_H
 
@@ -11,9 +6,7 @@
 #include <map>
 #include <unordered_map>
 #include "SDL.h"
-
-// Declare configChangesPending as extern so it can be accessed in main.cpp
-extern bool configChangesPending;
+#include "config_manager.h"
 
 struct ConfigSection {
     std::vector<std::pair<std::string, std::string>> keyValues; // Preserve order
@@ -22,7 +15,7 @@ struct ConfigSection {
 
 class IniEditor {
 public:
-    IniEditor(const std::string& filename, bool& showFlag);
+    IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager = nullptr); // Declaration only
     ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
@@ -33,6 +26,7 @@ public:
 private:
     std::string iniFilename;
     bool& showFlag;
+    ConfigManager* configManager_; // Pointer to ConfigManager for notifying changes.
     std::vector<std::string> originalLines;
     std::map<std::string, ConfigSection> iniData;
     std::vector<std::string> sections;

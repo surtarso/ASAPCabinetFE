@@ -3,11 +3,11 @@
 #include "config/config_gui.h"
 #include "config/tooltips.h"
 #include "config/config_loader.h"
+#include "config/config_manager.h"
 #include "input/input_manager.h"
 #include "logging.h"
 #include "imgui.h"
 #include <fstream>
-//#include <sstream>
 #include <iostream>
 #include <map>
 #include <unordered_map>
@@ -17,21 +17,28 @@
 #include <cctype>     // For toupper
 #include <algorithm>  // For std::transform
 
-// Define the global configChangesPending variable
-bool configChangesPending = false;
+// Removed: bool configChangesPending = false; (now handled by ConfigManager)
 
-IniEditor::IniEditor(const std::string& filename, bool& showFlag) 
-    : iniFilename(filename), showFlag(showFlag) {
+IniEditor::IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager)
+    : iniFilename(filename),
+      showFlag(showFlag),
+      configManager_(configManager),
+      originalLines(),
+      iniData(),
+      sections(),
+      currentSection(),
+      lineToKey(),
+      explanations(),
+      hasChanges(false),
+      isCapturingKey_(false),
+      capturingKeyName_(),
+      capturedKeyName_(),
+      saveMessageTimer_(0.0f) {
     loadIniFile(filename);
     initExplanations();
     if (!sections.empty()) {
         currentSection = sections[0];
     }
-    // Initialize key capture state
-    isCapturingKey_ = false;
-    capturingKeyName_.clear();
-    capturedKeyName_.clear();
-    saveMessageTimer_ = 0.0f; // Initialize save message timer
 }
 
 IniEditor::~IniEditor() {
@@ -130,6 +137,13 @@ void IniEditor::saveIniFile(const std::string& filename) {
     }
     file.close();
     LOG_DEBUG("Config saved to " << filename);
+
+    // Notify ConfigManager of changes.
+    if (configManager_) {
+        configManager_->notifyConfigChanged();
+    }
+    hasChanges = false;
+    saveMessageTimer_ = 3.0f; // Show "Saved successfully" for 3 seconds
 }
 
 void IniEditor::initExplanations() {
@@ -268,7 +282,6 @@ void IniEditor::drawGUI() {
     if (ImGui::Button("Save")) {
         saveIniFile(iniFilename);
         hasChanges = false;  // Reset hasChanges after saving
-        configChangesPending = true;  // Set the flag to trigger a reload
         saveMessageTimer_ = 3.0f;  // Show "Saved successfully" for 3 seconds
     }
     ImGui::SameLine();
@@ -342,7 +355,7 @@ void IniEditor::handleEvent(const SDL_Event& event) {
                             else if (capturingKeyName_ == "ScreenshotMode") KEY_SCREENSHOT_MODE = newKeyCode;
                             else if (capturingKeyName_ == "ScreenshotKey") KEY_SCREENSHOT_KEY = newKeyCode;
                             else if (capturingKeyName_ == "ScreenshotQuit") KEY_SCREENSHOT_QUIT = newKeyCode;
-                            
+
                             #ifdef DEBUG_LOGGING
                                 const char* newKeyDisplayName = SDL_GetKeyName(newKeyCode);
                                 LOG_DEBUG("Updated display for " << capturingKeyName_ << " to " << newKeyDisplayName);
@@ -364,7 +377,6 @@ void IniEditor::handleEvent(const SDL_Event& event) {
     if (input.isConfigSave(event)) {
         saveIniFile(iniFilename);
         hasChanges = false;
-        configChangesPending = true;
         saveMessageTimer_ = 3.0f;  // Show "Saved successfully" for 3 seconds
         LOG_DEBUG("Config saved to " << iniFilename << " via keybind");
     }
