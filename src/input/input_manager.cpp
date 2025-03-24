@@ -1,11 +1,12 @@
 #include "input/input_manager.h"
 #include "config/config_loader.h"
+#include "logging.h"
 #include <iostream>
 
 bool InputManager::isKeyPressed(const SDL_Event& event, SDL_Keycode key) {
     if (event.type != SDL_KEYDOWN || key == SDLK_UNKNOWN) return false;
     bool match = event.key.keysym.sym == key;
-    // std::cout << "Checking key: Event=" << event.key.keysym.sym << ", Bound=" << key << ", Match=" << match << std::endl;
+    LOG_DEBUG("Checking key: Event=" << event.key.keysym.sym << ", Bound=" << key << ", Match=" << match);
     return match;
 }
 

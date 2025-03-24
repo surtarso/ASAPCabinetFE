@@ -1,4 +1,5 @@
 #include "table/table_manager.h"
+#include "logging.h"
 #include <algorithm>
 #include <iostream>
 #include <cctype>
@@ -7,17 +8,17 @@ std::map<char, int> letterIndex; // Definition here
 
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
-    // std::cout << "Checking custom path: " << imageFile.string() << std::endl;
+    LOG_DEBUG("Checking custom path: " << imageFile.string());
     if (fs::exists(imageFile)) {
         return imageFile.string();
     }
-    // std::cout << "Falling back to default: " << defaultImagePath << std::endl;
+    LOG_DEBUG("Falling back to default: " << defaultImagePath); // << std::endl;
     if (!fs::exists(defaultImagePath)) {
-        std::cerr << "Default image not found: " << defaultImagePath << std::endl;
+        LOG_DEBUG("Default image not found: " << defaultImagePath);
     }
     return defaultImagePath;
 }
-
+  
 std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath) {
     fs::path videoFile = fs::path(root) / videoPath;
     if (fs::exists(videoFile))

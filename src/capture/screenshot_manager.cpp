@@ -8,11 +8,12 @@
 #include <thread>
 #include <vector>
 #include "config/config_loader.h"
+#include "logging.h"
 #include <SDL2/SDL_ttf.h>
 
 ScreenshotManager::ScreenshotManager(const std::string& exeDir) 
     : vpxLogFile(exeDir + "logs/VPinballX.log") {  // Set log path with exeDir
-    // std::cout << "ScreenshotManager initialized with VPX_LOG_FILE: " << vpxLogFile << std::endl;
+    LOG_DEBUG("ScreenshotManager initialized with VPX_LOG_FILE: " << vpxLogFile);
 }
 
 std::string ScreenshotManager::shellEscape(const std::string& str) {
@@ -29,7 +30,7 @@ std::string ScreenshotManager::shellEscape(const std::string& str) {
 bool ScreenshotManager::isWindowVisibleLog(const std::string& title) {
     std::ifstream log(vpxLogFile);
     if (!log.is_open()) {
-        std::cerr << "Error: Could not open " << vpxLogFile << std::endl;
+        LOG_DEBUG("Error: Could not open " << vpxLogFile);
         return false;
     }
     std::string line;
@@ -47,7 +48,7 @@ void ScreenshotManager::captureScreenshot(const std::string& windowName, const s
     std::string cmd = "xdotool search --name " + shellEscape(windowName) + " | head -n 1";
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
-        std::cerr << "Error: Failed to run xdotool search for " << windowName << "." << std::endl;
+        LOG_DEBUG("Error: Failed to run xdotool search for " << windowName << ".");
         return;
     }
     char buffer[128];
@@ -59,30 +60,30 @@ void ScreenshotManager::captureScreenshot(const std::string& windowName, const s
     pclose(pipe);
 
     if (windowId.empty()) {
-        std::cerr << "Warning: Window '" << windowName << "' not found." << std::endl;
+        LOG_DEBUG("Warning: Window '" << windowName << "' not found.");
         return;
     }
 
     cmd = "xdotool windowactivate " + windowId + " >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        std::cerr << "Warning: Failed to activate window " << windowName << std::endl;
+        LOG_DEBUG("Warning: Failed to activate window " << windowName);
     }
     cmd = "xdotool windowraise " + windowId + " >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        std::cerr << "Warning: Failed to raise window " << windowName << std::endl;
+        LOG_DEBUG("Warning: Failed to raise window " << windowName);
     }
     usleep(400000);
 
     cmd = "mkdir -p " + shellEscape(outputPath.substr(0, outputPath.find_last_of('/')));
     if (std::system(cmd.c_str()) != 0) {
-        std::cerr << "Error: Failed to create directory for " << outputPath << std::endl;
+        LOG_DEBUG("Error: Failed to create directory for " << outputPath);
         return;
     }
     cmd = "import -window " + windowId + " " + shellEscape(outputPath);
     if (std::system(cmd.c_str()) == 0) {
-        std::cout << "Saved screenshot to " << outputPath << std::endl;
+        LOG_DEBUG("Saved screenshot to " << outputPath);
     } else {
-        std::cerr << "Error: Failed to save screenshot to " << outputPath << std::endl;
+        LOG_DEBUG("Error: Failed to save screenshot to " << outputPath);
     }
 }
 
@@ -99,7 +100,7 @@ void ScreenshotManager::captureAllScreenshots(const std::string& tableImage, con
             captureScreenshot("B2SBackglass", backglassImage);
         });
     } else {
-        std::cerr << "Warning: Backglass window not visible in VPX log." << std::endl;
+        LOG_DEBUG("Warning: Backglass window not visible in VPX log.");
     }
 
     // PUPTopper too
@@ -116,7 +117,7 @@ void ScreenshotManager::captureAllScreenshots(const std::string& tableImage, con
         }
     }
     if (!dmdCaptured) {
-        std::cerr << "Warning: No visible DMD window detected." << std::endl;
+        LOG_DEBUG("Warning: No visible DMD window detected.");
     }
 
     for (auto& thread : threads) {
@@ -128,7 +129,7 @@ void ScreenshotManager::captureAllScreenshots(const std::string& tableImage, con
     SDL_RaiseWindow(window);  // Keep focus on screenshot window
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        std::cerr << "Warning: Failed to refocus VPX Screenshot window." << std::endl;
+        LOG_DEBUG("Warning: Failed to refocus VPX Screenshot window.");
     }
 }
 
@@ -140,38 +141,38 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string dmdImage = tableFolder + "/" + CUSTOM_DMD_IMAGE;
 
     if (vpxExecutable.empty()) {
-        std::cerr << "Error: Missing VPX.ExecutableCmd in config.ini" << std::endl;
+        LOG_DEBUG("Error: Missing VPX.ExecutableCmd in config.ini");
         return;
     }
     if (CUSTOM_TABLE_IMAGE.empty() || CUSTOM_BACKGLASS_IMAGE.empty() || CUSTOM_DMD_IMAGE.empty()) {
-        std::cerr << "Error: Missing image paths in config.ini (TableImage, BackglassImage, DmdImage)." << std::endl;
+        LOG_DEBUG("Error: Missing image paths in config.ini (TableImage, BackglassImage, DmdImage).");
         return;
     }
 
     pid_t vpxPid = fork();
     if (vpxPid < 0) {
-        std::cerr << "Error: Fork failed." << std::endl;
+        LOG_DEBUG("Error: Fork failed.");
         return;
     }
     if (vpxPid == 0) {
         std::string cmd = "mkdir -p logs && " + vpxExecutable + " -play " + shellEscape(vpxFile) + " > " + vpxLogFile + " 2>&1";
-        std::cout << "Launching VPX screenshot mode: " << cmd << std::endl;
+        LOG_DEBUG("Launching VPX screenshot mode: " << cmd);
         execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
-        std::cerr << "Error: execl failed." << std::endl;
+        LOG_DEBUG("Error: execl failed.");
         exit(1);
     }
 
     sleep(4);  // Wait for VPX to load
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("SDL_Init Error: " << SDL_GetError());
         kill(vpxPid, SIGKILL);
         waitpid(vpxPid, nullptr, 0);
         return;
     }
 
     if (TTF_Init() < 0) {
-        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
+        LOG_DEBUG("TTF_Init Error: " << TTF_GetError());
         SDL_Quit();
         kill(vpxPid, SIGKILL);
         waitpid(vpxPid, nullptr, 0);
@@ -186,7 +187,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         windowWidth, windowHeight, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
     
         if (!window) {
-            std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+            LOG_DEBUG("SDL_CreateWindow Error: " << SDL_GetError());
             TTF_Quit();
             SDL_Quit();
             kill(vpxPid, SIGKILL);
@@ -196,7 +197,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("SDL_CreateRenderer Error: " << SDL_GetError());
         SDL_DestroyWindow(window);
         TTF_Quit();
         SDL_Quit();
@@ -207,7 +208,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
 
     TTF_Font* font = TTF_OpenFont(FONT_PATH.c_str(), 14);
     if (!font) {
-        std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
+        LOG_DEBUG("TTF_OpenFont Error: " << TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         TTF_Quit();
@@ -223,7 +224,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                          keycodeToString(KEY_SCREENSHOT_QUIT) + "' to Quit";
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, buttonText.c_str(), white);
     if (!textSurface) {
-        std::cerr << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
+        LOG_DEBUG("TTF_RenderText_Solid Error: " << TTF_GetError());
         TTF_CloseFont(font);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -235,7 +236,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     if (!textTexture) {
-        std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("SDL_CreateTextureFromSurface Error: " << SDL_GetError());
         SDL_FreeSurface(textSurface);
         TTF_CloseFont(font);
         SDL_DestroyRenderer(renderer);
@@ -250,12 +251,12 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     SDL_RaiseWindow(window);  // Steal focus from VPX
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        std::cerr << "Warning: Failed to activate VPX Screenshot window." << std::endl;
+        LOG_DEBUG("Warning: Failed to activate VPX Screenshot window.");
     }
 
     SDL_Rect button = {0, 0, windowWidth, windowHeight};
-    std::cout << "Screenshot mode active. Press '" << keycodeToString(KEY_SCREENSHOT_KEY) 
-              << "' to capture, '" << keycodeToString(KEY_SCREENSHOT_QUIT) << "' to quit." << std::endl;
+    LOG_DEBUG("Screenshot mode active. Press '" << keycodeToString(KEY_SCREENSHOT_KEY) 
+              << "' to capture, '" << keycodeToString(KEY_SCREENSHOT_QUIT) << "' to quit.");
 
     bool running = true;
     SDL_Event event;
@@ -265,7 +266,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 running = false;
             } else if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == KEY_SCREENSHOT_KEY) {
-                    std::cout << "Capturing screenshots..." << std::endl;
+                    LOG_DEBUG("Capturing screenshots...");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
                 } else if (event.key.keysym.sym == KEY_SCREENSHOT_QUIT) {
                     running = false;
@@ -273,7 +274,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int x = event.button.x, y = event.button.y;
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
-                    std::cout << "Capturing screenshots..." << std::endl;
+                    LOG_DEBUG("Capturing screenshots...");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
                 }
             }
@@ -289,10 +290,10 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         SDL_Delay(10);  // Avoid CPU hogging
     }
 
-    std::cout << "Killing VPX processes..." << std::endl;
+    LOG_DEBUG("Killing VPX processes...");
     int pkillResult = std::system("pkill -9 -f VPinballX_GL >/dev/null 2>&1");
     if (pkillResult != 0 && pkillResult != 256) {  // 256 means "no processes matched"
-        std::cerr << "Warning: pkill failed with code " << pkillResult << std::endl;
+        LOG_DEBUG("Warning: pkill failed with code " << pkillResult);
     }
     
     kill(vpxPid, SIGKILL);
