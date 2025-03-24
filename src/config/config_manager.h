@@ -7,7 +7,7 @@
 #include "SDL_ttf.h"
 #include "table/asset_manager.h"
 #include "config/config_loader.h"
-#include "logging.h"
+#include "utils/logging.h"
 
 // Manages configuration changes and updates application state accordingly.
 class ConfigManager {

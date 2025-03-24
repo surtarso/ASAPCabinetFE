@@ -5,7 +5,7 @@
 #include "config/config_loader.h"
 #include "config/config_manager.h"
 #include "input/input_manager.h"
-#include "logging.h"
+#include "utils/logging.h"
 #include "imgui.h"
 #include <fstream>
 #include <iostream>
