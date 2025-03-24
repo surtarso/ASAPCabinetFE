@@ -1,70 +1,137 @@
 #include "render/renderer.h"
-#include "utils/logging.h"
-#include <iostream>
-#include <stdio.h>  // stderr redirection
+#include "render/video_player.h"
+#include "config/config_loader.h" // For constants like MAIN_WINDOW_WIDTH, FONT_BG_COLOR, etc.
+#include "imgui.h"               // For ImGui::Render()
+#include "imgui_impl_sdlrenderer2.h" // For ImGui_ImplSDLRenderer2_RenderDrawData
 
-SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path) {
-    // Log the path we’re trying to load
-    LOG_DEBUG("Attempting to load texture: " << path);
+Renderer::Renderer(SDL_Renderer* primary, SDL_Renderer* secondary)
+    : primaryRenderer(primary), secondaryRenderer(secondary) {}
 
-    
-    FILE* redirected;
-#ifdef _WIN32
-    redirected = freopen("nul", "w", stderr);
-    if (!redirected) {
-        std::cerr << "Warning: Failed to redirect stderr to nul" << std::endl;
-    }
-#else
-    redirected = freopen("/dev/null", "w", stderr);
-    if (!redirected) {
-        LOG_DEBUG("Warning: Failed to redirect stderr to /dev/null"); 
-    }
-#endif
-    
+void Renderer::render(AssetManager& assets, TransitionManager& transitionManager, bool showConfig, IniEditor& configEditor) {
+    // Update video textures for all video players
+    VideoContext* tableVideo = assets.getTableVideoPlayer();
+    VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
+    VideoContext* dmdVideo = assets.getDmdVideoPlayer();
 
-    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
+    if (!transitionManager.isTransitionActive()) {
+        updateVideoTexture(tableVideo, primaryRenderer);
+        updateVideoTexture(backglassVideo, secondaryRenderer);
+        updateVideoTexture(dmdVideo, secondaryRenderer);
+    }
 
-    
-    // Restore stderr
-    FILE* restored;
-#ifdef _WIN32
-    restored = freopen("CON", "w", stderr);
-    if (!restored) {
-        std::cerr << "Warning: Failed to restore stderr to CON" << std::endl;
-    }
-#else
-    restored = freopen("/dev/tty", "w", stderr);
-    if (!restored) {
-        LOG_DEBUG("Warning: Failed to restore stderr to /dev/tty"); 
-    }
-#endif
-    
+    // Render primary window (playfield, wheel, table name)
+    renderPrimaryWindow(assets, transitionManager, showConfig, configEditor);
 
-    if (!tex) {
-        LOG_DEBUG("Failed to load texture " << path << ": " << IMG_GetError()); 
-    } 
-    else {
-        LOG_DEBUG("Successfully loaded texture: " << path);
-    }
-    return tex;
+    // Render secondary window (backglass, DMD)
+    renderSecondaryWindow(assets, transitionManager);
 }
 
-SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect) {
-    SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
-    if (!surf) {
-        LOG_DEBUG("TTF_RenderUTF8_Blended error: " << TTF_GetError()); 
-        return nullptr;
+void Renderer::renderPrimaryWindow(AssetManager& assets, TransitionManager& transitionManager, bool showConfig, IniEditor& configEditor) {
+    SDL_SetRenderDrawColor(primaryRenderer, 32, 32, 32, 255);
+    SDL_RenderClear(primaryRenderer);
+
+    SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
+    if (transitionManager.shouldMaskFrame()) {
+        SDL_SetRenderDrawColor(primaryRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(primaryRenderer);
+    } else if (transitionManager.isTransitionActive()) {
+        if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedTableFrame()) {
+            SDL_RenderCopy(primaryRenderer, transitionManager.getCapturedTableFrame(), nullptr, &tableRect);
+        } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+            VideoContext* tableVideo = assets.getTableVideoPlayer();
+            if (tableVideo && tableVideo->texture) {
+                SDL_RenderCopy(primaryRenderer, tableVideo->texture, nullptr, &tableRect);
+            } else if (assets.getTableTexture()) {
+                SDL_RenderCopy(primaryRenderer, assets.getTableTexture(), nullptr, &tableRect);
+            }
+        }
+    } else {
+        VideoContext* tableVideo = assets.getTableVideoPlayer();
+        if (tableVideo && tableVideo->texture) {
+            SDL_RenderCopy(primaryRenderer, tableVideo->texture, nullptr, &tableRect);
+        } else if (assets.getTableTexture()) {
+            SDL_RenderCopy(primaryRenderer, assets.getTableTexture(), nullptr, &tableRect);
+        }
     }
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
-    if (!texture) {
-        LOG_DEBUG("SDL_CreateTextureFromSurface error: " << SDL_GetError());
-        SDL_FreeSurface(surf);
-        return nullptr;
+
+    if (assets.getWheelTexture()) {
+        SDL_Rect wheelRect = {MAIN_WINDOW_WIDTH - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN,
+                              MAIN_WINDOW_HEIGHT - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN,
+                              WHEEL_IMAGE_SIZE, WHEEL_IMAGE_SIZE};
+        SDL_RenderCopy(primaryRenderer, assets.getWheelTexture(), nullptr, &wheelRect);
     }
-    // Ensure transparency is respected by enabling alpha blending
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-    textRect.w = surf->w;
-    textRect.h = surf->h;
-    SDL_FreeSurface(surf);
-    return texture;
+
+    if (assets.getTableNameTexture()) {
+        SDL_Rect nameRect = assets.getTableNameRect();
+        nameRect.x = 10;
+        nameRect.y = MAIN_WINDOW_HEIGHT - nameRect.h - 10;
+        SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
+        SDL_SetRenderDrawBlendMode(primaryRenderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(primaryRenderer, FONT_BG_COLOR.r, FONT_BG_COLOR.g, FONT_BG_COLOR.b, FONT_BG_COLOR.a);
+        SDL_RenderFillRect(primaryRenderer, &bgRect);
+        SDL_RenderCopy(primaryRenderer, assets.getTableNameTexture(), nullptr, &nameRect);
+    }
+
+    // Render config GUI if open
+    if (showConfig) configEditor.drawGUI();
+
+    // Finalize ImGui rendering for primary window
+    ImGui::Render();
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), primaryRenderer);
+    SDL_RenderPresent(primaryRenderer);
+}
+
+void Renderer::renderSecondaryWindow(AssetManager& assets, TransitionManager& transitionManager) {
+    SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(secondaryRenderer);
+
+    SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
+    if (transitionManager.shouldMaskFrame()) {
+        SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(secondaryRenderer);
+    } else if (transitionManager.isTransitionActive()) {
+        if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedBackglassFrame()) {
+            SDL_RenderCopy(secondaryRenderer, transitionManager.getCapturedBackglassFrame(), nullptr, &backglassRect);
+        } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+            VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
+            if (backglassVideo && backglassVideo->texture) {
+                SDL_RenderCopy(secondaryRenderer, backglassVideo->texture, nullptr, &backglassRect);
+            } else if (assets.getBackglassTexture()) {
+                SDL_RenderCopy(secondaryRenderer, assets.getBackglassTexture(), nullptr, &backglassRect);
+            }
+        }
+    } else {
+        VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
+        if (backglassVideo && backglassVideo->texture) {
+            SDL_RenderCopy(secondaryRenderer, backglassVideo->texture, nullptr, &backglassRect);
+        } else if (assets.getBackglassTexture()) {
+            SDL_RenderCopy(secondaryRenderer, assets.getBackglassTexture(), nullptr, &backglassRect);
+        }
+    }
+
+    SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
+    if (transitionManager.shouldMaskFrame()) {
+        SDL_SetRenderDrawColor(secondaryRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(secondaryRenderer);
+    } else if (transitionManager.isTransitionActive()) {
+        if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedDmdFrame()) {
+            SDL_RenderCopy(secondaryRenderer, transitionManager.getCapturedDmdFrame(), nullptr, &dmdRect);
+        } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+            VideoContext* dmdVideo = assets.getDmdVideoPlayer();
+            if (dmdVideo && dmdVideo->texture) {
+                SDL_RenderCopy(secondaryRenderer, dmdVideo->texture, nullptr, &dmdRect);
+            } else if (assets.getDmdTexture()) {
+                SDL_RenderCopy(secondaryRenderer, assets.getDmdTexture(), nullptr, &dmdRect);
+            }
+        }
+    } else {
+        VideoContext* dmdVideo = assets.getDmdVideoPlayer();
+        if (dmdVideo && dmdVideo->texture) {
+            SDL_RenderCopy(secondaryRenderer, dmdVideo->texture, nullptr, &dmdRect);
+        } else if (assets.getDmdTexture()) {
+            SDL_RenderCopy(secondaryRenderer, assets.getDmdTexture(), nullptr, &dmdRect);
+        }
+    }
+
+    SDL_RenderPresent(secondaryRenderer);
 }

@@ -31,13 +31,13 @@
  #include "config/config_loader.h" // For config loading (keybindings, settings).
  #include "render/video_player.h" // For VideoContext (video playback setup).
  #include "table/table_manager.h" // For Table, loadTableList (table management).
- #include "render/renderer.h"     // For Renderer (rendering assets).
- #include "utils/sdl_guards.h"          // For SDL guards (resource management).
+ #include "render/renderer.h"     // For Renderer (rendering).
+ #include "utils/sdl_guards.h"    // For SDL guards (resource management).
  #include "render/transition_manager.h"  // For TransitionManager (fade transitions).
  #include "table/asset_manager.h" // For AssetManager (loading table assets).
  #include "input/input_manager.h" // For InputManager (handling user input).
  #include "capture/screenshot_manager.h" // For ScreenshotManager (capturing screenshots).
- #include "utils/logging.h"             // For LOG_DEBUG (debug logging).
+ #include "utils/logging.h"       // For LOG_DEBUG (debug logging).
  #include "version.h"             // For VERSION (application version).
  #include "config/config_manager.h"
  
@@ -280,6 +280,7 @@
                                  secondaryWindow.get(), secondaryRenderer.get(),
                                  font, assets, currentIndex, tables);
      IniEditor configEditor(configPath, showConfig, &configManager);
+     Renderer renderer(primaryRenderer.get(), secondaryRenderer.get()); // Create Renderer instance
      bool quit = false;
      SDL_Event event;
  
@@ -308,106 +309,106 @@
                      }
                  }
  
-                // Process input for table navigation and actions.
-                if (!showConfig) {
-                    if (inputManager.isPreviousTable(event)) {
-                        size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
-                        if (newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isNextTable(event)) {
-                        size_t newIndex = (currentIndex + 1) % tables.size();
-                        if (newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isFastPrevTable(event)) {
-                        size_t newIndex = (currentIndex + tables.size() - 10) % tables.size();
-                        if (newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isFastNextTable(event)) {
-                        size_t newIndex = (currentIndex + 10) % tables.size();
-                        if (newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isJumpNextLetter(event)) {
-                        char currentLetter = toupper(tables[currentIndex].tableName[0]);
-                        char nextLetter = currentLetter + 1;
-                        bool found = false;
-                        size_t newIndex = currentIndex;
-                        for (; nextLetter <= 'Z'; ++nextLetter) {
-                            if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                                newIndex = letterIndex[nextLetter];
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
-                                if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                                    newIndex = letterIndex[nextLetter];
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (found && newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isJumpPrevLetter(event)) {
-                        char currentLetter = toupper(tables[currentIndex].tableName[0]);
-                        char prevLetter = currentLetter - 1;
-                        bool found = false;
-                        size_t newIndex = currentIndex;
-                        for (; prevLetter >= 'A'; --prevLetter) {
-                            if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                                newIndex = letterIndex[prevLetter];
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
-                                if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                                    newIndex = letterIndex[prevLetter];
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (found && newIndex != currentIndex) {
-                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
-                            currentIndex = newIndex;
-                        }
-                    }
-                    else if (inputManager.isLaunchTable(event)) {
-                        if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
-                        std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
-                        LOG_DEBUG("Launching: " << command);
-                        int result = std::system(command.c_str());
-                        if (result != 0) {
-                            std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
-                        }
-                    }
-                    else if (inputManager.isScreenshotMode(event)) {
-                        LOG_DEBUG("Entering screenshot mode for: " << tables[currentIndex].vpxFile);
-                        screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
-                    }
-                    else if (inputManager.isQuit(event)) {
-                        quit = true;
-                        LOG_DEBUG("Quit triggered via keybind");
-                    }
-                }
+                 // Process input for table navigation and actions.
+                 if (!showConfig) {
+                     if (inputManager.isPreviousTable(event)) {
+                         size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
+                         if (newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isNextTable(event)) {
+                         size_t newIndex = (currentIndex + 1) % tables.size();
+                         if (newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isFastPrevTable(event)) {
+                         size_t newIndex = (currentIndex + tables.size() - 10) % tables.size();
+                         if (newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isFastNextTable(event)) {
+                         size_t newIndex = (currentIndex + 10) % tables.size();
+                         if (newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isJumpNextLetter(event)) {
+                         char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                         char nextLetter = currentLetter + 1;
+                         bool found = false;
+                         size_t newIndex = currentIndex;
+                         for (; nextLetter <= 'Z'; ++nextLetter) {
+                             if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                                 newIndex = letterIndex[nextLetter];
+                                 found = true;
+                                 break;
+                             }
+                         }
+                         if (!found) {
+                             for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
+                                 if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                                     newIndex = letterIndex[nextLetter];
+                                     found = true;
+                                     break;
+                                 }
+                             }
+                         }
+                         if (found && newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isJumpPrevLetter(event)) {
+                         char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                         char prevLetter = currentLetter - 1;
+                         bool found = false;
+                         size_t newIndex = currentIndex;
+                         for (; prevLetter >= 'A'; --prevLetter) {
+                             if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                                 newIndex = letterIndex[prevLetter];
+                                 found = true;
+                                 break;
+                             }
+                         }
+                         if (!found) {
+                             for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
+                                 if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                                     newIndex = letterIndex[prevLetter];
+                                     found = true;
+                                     break;
+                                 }
+                             }
+                         }
+                         if (found && newIndex != currentIndex) {
+                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                             currentIndex = newIndex;
+                         }
+                     }
+                     else if (inputManager.isLaunchTable(event)) {
+                         if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
+                         std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
+                         LOG_DEBUG("Launching: " << command);
+                         int result = std::system(command.c_str());
+                         if (result != 0) {
+                             std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
+                         }
+                     }
+                     else if (inputManager.isScreenshotMode(event)) {
+                         LOG_DEBUG("Entering screenshot mode for: " << tables[currentIndex].vpxFile);
+                         screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
+                     }
+                     else if (inputManager.isQuit(event)) {
+                         quit = true;
+                         LOG_DEBUG("Quit triggered via keybind");
+                     }
+                 }
              }
          }
  
@@ -417,119 +418,15 @@
          ImGui_ImplSDL2_NewFrame();
          ImGui::NewFrame();
  
-         // ----- Update Video and Transitions -----
-         // Update video textures and transition effects.
-         VideoContext* tableVideo = assets.getTableVideoPlayer();
-         VideoContext* backglassVideo = assets.getBackglassVideoPlayer();
-         VideoContext* dmdVideo = assets.getDmdVideoPlayer();
- 
+         // ----- Update Transitions -----
+         // Update transition effects.
          Uint32 now = SDL_GetTicks();
          transitionManager.updateTransition(now, assets);
          transitionManager.loadNewContent([&]() { assets.loadTableAssets(currentIndex, tables); });
  
-         if (!transitionManager.isTransitionActive()) {
-             updateVideoTexture(tableVideo, primaryRenderer.get());
-             updateVideoTexture(backglassVideo, secondaryRenderer.get());
-             updateVideoTexture(dmdVideo, secondaryRenderer.get());
-         }
- 
-         // ----- Render Primary Window (Playfield) -----
-         // Clear and render playfield content (table, wheel, name).
-         SDL_SetRenderDrawColor(primaryRenderer.get(), 32, 32, 32, 255);
-         SDL_RenderClear(primaryRenderer.get());
- 
-         SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
-        if (transitionManager.shouldMaskFrame()) {
-            SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 255);
-            SDL_RenderClear(primaryRenderer.get());
-        } else if (transitionManager.isTransitionActive()) {
-            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedTableFrame()) {
-                SDL_RenderCopy(primaryRenderer.get(), transitionManager.getCapturedTableFrame(), nullptr, &tableRect);
-            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
-                if (tableVideo && tableVideo->texture) {
-                    SDL_RenderCopy(primaryRenderer.get(), tableVideo->texture, nullptr, &tableRect);
-                } else if (assets.getTableTexture()) {
-                    SDL_RenderCopy(primaryRenderer.get(), assets.getTableTexture(), nullptr, &tableRect);
-                }
-            }
-        } else if (tableVideo && tableVideo->texture) {
-            SDL_RenderCopy(primaryRenderer.get(), tableVideo->texture, nullptr, &tableRect);
-        } else if (assets.getTableTexture()) {
-            SDL_RenderCopy(primaryRenderer.get(), assets.getTableTexture(), nullptr, &tableRect);
-        }
- 
-         if (assets.getWheelTexture()) {
-             SDL_Rect wheelRect = {MAIN_WINDOW_WIDTH - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN,
-                                   MAIN_WINDOW_HEIGHT - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN,
-                                   WHEEL_IMAGE_SIZE, WHEEL_IMAGE_SIZE};
-             SDL_RenderCopy(primaryRenderer.get(), assets.getWheelTexture(), nullptr, &wheelRect);
-         }
- 
-         if (assets.getTableNameTexture()) {
-             SDL_Rect nameRect = assets.getTableNameRect();
-             nameRect.x = 10;
-             nameRect.y = MAIN_WINDOW_HEIGHT - nameRect.h - 10;
-             SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
-             SDL_SetRenderDrawBlendMode(primaryRenderer.get(), SDL_BLENDMODE_BLEND);
-             SDL_SetRenderDrawColor(primaryRenderer.get(), FONT_BG_COLOR.r, FONT_BG_COLOR.g, FONT_BG_COLOR.b, FONT_BG_COLOR.a);
-             SDL_RenderFillRect(primaryRenderer.get(), &bgRect);
-             SDL_RenderCopy(primaryRenderer.get(), assets.getTableNameTexture(), nullptr, &nameRect);
-         }
- 
-         // Render config GUI if open.
-         if (showConfig) configEditor.drawGUI();
- 
-         // Finalize ImGui rendering for primary window.
-         ImGui::Render();
-         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), primaryRenderer.get());
-         SDL_RenderPresent(primaryRenderer.get());
- 
-         // ----- Render Secondary Window (Backglass/DMD) -----
-         // Clear and render backglass and DMD content.
-         SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
-         SDL_RenderClear(secondaryRenderer.get());
- 
-         SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
-        if (transitionManager.shouldMaskFrame()) {
-            SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
-            SDL_RenderClear(secondaryRenderer.get());
-        } else if (transitionManager.isTransitionActive()) {
-            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedBackglassFrame()) {
-                SDL_RenderCopy(secondaryRenderer.get(), transitionManager.getCapturedBackglassFrame(), nullptr, &backglassRect);
-            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
-                if (backglassVideo && backglassVideo->texture) {
-                    SDL_RenderCopy(secondaryRenderer.get(), backglassVideo->texture, nullptr, &backglassRect);
-                } else if (assets.getBackglassTexture()) {
-                    SDL_RenderCopy(secondaryRenderer.get(), assets.getBackglassTexture(), nullptr, &backglassRect);
-                }
-            }
-        } else if (backglassVideo && backglassVideo->texture) {
-            SDL_RenderCopy(secondaryRenderer.get(), backglassVideo->texture, nullptr, &backglassRect);
-        } else if (assets.getBackglassTexture()) {
-            SDL_RenderCopy(secondaryRenderer.get(), assets.getBackglassTexture(), nullptr, &backglassRect);
-        }
-
-        SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
-        if (transitionManager.shouldMaskFrame()) {
-            SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
-            SDL_RenderClear(secondaryRenderer.get());
-        } else if (transitionManager.isTransitionActive()) {
-            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedDmdFrame()) {
-                SDL_RenderCopy(secondaryRenderer.get(), transitionManager.getCapturedDmdFrame(), nullptr, &dmdRect);
-            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
-                if (dmdVideo && dmdVideo->texture) {
-                    SDL_RenderCopy(secondaryRenderer.get(), dmdVideo->texture, nullptr, &dmdRect);
-                } else if (assets.getDmdTexture()) {
-                    SDL_RenderCopy(secondaryRenderer.get(), assets.getDmdTexture(), nullptr, &dmdRect);
-                }
-            }
-        } else if (dmdVideo && dmdVideo->texture) {
-            SDL_RenderCopy(secondaryRenderer.get(), dmdVideo->texture, nullptr, &dmdRect);
-        } else if (assets.getDmdTexture()) {
-            SDL_RenderCopy(secondaryRenderer.get(), assets.getDmdTexture(), nullptr, &dmdRect);
-        }
- 
-         SDL_RenderPresent(secondaryRenderer.get());
+         // ----- Render -----
+         // Delegate rendering to the Renderer class
+         renderer.render(assets, transitionManager, showConfig, configEditor);
  
          // Clean up old video players after transition.
          if (!transitionManager.isTransitionActive()) {
