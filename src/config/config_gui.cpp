@@ -16,8 +16,7 @@
 #include <cstring>
 #include <cctype>     // For toupper
 #include <algorithm>  // For std::transform
-
-// Removed: bool configChangesPending = false; (now handled by ConfigManager)
+#include <sstream>    // For std::stringstream
 
 IniEditor::IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager)
     : iniFilename(filename),
@@ -222,18 +221,39 @@ void IniEditor::drawGUI() {
 
             // Special handling for [TitleDisplay] section for FontColor and FontBgColor
             if (currentSection == "TitleDisplay" && (kv.first == "FontColor" || kv.first == "FontBgColor")) {
-                LOG_DEBUG("Using ColorEdit4 for: " << kv.first);
+                LOG_DEBUG("Using ColorButton for: " << kv.first);
                 float color[4];
                 parseColorString(kv.second, color);
-                if (ImGui::ColorEdit4(("##" + kv.first).c_str(), color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_DisplayRGB)) {
-                    kv.second = colorToString(color);
-                    hasChanges = true;
-                    LOG_DEBUG("Color modified: " << kv.first << " = " << kv.second);
+
+                // Display ColorButton
+                ImGui::ColorButton(("##ColorButton_" + kv.first).c_str(), ImVec4(color[0], color[1], color[2], color[3]));
+
+                // Add a "Pick" button next to the color square
+                ImGui::SameLine();
+                if (ImGui::Button(("Pick##" + kv.first).c_str())) {
+                    showPicker[kv.first] = !showPicker[kv.first];  // Toggle visibility
+                }
+
+                // Show inline color picker if toggled on
+                if (showPicker[kv.first]) {
+                    ImGui::SameLine();
+                    ImGui::BeginGroup();
+                    // Wrap the picker in a child window with a fixed size (200x200 pixels)
+                    ImGui::BeginChild(("##ColorPickerChild_" + kv.first).c_str(), ImVec2(300, 250), true);
+                    // Reduce spacing between elements for a tighter layout
+                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
+                    if (ImGui::ColorPicker4(("##ColorPicker_" + kv.first).c_str(), color, ImGuiColorEditFlags_AlphaBar)) {
+                        kv.second = colorToString(color);
+                        hasChanges = true;
+                        LOG_DEBUG("Color modified: " << kv.first << " = " << kv.second);
+                    }
+                    ImGui::PopStyleVar();
+                    ImGui::EndChild();
+                    ImGui::EndGroup();
                 }
             }
             // Special handling for [Keybinds] section
             else if (currentSection == "Keybinds") {
-                // ... (keybinding logic remains unchanged)
                 SDL_Keycode keyCode = SDLK_UNKNOWN;
                 if (kv.first == "PreviousTable") keyCode = KEY_PREVIOUS_TABLE;
                 else if (kv.first == "NextTable") keyCode = KEY_NEXT_TABLE;

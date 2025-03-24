@@ -15,18 +15,17 @@ struct ConfigSection {
 
 class IniEditor {
 public:
-    IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager = nullptr); // Declaration only
+    IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager = nullptr);
     ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
 
-    // Public getter for isCapturingKey_
     bool isCapturingKey() const { return isCapturingKey_; }
 
 private:
     std::string iniFilename;
     bool& showFlag;
-    ConfigManager* configManager_; // Pointer to ConfigManager for notifying changes.
+    ConfigManager* configManager_;
     std::vector<std::string> originalLines;
     std::map<std::string, ConfigSection> iniData;
     std::vector<std::string> sections;
@@ -41,11 +40,14 @@ private:
     std::string capturedKeyName_;
 
     // Save message timer
-    float saveMessageTimer_ = 0.0f; // Timer for displaying "Saved successfully"
+    float saveMessageTimer_ = 0.0f;
+
+    // Color picker visibility tracker
+    std::map<std::string, bool> showPicker;  // Tracks if color picker is visible for each key
 
     // Helper functions for color editing
-    void parseColorString(const std::string& colorStr, float color[4]); // Parse "R,G,B,A" string to float array
-    std::string colorToString(const float color[4]); // Convert float array back to "R,G,B,A" string
+    void parseColorString(const std::string& colorStr, float color[4]);
+    std::string colorToString(const float color[4]);
 
     void loadIniFile(const std::string& filename);
     void saveIniFile(const std::string& filename);
