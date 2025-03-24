@@ -56,6 +56,13 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::strin
         return nullptr;
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
+    if (!texture) {
+        LOG_DEBUG("SDL_CreateTextureFromSurface error: " << SDL_GetError());
+        SDL_FreeSurface(surf);
+        return nullptr;
+    }
+    // Ensure transparency is respected by enabling alpha blending
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     textRect.w = surf->w;
     textRect.h = surf->h;
     SDL_FreeSurface(surf);
