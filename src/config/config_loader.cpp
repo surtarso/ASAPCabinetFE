@@ -1,6 +1,9 @@
 #include "config/config_loader.h"
+#include "logging.h"
 #include <fstream>  // For reading the config file
+#include <sstream>
 #include <iostream>  // For printing messages
+#include <algorithm> // For std::transform
 
 // Define all the global variables declared in config_loader.h
 std::string VPX_TABLES_PATH;
@@ -30,7 +33,10 @@ int MAIN_WINDOW_WIDTH;
 int MAIN_WINDOW_HEIGHT;
 int WHEEL_IMAGE_SIZE;
 int WHEEL_IMAGE_MARGIN;
+
 std::string FONT_PATH;
+SDL_Color FONT_COLOR;
+SDL_Color FONT_BG_COLOR;
 int FONT_SIZE;
 
 int SECOND_WINDOW_MONITOR;
@@ -135,6 +141,43 @@ SDL_Keycode get_key(const std::map<std::string, std::map<std::string, std::strin
     return default_value;  // Return the default if not found or invalid
 }
 
+// parse a color string in "R,G,B,A" format into an SDL_Color
+SDL_Color parse_color(const std::string& colorStr, const SDL_Color& defaultColor) {
+    SDL_Color color = defaultColor;
+    std::stringstream ss(colorStr);
+    std::string token;
+    int values[4] = {0, 0, 0, 255}; // Default to 0,0,0,255 (opaque black) if parsing fails
+    int i = 0;
+
+    while (std::getline(ss, token, ',') && i < 4) {
+        try {
+            values[i] = std::stoi(token);
+            // Clamp values to 0-255
+            values[i] = std::max(0, std::min(255, values[i]));
+        } catch (...) {
+            LOG_DEBUG("Invalid color component in: " << colorStr << ", using default");
+            return defaultColor;
+        }
+        i++;
+    }
+
+    if (i >= 3) { // At least R,G,B must be provided
+        color.r = static_cast<Uint8>(values[0]);
+        color.g = static_cast<Uint8>(values[1]);
+        color.b = static_cast<Uint8>(values[2]);
+        if (i == 4) {
+            color.a = static_cast<Uint8>(values[3]);
+        } else {
+            color.a = 255; // Default to fully opaque if alpha not specified
+        }
+    } else {
+        LOG_DEBUG("Invalid color format in: " << colorStr << ", using default");
+        return defaultColor;
+    }
+
+    return color;
+}
+
 // initialize_config: Loads the config file and sets all global variables.
 void initialize_config(const std::string& filename) {
     std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);  // Get the directory of config.ini
@@ -166,6 +209,8 @@ void initialize_config(const std::string& filename) {
 
     // Set font settings
     FONT_PATH              = get_string(config, "TitleDisplay", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_COLOR = parse_color(get_string(config, "TitleDisplay", "FontColor", "255,255,255,255"), {255, 255, 255, 255}); // Default: white, fully opaque
+    FONT_BG_COLOR = parse_color(get_string(config, "TitleDisplay", "FontBgColor", "0,0,0,128"), {0, 0, 0, 128}); // Default: semi-transparent black
     FONT_SIZE              = get_int(config, "TitleDisplay", "Size", 28);
 
     // Set media dimensions

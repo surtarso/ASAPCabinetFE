@@ -1,5 +1,5 @@
-#ifndef RENDER_UTILS_H
-#define RENDER_UTILS_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 #include <SDL.h>
 #include <SDL_image.h>

@@ -465,7 +465,7 @@
              nameRect.x = 10;
              nameRect.y = MAIN_WINDOW_HEIGHT - nameRect.h - 10;
              SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
-             SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 128);
+             SDL_SetRenderDrawColor(primaryRenderer.get(), FONT_BG_COLOR.r, FONT_BG_COLOR.g, FONT_BG_COLOR.b, FONT_BG_COLOR.a);
              SDL_RenderFillRect(primaryRenderer.get(), &bgRect);
              SDL_RenderCopy(primaryRenderer.get(), assets.getTableNameTexture(), nullptr, &nameRect);
          }

@@ -41,7 +41,11 @@ extern int MAIN_WINDOW_WIDTH;      // Width of the main window
 extern int MAIN_WINDOW_HEIGHT;     // Height of the main window
 extern int WHEEL_IMAGE_SIZE;       // Size of the wheel image
 extern int WHEEL_IMAGE_MARGIN;     // Margin around the wheel image
+
+// Title display
 extern std::string FONT_PATH;      // Path to the font file
+extern SDL_Color FONT_COLOR;       // Color of the font for the table title (RGBA)
+extern SDL_Color FONT_BG_COLOR;    // Background color behind the table title (RGBA)
 extern int FONT_SIZE;              // Size of the font
 
 extern int SECOND_WINDOW_MONITOR;  // Which monitor the second window uses
@@ -70,9 +74,9 @@ extern SDL_Keycode KEY_TOGGLE_CONFIG;      // Key to open/close config
 extern SDL_Keycode KEY_QUIT;               // Key to quit the app
 extern SDL_Keycode KEY_CONFIG_SAVE;        // Key to save config
 extern SDL_Keycode KEY_CONFIG_CLOSE;       // Key to close config
-extern SDL_Keycode KEY_SCREENSHOT_MODE;    // Key to enter screenshot mode
 
 // Keybinds for screenshot mode
+extern SDL_Keycode KEY_SCREENSHOT_MODE;    // Key to enter screenshot mode
 extern SDL_Keycode KEY_SCREENSHOT_KEY;     // Key to take a screenshot
 extern SDL_Keycode KEY_SCREENSHOT_QUIT;    // Key to quit screenshot mode
 
