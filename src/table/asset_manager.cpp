@@ -1,4 +1,5 @@
 #include "table/asset_manager.h"
+#include "config/config_loader.h" // Add this to access FONT_COLOR
 #include "logging.h"
 #include <iostream>
 
@@ -32,8 +33,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<Table>& table
 
     // Render table name as a texture if font is available
     if (font) {
-        SDL_Color white = {255, 255, 255, 255};
-        tableNameTexture.reset(renderText(primaryRenderer, font, table.tableName, white, tableNameRect));
+        tableNameTexture.reset(renderText(primaryRenderer, font, table.tableName, FONT_COLOR, tableNameRect));
         tableNameRect.x = (MAIN_WINDOW_WIDTH - tableNameRect.w) / 2;
         tableNameRect.y = 10;
     }

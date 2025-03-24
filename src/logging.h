@@ -4,9 +4,9 @@
 #include <iostream>
 
 #ifdef DEBUG_LOGGING
-#define LOG_DEBUG(x) do { std::cout << (x); std::cout << std::endl; } while (0)
+#define LOG_DEBUG(x) do { std::cout << x << std::endl; } while (0)
 #else
-#define LOG_DEBUG(x) do {} while (0) // No-op in release builds
+#define LOG_DEBUG(x) do { } while (0)
 #endif
 
 #endif // LOGGING_H

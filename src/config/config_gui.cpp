@@ -199,7 +199,13 @@ void IniEditor::drawGUI() {
             firstRenderOfKeybinds = true; // Reset flag when leaving Keybinds section
         }
 
+        // Debug: Log the current section
+        LOG_DEBUG("Rendering section: " << currentSection);
+
         for (auto& kv : iniData[currentSection].keyValues) {
+            // Debug: Log the current key
+            LOG_DEBUG("Rendering key: " << kv.first << " with value: " << kv.second);
+
             ImGui::Text("%s", kv.first.c_str());
             ImGui::SameLine(150);
             if (explanations.find(kv.first) != explanations.end()) {
@@ -214,9 +220,20 @@ void IniEditor::drawGUI() {
             }
             ImGui::SameLine(200);
 
+            // Special handling for [TitleDisplay] section for FontColor and FontBgColor
+            if (currentSection == "TitleDisplay" && (kv.first == "FontColor" || kv.first == "FontBgColor")) {
+                LOG_DEBUG("Using ColorEdit4 for: " << kv.first);
+                float color[4];
+                parseColorString(kv.second, color);
+                if (ImGui::ColorEdit4(("##" + kv.first).c_str(), color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_DisplayRGB)) {
+                    kv.second = colorToString(color);
+                    hasChanges = true;
+                    LOG_DEBUG("Color modified: " << kv.first << " = " << kv.second);
+                }
+            }
             // Special handling for [Keybinds] section
-            if (currentSection == "Keybinds") {
-                // Map the keybinding name to its corresponding SDL_Keycode from config_loader
+            else if (currentSection == "Keybinds") {
+                // ... (keybinding logic remains unchanged)
                 SDL_Keycode keyCode = SDLK_UNKNOWN;
                 if (kv.first == "PreviousTable") keyCode = KEY_PREVIOUS_TABLE;
                 else if (kv.first == "NextTable") keyCode = KEY_NEXT_TABLE;
@@ -233,21 +250,17 @@ void IniEditor::drawGUI() {
                 else if (kv.first == "ScreenshotKey") keyCode = KEY_SCREENSHOT_KEY;
                 else if (kv.first == "ScreenshotQuit") keyCode = KEY_SCREENSHOT_QUIT;
 
-                // Get the human-readable name for the key
                 const char* keyDisplayName = SDL_GetKeyName(keyCode);
                 if (keyCode == SDLK_UNKNOWN) {
                     keyDisplayName = "Unknown Key";
                     LOG_DEBUG("Failed to map key for: " << kv.first << " (value: " << kv.second << ")");
                 }
 
-                // Display the current key
                 ImGui::Text("%s", keyDisplayName);
-                ImGui::SameLine(350); // Fixed position for the "Set Key" button to align vertically
-
-                // "Set Key" button (changes to "Waiting..." while capturing)
+                ImGui::SameLine(350);
                 std::string buttonLabel = (isCapturingKey_ && capturingKeyName_ == kv.first) ? "Waiting...##" + kv.first : "Set Key##" + kv.first;
                 if (ImGui::Button(buttonLabel.c_str())) {
-                    if (!(isCapturingKey_ && capturingKeyName_ == kv.first)) { // Prevent re-triggering while already capturing
+                    if (!(isCapturingKey_ && capturingKeyName_ == kv.first)) {
                         LOG_DEBUG("Set Key button clicked for: " << kv.first);
                         isCapturingKey_ = true;
                         capturingKeyName_ = kv.first;
@@ -255,7 +268,8 @@ void IniEditor::drawGUI() {
                     }
                 }
             } else {
-                // Default text input for non-keybind sections
+                // Default text input for other fields
+                LOG_DEBUG("Using InputText for: " << kv.first);
                 char buf[256];
                 std::strncpy(buf, kv.second.c_str(), sizeof(buf));
                 buf[sizeof(buf) - 1] = '\0';
@@ -390,4 +404,39 @@ void IniEditor::handleEvent(const SDL_Event& event) {
         showFlag = false;  // Close the config GUI
         LOG_DEBUG("Config GUI closed via keybind, reset key capture state");
     }
+}
+
+// Parse a color string in "R,G,B,A" format into a float array [R,G,B,A] (0.0f to 1.0f)
+void IniEditor::parseColorString(const std::string& colorStr, float color[4]) {
+    std::stringstream ss(colorStr);
+    std::string token;
+    int values[4] = {255, 255, 255, 255}; // Default to white, fully opaque
+    int i = 0;
+
+    while (std::getline(ss, token, ',') && i < 4) {
+        try {
+            values[i] = std::stoi(token);
+            values[i] = std::max(0, std::min(255, values[i])); // Clamp to 0-255
+        } catch (...) {
+            LOG_DEBUG("Invalid color component in: " + colorStr + ", using default");
+            break;
+        }
+        i++;
+    }
+
+    // Convert to float (0.0f to 1.0f) for ImGui
+    for (int j = 0; j < 4; j++) {
+        color[j] = values[j] / 255.0f;
+    }
+}
+
+// Convert a float array [R,G,B,A] (0.0f to 1.0f) back to "R,G,B,A" string
+std::string IniEditor::colorToString(const float color[4]) {
+    int r = static_cast<int>(color[0] * 255.0f);
+    int g = static_cast<int>(color[1] * 255.0f);
+    int b = static_cast<int>(color[2] * 255.0f);
+    int a = static_cast<int>(color[3] * 255.0f);
+    std::stringstream ss;
+    ss << r << "," << g << "," << b << "," << a;
+    return ss.str();
 }

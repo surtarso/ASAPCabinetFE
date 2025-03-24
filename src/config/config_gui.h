@@ -43,6 +43,10 @@ private:
     // Save message timer
     float saveMessageTimer_ = 0.0f; // Timer for displaying "Saved successfully"
 
+    // Helper functions for color editing
+    void parseColorString(const std::string& colorStr, float color[4]); // Parse "R,G,B,A" string to float array
+    std::string colorToString(const float color[4]); // Convert float array back to "R,G,B,A" string
+
     void loadIniFile(const std::string& filename);
     void saveIniFile(const std::string& filename);
     void initExplanations();
