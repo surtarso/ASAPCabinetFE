@@ -33,7 +33,7 @@
  #include "table/table_manager.h" // For Table, loadTableList (table management).
  #include "render/renderer.h"     // For Renderer (rendering assets).
  #include "utils/sdl_guards.h"          // For SDL guards (resource management).
- #include "transition_manager.h"  // For TransitionManager (fade transitions).
+ #include "render/transition_manager.h"  // For TransitionManager (fade transitions).
  #include "table/asset_manager.h" // For AssetManager (loading table assets).
  #include "input/input_manager.h" // For InputManager (handling user input).
  #include "capture/screenshot_manager.h" // For ScreenshotManager (capturing screenshots).

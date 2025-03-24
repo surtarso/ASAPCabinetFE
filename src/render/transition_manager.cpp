@@ -1,4 +1,4 @@
-#include "transition_manager.h"
+#include "render/transition_manager.h"
 #include <algorithm>
 
 // Constructor: Initialize with no captured frames
