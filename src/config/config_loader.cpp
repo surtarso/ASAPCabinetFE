@@ -165,8 +165,8 @@ void initialize_config(const std::string& filename) {
     SECOND_WINDOW_HEIGHT   = get_int(config, "WindowSettings", "SecondHeight", 1024);
 
     // Set font settings
-    FONT_PATH              = get_string(config, "Internal", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
-    FONT_SIZE              = get_int(config, "Font", "Size", 28);
+    FONT_PATH              = get_string(config, "TitleDisplay", "FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    FONT_SIZE              = get_int(config, "TitleDisplay", "Size", 28);
 
     // Set media dimensions
     WHEEL_IMAGE_SIZE       = get_int(config, "MediaDimensions", "WheelImageSize", 300);

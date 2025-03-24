@@ -99,7 +99,7 @@ namespace Tooltips {
                 "This should be relative to your backglass + DMD media height."
             },
 
-            // Font
+            // TitleDisplay
             {"Path",
                 "Absolute path to the font file used in the UI."
             },
@@ -128,7 +128,55 @@ namespace Tooltips {
                 "Height of the DMD media in pixels."
             },
 
+            // Keybinds Section Tooltips
+            {"PreviousTable",
+                "Key to select the previous table in the list."  
+            },
+            {"NextTable",
+                "Key to select the next table in the list."
+            },
+            {"FastPrevTable",
+                "Key to quickly jump back 10 tables."  
+            },
+            {"FastNextTable",
+                "Key to quickly jump foward 10 tables."   
+            },
+            {"JumpNextLetter",
+                "Key to jump to the next table starting with a different letter." 
+            },
+            {"JumpPrevLetter",
+                "Key to jump to the previous table starting with a different letter." 
+            },
+            {"LaunchTable",
+                "Key to launch the selected table." 
+            },
+            {"ToggleConfig",
+                "Key to open or close the configuration menu." 
+            },
+            {"Quit",
+                "Key to exit menus and application."
+            },
+            {"ConfigSave",
+                "Key to save changes in the configuration menu."
+            },
+            {"ConfigClose",
+                "Key to close the configuration menu without saving."
+            },
+            {"ScreenshotMode",
+                "Key to launch a table in screenshot mode."
+            },
+            {"ScreenshotKey",
+                "Key to take a screenshot while in screenshot mode."
+            },
+            {"ScreenshotQuit",
+                "Key to quit screenshot mode."
+            },
+            
             // Internal
+            {"SubCmd",
+                "VPinballX internal command to play .vpx tables.\n"
+                "Use VPinballX --help command line menu to see more."
+            },
             {"FadeTargetAlpha",
                 "Goes from 0 (transparent) to 255.\n"
                 "Use 128 for ~50 percent alpha."
@@ -137,92 +185,6 @@ namespace Tooltips {
                 "Table images switch transition time in ms.\n"
                 "Set to 1 if using videos."
             },
-
-            // Keybinds Section Tooltips
-            {"PreviousTable",
-                "Key to select the previous table in the list.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: LSHIFT, a, UP, 1\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"NextTable",
-                "Key to select the next table in the list.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: RSHIFT, b, DOWN, 2\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"FastPrevTable",
-                "Key to quickly jump back 10 tables.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: LCTRL, LEFT, 3\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"FastNextTable",
-                "Key to quickly jump foward 10 tables.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: RCTRL, RIGHT, 4\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"JumpNextLetter",
-                "Key to jump to the next table starting with a different letter.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: slash, n, 5\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"JumpPrevLetter",
-                "Key to jump to the previous table starting with a different letter.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: z, p, 6\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"LaunchTable",
-                "Key to launch the selected table.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: RETURN, SPACE, l\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"ToggleConfig",
-                "Key to open or close the configuration menu.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: c, TAB, 7\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"Quit",
-                "Key to exit menus and application.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: q, ESCAPE, 8\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"ConfigSave",
-                "Key to save changes in the configuration menu.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: SPACE, s, 9\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"ConfigClose",
-                "Key to close the configuration menu without saving.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: q, ESCAPE, 0\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            },
-            {"ScreenshotMode",
-                "Key to toggle screenshot mode.\n"
-                "\n"
-                "SDL2 keys are case-sensitive.\n"
-                "Examples: s, F1, m\n"
-                "See SDL documentation for full list: https://wiki.libsdl.org/SDL2/SDL_Scancode"
-            }
         };
     }
 }
