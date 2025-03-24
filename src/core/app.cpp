@@ -31,13 +31,7 @@ App::~App() {
     cleanup();
 }
 
-int App::initialize(int argc, char* argv[]) {
-    // Handle command-line arguments
-    if (argc == 2 && std::string(argv[1]) == "--version") {
-        std::cout << "ASAPCabinetFE version " << PROJECT_VERSION << std::endl;
-        return 0;
-    }
-
+int App::initialize() {
     // Initialize configuration
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + "config.ini";

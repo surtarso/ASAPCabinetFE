@@ -26,7 +26,7 @@ public:
     ~App();
 
     // Initialize the application (SDL, windows, renderers, resources)
-    int initialize(int argc, char* argv[]);
+    int initialize();
 
     // Run the main loop
     void run();
