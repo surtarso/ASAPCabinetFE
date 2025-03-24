@@ -308,106 +308,106 @@
                      }
                  }
  
-                 // Process input for table navigation and actions.
-                 if (!showConfig) {
-                     if (inputManager.isPreviousTable(event)) {
-                         size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
-                         if (newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isNextTable(event)) {
-                         size_t newIndex = (currentIndex + 1) % tables.size();
-                         if (newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isFastPrevTable(event)) {
-                         size_t newIndex = (currentIndex + tables.size() - 10) % tables.size();
-                         if (newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isFastNextTable(event)) {
-                         size_t newIndex = (currentIndex + 10) % tables.size();
-                         if (newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isJumpNextLetter(event)) {
-                         char currentLetter = toupper(tables[currentIndex].tableName[0]);
-                         char nextLetter = currentLetter + 1;
-                         bool found = false;
-                         size_t newIndex = currentIndex;
-                         for (; nextLetter <= 'Z'; ++nextLetter) {
-                             if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                                 newIndex = letterIndex[nextLetter];
-                                 found = true;
-                                 break;
-                             }
-                         }
-                         if (!found) {
-                             for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
-                                 if (letterIndex.find(nextLetter) != letterIndex.end()) {
-                                     newIndex = letterIndex[nextLetter];
-                                     found = true;
-                                     break;
-                                 }
-                             }
-                         }
-                         if (found && newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isJumpPrevLetter(event)) {
-                         char currentLetter = toupper(tables[currentIndex].tableName[0]);
-                         char prevLetter = currentLetter - 1;
-                         bool found = false;
-                         size_t newIndex = currentIndex;
-                         for (; prevLetter >= 'A'; --prevLetter) {
-                             if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                                 newIndex = letterIndex[prevLetter];
-                                 found = true;
-                                 break;
-                             }
-                         }
-                         if (!found) {
-                             for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
-                                 if (letterIndex.find(prevLetter) != letterIndex.end()) {
-                                     newIndex = letterIndex[prevLetter];
-                                     found = true;
-                                     break;
-                                 }
-                             }
-                         }
-                         if (found && newIndex != currentIndex) {
-                             transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get());
-                             currentIndex = newIndex;
-                         }
-                     }
-                     else if (inputManager.isLaunchTable(event)) {
-                         if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
-                         std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
-                         LOG_DEBUG("Launching: " << command);
-                         int result = std::system(command.c_str());
-                         if (result != 0) {
-                             std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
-                         }
-                     }
-                     else if (inputManager.isScreenshotMode(event)) {
-                         LOG_DEBUG("Entering screenshot mode for: " << tables[currentIndex].vpxFile);
-                         screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
-                     }
-                     else if (inputManager.isQuit(event)) {
-                         quit = true;
-                         LOG_DEBUG("Quit triggered via keybind");
-                     }
-                 }
+                // Process input for table navigation and actions.
+                if (!showConfig) {
+                    if (inputManager.isPreviousTable(event)) {
+                        size_t newIndex = (currentIndex + tables.size() - 1) % tables.size();
+                        if (newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isNextTable(event)) {
+                        size_t newIndex = (currentIndex + 1) % tables.size();
+                        if (newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isFastPrevTable(event)) {
+                        size_t newIndex = (currentIndex + tables.size() - 10) % tables.size();
+                        if (newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isFastNextTable(event)) {
+                        size_t newIndex = (currentIndex + 10) % tables.size();
+                        if (newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isJumpNextLetter(event)) {
+                        char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                        char nextLetter = currentLetter + 1;
+                        bool found = false;
+                        size_t newIndex = currentIndex;
+                        for (; nextLetter <= 'Z'; ++nextLetter) {
+                            if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                                newIndex = letterIndex[nextLetter];
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            for (nextLetter = 'A'; nextLetter < currentLetter; ++nextLetter) {
+                                if (letterIndex.find(nextLetter) != letterIndex.end()) {
+                                    newIndex = letterIndex[nextLetter];
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (found && newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isJumpPrevLetter(event)) {
+                        char currentLetter = toupper(tables[currentIndex].tableName[0]);
+                        char prevLetter = currentLetter - 1;
+                        bool found = false;
+                        size_t newIndex = currentIndex;
+                        for (; prevLetter >= 'A'; --prevLetter) {
+                            if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                                newIndex = letterIndex[prevLetter];
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            for (prevLetter = 'Z'; prevLetter > currentLetter; --prevLetter) {
+                                if (letterIndex.find(prevLetter) != letterIndex.end()) {
+                                    newIndex = letterIndex[prevLetter];
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (found && newIndex != currentIndex) {
+                            transitionManager.startTransition(assets.getTableVideoPlayer(), assets.getBackglassVideoPlayer(), assets.getDmdVideoPlayer(), tableChangeSound.get(), primaryRenderer.get(), secondaryRenderer.get());
+                            currentIndex = newIndex;
+                        }
+                    }
+                    else if (inputManager.isLaunchTable(event)) {
+                        if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
+                        std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
+                        LOG_DEBUG("Launching: " << command);
+                        int result = std::system(command.c_str());
+                        if (result != 0) {
+                            std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
+                        }
+                    }
+                    else if (inputManager.isScreenshotMode(event)) {
+                        LOG_DEBUG("Entering screenshot mode for: " << tables[currentIndex].vpxFile);
+                        screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
+                    }
+                    else if (inputManager.isQuit(event)) {
+                        quit = true;
+                        LOG_DEBUG("Quit triggered via keybind");
+                    }
+                }
              }
          }
  
@@ -442,16 +442,24 @@
          SDL_RenderClear(primaryRenderer.get());
  
          SDL_Rect tableRect = {0, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT};
-         if (transitionManager.shouldMaskFrame()) {
-             SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 255);
-             SDL_RenderClear(primaryRenderer.get());
-         } else if (transitionManager.isTransitionActive() && oldTableVideo && oldTableVideo->texture) {
-             SDL_RenderCopy(primaryRenderer.get(), oldTableVideo->texture, nullptr, &tableRect);
-         } else if (!transitionManager.isTransitionActive() && tableVideo && tableVideo->texture) {
-             SDL_RenderCopy(primaryRenderer.get(), tableVideo->texture, nullptr, &tableRect);
-         } else if (!transitionManager.isTransitionActive() && assets.getTableTexture()) {
-             SDL_RenderCopy(primaryRenderer.get(), assets.getTableTexture(), nullptr, &tableRect);
-         }
+        if (transitionManager.shouldMaskFrame()) {
+            SDL_SetRenderDrawColor(primaryRenderer.get(), 0, 0, 0, 255);
+            SDL_RenderClear(primaryRenderer.get());
+        } else if (transitionManager.isTransitionActive()) {
+            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedTableFrame()) {
+                SDL_RenderCopy(primaryRenderer.get(), transitionManager.getCapturedTableFrame(), nullptr, &tableRect);
+            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+                if (tableVideo && tableVideo->texture) {
+                    SDL_RenderCopy(primaryRenderer.get(), tableVideo->texture, nullptr, &tableRect);
+                } else if (assets.getTableTexture()) {
+                    SDL_RenderCopy(primaryRenderer.get(), assets.getTableTexture(), nullptr, &tableRect);
+                }
+            }
+        } else if (tableVideo && tableVideo->texture) {
+            SDL_RenderCopy(primaryRenderer.get(), tableVideo->texture, nullptr, &tableRect);
+        } else if (assets.getTableTexture()) {
+            SDL_RenderCopy(primaryRenderer.get(), assets.getTableTexture(), nullptr, &tableRect);
+        }
  
          if (assets.getWheelTexture()) {
              SDL_Rect wheelRect = {MAIN_WINDOW_WIDTH - WHEEL_IMAGE_SIZE - WHEEL_IMAGE_MARGIN,
@@ -485,28 +493,44 @@
          SDL_RenderClear(secondaryRenderer.get());
  
          SDL_Rect backglassRect = {0, 0, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT};
-         if (transitionManager.shouldMaskFrame()) {
-             SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
-             SDL_RenderClear(secondaryRenderer.get());
-         } else if (transitionManager.isTransitionActive() && oldBackglassVideo && oldBackglassVideo->texture) {
-             SDL_RenderCopy(secondaryRenderer.get(), oldBackglassVideo->texture, nullptr, &backglassRect);
-         } else if (!transitionManager.isTransitionActive() && backglassVideo && backglassVideo->texture) {
-             SDL_RenderCopy(secondaryRenderer.get(), backglassVideo->texture, nullptr, &backglassRect);
-         } else if (!transitionManager.isTransitionActive() && assets.getBackglassTexture()) {
-             SDL_RenderCopy(secondaryRenderer.get(), assets.getBackglassTexture(), nullptr, &backglassRect);
-         }
- 
-         SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
-         if (transitionManager.shouldMaskFrame()) {
-             SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
-             SDL_RenderClear(secondaryRenderer.get());
-         } else if (transitionManager.isTransitionActive() && oldDmdVideo && oldDmdVideo->texture) {
-             SDL_RenderCopy(secondaryRenderer.get(), oldDmdVideo->texture, nullptr, &dmdRect);
-         } else if (!transitionManager.isTransitionActive() && dmdVideo && dmdVideo->texture) {
-             SDL_RenderCopy(secondaryRenderer.get(), dmdVideo->texture, nullptr, &dmdRect);
-         } else if (!transitionManager.isTransitionActive() && assets.getDmdTexture()) {
-             SDL_RenderCopy(secondaryRenderer.get(), assets.getDmdTexture(), nullptr, &dmdRect);
-         }
+        if (transitionManager.shouldMaskFrame()) {
+            SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
+            SDL_RenderClear(secondaryRenderer.get());
+        } else if (transitionManager.isTransitionActive()) {
+            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedBackglassFrame()) {
+                SDL_RenderCopy(secondaryRenderer.get(), transitionManager.getCapturedBackglassFrame(), nullptr, &backglassRect);
+            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+                if (backglassVideo && backglassVideo->texture) {
+                    SDL_RenderCopy(secondaryRenderer.get(), backglassVideo->texture, nullptr, &backglassRect);
+                } else if (assets.getBackglassTexture()) {
+                    SDL_RenderCopy(secondaryRenderer.get(), assets.getBackglassTexture(), nullptr, &backglassRect);
+                }
+            }
+        } else if (backglassVideo && backglassVideo->texture) {
+            SDL_RenderCopy(secondaryRenderer.get(), backglassVideo->texture, nullptr, &backglassRect);
+        } else if (assets.getBackglassTexture()) {
+            SDL_RenderCopy(secondaryRenderer.get(), assets.getBackglassTexture(), nullptr, &backglassRect);
+        }
+
+        SDL_Rect dmdRect = {0, BACKGLASS_MEDIA_HEIGHT, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT};
+        if (transitionManager.shouldMaskFrame()) {
+            SDL_SetRenderDrawColor(secondaryRenderer.get(), 0, 0, 0, 255);
+            SDL_RenderClear(secondaryRenderer.get());
+        } else if (transitionManager.isTransitionActive()) {
+            if (transitionManager.getState() == TransitionState::FADING_OUT && transitionManager.getCapturedDmdFrame()) {
+                SDL_RenderCopy(secondaryRenderer.get(), transitionManager.getCapturedDmdFrame(), nullptr, &dmdRect);
+            } else if (transitionManager.getState() == TransitionState::FADING_IN) {
+                if (dmdVideo && dmdVideo->texture) {
+                    SDL_RenderCopy(secondaryRenderer.get(), dmdVideo->texture, nullptr, &dmdRect);
+                } else if (assets.getDmdTexture()) {
+                    SDL_RenderCopy(secondaryRenderer.get(), assets.getDmdTexture(), nullptr, &dmdRect);
+                }
+            }
+        } else if (dmdVideo && dmdVideo->texture) {
+            SDL_RenderCopy(secondaryRenderer.get(), dmdVideo->texture, nullptr, &dmdRect);
+        } else if (assets.getDmdTexture()) {
+            SDL_RenderCopy(secondaryRenderer.get(), assets.getDmdTexture(), nullptr, &dmdRect);
+        }
  
          SDL_RenderPresent(secondaryRenderer.get());
  
