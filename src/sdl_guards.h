@@ -6,6 +6,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include "logging.h"
 
 /**
  * @class SDLInitGuard
@@ -18,7 +19,7 @@ public:
         if (SDL_Init(flags) == 0) {
             success = true;
         } else {
-            std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+            LOG_DEBUG("SDL_Init Error: " << SDL_GetError());
         }
     }
     ~SDLInitGuard() {
@@ -35,7 +36,7 @@ public:
     int flags;
     IMGInitGuard(int flags) : flags(flags) {
         if (!(IMG_Init(flags) & flags)) {
-            std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
+            LOG_DEBUG("IMG_Init Error: " << IMG_GetError());
             this->flags = 0;
         }
     }
@@ -55,7 +56,7 @@ public:
         if (TTF_Init() == 0) {
             success = true;
         } else {
-            std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
+            LOG_DEBUG("TTF_Init Error: " << TTF_GetError());
         }
     }
     ~TTFInitGuard() {
@@ -74,7 +75,7 @@ public:
         if (Mix_OpenAudio(frequency, format, channels, chunksize) == 0) {
             success = true;
         } else {
-            std::cerr << "SDL_mixer Error: " << Mix_GetError() << std::endl;
+            LOG_DEBUG("SDL_mixer Error: " << Mix_GetError());
         }
     }
     ~MixerGuard() {

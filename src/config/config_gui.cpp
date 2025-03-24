@@ -4,6 +4,7 @@
 #include "config/tooltips.h"
 #include "config/config_loader.h"
 #include "input/input_manager.h"
+#include "logging.h"
 #include "imgui.h"
 #include <fstream>
 //#include <sstream>
@@ -40,7 +41,7 @@ IniEditor::~IniEditor() {
 void IniEditor::loadIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Could not open " << filename << std::endl;
+        LOG_DEBUG("Could not open " << filename);
         return;
     }
 
@@ -102,23 +103,23 @@ void IniEditor::loadIniFile(const std::string& filename) {
         lineIndex++;
     }
     hasChanges = false;
-    std::cout << "Loaded config file: " << filename << std::endl;
+    LOG_DEBUG("Loaded config file: " << filename);
 }
 
 void IniEditor::saveIniFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Could not write " << filename << std::endl;
+        LOG_DEBUG("Could not write " << filename);
         return;
     }
 
-    std::cout << "Saving config to " << filename << ":" << std::endl;
+    LOG_DEBUG("Saving config to " << filename << ":");
     for (size_t i = 0; i < originalLines.size(); ++i) {
         if (lineToKey.find(i) != lineToKey.end()) {
             auto [section, key] = lineToKey[i];
             for (const auto& kv : iniData[section].keyValues) {
                 if (kv.first == key && iniData[section].keyToLineIndex[key] == i) {
-                    std::cout << key << " = " << kv.second << std::endl;
+                    LOG_DEBUG(key << " = " << kv.second);
                     file << key << " = " << kv.second << "\n";
                     break;
                 }
@@ -128,7 +129,7 @@ void IniEditor::saveIniFile(const std::string& filename) {
         }
     }
     file.close();
-    std::cout << "Config saved to " << filename << std::endl;
+    LOG_DEBUG("Config saved to " << filename);
 }
 
 void IniEditor::initExplanations() {
@@ -155,7 +156,7 @@ void IniEditor::drawGUI() {
                     isCapturingKey_ = false;
                     capturingKeyName_.clear();
                     capturedKeyName_.clear();
-                    std::cout << "Switched to section: " << section << ", reset key capture state" << std::endl;
+                    LOG_DEBUG("Switched to section: " << section << ", reset key capture state");
                 }
                 currentSection = section;
             }
@@ -174,7 +175,7 @@ void IniEditor::drawGUI() {
         static bool firstRenderOfKeybinds = true;
         if (currentSection == "Keybinds" && firstRenderOfKeybinds) {
             if (isCapturingKey_) {
-                std::cout << "Resetting unexpected key capture state on entering Keybinds section" << std::endl;
+                LOG_DEBUG("Resetting unexpected key capture state on entering Keybinds section");
                 isCapturingKey_ = false;
                 capturingKeyName_.clear();
                 capturedKeyName_.clear();
@@ -222,7 +223,7 @@ void IniEditor::drawGUI() {
                 const char* keyDisplayName = SDL_GetKeyName(keyCode);
                 if (keyCode == SDLK_UNKNOWN) {
                     keyDisplayName = "Unknown Key";
-                    std::cout << "Failed to map key for: " << kv.first << " (value: " << kv.second << ")" << std::endl;
+                    LOG_DEBUG("Failed to map key for: " << kv.first << " (value: " << kv.second << ")");
                 }
 
                 // Display the current key
@@ -233,7 +234,7 @@ void IniEditor::drawGUI() {
                 std::string buttonLabel = (isCapturingKey_ && capturingKeyName_ == kv.first) ? "Waiting...##" + kv.first : "Set Key##" + kv.first;
                 if (ImGui::Button(buttonLabel.c_str())) {
                     if (!(isCapturingKey_ && capturingKeyName_ == kv.first)) { // Prevent re-triggering while already capturing
-                        std::cout << "Set Key button clicked for: " << kv.first << std::endl;
+                        LOG_DEBUG("Set Key button clicked for: " << kv.first);
                         isCapturingKey_ = true;
                         capturingKeyName_ = kv.first;
                         capturedKeyName_.clear();
@@ -247,7 +248,7 @@ void IniEditor::drawGUI() {
                 if (ImGui::InputText(("##" + kv.first).c_str(), buf, sizeof(buf))) {
                     kv.second = std::string(buf);
                     hasChanges = true;
-                    std::cout << "Field modified: " << kv.first << " = " << kv.second << ", hasChanges set to true" << std::endl;
+                    LOG_DEBUG("Field modified: " << kv.first << " = " << kv.second << ", hasChanges set to true");
                 }
             }
         }
@@ -279,7 +280,7 @@ void IniEditor::drawGUI() {
         capturingKeyName_.clear();
         capturedKeyName_.clear();
         showFlag = false;  // Close the config GUI
-        std::cout << "Config GUI closed via button, reset key capture state" << std::endl;
+        LOG_DEBUG("Config GUI closed via button, reset key capture state");
     }
 
     // Display "Saved successfully" text to the right of the "Close" button
@@ -298,7 +299,7 @@ void IniEditor::handleEvent(const SDL_Event& event) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
             // Cancel key capture
-            std::cout << "Key capture cancelled" << std::endl;
+            LOG_DEBUG("Key capture cancelled");
             isCapturingKey_ = false;
             capturingKeyName_.clear();
             capturedKeyName_.clear();
@@ -313,19 +314,19 @@ void IniEditor::handleEvent(const SDL_Event& event) {
                 }
                 std::transform(sdlKeyName.begin(), sdlKeyName.end(), sdlKeyName.begin(), ::toupper);
                 capturedKeyName_ = sdlKeyName;
-                std::cout << "Key captured: " << capturedKeyName_ << std::endl;
+                LOG_DEBUG("Key captured: " << capturedKeyName_);
 
                 // Update the keybinding in iniData and config_loader
                 for (auto& keyVal : iniData[currentSection].keyValues) {
                     if (keyVal.first == capturingKeyName_) {
                         keyVal.second = capturedKeyName_;
                         hasChanges = true;
-                        std::cout << "Keybinding modified: " << capturingKeyName_ << " = " << capturedKeyName_ << std::endl;
+                        LOG_DEBUG("Keybinding modified: " << capturingKeyName_ << " = " << capturedKeyName_);
 
                         // Update the corresponding SDL_Keycode in config_loader
                         SDL_Keycode newKeyCode = SDL_GetKeyFromName(capturedKeyName_.c_str());
                         if (newKeyCode == SDLK_UNKNOWN) {
-                            std::cout << "Failed to map captured key: " << capturedKeyName_ << std::endl;
+                            LOG_DEBUG("Failed to map captured key: " << capturedKeyName_);
                         } else {
                             if (capturingKeyName_ == "PreviousTable") KEY_PREVIOUS_TABLE = newKeyCode;
                             else if (capturingKeyName_ == "NextTable") KEY_NEXT_TABLE = newKeyCode;
@@ -341,9 +342,11 @@ void IniEditor::handleEvent(const SDL_Event& event) {
                             else if (capturingKeyName_ == "ScreenshotMode") KEY_SCREENSHOT_MODE = newKeyCode;
                             else if (capturingKeyName_ == "ScreenshotKey") KEY_SCREENSHOT_KEY = newKeyCode;
                             else if (capturingKeyName_ == "ScreenshotQuit") KEY_SCREENSHOT_QUIT = newKeyCode;
-
-                            const char* newKeyDisplayName = SDL_GetKeyName(newKeyCode);
-                            std::cout << "Updated display for " << capturingKeyName_ << " to " << newKeyDisplayName << std::endl;
+                            
+                            #ifdef DEBUG_LOGGING
+                                const char* newKeyDisplayName = SDL_GetKeyName(newKeyCode);
+                                LOG_DEBUG("Updated display for " << capturingKeyName_ << " to " << newKeyDisplayName);
+                            #endif
                         }
                         break;
                     }
@@ -363,7 +366,7 @@ void IniEditor::handleEvent(const SDL_Event& event) {
         hasChanges = false;
         configChangesPending = true;
         saveMessageTimer_ = 3.0f;  // Show "Saved successfully" for 3 seconds
-        std::cout << "Config saved to " << iniFilename << " via keybind" << std::endl;
+        LOG_DEBUG("Config saved to " << iniFilename << " via keybind");
     }
     if (input.isConfigClose(event)) {
         loadIniFile(iniFilename);  // Reload the config file to discard changes
@@ -373,6 +376,6 @@ void IniEditor::handleEvent(const SDL_Event& event) {
         capturingKeyName_.clear();
         capturedKeyName_.clear();
         showFlag = false;  // Close the config GUI
-        std::cout << "Config GUI closed via keybind, reset key capture state" << std::endl;
+        LOG_DEBUG("Config GUI closed via keybind, reset key capture state");
     }
 }

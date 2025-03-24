@@ -1,4 +1,5 @@
 #include "table/asset_manager.h"
+#include "logging.h"
 #include <iostream>
 
 AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_Font* f)
@@ -49,39 +50,39 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<Table>& table
     stopAndMove(backglassVideoPlayer, oldBackglassVideoPlayer);
     stopAndMove(dmdVideoPlayer, oldDmdVideoPlayer);
 
-    // std::cout << "Loading table video: " << table.tableVideo << std::endl;
-    // std::cout << "Loading backglass video: " << table.backglassVideo << std::endl;
-    // std::cout << "Loading DMD video: " << table.dmdVideo << std::endl;
+    LOG_DEBUG("Loading table video: " << table.tableVideo);
+    LOG_DEBUG("Loading backglass video: " << table.backglassVideo);
+    LOG_DEBUG("Loading DMD video: " << table.dmdVideo);
 
     tableVideoPlayer = table.tableVideo.empty() ? nullptr : setupVideoPlayer(primaryRenderer, table.tableVideo, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
     backglassVideoPlayer = table.backglassVideo.empty() ? nullptr : setupVideoPlayer(secondaryRenderer, table.backglassVideo, BACKGLASS_MEDIA_WIDTH, BACKGLASS_MEDIA_HEIGHT);
     dmdVideoPlayer = table.dmdVideo.empty() ? nullptr : setupVideoPlayer(secondaryRenderer, table.dmdVideo, DMD_MEDIA_WIDTH, DMD_MEDIA_HEIGHT);
 
     if (tableVideoPlayer) {
-        // std::cout << "Table video setup: player=" << tableVideoPlayer->player 
-                //   << ", texture=" << tableVideoPlayer->texture 
-                //   << ", pixels=" << tableVideoPlayer->pixels 
-                //   << ", mutex=" << tableVideoPlayer->mutex << std::endl;
+        LOG_DEBUG("Table video setup: player=" << tableVideoPlayer->player 
+                  << ", texture=" << tableVideoPlayer->texture 
+                  << ", pixels=" << tableVideoPlayer->pixels 
+                  << ", mutex=" << tableVideoPlayer->mutex); 
         if (libvlc_media_player_play(tableVideoPlayer->player) != 0) {
-            std::cerr << "Failed to play table video: " << table.tableVideo << std::endl;
+            LOG_DEBUG("Failed to play table video: " << table.tableVideo);
         }
     }
     if (backglassVideoPlayer) {
-        // std::cout << "Backglass video setup: player=" << backglassVideoPlayer->player 
-                //   << ", texture=" << backglassVideoPlayer->texture 
-                //   << ", pixels=" << backglassVideoPlayer->pixels 
-                //   << ", mutex=" << backglassVideoPlayer->mutex << std::endl;
+        LOG_DEBUG("Backglass video setup: player=" << backglassVideoPlayer->player 
+                  << ", texture=" << backglassVideoPlayer->texture 
+                  << ", pixels=" << backglassVideoPlayer->pixels 
+                  << ", mutex=" << backglassVideoPlayer->mutex); 
         if (libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
-            std::cerr << "Failed to play backglass video: " << table.backglassVideo << std::endl;
+            LOG_DEBUG("Failed to play backglass video: " << table.backglassVideo); 
         }
     }
     if (dmdVideoPlayer) {
-        // std::cout << "DMD video setup: player=" << dmdVideoPlayer->player 
-                //   << ", texture=" << dmdVideoPlayer->texture 
-                //   << ", pixels=" << dmdVideoPlayer->pixels 
-                //   << ", mutex=" << dmdVideoPlayer->mutex << std::endl;
+        LOG_DEBUG("DMD video setup: player=" << dmdVideoPlayer->player 
+                  << ", texture=" << dmdVideoPlayer->texture 
+                  << ", pixels=" << dmdVideoPlayer->pixels 
+                  << ", mutex=" << dmdVideoPlayer->mutex); 
         if (libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
-            std::cerr << "Failed to play DMD video: " << table.dmdVideo << std::endl;
+            LOG_DEBUG("Failed to play DMD video: " << table.dmdVideo); 
         }
     }
 }

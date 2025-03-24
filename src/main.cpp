@@ -21,6 +21,7 @@
 #include "table/asset_manager.h"
 #include "input/input_manager.h"
 #include "capture/screenshot_manager.h"
+#include "logging.h"
 #include "version.h"
 
 #define CHECK_SDL(x, msg) if (!(x)) { std::cerr << msg << ": " << SDL_GetError() << std::endl; return 1; }
@@ -30,7 +31,7 @@ std::string getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1) {
-        std::cerr << "Warning: Couldn’t determine executable path, using './'" << std::endl;
+        LOG_DEBUG("Warning: Couldn't determine executable path, using './'");
         return "./";
     }
     path[count] = '\0';
@@ -74,7 +75,7 @@ bool isConfigValid() {
 void runInitialConfig(const std::string& configPath) {
     SDLInitGuard sdlInit(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     if (!sdlInit.success) {
-        std::cerr << "SDL_Init failed for config: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("SDL_Init failed for config: " << SDL_GetError());
         exit(1);
     }
 
@@ -84,7 +85,7 @@ void runInitialConfig(const std::string& configPath) {
             800, 500, SDL_WINDOW_SHOWN),
         SDL_DestroyWindow);
     if (!window) {
-        std::cerr << "Failed to create config window: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("Failed to create config window: " << SDL_GetError());
         exit(1);
     }
 
@@ -92,7 +93,7 @@ void runInitialConfig(const std::string& configPath) {
         SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED),
         SDL_DestroyRenderer);
     if (!renderer) {
-        std::cerr << "Failed to create config renderer: " << SDL_GetError() << std::endl;
+        LOG_DEBUG("Failed to create config renderer: " << SDL_GetError());
         exit(1);
     }
 
@@ -247,7 +248,7 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_KEYDOWN) {
                 if (inputManager.isToggleConfig(event)) {
                     showConfig = !showConfig;
-                    std::cout << "Toggled showConfig to: " << (showConfig ? 1 : 0) << std::endl;
+                    LOG_DEBUG("Toggled showConfig to: " << (showConfig ? 1 : 0));
                 }
 
                 if (showConfig) {
@@ -344,19 +345,19 @@ int main(int argc, char* argv[]) {
                     else if (inputManager.isLaunchTable(event)) {
                         if (tableLoadSound) Mix_PlayChannel(-1, tableLoadSound.get(), 0);
                         std::string command = VPX_START_ARGS + " " + VPX_EXECUTABLE_CMD + " " + VPX_SUB_CMD + " \"" + tables[currentIndex].vpxFile + "\" " + VPX_END_ARGS;
-                        std::cout << "Launching: " << command << std::endl;
+                        LOG_DEBUG("Launching: " << command);
                         int result = std::system(command.c_str());
                         if (result != 0) {
                             std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
                         }
                     }
                     else if (inputManager.isScreenshotMode(event)) {
-                        std::cout << "Entering screenshot mode for: " << tables[currentIndex].vpxFile << std::endl;
+                        LOG_DEBUG("Entering screenshot mode for: " << tables[currentIndex].vpxFile);
                         screenshotManager.launchScreenshotMode(tables[currentIndex].vpxFile);
                     }
                     else if (inputManager.isQuit(event)) {
                         quit = true;
-                        std::cout << "Quit triggered via keybind" << std::endl;
+                        LOG_DEBUG("Quit triggered via keybind");
                     }
                 }
             }
@@ -456,7 +457,7 @@ int main(int argc, char* argv[]) {
 
         // Check if a UI reload is pending
         if (configChangesPending) {
-            std::cout << "Reloading UI due to config changes..." << std::endl;
+            LOG_DEBUG("Reloading UI due to config changes...");
             // Reload config
             initialize_config(configPath);
             // Update windows
@@ -471,9 +472,9 @@ int main(int argc, char* argv[]) {
             assets = AssetManager(primaryRenderer.get(), secondaryRenderer.get(), font.get());
             assets.loadTableAssets(currentIndex, tables);
             configChangesPending = false;
-            std::cout << "UI reloaded: MainWidth=" << MAIN_WINDOW_WIDTH << ", MainHeight=" << MAIN_WINDOW_HEIGHT
+            LOG_DEBUG("UI reloaded: MainWidth=" << MAIN_WINDOW_WIDTH << ", MainHeight=" << MAIN_WINDOW_HEIGHT
                       << ", SecondWidth=" << SECOND_WINDOW_WIDTH << ", SecondHeight=" << SECOND_WINDOW_HEIGHT
-                      << ", FontSize=" << FONT_SIZE << ", WheelImageSize=" << WHEEL_IMAGE_SIZE << std::endl;
+                      << ", FontSize=" << FONT_SIZE << ", WheelImageSize=" << WHEEL_IMAGE_SIZE);
         }
     }
 
