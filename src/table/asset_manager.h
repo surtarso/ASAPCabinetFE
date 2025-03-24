@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 #include "table/table_manager.h"
-#include "render/renderer.h"
 #include "render/video_player.h"
 
 class AssetManager {
@@ -44,6 +43,10 @@ private:
     SDL_Renderer* primaryRenderer;
     SDL_Renderer* secondaryRenderer;
     TTF_Font* font;
+
+    // Utility functions for loading textures (moved from renderer.h)
+    SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
+    SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
 };
 
 #endif // ASSET_MANAGER_H

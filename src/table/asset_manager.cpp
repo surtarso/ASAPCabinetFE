@@ -1,7 +1,9 @@
 #include "table/asset_manager.h"
-#include "config/config_loader.h" // Add this to access FONT_COLOR
+#include "config/config_loader.h" // For FONT_COLOR
 #include "utils/logging.h"
+#include <SDL_image.h> // For IMG_LoadTexture
 #include <iostream>
+#include <stdio.h> // For stderr redirection
 
 // Constructor: Initializes AssetManager with renderers and font, sets up smart pointers for textures.
 AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_Font* f)
@@ -25,7 +27,7 @@ AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_F
 void AssetManager::loadTableAssets(size_t index, const std::vector<Table>& tables) {
     const Table& table = tables[index];
     
-    // Load textures for table, wheel, backglass, and DMD.
+    // Load textures for table, wheel, backglass, and DMD using member functions.
     tableTexture.reset(loadTexture(primaryRenderer, table.tableImage));
     wheelTexture.reset(loadTexture(primaryRenderer, table.wheelImage));
     backglassTexture.reset(loadTexture(secondaryRenderer, table.backglassImage));
@@ -88,7 +90,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<Table>& table
         LOG_DEBUG("DMD video setup: player=" << dmdVideoPlayer->player 
                   << ", texture=" << dmdVideoPlayer->texture 
                   << ", pixels=" << dmdVideoPlayer->pixels 
-                  << ", mutex=" << dmdVideoPlayer->mutex); 
+                  << ", mutex=" << tableVideoPlayer->mutex); 
         if (libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
             LOG_DEBUG("Failed to play DMD video: " << table.dmdVideo); 
         }
@@ -109,4 +111,68 @@ void AssetManager::clearOldVideoPlayers() {
         cleanupVideoContext(oldDmdVideoPlayer);
         oldDmdVideoPlayer = nullptr;
     }
+}
+
+// Load a texture from a file path
+SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string& path) {
+    // Log the path we’re trying to load
+    LOG_DEBUG("Attempting to load texture: " << path);
+
+    FILE* redirected;
+#ifdef _WIN32
+    redirected = freopen("nul", "w", stderr);
+    if (!redirected) {
+        std::cerr << "Warning: Failed to redirect stderr to nul" << std::endl;
+    }
+#else
+    redirected = freopen("/dev/null", "w", stderr);
+    if (!redirected) {
+        LOG_DEBUG("Warning: Failed to redirect stderr to /dev/null"); 
+    }
+#endif
+
+    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
+
+    // Restore stderr
+    FILE* restored;
+#ifdef _WIN32
+    restored = freopen("CON", "w", stderr);
+    if (!restored) {
+        std::cerr << "Warning: Failed to restore stderr to CON" << std::endl;
+    }
+#else
+    restored = freopen("/dev/tty", "w", stderr);
+    if (!restored) {
+        LOG_DEBUG("Warning: Failed to restore stderr to /dev/tty"); 
+    }
+#endif
+
+    if (!tex) {
+        LOG_DEBUG("Failed to load texture " << path << ": " << IMG_GetError()); 
+    } 
+    else {
+        LOG_DEBUG("Successfully loaded texture: " << path);
+    }
+    return tex;
+}
+
+// Render text to a texture
+SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect) {
+    SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
+    if (!surf) {
+        LOG_DEBUG("TTF_RenderUTF8_Blended error: " << TTF_GetError()); 
+        return nullptr;
+    }
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
+    if (!texture) {
+        LOG_DEBUG("SDL_CreateTextureFromSurface error: " << SDL_GetError());
+        SDL_FreeSurface(surf);
+        return nullptr;
+    }
+    // Ensure transparency is respected by enabling alpha blending
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    textRect.w = surf->w;
+    textRect.h = surf->h;
+    SDL_FreeSurface(surf);
+    return texture;
 }
