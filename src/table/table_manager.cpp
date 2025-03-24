@@ -4,21 +4,23 @@
 #include <iostream>
 #include <cctype>
 
-std::map<char, int> letterIndex; // Definition here
+std::map<char, int> letterIndex; // Maps first letter of table names to their indices for quick navigation.
 
+// Resolves image path, checking custom path first, then falling back to default.
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
     LOG_DEBUG("Checking custom path: " << imageFile.string());
     if (fs::exists(imageFile)) {
         return imageFile.string();
     }
-    LOG_DEBUG("Falling back to default: " << defaultImagePath); // << std::endl;
+    LOG_DEBUG("Falling back to default: " << defaultImagePath);
     if (!fs::exists(defaultImagePath)) {
         LOG_DEBUG("Default image not found: " << defaultImagePath);
     }
     return defaultImagePath;
 }
   
+// Resolves video path, checking custom path, then default, returning empty string if neither exists.
 std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath) {
     fs::path videoFile = fs::path(root) / videoPath;
     if (fs::exists(videoFile))
@@ -29,8 +31,10 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
         return "";
 }
 
+// Loads and sorts table list from VPX files, populating table metadata and letter index.
 std::vector<Table> loadTableList() {
     std::vector<Table> tables;
+    // Iterate through VPX files in the tables directory.
     for (const auto& entry : fs::recursive_directory_iterator(VPX_TABLES_PATH)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             Table table;
@@ -47,15 +51,18 @@ std::vector<Table> loadTableList() {
             tables.push_back(table);
         }
     }
+    
+    // Sort tables alphabetically by name.
     std::sort(tables.begin(), tables.end(), [](const Table& a, const Table& b) {
         return a.tableName < b.tableName;
     });
 
+    // Build letter index for quick navigation by first letter.
     letterIndex.clear();
     for (size_t i = 0; i < tables.size(); ++i) {
         char firstLetter = toupper(tables[i].tableName[0]);
         if (letterIndex.find(firstLetter) == letterIndex.end()) {
-            letterIndex[firstLetter] = i;
+            letterIndex[firstLetter] = i; // Store index of first table starting with this letter.
         }
     }
     return tables;
