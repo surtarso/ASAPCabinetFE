@@ -26,7 +26,7 @@ public:
     ~App();
 
     // Initialize the application (SDL, windows, renderers, resources)
-    int initialize();
+    int initialize(int argc, char* argv[]);
 
     // Run the main loop
     void run();
@@ -60,8 +60,8 @@ private:
     TransitionManager transitionManager_;
     InputManager inputManager_;
     ScreenshotManager screenshotManager_;
-    std::unique_ptr<ConfigManager> configManager_; // Now a unique_ptr
-    std::unique_ptr<IniEditor> configEditor_;      // Now a unique_ptr
+    std::unique_ptr<ConfigManager> configManager_;
+    std::unique_ptr<IniEditor> configEditor_;
     Renderer renderer_;
     bool showConfig_;
     bool quit_;
