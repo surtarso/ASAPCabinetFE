@@ -19,6 +19,7 @@ set(SOURCES
     src/capture/screenshot_manager.cpp
     src/config/config_loader.cpp
     src/config/config_gui.cpp
+    src/config/config_manager.cpp
     src/input/input_manager.cpp
     src/table/asset_manager.cpp
     src/table/table_manager.cpp
