@@ -19,10 +19,10 @@ App::App()
       tableChangeSound_(nullptr, Mix_FreeChunk),
       tableLoadSound_(nullptr, Mix_FreeChunk),
       currentIndex_(0),
-      assets_(nullptr, nullptr, nullptr), // Will be initialized later
+      assets_(nullptr, nullptr, nullptr),
       screenshotManager_(""),
-      configManager_(nullptr), // Initialize as nullptr
-      configEditor_(nullptr),  // Initialize as nullptr
+      configManager_(nullptr),
+      configEditor_(nullptr),
       renderer_(nullptr, nullptr),
       showConfig_(false),
       quit_(false) {}
@@ -31,7 +31,7 @@ App::~App() {
     cleanup();
 }
 
-int App::initialize() {
+int App::initialize(int argc, char* argv[]) {
     // Initialize configuration
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + "config.ini";

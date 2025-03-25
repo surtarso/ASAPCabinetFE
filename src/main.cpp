@@ -11,6 +11,10 @@ int main(int argc, char* argv[]) {
     }
 
     App app;
+    int result = app.initialize(argc, argv);
+    if (result == 0) {
+        return 0; // This case is now redundant but kept for future flags
+    }
     app.run();
     return 0;
 }
