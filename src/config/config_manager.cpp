@@ -133,6 +133,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     LOG_DEBUG("JumpNextLetter keycode: " << settings.keyJumpNextLetter);
     settings.keyJumpPrevLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpPrevLetter"].empty() ? "Z" : config["Keybinds"]["JumpPrevLetter"].c_str());
     LOG_DEBUG("JumpPrevLetter keycode: " << settings.keyJumpPrevLetter);
+    settings.keyRandomTable = SDL_GetKeyFromName(config["Keybinds"]["RandomTable"].empty() ? "R" : config["Keybinds"]["RandomTable"].c_str());
     settings.keyLaunchTable = SDL_GetKeyFromName(config["Keybinds"]["LaunchTable"].empty() ? "Return" : config["Keybinds"]["LaunchTable"].c_str());
     settings.keyToggleConfig = SDL_GetKeyFromName(config["Keybinds"]["ToggleConfig"].empty() ? "C" : config["Keybinds"]["ToggleConfig"].c_str());
     settings.keyQuit = SDL_GetKeyFromName(config["Keybinds"]["Quit"].empty() ? "Q" : config["Keybinds"]["Quit"].c_str());
@@ -203,6 +204,7 @@ void ConfigManager::writeIniFile(const std::string& filename) {
     file << "FastNextTable=" << SDL_GetKeyName(settings.keyFastNextTable) << "\n";
     file << "JumpNextLetter=" << SDL_GetKeyName(settings.keyJumpNextLetter) << "\n";
     file << "JumpPrevLetter=" << SDL_GetKeyName(settings.keyJumpPrevLetter) << "\n";
+    file << "RandomTable=" << SDL_GetKeyName(settings.keyRandomTable) << "\n";
     file << "LaunchTable=" << SDL_GetKeyName(settings.keyLaunchTable) << "\n";
     file << "ToggleConfig=" << SDL_GetKeyName(settings.keyToggleConfig) << "\n";
     file << "Quit=" << SDL_GetKeyName(settings.keyQuit) << "\n";

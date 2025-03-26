@@ -34,6 +34,10 @@ bool InputManager::isJumpPrevLetter(const SDL_Event& event) const {
     return isKeyPressed(event, settings_.keyJumpPrevLetter);
 }
 
+bool InputManager::isRandomTable(const SDL_Event& event) const {
+    return isKeyPressed(event, settings_.keyRandomTable);
+}
+
 bool InputManager::isLaunchTable(const SDL_Event& event) const {
     return isKeyPressed(event, settings_.keyLaunchTable);
 }

@@ -177,6 +177,9 @@ namespace Tooltips {
             {"ScreenshotQuit",
                 "Key to quit screenshot mode."
             },
+            {"RandomTable",
+                "Key to jump to a random table."
+            },
             
             // Internal
             {"SubCmd",

@@ -62,6 +62,7 @@ struct Settings {
     SDL_Keycode keyFastNextTable;
     SDL_Keycode keyJumpNextLetter;
     SDL_Keycode keyJumpPrevLetter;
+    SDL_Keycode keyRandomTable;
     SDL_Keycode keyLaunchTable;
     SDL_Keycode keyToggleConfig;
     SDL_Keycode keyQuit;

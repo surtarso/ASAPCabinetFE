@@ -306,6 +306,8 @@ void IniEditor::drawGUI()
                     keyCode = tempSettings_.keyJumpNextLetter;
                 else if (kv.first == "JumpPrevLetter")
                     keyCode = tempSettings_.keyJumpPrevLetter;
+                else if (kv.first == "RandomTable")
+                    keyCode = tempSettings_.keyRandomTable;
 
                 LOG_DEBUG("Displaying key for " << kv.first << ", keycode: " << keyCode);
                 const char *keyDisplayName = SDL_GetKeyName(keyCode);
@@ -439,6 +441,8 @@ void IniEditor::handleEvent(const SDL_Event &event)
                             tempSettings_.keyJumpNextLetter = keyCode;
                         else if (capturingKeyName_ == "JumpPrevLetter")
                             tempSettings_.keyJumpPrevLetter = keyCode;
+                        else if (capturingKeyName_ == "RandomTable")
+                            tempSettings_.keyRandomTable = keyCode;
                         break;
                     }
                 }
