@@ -37,7 +37,8 @@ IniEditor::IniEditor(const std::string &filename, bool &showFlag, ConfigManager 
       isCapturingKey_(false),
       capturingKeyName_(),
       capturedKeyName_(),
-      saveMessageTimer_(0.0f)
+      saveMessageTimer_(0.0f),
+      fillParentWindow_(false)
 {
     loadIniFile(filename);
     initExplanations();
@@ -153,6 +154,9 @@ void IniEditor::saveIniFile(const std::string &filename)
     file.close();
     LOG_DEBUG("Config saved to " << filename);
 
+    // Notify ConfigManager to reload the settings
+    configManager_->loadConfig();
+
     // Only notify if we have all required pointers (not in initial config)
     if (configManager_ && assets_ && currentIndex_ && tables_)
     {
@@ -179,11 +183,21 @@ void IniEditor::drawGUI()
     ImGuiContext *ctx = ImGui::GetCurrentContext();
     LOG_DEBUG("ImGui context in drawGUI: " << (void *)ctx);
 
-    float windowWidth = 800.0f;
-    float windowHeight = 500.0f;
-    ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
-    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings);
+    if (fillParentWindow_) {
+        // Fill the entire parent window
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
+        ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    } else {
+        // Default behavior: 800x500 centered window
+        float windowWidth = 800.0f;
+        float windowHeight = 500.0f;
+        ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
+        ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar);
+    }
+
     ImGui::SetWindowFocus();
 
     ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);

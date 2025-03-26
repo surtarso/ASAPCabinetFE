@@ -28,6 +28,7 @@ public:
     void handleEvent(const SDL_Event& event);
 
     bool isCapturingKey() const { return isCapturingKey_; }
+    void setFillParentWindow(bool fill) { fillParentWindow_ = fill; }
     Settings tempSettings_; // Public for App to access
 
 private:
@@ -50,6 +51,7 @@ private:
     bool isCapturingKey_ = false;
     std::string capturingKeyName_;
     std::string capturedKeyName_;
+    bool fillParentWindow_;
 
     // Save message timer
     float saveMessageTimer_ = 0.0f;
