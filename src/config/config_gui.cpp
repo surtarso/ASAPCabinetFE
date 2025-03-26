@@ -19,13 +19,13 @@
 
 IniEditor::IniEditor(const std::string &filename, bool &showFlag, ConfigManager *configManager,
                      AssetManager *assets, size_t *currentIndex, std::vector<Table> *tables)
-    : iniFilename(filename),
+    : tempSettings_(configManager ? configManager->getSettings() : Settings{}), // Moved to the top
+      iniFilename(filename),
       showFlag(showFlag),
       configManager_(configManager),
       assets_(assets),
       currentIndex_(currentIndex),
       tables_(tables),
-      tempSettings_(configManager ? configManager->getSettings() : Settings{}),
       originalLines(),
       iniData(),
       sections(),
@@ -119,25 +119,33 @@ void IniEditor::loadIniFile(const std::string &filename)
     LOG_DEBUG("Loaded config file: " << filename);
 }
 
-void IniEditor::saveIniFile(const std::string& filename) {
+void IniEditor::saveIniFile(const std::string &filename)
+{
     std::ofstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         LOG_DEBUG("Could not write " << filename);
         return;
     }
 
     LOG_DEBUG("Saving config to " << filename << ":");
-    for (size_t i = 0; i < originalLines.size(); ++i) {
-        if (lineToKey.find(i) != lineToKey.end()) {
+    for (size_t i = 0; i < originalLines.size(); ++i)
+    {
+        if (lineToKey.find(i) != lineToKey.end())
+        {
             auto [section, key] = lineToKey[i];
-            for (const auto& kv : iniData[section].keyValues) {
-                if (kv.first == key && iniData[section].keyToLineIndex[key] == i) {
+            for (const auto &kv : iniData[section].keyValues)
+            {
+                if (kv.first == key && iniData[section].keyToLineIndex[key] == i)
+                {
                     LOG_DEBUG(key << " = " << kv.second);
                     file << key << " = " << kv.second << "\n";
                     break;
                 }
             }
-        } else {
+        }
+        else
+        {
             file << originalLines[i] << "\n";
         }
     }
@@ -145,7 +153,8 @@ void IniEditor::saveIniFile(const std::string& filename) {
     LOG_DEBUG("Config saved to " << filename);
 
     // Only notify if we have all required pointers (not in initial config)
-    if (configManager_ && assets_ && currentIndex_ && tables_) {
+    if (configManager_ && assets_ && currentIndex_ && tables_)
+    {
         configManager_->notifyConfigChanged(*assets_, *currentIndex_, *tables_);
     }
     hasChanges = false;
@@ -300,7 +309,8 @@ void IniEditor::drawGUI()
 
                 LOG_DEBUG("Displaying key for " << kv.first << ", keycode: " << keyCode);
                 const char *keyDisplayName = SDL_GetKeyName(keyCode);
-                if (keyDisplayName == nullptr || std::strcmp(keyDisplayName, "") == 0 || std::strcmp(keyDisplayName, "Unknown Key") == 0) {
+                if (keyDisplayName == nullptr || std::strcmp(keyDisplayName, "") == 0 || std::strcmp(keyDisplayName, "Unknown Key") == 0)
+                {
                     // Fallback: Use the ini value if SDL_GetKeyName fails
                     keyDisplayName = kv.second.c_str();
                     LOG_DEBUG("SDL_GetKeyName failed for " << kv.first << ", falling back to ini value: " << keyDisplayName);
