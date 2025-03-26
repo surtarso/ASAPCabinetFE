@@ -54,23 +54,6 @@ struct Settings {
     // Fade and sound settings
     std::string tableChangeSound;
     std::string tableLoadSound;
-
-    // Keybinds
-    SDL_Keycode keyPreviousTable;
-    SDL_Keycode keyNextTable;
-    SDL_Keycode keyFastPrevTable;
-    SDL_Keycode keyFastNextTable;
-    SDL_Keycode keyJumpNextLetter;
-    SDL_Keycode keyJumpPrevLetter;
-    SDL_Keycode keyRandomTable;
-    SDL_Keycode keyLaunchTable;
-    SDL_Keycode keyToggleConfig;
-    SDL_Keycode keyQuit;
-    SDL_Keycode keyConfigSave;
-    SDL_Keycode keyConfigClose;
-    SDL_Keycode keyScreenshotMode;
-    SDL_Keycode keyScreenshotKey;
-    SDL_Keycode keyScreenshotQuit;
 };
 
 #endif // SETTINGS_H

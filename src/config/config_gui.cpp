@@ -3,7 +3,6 @@
 #include "config/config_gui.h"
 #include "config/tooltips.h"
 #include "config/config_manager.h"
-#include "input/input_manager.h"
 #include "utils/logging.h"
 #include "imgui.h"
 #include <fstream>
@@ -18,11 +17,13 @@
 #include <sstream>   // For std::stringstream
 
 IniEditor::IniEditor(const std::string &filename, bool &showFlag, ConfigManager *configManager,
-                     AssetManager *assets, size_t *currentIndex, std::vector<Table> *tables)
-    : tempSettings_(configManager ? configManager->getSettings() : Settings{}), // Moved to the top
+                     IKeybindProvider* keybindProvider, AssetManager *assets,
+                     size_t *currentIndex, std::vector<Table> *tables)
+    : tempSettings_(configManager ? configManager->getSettings() : Settings{}),
       iniFilename(filename),
       showFlag(showFlag),
       configManager_(configManager),
+      keybindProvider_(keybindProvider),
       assets_(assets),
       currentIndex_(currentIndex),
       tables_(tables),
@@ -234,14 +235,33 @@ void IniEditor::drawGUI()
         {
             ImGui::Text("%s", kv.first.c_str());
             ImGui::SameLine(150);
-            if (explanations.find(kv.first) != explanations.end())
+            if (currentSection == "Keybinds")
             {
+                // Add green [?] for keybinds
+                ImGui::TextColored(ImVec4(0, 1, 0, 1), "[?]");
+                if (ImGui::IsItemHovered())
+                {
+                    std::string tooltip = keybindProvider_->getTooltip(kv.first);
+                    if (!tooltip.empty())
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
+                        ImGui::TextWrapped("%s", tooltip.c_str());
+                        ImGui::PopTextWrapPos();
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
+            else if (explanations.find(kv.first) != explanations.end())
+            {
+                // Existing tooltip logic for non-keybind sections
                 ImGui::TextColored(ImVec4(0, 1, 0, 1), "[?]");
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::BeginTooltip();
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
-                    ImGui::TextWrapped("%s", explanations[kv.first].c_str());
+                    std::string tooltip = explanations[kv.first];
+                    ImGui::TextWrapped("%s", tooltip.c_str());
                     ImGui::PopTextWrapPos();
                     ImGui::EndTooltip();
                 }
@@ -277,38 +297,7 @@ void IniEditor::drawGUI()
             }
             else if (currentSection == "Keybinds")
             {
-                SDL_Keycode keyCode = SDLK_UNKNOWN;
-                if (kv.first == "PreviousTable")
-                    keyCode = tempSettings_.keyPreviousTable;
-                else if (kv.first == "NextTable")
-                    keyCode = tempSettings_.keyNextTable;
-                else if (kv.first == "FastPrevTable")
-                    keyCode = tempSettings_.keyFastPrevTable;
-                else if (kv.first == "FastNextTable")
-                    keyCode = tempSettings_.keyFastNextTable;
-                else if (kv.first == "LaunchTable")
-                    keyCode = tempSettings_.keyLaunchTable;
-                else if (kv.first == "ToggleConfig")
-                    keyCode = tempSettings_.keyToggleConfig;
-                else if (kv.first == "Quit")
-                    keyCode = tempSettings_.keyQuit;
-                else if (kv.first == "ConfigSave")
-                    keyCode = tempSettings_.keyConfigSave;
-                else if (kv.first == "ConfigClose")
-                    keyCode = tempSettings_.keyConfigClose;
-                else if (kv.first == "ScreenshotMode")
-                    keyCode = tempSettings_.keyScreenshotMode;
-                else if (kv.first == "ScreenshotKey")
-                    keyCode = tempSettings_.keyScreenshotKey;
-                else if (kv.first == "ScreenshotQuit")
-                    keyCode = tempSettings_.keyScreenshotQuit;
-                else if (kv.first == "JumpNextLetter")
-                    keyCode = tempSettings_.keyJumpNextLetter;
-                else if (kv.first == "JumpPrevLetter")
-                    keyCode = tempSettings_.keyJumpPrevLetter;
-                else if (kv.first == "RandomTable")
-                    keyCode = tempSettings_.keyRandomTable;
-
+                SDL_Keycode keyCode = keybindProvider_->getKey(kv.first);
                 LOG_DEBUG("Displaying key for " << kv.first << ", keycode: " << keyCode);
                 const char *keyDisplayName = SDL_GetKeyName(keyCode);
                 if (keyDisplayName == nullptr || std::strcmp(keyDisplayName, "") == 0 || std::strcmp(keyDisplayName, "Unknown Key") == 0)
@@ -412,37 +401,7 @@ void IniEditor::handleEvent(const SDL_Event &event)
                     {
                         keyVal.second = capturedKeyName_;
                         hasChanges = true;
-
-                        if (capturingKeyName_ == "PreviousTable")
-                            tempSettings_.keyPreviousTable = keyCode;
-                        else if (capturingKeyName_ == "NextTable")
-                            tempSettings_.keyNextTable = keyCode;
-                        else if (capturingKeyName_ == "FastPrevTable")
-                            tempSettings_.keyFastPrevTable = keyCode;
-                        else if (capturingKeyName_ == "FastNextTable")
-                            tempSettings_.keyFastNextTable = keyCode;
-                        else if (capturingKeyName_ == "LaunchTable")
-                            tempSettings_.keyLaunchTable = keyCode;
-                        else if (capturingKeyName_ == "ToggleConfig")
-                            tempSettings_.keyToggleConfig = keyCode;
-                        else if (capturingKeyName_ == "Quit")
-                            tempSettings_.keyQuit = keyCode;
-                        else if (capturingKeyName_ == "ConfigSave")
-                            tempSettings_.keyConfigSave = keyCode;
-                        else if (capturingKeyName_ == "ConfigClose")
-                            tempSettings_.keyConfigClose = keyCode;
-                        else if (capturingKeyName_ == "ScreenshotMode")
-                            tempSettings_.keyScreenshotMode = keyCode;
-                        else if (capturingKeyName_ == "ScreenshotKey")
-                            tempSettings_.keyScreenshotKey = keyCode;
-                        else if (capturingKeyName_ == "ScreenshotQuit")
-                            tempSettings_.keyScreenshotQuit = keyCode;
-                        else if (capturingKeyName_ == "JumpNextLetter")
-                            tempSettings_.keyJumpNextLetter = keyCode;
-                        else if (capturingKeyName_ == "JumpPrevLetter")
-                            tempSettings_.keyJumpPrevLetter = keyCode;
-                        else if (capturingKeyName_ == "RandomTable")
-                            tempSettings_.keyRandomTable = keyCode;
+                        keybindProvider_->setKey(capturingKeyName_, keyCode);
                         break;
                     }
                 }

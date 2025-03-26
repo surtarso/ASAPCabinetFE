@@ -56,6 +56,7 @@ int App::initialize() {
     createWindowsAndRenderers();
     initializeImGui();
     loadResources();
+    initializeActionHandlers();
     LOG_DEBUG("Initialization complete");
     return 0;
 }
@@ -112,7 +113,7 @@ void App::runInitialConfig() {
     ImGui_ImplSDL2_InitForSDLRenderer(configWindow, configRenderer);
     ImGui_ImplSDLRenderer2_Init(configRenderer);
     bool showConfig = true;
-    IniEditor configEditor(configPath_, showConfig, configManager_.get());
+    IniEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
     while (true) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -268,21 +269,24 @@ void App::loadResources() {
         exit(1);
     }
 
+    // Populate letterIndex for JumpNextLetter/JumpPrevLetter
+    for (size_t i = 0; i < tables_.size(); ++i) {
+        if (!tables_[i].tableName.empty()) {
+            char firstChar = tables_[i].tableName[0];
+            char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
+            if (letterIndex.find(key) == letterIndex.end()) {
+                letterIndex[key] = i;
+            }
+        }
+    }
+
     assets_ = std::make_unique<AssetManager>(primaryRenderer_.get(), secondaryRenderer_.get(), font_.get());
     assets_->setConfigManager(configManager_.get());
-    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get());
-    inputManager_ = std::make_unique<InputManager>(settings);
-
-    LOG_DEBUG("Loaded keybinds: ToggleConfig=" << settings.keyToggleConfig
-              << ", NextTable=" << settings.keyNextTable
-              << ", PreviousTable=" << settings.keyPreviousTable
-              << ", FastNextTable=" << settings.keyFastNextTable
-              << ", FastPrevTable=" << settings.keyFastPrevTable
-              << ", LaunchTable=" << settings.keyLaunchTable
-              << ", Quit=" << settings.keyQuit);
-
+    inputManager_ = std::make_unique<InputManager>(configManager_->getKeybindManager()); // Moved up
+    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), inputManager_.get()); // Now uses initialized inputManager_
     configEditor_ = std::make_unique<IniEditor>(configPath_, showConfig_, configManager_.get(),
-                                                assets_.get(), &currentIndex_, &tables_);
+                                                &configManager_->getKeybindManager(), assets_.get(),
+                                                &currentIndex_, &tables_);
     renderer_ = std::make_unique<Renderer>(primaryRenderer_.get(), secondaryRenderer_.get());
 
     LOG_DEBUG("Loading initial table assets");
@@ -290,9 +294,167 @@ void App::loadResources() {
     LOG_DEBUG("Resources loaded");
 }
 
+void App::initializeActionHandlers() {
+    actionHandlers_["PreviousTable"] = [this]() {
+        LOG_DEBUG("Previous table triggered");
+        size_t newIndex = (currentIndex_ + tables_.size() - 1) % tables_.size();
+        if (newIndex != currentIndex_) {
+            assets_->loadTableAssets(newIndex, tables_);
+            currentIndex_ = newIndex;
+            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+        }
+    };
+
+    actionHandlers_["NextTable"] = [this]() {
+        LOG_DEBUG("Next table triggered");
+        size_t newIndex = (currentIndex_ + 1) % tables_.size();
+        if (newIndex != currentIndex_) {
+            assets_->loadTableAssets(newIndex, tables_);
+            currentIndex_ = newIndex;
+            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+        }
+    };
+
+    actionHandlers_["FastPrevTable"] = [this]() {
+        LOG_DEBUG("Fast previous table triggered");
+        size_t newIndex = (currentIndex_ + tables_.size() - 10) % tables_.size();
+        if (newIndex != currentIndex_) {
+            assets_->loadTableAssets(newIndex, tables_);
+            currentIndex_ = newIndex;
+            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+        }
+    };
+
+    actionHandlers_["FastNextTable"] = [this]() {
+        LOG_DEBUG("Fast next table triggered");
+        size_t newIndex = (currentIndex_ + 10) % tables_.size();
+        if (newIndex != currentIndex_) {
+            assets_->loadTableAssets(newIndex, tables_);
+            currentIndex_ = newIndex;
+            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+        }
+    };
+
+    actionHandlers_["JumpPrevLetter"] = [this]() {
+        LOG_DEBUG("Jump previous letter triggered");
+        char currentChar = tables_[currentIndex_].tableName[0];
+        char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
+        auto it = letterIndex.find(key);
+        if (it != letterIndex.begin()) {
+            auto prevIt = std::prev(it);
+            size_t newIndex = prevIt->second;
+            if (newIndex != currentIndex_) {
+                assets_->loadTableAssets(newIndex, tables_);
+                currentIndex_ = newIndex;
+                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            }
+        } else {
+            // Wrap to last entry (e.g., Z or 9)
+            auto lastIt = std::prev(letterIndex.end());
+            size_t newIndex = lastIt->second;
+            if (newIndex != currentIndex_) {
+                assets_->loadTableAssets(newIndex, tables_);
+                currentIndex_ = newIndex;
+                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            }
+        }
+    };
+
+    actionHandlers_["JumpNextLetter"] = [this]() {
+        LOG_DEBUG("Jump next letter triggered");
+        char currentChar = tables_[currentIndex_].tableName[0];
+        char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
+        auto it = letterIndex.find(key);
+        if (it != letterIndex.end() && std::next(it) != letterIndex.end()) {
+            size_t newIndex = std::next(it)->second;
+            if (newIndex != currentIndex_) {
+                assets_->loadTableAssets(newIndex, tables_);
+                currentIndex_ = newIndex;
+                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            }
+        } else {
+            // Wrap to first entry (e.g., 0 or A)
+            size_t newIndex = letterIndex.begin()->second;
+            if (newIndex != currentIndex_) {
+                assets_->loadTableAssets(newIndex, tables_);
+                currentIndex_ = newIndex;
+                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            }
+        }
+    };
+
+    actionHandlers_["RandomTable"] = [this]() {
+        LOG_DEBUG("Random table triggered");
+        if (!tables_.empty()) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<size_t> dist(0, tables_.size() - 1);
+            size_t newIndex = dist(gen);
+            if (newIndex != currentIndex_) {
+                assets_->loadTableAssets(newIndex, tables_);
+                currentIndex_ = newIndex;
+                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            }
+        }
+    };
+
+    actionHandlers_["LaunchTable"] = [this]() {
+        LOG_DEBUG("Launch table triggered");
+        if (tableLoadSound_) {
+            LOG_DEBUG("Playing table load sound");
+            Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
+        }
+        const Settings& settings = configManager_->getSettings();
+        std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
+                              settings.vpxSubCmd + " \"" + tables_[currentIndex_].vpxFile + "\" " +
+                              settings.vpxEndArgs;
+        LOG_DEBUG("Launching: " << command);
+        int result = std::system(command.c_str());
+        if (result != 0) {
+            std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
+        }
+    };
+
+    actionHandlers_["ScreenshotMode"] = [this]() {
+        LOG_DEBUG("Screenshot mode triggered");
+        if (tableLoadSound_) {
+            LOG_DEBUG("Playing table load sound for screenshot mode");
+            Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
+        }
+        screenshotManager_->launchScreenshotMode(tables_[currentIndex_].vpxFile);
+    };
+
+    actionHandlers_["ToggleConfig"] = [this]() {
+        showConfig_ = !showConfig_;
+        LOG_DEBUG("Toggled showConfig to: " << (showConfig_ ? 1 : 0));
+    };
+
+    actionHandlers_["Quit"] = [this]() {
+        LOG_DEBUG("Quit triggered");
+        quit_ = true;
+    };
+
+    actionHandlers_["ConfigSave"] = [this]() {
+        if (showConfig_) {
+            LOG_DEBUG("Config save triggered");
+            Settings& mutableSettings = const_cast<Settings&>(configManager_->getSettings());
+            mutableSettings = configEditor_->tempSettings_;
+            configManager_->saveConfig();
+            configManager_->notifyConfigChanged(*assets_, currentIndex_, tables_);
+            showConfig_ = false;
+        }
+    };
+
+    actionHandlers_["ConfigClose"] = [this]() {
+        if (showConfig_) {
+            LOG_DEBUG("Config close triggered");
+            showConfig_ = false;
+        }
+    };
+}
+
 void App::handleEvents() {
     LOG_DEBUG("Handling events");
-    const Settings& settings = configManager_->getSettings();
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         ImGui_ImplSDL2_ProcessEvent(&event);
@@ -303,135 +465,40 @@ void App::handleEvents() {
         }
         if (event.type == SDL_KEYDOWN) {
             LOG_DEBUG("Key pressed: " << SDL_GetKeyName(event.key.keysym.sym));
-            if (inputManager_->isToggleConfig(event)) {
-                showConfig_ = !showConfig_;
-                LOG_DEBUG("Toggled showConfig to: " << (showConfig_ ? 1 : 0));
-            } else if (inputManager_->isPreviousTable(event)) {
-                LOG_DEBUG("Previous table triggered");
-                size_t newIndex = (currentIndex_ + tables_.size() - 1) % tables_.size();
-                if (newIndex != currentIndex_) {
-                    assets_->loadTableAssets(newIndex, tables_);
-                    currentIndex_ = newIndex;
-                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                }
-            } else if (inputManager_->isNextTable(event)) {
-                LOG_DEBUG("Next table triggered");
-                size_t newIndex = (currentIndex_ + 1) % tables_.size();
-                if (newIndex != currentIndex_) {
-                    assets_->loadTableAssets(newIndex, tables_);
-                    currentIndex_ = newIndex;
-                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                }
-            } else if (inputManager_->isFastPrevTable(event)) {
-                LOG_DEBUG("Fast previous table triggered");
-                size_t newIndex = (currentIndex_ + tables_.size() - 10) % tables_.size();
-                if (newIndex != currentIndex_) {
-                    assets_->loadTableAssets(newIndex, tables_);
-                    currentIndex_ = newIndex;
-                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                }
-            } else if (inputManager_->isFastNextTable(event)) {
-                LOG_DEBUG("Fast next table triggered");
-                size_t newIndex = (currentIndex_ + 10) % tables_.size();
-                if (newIndex != currentIndex_) {
-                    assets_->loadTableAssets(newIndex, tables_);
-                    currentIndex_ = newIndex;
-                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                }
-            } else if (inputManager_->isJumpPrevLetter(event)) {
-                LOG_DEBUG("Jump previous letter triggered");
-                char currentChar = tables_[currentIndex_].tableName[0];
-                char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
-                auto it = letterIndex.find(key);
-                if (it != letterIndex.begin()) {
-                    auto prevIt = std::prev(it);
-                    size_t newIndex = prevIt->second;
-                    if (newIndex != currentIndex_) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                    }
-                } else {
-                    // Wrap to last entry (e.g., Z or 9)
-                    auto lastIt = std::prev(letterIndex.end());
-                    size_t newIndex = lastIt->second;
-                    if (newIndex != currentIndex_) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                    }
-                }
-            } else if (inputManager_->isJumpNextLetter(event)) {
-                LOG_DEBUG("Jump next letter triggered");
-                char currentChar = tables_[currentIndex_].tableName[0];
-                char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
-                auto it = letterIndex.find(key);
-                if (it != letterIndex.end() && std::next(it) != letterIndex.end()) {
-                    size_t newIndex = std::next(it)->second;
-                    if (newIndex != currentIndex_) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                    }
-                } else {
-                    // Wrap to first entry (e.g., 0 or A)
-                    size_t newIndex = letterIndex.begin()->second;
-                    if (newIndex != currentIndex_) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                    }
-                }
-            } else if (inputManager_->isRandomTable(event)) { 
-                LOG_DEBUG("Random table triggered");
-                if (!tables_.empty()) {
-                    std::random_device rd;
-                    std::mt19937 gen(rd());
-                    std::uniform_int_distribution<size_t> dist(0, tables_.size() - 1);
-                    size_t newIndex = dist(gen);
-                    if (newIndex != currentIndex_) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
-                    }
-                }
-            } else if (inputManager_->isLaunchTable(event)) {
-                LOG_DEBUG("Launch table triggered");
-                if (tableLoadSound_) {
-                    LOG_DEBUG("Playing table load sound");
-                    Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
-                }
-                std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
-                                      settings.vpxSubCmd + " \"" + tables_[currentIndex_].vpxFile + "\" " +
-                                      settings.vpxEndArgs;
-                LOG_DEBUG("Launching: " << command);
-                int result = std::system(command.c_str());
-                if (result != 0) {
-                    std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
-                }
-            } else if (inputManager_->isScreenshotMode(event)) {
-                LOG_DEBUG("Screenshot mode triggered");
-                if (tableLoadSound_) {
-                    LOG_DEBUG("Playing table load sound for screenshot mode");
-                    Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
-                }
-                screenshotManager_->launchScreenshotMode(tables_[currentIndex_].vpxFile);
-            } else if (inputManager_->isQuit(event)) {
-                LOG_DEBUG("Quit triggered");
-                quit_ = true;
-            }
+            bool eventConsumed = false;
             if (showConfig_) {
                 configEditor_->handleEvent(event);
-                if (inputManager_->isConfigSave(event)) {
-                    LOG_DEBUG("Config save triggered");
-                    Settings& mutableSettings = const_cast<Settings&>(settings);
-                    mutableSettings = configEditor_->tempSettings_;
-                    configManager_->saveConfig();
-                    configManager_->notifyConfigChanged(*assets_, currentIndex_, tables_);
-                    showConfig_ = false;
-                } else if (inputManager_->isConfigClose(event)) {
-                    LOG_DEBUG("Config close triggered");
-                    showConfig_ = false;
+                // If the config GUI is capturing a key, it consumes the event
+                if (configEditor_->isCapturingKey()) {
+                    eventConsumed = true;
+                }
+                // Allow ConfigSave and ConfigClose to be processed by App even when config GUI is open
+                if (inputManager_->isAction(event, "ConfigSave")) {
+                    auto it = actionHandlers_.find("ConfigSave");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                } else if (inputManager_->isAction(event, "ConfigClose")) {
+                    auto it = actionHandlers_.find("ConfigClose");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                } else {
+                    // If the config GUI is open but not capturing a key, assume it consumes the event
+                    // to prevent other actions (like Quit) from being processed
+                    eventConsumed = true;
+                }
+            }
+            if (!eventConsumed) {
+                for (const auto& action : configManager_->getKeybindManager().getActions()) {
+                    if (inputManager_->isAction(event, action)) {
+                        auto it = actionHandlers_.find(action);
+                        if (it != actionHandlers_.end()) {
+                            it->second();
+                        }
+                    }
                 }
             }
         }

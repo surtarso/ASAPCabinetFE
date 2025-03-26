@@ -8,12 +8,13 @@
 #include <thread>
 #include <vector>
 #include "config/config_manager.h"
+#include "input/input_manager.h"
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-ScreenshotManager::ScreenshotManager(const std::string& exeDir, ConfigManager* configManager) 
-    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), configManager_(configManager) {
+ScreenshotManager::ScreenshotManager(const std::string& exeDir, ConfigManager* configManager, InputManager* inputManager) 
+    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), configManager_(configManager), inputManager_(inputManager) {
     LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
     LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
 }
@@ -152,6 +153,10 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string backglassImage = tableFolder + "/" + settings.customBackglassImage;
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
+    // Access keybindings via KeybindManager (for display purposes)
+    SDL_Keycode screenshotKey = configManager_->getKeybindManager().getKey("ScreenshotKey");
+    SDL_Keycode screenshotQuit = configManager_->getKeybindManager().getKey("ScreenshotQuit");
+
     std::string logDir = exeDir_ + "logs";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
     LOG_DEBUG("Preparing logs with: " << mkdirCmd);
@@ -174,7 +179,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     LOG_DEBUG("Waiting 4s for VPX to fully initialize");
-    sleep(4); // Give VPX time to load and settle
+    sleep(4); // Wait for VPX to load
 
     if (!isWindowVisibleLog("Visual Pinball Player")) {
         LOG_DEBUG("Aborting screenshot mode - VPX window not found after 4s");
@@ -183,6 +188,10 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         return;
     }
     LOG_DEBUG("VPX playfield window detected after 4s.");
+
+    // Additional delay to ensure VPX has fully settled and stolen focus
+    LOG_DEBUG("Waiting an additional 1s for VPX to settle");
+    sleep(1);
 
     int windowWidth = 215;
     int windowHeight = 35;
@@ -218,8 +227,8 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     SDL_Color white = {255, 255, 255, 255};
-    std::string buttonText = "'" + keycodeToString(settings.keyScreenshotKey) + "' to Screenshot, '" +
-                             keycodeToString(settings.keyScreenshotQuit) + "' to Quit";
+    std::string buttonText = "'" + keycodeToString(screenshotKey) + "' to Screenshot, '" +
+                             keycodeToString(screenshotQuit) + "' to Quit";
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, buttonText.c_str(), white);
     if (!textSurface) {
         LOG_DEBUG("TTF_RenderText_Solid Error: " << TTF_GetError());
@@ -243,22 +252,25 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     SDL_RaiseWindow(window);
+    SDL_SetWindowInputFocus(window); // Explicitly set input focus
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) { // Increase to 5 attempts
         if (std::system(cmd.c_str()) == 0) {
             LOG_DEBUG("Focus stolen to VPX Screenshot window after " << i << " attempts.");
             break;
         }
         LOG_DEBUG("Focus steal attempt " << i << " failed.");
-        usleep(500000);
-        if (i == 2) {
-            LOG_DEBUG("Warning: Failed to steal focus to VPX Screenshot window after 3 attempts.");
+        SDL_RaiseWindow(window); // Try raising again
+        SDL_SetWindowInputFocus(window); // Try setting focus again
+        usleep(1000000); // Increase delay to 1 second
+        if (i == 4) {
+            LOG_DEBUG("Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
         }
     }
 
     SDL_Rect button = {0, 0, windowWidth, windowHeight};
-    LOG_DEBUG("Screenshot mode active. Press '" << keycodeToString(settings.keyScreenshotKey) 
-              << "' to capture, '" << keycodeToString(settings.keyScreenshotQuit) << "' to quit.");
+    LOG_DEBUG("Screenshot mode active. Press '" << keycodeToString(screenshotKey) 
+              << "' to capture, '" << keycodeToString(screenshotQuit) << "' to quit.");
 
     bool running = true;
     SDL_Event event;
@@ -268,20 +280,25 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 LOG_DEBUG("Quit via SDL_QUIT");
                 running = false;
             } else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == settings.keyScreenshotKey) {
-                    LOG_DEBUG("Capture key '" << keycodeToString(settings.keyScreenshotKey) << "' pressed");
-                    captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                    // No running = false here—keep SS mode alive
-                } else if (event.key.keysym.sym == settings.keyScreenshotQuit) {
-                    LOG_DEBUG("Quit key '" << keycodeToString(settings.keyScreenshotQuit) << "' pressed");
+                if (!inputManager_) {
+                    LOG_DEBUG("Error: inputManager_ is null, cannot process key events");
                     running = false;
+                    break;
+                }
+                if (inputManager_->isAction(event, "ScreenshotKey")) {
+                    LOG_DEBUG("Capture key '" << keycodeToString(screenshotKey) << "' pressed");
+                    captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
+                    // Keep screenshot mode alive
+                } else if (inputManager_->isAction(event, "ScreenshotQuit")) {
+                    LOG_DEBUG("Quit key '" << keycodeToString(screenshotQuit) << "' pressed");
+                    running = false; // Exit screenshot mode, which will kill VPX and return to main UI
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int x = event.button.x, y = event.button.y;
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_DEBUG("Capturing screenshots via mouse click...");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                    // No running = false here—keep SS mode alive
+                    // Keep screenshot mode alive
                 }
             }
         }

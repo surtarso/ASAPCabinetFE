@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "config/config_manager.h"
@@ -22,11 +23,14 @@ public:
     void run();
 
 private:
+    using ActionHandler = std::function<void()>;
+
     std::string exeDir_;
     std::string configPath_;
     bool quit_ = false;
     bool showConfig_ = false;
     size_t currentIndex_ = 0;
+    std::map<char, size_t> letterIndex; // For JumpNextLetter/JumpPrevLetter
 
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> primaryWindow_;
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> secondaryWindow_;
@@ -43,6 +47,7 @@ private:
     std::unique_ptr<AssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_;
     std::vector<Table> tables_;
+    std::map<std::string, ActionHandler> actionHandlers_;
 
     std::string getExecutableDir();
     bool isConfigValid();
@@ -51,6 +56,7 @@ private:
     void createWindowsAndRenderers();
     void initializeImGui();
     void loadResources();
+    void initializeActionHandlers();
     void handleEvents();
     void update();
     void render();
