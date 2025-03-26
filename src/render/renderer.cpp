@@ -38,7 +38,11 @@ void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // R
     if (assets.tableNameTexture) {
         nameRect.x = 10;
         nameRect.y = windowHeight - nameRect.h - 10;
-        SDL_SetRenderDrawColor(primaryRenderer_, 0, 0, 0, 128);
+        SDL_SetRenderDrawColor(primaryRenderer_,
+                                settings.fontBgColor.r,
+                                settings.fontBgColor.g,
+                                settings.fontBgColor.b,
+                                settings.fontBgColor.a);
         SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
         SDL_RenderFillRect(primaryRenderer_, &bgRect);
         SDL_RenderCopy(primaryRenderer_, assets.tableNameTexture.get(), nullptr, &nameRect);

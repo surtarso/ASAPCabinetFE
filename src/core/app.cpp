@@ -114,6 +114,7 @@ void App::runInitialConfig() {
     ImGui_ImplSDLRenderer2_Init(configRenderer);
     bool showConfig = true;
     IniEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
+    configEditor.setFillParentWindow(true);
     while (true) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -134,13 +135,18 @@ void App::runInitialConfig() {
         SDL_RenderClear(configRenderer);
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), configRenderer);
         SDL_RenderPresent(configRenderer);
-        if (!showConfig && isConfigValid()) {
-            break;
-        } else if (!showConfig) {
-            std::cerr << "Config still invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
-            showConfig = true;
+
+        if (!showConfig) {
+            if (isConfigValid()) {
+                LOG_DEBUG("Configuration is valid. Proceeding to main UI...");
+                break; // Exit the loop to proceed to App::run()
+            } else {
+                std::cerr << "Configuration is still invalid. Please ensure VPX.ExecutableCmd and VPX.TablesPath point to valid paths." << std::endl;
+                showConfig = true; // Reopen the config window
+            }
         }
     }
+    
     ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext(setupContext);
