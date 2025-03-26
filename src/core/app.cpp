@@ -43,7 +43,7 @@ App::~App() {
     LOG_DEBUG("App destructor completed");
 }
 
-int App::initialize(int argc, char *argv[]) {
+int App::initialize() {
     LOG_DEBUG("Initializing SDL");
     initializeSDL();
     configManager_ = std::make_unique<ConfigManager>(configPath_);

@@ -18,7 +18,7 @@ class App {
 public:
     App(const std::string& configPath);
     ~App();
-    int initialize(int argc, char *argv[]);
+    int initialize();
     void run();
 
 private:

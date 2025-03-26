@@ -9,11 +9,12 @@ Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRendere
     : primaryRenderer_(primaryRenderer), secondaryRenderer_(secondaryRenderer) {}
 
 void Renderer::render(AssetManager &assets, bool showConfig, IniEditor &configEditor) {
-    renderPrimaryWindow(assets, showConfig, configEditor);
+    (void)configEditor; // Mark as unused
+    renderPrimaryWindow(assets, showConfig);
     renderSecondaryWindow(assets);
 }
 
-void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig, IniEditor &configEditor) {
+void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // Removed configEditor parameter
     LOG_DEBUG("Rendering primary window, showConfig: " << (showConfig ? 1 : 0));
     const Settings &settings = assets.getConfigManager()->getSettings();
     int windowWidth, windowHeight;
