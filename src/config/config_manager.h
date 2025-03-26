@@ -2,11 +2,9 @@
 #define CONFIG_MANAGER_H
 
 #include "config/settings.h"
-#include "config/config_loader.h"
 #include <string>
 #include <memory>
 #include <vector>
-#include <cstddef>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -15,27 +13,21 @@ class Table;
 
 class ConfigManager {
 public:
-    ConfigManager(const std::string& configPath, SDL_Window* mainWindow,
-                  SDL_Renderer* mainRenderer, SDL_Window* playfieldWindow,
-                  SDL_Renderer* playfieldRenderer, std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>& font,
-                  AssetManager& assetManager, size_t& selectedTableIndex,
-                  std::vector<Table>& tables);
-    void loadConfig(const std::string& configFile);
-    const Settings& getSettings() const;
-    void notifyConfigChanged();
-    void applyConfigChanges();
+    ConfigManager(const std::string& configPath);
+    void loadConfig(); // Loads config from file
+    void saveConfig(); // Saves config to file
+    const Settings& getSettings() const; // Access settings
+    void applyConfigChanges(SDL_Window* mainWindow, SDL_Window* playfieldWindow); // Apply settings to windows
+    void notifyConfigChanged(AssetManager& assetManager, size_t& selectedTableIndex, std::vector<Table>& tables); // Reload assets
 
 private:
-    Settings settings;
-    std::string configPath_;
-    SDL_Window* mainWindow_;
-    SDL_Renderer* mainRenderer_;
-    SDL_Window* playfieldWindow_;
-    SDL_Renderer* playfieldRenderer_;
-    std::unique_ptr<TTF_Font, void(*)(TTF_Font*)>& font_;
-    AssetManager& assetManager_;
-    size_t& selectedTableIndex_;
-    std::vector<Table>& tables_;
+    Settings settings; // All config data stored here
+    std::string configPath_; // Path to config file
+
+    // Helper to parse config file into settings
+    void parseIniFile(const std::string& filename);
+    // Helper to write settings back to file
+    void writeIniFile(const std::string& filename);
 };
 
 #endif // CONFIG_MANAGER_H

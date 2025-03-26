@@ -1,11 +1,11 @@
-#ifndef TABLE_UTILS_H
-#define TABLE_UTILS_H
+#ifndef TABLE_MANAGER_H
+#define TABLE_MANAGER_H
 
 #include <string>
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "config/config_loader.h"
+#include "config/settings.h" // Change to settings.h
 
 namespace fs = std::filesystem;
 
@@ -22,10 +22,10 @@ struct Table {
     std::string dmdVideo;
 };
 
-extern std::map<char, int> letterIndex; // Declaration only
+extern std::map<char, int> letterIndex;
 
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath);
 std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath);
-std::vector<Table> loadTableList();
+std::vector<Table> loadTableList(const Settings& settings); // Update signature
 
 #endif

@@ -3,52 +3,56 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include "render/video_player.h"
-#include "table/asset_manager.h"
-#include "config/config_loader.h"
 #include <functional>
+#include "render/video_player.h"
+#include "table/table_manager.h"
+#include <memory>
 
-enum class TransitionState { IDLE, FADING_OUT, FADING_IN };
+class AssetManager;
 
 class TransitionManager {
 public:
     TransitionManager();
-    ~TransitionManager(); // Added destructor to clean up textures
-    void startTransition(VideoContext* tableVideoPlayer, 
-                        VideoContext* backglassVideoPlayer, 
-                        VideoContext* dmdVideoPlayer, 
-                        Mix_Chunk* tableChangeSound,
-                        SDL_Renderer* primaryRenderer,
-                        SDL_Renderer* secondaryRenderer); // Added renderers for frame capture
+    void startTransition(VideoContext* tableVideo, VideoContext* backglassVideo,
+                         VideoContext* dmdVideo, Mix_Chunk* tableSound,
+                         SDL_Renderer* primaryRenderer, SDL_Renderer* secondaryRenderer,
+                         AssetManager& assets, size_t newIndex, const std::vector<Table>& tables);
     void updateTransition(Uint32 currentTime, AssetManager& assets);
-    void loadNewContent(std::function<void()> loadCallback);
+    void loadNewContent(std::function<void()> loadFunction);
     bool isTransitionActive() const;
-    bool shouldMaskFrame() const;
+    Uint32 duration() const { return duration_; }
 
-    // Accessors for rendering
-    TransitionState getState() const { return state; }
-    SDL_Texture* getCapturedTableFrame() const { return capturedTableFrame; }
-    SDL_Texture* getCapturedBackglassFrame() const { return capturedBackglassFrame; }
-    SDL_Texture* getCapturedDmdFrame() const { return capturedDmdFrame; }
+    SDL_Texture* getNewTableTexture() const { return newTableTexture_.get(); }
+    SDL_Texture* getNewWheelTexture() const { return newWheelTexture_.get(); }
+    SDL_Texture* getNewBackglassTexture() const { return newBackglassTexture_.get(); }
+    SDL_Texture* getNewDmdTexture() const { return newDmdTexture_.get(); }
+    SDL_Texture* getNewTableNameTexture() const { return newTableNameTexture_.get(); }
+    SDL_Rect getNewTableNameRect() const { return newTableNameRect_; }
+    VideoContext* getNewTableVideo() const { return newTableVideo_; }
+    VideoContext* getNewBackglassVideo() const { return newBackglassVideo_; }
+    VideoContext* getNewDmdVideo() const { return newDmdVideo_; }
 
 private:
-    TransitionState state;
-    Uint32 startTime;
-    Uint8 currentAlpha;
-    bool loadPending;
-    bool maskFrame;
+    bool transitionActive_;
+    Uint32 startTime_;
+    Uint32 duration_;
+    VideoContext* oldTableVideo_;
+    VideoContext* oldBackglassVideo_;
+    VideoContext* oldDmdVideo_;
+    Mix_Chunk* tableSound_;
+    SDL_Renderer* primaryRenderer_;
+    SDL_Renderer* secondaryRenderer_;
+    std::function<void()> loadFunction_;
 
-    // Captured frames for smooth transitions
-    SDL_Texture* capturedTableFrame;
-    SDL_Texture* capturedBackglassFrame;
-    SDL_Texture* capturedDmdFrame;
-
-    // Renderers for frame capture
-    SDL_Renderer* primaryRenderer;
-    SDL_Renderer* secondaryRenderer;
-
-    // Helper to capture a frame from a video player
-    SDL_Texture* captureFrame(VideoContext* videoPlayer, SDL_Renderer* renderer);
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> newTableTexture_;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> newWheelTexture_;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> newBackglassTexture_;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> newDmdTexture_;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> newTableNameTexture_;
+    SDL_Rect newTableNameRect_;
+    VideoContext* newTableVideo_;
+    VideoContext* newBackglassVideo_;
+    VideoContext* newDmdVideo_;
 };
 
 #endif // TRANSITION_MANAGER_H

@@ -4,7 +4,10 @@
 
 void* lock(void* data, void** pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
-    SDL_LockMutex(ctx->mutex);
+    if (SDL_LockMutex(ctx->mutex) != 0) {
+        LOG_DEBUG("Lock mutex failed: " << SDL_GetError());
+        return nullptr;
+    }
     *pixels = ctx->pixels;
     return nullptr;
 }
@@ -17,8 +20,10 @@ void unlock(void* data, void* id, void* const* pixels) {
 }
 
 void display(void* data, void* id) {
-    (void)data;  // Silence warning
     (void)id;    // Silence warning
+    VideoContext* ctx = static_cast<VideoContext*>(data);
+    ctx->isPlaying = true; // Mark as playing once frames are being delivered
+    LOG_DEBUG("Display callback triggered for video context: " << ctx);
 }
 
 VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, int width, int height) {
@@ -26,6 +31,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     ctx->renderer = renderer;
     ctx->width = width;
     ctx->height = height;
+    ctx->isPlaying = false; // Initially not playing
     ctx->mutex = SDL_CreateMutex();
     if (!ctx->mutex) {
         LOG_DEBUG("Failed to create mutex: " << SDL_GetError());
@@ -33,9 +39,8 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
         return nullptr;
     }
 
-    // Add --loop to VLC arguments
     const char* args[] = {"--quiet", "--loop"};
-    ctx->instance = libvlc_new(2, args);  // 2 args now: --quiet and --loop
+    ctx->instance = libvlc_new(2, args);
     if (!ctx->instance) {
         LOG_DEBUG("Failed to create VLC instance");
         SDL_DestroyMutex(ctx->mutex);
@@ -45,7 +50,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
 
     libvlc_media_t* media = libvlc_media_new_path(ctx->instance, path.c_str());
     if (!media) {
-        LOG_DEBUG("Failed to create VLC media");
+        LOG_DEBUG("Failed to create VLC media for path: " << path);
         libvlc_release(ctx->instance);
         SDL_DestroyMutex(ctx->mutex);
         delete ctx;
@@ -89,8 +94,19 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
 
     libvlc_video_set_callbacks(ctx->player, lock, unlock, display, ctx);
     libvlc_video_set_format(ctx->player, "RV32", width, height, ctx->pitch);
-    libvlc_media_player_play(ctx->player);
+    if (libvlc_media_player_play(ctx->player) != 0) {
+        LOG_DEBUG("Failed to start VLC playback");
+        SDL_DestroyTexture(ctx->texture);
+        libvlc_media_player_release(ctx->player);
+        libvlc_release(ctx->instance);
+        SDL_DestroyMutex(ctx->mutex);
+        free(ctx->pixels);
+        delete ctx;
+        return nullptr;
+    }
 
+    LOG_DEBUG("Video player setup: player=" << ctx->player << ", texture=" << ctx->texture
+              << ", pixels=" << ctx->pixels << ", mutex=" << ctx->mutex);
     return ctx;
 }
 
@@ -107,16 +123,21 @@ void cleanupVideoContext(VideoContext* ctx) {
     delete ctx;
 }
 
-void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer) {
-    (void)renderer;  // Silence warning
-    if (video && video->texture && video->pixels && video->mutex && video->player) {
-        if (SDL_LockMutex(video->mutex) == 0) {
-            if (SDL_UpdateTexture(video->texture, nullptr, video->pixels, video->pitch) != 0) {
-                LOG_DEBUG("SDL_UpdateTexture failed: " << SDL_GetError());
-            }
-            SDL_UnlockMutex(video->mutex);
-        } else {
-            LOG_DEBUG("SDL_LockMutex failed: " << SDL_GetError());
+void updateVideoTexture(VideoContext* video) {
+    if (!video || !video->texture || !video->pixels || !video->mutex || !video->player) {
+        LOG_DEBUG("Invalid video context in updateVideoTexture");
+        return;
+    }
+    if (!video->isPlaying) {
+        LOG_DEBUG("Video not yet playing, skipping update");
+        return;
+    }
+    if (SDL_LockMutex(video->mutex) == 0) {
+        if (SDL_UpdateTexture(video->texture, nullptr, video->pixels, video->pitch) != 0) {
+            LOG_DEBUG("SDL_UpdateTexture failed: " << SDL_GetError());
         }
+        SDL_UnlockMutex(video->mutex);
+    } else {
+        LOG_DEBUG("SDL_LockMutex failed: " << SDL_GetError());
     }
 }

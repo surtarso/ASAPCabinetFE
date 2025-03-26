@@ -1,19 +1,19 @@
 #include "core/app.h"
-#include "version.h" // Include version.h for PROJECT_VERSION
+#include "version.h"
 #include <string>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    // Check for --version flag before creating App
     if (argc == 2 && std::string(argv[1]) == "--version") {
         std::cout << "ASAPCabinetFE version " << PROJECT_VERSION << std::endl;
-        return 0; // Exit immediately
+        return 0;
     }
 
-    App app;
+    App app("config.ini");
     int result = app.initialize(argc, argv);
-    if (result == 0) {
-        return 0; // This case is now redundant but kept for future flags
+    if (result != 0) { // Exit only on failure
+        std::cerr << "Initialization failed with code " << result << std::endl;
+        return 1;
     }
     app.run();
     return 0;
