@@ -289,10 +289,22 @@ void IniEditor::drawGUI()
                     keyCode = tempSettings_.keyConfigClose;
                 else if (kv.first == "ScreenshotMode")
                     keyCode = tempSettings_.keyScreenshotMode;
+                else if (kv.first == "ScreenshotKey")
+                    keyCode = tempSettings_.keyScreenshotKey;
+                else if (kv.first == "ScreenshotQuit")
+                    keyCode = tempSettings_.keyScreenshotQuit;
+                else if (kv.first == "JumpNextLetter")
+                    keyCode = tempSettings_.keyJumpNextLetter;
+                else if (kv.first == "JumpPrevLetter")
+                    keyCode = tempSettings_.keyJumpPrevLetter;
 
+                LOG_DEBUG("Displaying key for " << kv.first << ", keycode: " << keyCode);
                 const char *keyDisplayName = SDL_GetKeyName(keyCode);
-                if (keyCode == SDLK_UNKNOWN)
-                    keyDisplayName = "Unknown Key";
+                if (keyDisplayName == nullptr || std::strcmp(keyDisplayName, "") == 0 || std::strcmp(keyDisplayName, "Unknown Key") == 0) {
+                    // Fallback: Use the ini value if SDL_GetKeyName fails
+                    keyDisplayName = kv.second.c_str();
+                    LOG_DEBUG("SDL_GetKeyName failed for " << kv.first << ", falling back to ini value: " << keyDisplayName);
+                }
 
                 ImGui::Text("%s", keyDisplayName);
                 ImGui::SameLine(350);
@@ -409,6 +421,14 @@ void IniEditor::handleEvent(const SDL_Event &event)
                             tempSettings_.keyConfigClose = keyCode;
                         else if (capturingKeyName_ == "ScreenshotMode")
                             tempSettings_.keyScreenshotMode = keyCode;
+                        else if (capturingKeyName_ == "ScreenshotKey")
+                            tempSettings_.keyScreenshotKey = keyCode;
+                        else if (capturingKeyName_ == "ScreenshotQuit")
+                            tempSettings_.keyScreenshotQuit = keyCode;
+                        else if (capturingKeyName_ == "JumpNextLetter")
+                            tempSettings_.keyJumpNextLetter = keyCode;
+                        else if (capturingKeyName_ == "JumpPrevLetter")
+                            tempSettings_.keyJumpPrevLetter = keyCode;
                         break;
                     }
                 }

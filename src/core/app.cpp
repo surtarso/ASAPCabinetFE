@@ -337,6 +337,50 @@ void App::handleEvents() {
                     currentIndex_ = newIndex;
                     if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
                 }
+            } else if (inputManager_->isJumpPrevLetter(event)) {
+                LOG_DEBUG("Jump previous letter triggered");
+                char currentChar = tables_[currentIndex_].tableName[0];
+                char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
+                auto it = letterIndex.find(key);
+                if (it != letterIndex.begin()) {
+                    auto prevIt = std::prev(it);
+                    size_t newIndex = prevIt->second;
+                    if (newIndex != currentIndex_) {
+                        assets_->loadTableAssets(newIndex, tables_);
+                        currentIndex_ = newIndex;
+                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                    }
+                } else {
+                    // Wrap to last entry (e.g., Z or 9)
+                    auto lastIt = std::prev(letterIndex.end());
+                    size_t newIndex = lastIt->second;
+                    if (newIndex != currentIndex_) {
+                        assets_->loadTableAssets(newIndex, tables_);
+                        currentIndex_ = newIndex;
+                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                    }
+                }
+            } else if (inputManager_->isJumpNextLetter(event)) {
+                LOG_DEBUG("Jump next letter triggered");
+                char currentChar = tables_[currentIndex_].tableName[0];
+                char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
+                auto it = letterIndex.find(key);
+                if (it != letterIndex.end() && std::next(it) != letterIndex.end()) {
+                    size_t newIndex = std::next(it)->second;
+                    if (newIndex != currentIndex_) {
+                        assets_->loadTableAssets(newIndex, tables_);
+                        currentIndex_ = newIndex;
+                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                    }
+                } else {
+                    // Wrap to first entry (e.g., 0 or A)
+                    size_t newIndex = letterIndex.begin()->second;
+                    if (newIndex != currentIndex_) {
+                        assets_->loadTableAssets(newIndex, tables_);
+                        currentIndex_ = newIndex;
+                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                    }
+                }
             } else if (inputManager_->isLaunchTable(event)) {
                 LOG_DEBUG("Launch table triggered");
                 if (tableLoadSound_) {

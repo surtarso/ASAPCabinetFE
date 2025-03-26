@@ -1,6 +1,6 @@
 #include "table/table_manager.h"
 #include "utils/logging.h"
-#include "config/config_manager.h" // Add this to access ConfigManager
+#include "config/config_manager.h"
 #include <algorithm>
 #include <iostream>
 #include <cctype>
@@ -30,11 +30,11 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
         return "";
 }
 
-std::vector<Table> loadTableList(const Settings& settings) { // Take Settings as parameter
+std::vector<Table> loadTableList(const Settings& settings) {
     std::vector<Table> tables;
     if (settings.vpxTablesPath.empty() || !fs::exists(settings.vpxTablesPath)) {
         LOG_DEBUG("Invalid or empty VPX tables path: " << settings.vpxTablesPath);
-        return tables; // Return empty list if path is invalid
+        return tables;
     }
     for (const auto& entry : fs::recursive_directory_iterator(settings.vpxTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
@@ -57,9 +57,12 @@ std::vector<Table> loadTableList(const Settings& settings) { // Take Settings as
     });
     letterIndex.clear();
     for (size_t i = 0; i < tables.size(); ++i) {
-        char firstLetter = toupper(tables[i].tableName[0]);
-        if (letterIndex.find(firstLetter) == letterIndex.end()) {
-            letterIndex[firstLetter] = i;
+        char firstChar = tables[i].tableName[0]; // Raw first char, no toupper yet
+        if (std::isdigit(firstChar) || std::isalpha(firstChar)) {
+            char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
+            if (letterIndex.find(key) == letterIndex.end()) {
+                letterIndex[key] = i;
+            }
         }
     }
     return tables;
