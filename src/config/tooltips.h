@@ -133,66 +133,11 @@ namespace Tooltips {
             {"DmdHeight",
                 "Height of the DMD media in pixels."
             },
-
-            // Keybinds Section Tooltips
-            {"PreviousTable",
-                "Key to select the previous table in the list."  
-            },
-            {"NextTable",
-                "Key to select the next table in the list."
-            },
-            {"FastPrevTable",
-                "Key to quickly jump back 10 tables."  
-            },
-            {"FastNextTable",
-                "Key to quickly jump foward 10 tables."   
-            },
-            {"JumpNextLetter",
-                "Key to jump to the next table starting with a different letter." 
-            },
-            {"JumpPrevLetter",
-                "Key to jump to the previous table starting with a different letter." 
-            },
-            {"LaunchTable",
-                "Key to launch the selected table." 
-            },
-            {"ToggleConfig",
-                "Key to open or close the configuration menu." 
-            },
-            {"Quit",
-                "Key to exit menus and application."
-            },
-            {"ConfigSave",
-                "Key to save changes in the configuration menu."
-            },
-            {"ConfigClose",
-                "Key to close the configuration menu without saving."
-            },
-            {"ScreenshotMode",
-                "Key to launch a table in screenshot mode."
-            },
-            {"ScreenshotKey",
-                "Key to take a screenshot while in screenshot mode."
-            },
-            {"ScreenshotQuit",
-                "Key to quit screenshot mode."
-            },
-            {"RandomTable",
-                "Key to jump to a random table."
-            },
             
             // Internal
             {"SubCmd",
                 "VPinballX internal command to play .vpx tables.\n"
                 "Use VPinballX --help command line menu to see more."
-            },
-            {"FadeTargetAlpha",
-                "Goes from 0 (transparent) to 255.\n"
-                "Use 128 for ~50 percent alpha."
-            },
-            {"FadeDurationMs",
-                "Table images switch transition time in ms.\n"
-                "Set to 1 if using videos."
             },
         };
     }

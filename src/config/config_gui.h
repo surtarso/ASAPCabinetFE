@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include "SDL.h"
 #include "config_manager.h"
+#include "keybinds/ikeybind_provider.h"
 
 struct ConfigSection {
     std::vector<std::pair<std::string, std::string>> keyValues; // Preserve order
@@ -20,9 +21,8 @@ class IniEditor {
 public:
     // Main constructor for full app
     IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
-              AssetManager* assets = nullptr, size_t* currentIndex = nullptr, std::vector<Table>* tables = nullptr);
-    // Legacy constructor for initial config (no assets yet)
-    // IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager); // Not needed, handled by default args
+              IKeybindProvider* keybindProvider, AssetManager* assets = nullptr,
+              size_t* currentIndex = nullptr, std::vector<Table>* tables = nullptr);
     ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
@@ -34,6 +34,7 @@ private:
     std::string iniFilename;
     bool& showFlag;
     ConfigManager* configManager_;
+    IKeybindProvider* keybindProvider_; // For keybind management
     AssetManager* assets_;           // Pointer to App's assets (optional)
     size_t* currentIndex_;           // Pointer to App's currentIndex (optional)
     std::vector<Table>* tables_;     // Pointer to App's tables (optional)

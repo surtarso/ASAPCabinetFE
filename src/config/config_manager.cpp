@@ -22,6 +22,14 @@ const Settings& ConfigManager::getSettings() const {
     return settings;
 }
 
+KeybindManager& ConfigManager::getKeybindManager() {
+    return keybindManager_;
+}
+
+const KeybindManager& ConfigManager::getKeybindManager() const {
+    return keybindManager_;
+}
+
 void ConfigManager::applyConfigChanges(SDL_Window* mainWindow, SDL_Window* playfieldWindow) {
     SDL_SetWindowFullscreen(mainWindow, settings.mainWindowWidth == 0 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SDL_SetWindowSize(mainWindow, settings.mainWindowWidth, settings.mainWindowHeight);
@@ -124,27 +132,8 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
     settings.tableLoadSound = config["Internal"]["TableLoadSound"].empty() ? "snd/table_load.mp3" : config["Internal"]["TableLoadSound"];
     
-    // Keybinds
-    settings.keyPreviousTable = SDL_GetKeyFromName(config["Keybinds"]["PreviousTable"].empty() ? "Left Shift" : config["Keybinds"]["PreviousTable"].c_str());
-    settings.keyNextTable = SDL_GetKeyFromName(config["Keybinds"]["NextTable"].empty() ? "Right Shift" : config["Keybinds"]["NextTable"].c_str());
-    settings.keyFastPrevTable = SDL_GetKeyFromName(config["Keybinds"]["FastPrevTable"].empty() ? "Left Ctrl" : config["Keybinds"]["FastPrevTable"].c_str());
-    settings.keyFastNextTable = SDL_GetKeyFromName(config["Keybinds"]["FastNextTable"].empty() ? "Right Ctrl" : config["Keybinds"]["FastNextTable"].c_str());
-    settings.keyJumpNextLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpNextLetter"].empty() ? "/" : config["Keybinds"]["JumpNextLetter"].c_str());
-    LOG_DEBUG("JumpNextLetter keycode: " << settings.keyJumpNextLetter);
-    settings.keyJumpPrevLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpPrevLetter"].empty() ? "Z" : config["Keybinds"]["JumpPrevLetter"].c_str());
-    LOG_DEBUG("JumpPrevLetter keycode: " << settings.keyJumpPrevLetter);
-    settings.keyRandomTable = SDL_GetKeyFromName(config["Keybinds"]["RandomTable"].empty() ? "R" : config["Keybinds"]["RandomTable"].c_str());
-    settings.keyLaunchTable = SDL_GetKeyFromName(config["Keybinds"]["LaunchTable"].empty() ? "Return" : config["Keybinds"]["LaunchTable"].c_str());
-    settings.keyToggleConfig = SDL_GetKeyFromName(config["Keybinds"]["ToggleConfig"].empty() ? "C" : config["Keybinds"]["ToggleConfig"].c_str());
-    settings.keyQuit = SDL_GetKeyFromName(config["Keybinds"]["Quit"].empty() ? "Q" : config["Keybinds"]["Quit"].c_str());
-    settings.keyConfigSave = SDL_GetKeyFromName(config["Keybinds"]["ConfigSave"].empty() ? "Space" : config["Keybinds"]["ConfigSave"].c_str());
-    settings.keyConfigClose = SDL_GetKeyFromName(config["Keybinds"]["ConfigClose"].empty() ? "Q" : config["Keybinds"]["ConfigClose"].c_str());
-    settings.keyScreenshotMode = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotMode"].empty() ? "S" : config["Keybinds"]["ScreenshotMode"].c_str());
-    LOG_DEBUG("ScreenshotMode keycode: " << settings.keyScreenshotMode);
-    settings.keyScreenshotKey = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotKey"].empty() ? "S" : config["Keybinds"]["ScreenshotKey"].c_str());
-    LOG_DEBUG("ScreenshotKey keycode: " << settings.keyScreenshotKey);
-    settings.keyScreenshotQuit = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotQuit"].empty() ? "Q" : config["Keybinds"]["ScreenshotQuit"].c_str());
-    LOG_DEBUG("ScreenshotQuit keycode: " << settings.keyScreenshotQuit);
+    // Load keybindings
+    keybindManager_.loadKeybinds(config["Keybinds"]);
 }
 
 void ConfigManager::writeIniFile(const std::string& filename) {
@@ -197,22 +186,10 @@ void ConfigManager::writeIniFile(const std::string& filename) {
     file << "FontColor=" << (int)settings.fontColor.r << "," << (int)settings.fontColor.g << "," << (int)settings.fontColor.b << "," << (int)settings.fontColor.a << "\n";
     file << "FontBgColor=" << (int)settings.fontBgColor.r << "," << (int)settings.fontBgColor.g << "," << (int)settings.fontBgColor.b << "," << (int)settings.fontBgColor.a << "\n";
     file << "Size=" << settings.fontSize << "\n";
-    file << "\n[Keybinds]\n";
-    file << "PreviousTable=" << SDL_GetKeyName(settings.keyPreviousTable) << "\n";
-    file << "NextTable=" << SDL_GetKeyName(settings.keyNextTable) << "\n";
-    file << "FastPrevTable=" << SDL_GetKeyName(settings.keyFastPrevTable) << "\n";
-    file << "FastNextTable=" << SDL_GetKeyName(settings.keyFastNextTable) << "\n";
-    file << "JumpNextLetter=" << SDL_GetKeyName(settings.keyJumpNextLetter) << "\n";
-    file << "JumpPrevLetter=" << SDL_GetKeyName(settings.keyJumpPrevLetter) << "\n";
-    file << "RandomTable=" << SDL_GetKeyName(settings.keyRandomTable) << "\n";
-    file << "LaunchTable=" << SDL_GetKeyName(settings.keyLaunchTable) << "\n";
-    file << "ToggleConfig=" << SDL_GetKeyName(settings.keyToggleConfig) << "\n";
-    file << "Quit=" << SDL_GetKeyName(settings.keyQuit) << "\n";
-    file << "ConfigSave=" << SDL_GetKeyName(settings.keyConfigSave) << "\n";
-    file << "ConfigClose=" << SDL_GetKeyName(settings.keyConfigClose) << "\n";
-    file << "ScreenshotMode=" << SDL_GetKeyName(settings.keyScreenshotMode) << "\n";
-    file << "ScreenshotKey=" << SDL_GetKeyName(settings.keyScreenshotKey) << "\n";
-    file << "ScreenshotQuit=" << SDL_GetKeyName(settings.keyScreenshotQuit) << "\n";
+    file << "\n";
+
+    // Save keybindings
+    keybindManager_.saveKeybinds(file);
 
     file.close();
 }

@@ -20,6 +20,7 @@ set(SOURCES
     src/config/config_gui.cpp
     src/config/config_manager.cpp
     src/input/input_manager.cpp
+    src/keybinds/keybind_manager.cpp
     src/table/asset_manager.cpp
     src/table/table_manager.cpp
     src/render/renderer.cpp
@@ -42,6 +43,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src/capture
     src/config
     src/input
+    src/keybinds
     src/table
     src/render
     src/utils
