@@ -5,7 +5,8 @@ InputManager::InputManager(const Settings& settings) : settings_(settings) {}
 
 bool InputManager::isKeyPressed(const SDL_Event& event, SDL_Keycode key) const {
     bool match = (event.type == SDL_KEYDOWN && event.key.keysym.sym == key);
-    LOG_DEBUG("Checking key: " << SDL_GetKeyName(event.key.keysym.sym) << " against " << SDL_GetKeyName(key) << ", Match=" << match);
+    LOG_DEBUG("Checking key: " << SDL_GetKeyName(event.key.keysym.sym) << " (keycode: " << event.key.keysym.sym 
+              << ") against " << SDL_GetKeyName(key) << " (keycode: " << key << "), Match=" << match);
     return match;
 }
 

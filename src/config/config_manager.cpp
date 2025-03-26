@@ -38,16 +38,11 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename << ". Using defaults.");
-        // Set defaults explicitly (ini file takes over)
         settings.vpxTablesPath = "/home/tarso/Games/vpinball/build/tables/";
         settings.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
         settings.vpxSubCmd = "-Play";
         settings.tableChangeSound = "snd/table_change.mp3";
         settings.tableLoadSound = "snd/table_load.mp3";
-        // Rest of defaults...
-        settings.fadeDurationMs = 1;
-        settings.fadeTargetAlpha = 255;
-        settings.preloadCount = 3; // Add default here
         return;
     }
 
@@ -67,6 +62,10 @@ void ConfigManager::parseIniFile(const std::string& filename) {
                 std::string value = trimmed.substr(eq + 1);
                 key.erase(key.find_last_not_of(" \t") + 1);
                 value.erase(0, value.find_first_not_of(" \t"));
+                // Normalize "Slash" to "/" for consistency
+                if (key == "JumpNextLetter" && value == "Slash") {
+                    value = "/";
+                }
                 config[currentSection][key] = value;
             }
         }
@@ -121,29 +120,30 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     sscanf(fontBgColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings.fontBgColor.r, &settings.fontBgColor.g, &settings.fontBgColor.b, &settings.fontBgColor.a);
     settings.fontSize = std::stoi(config["TitleDisplay"]["Size"].empty() ? "28" : config["TitleDisplay"]["Size"]);
 
-    // Fade and sound settings
-    settings.preloadCount = std::stoi(config["Internal"]["PreloadCount"].empty() ? "3" : config["Internal"]["PreloadCount"]);
-    settings.fadeDurationMs = std::stoi(config["Internal"]["FadeDurationMs"].empty() ? "1" : config["Internal"]["FadeDurationMs"]);
-    settings.fadeTargetAlpha = std::stoi(config["Internal"]["FadeTargetAlpha"].empty() ? "255" : config["Internal"]["FadeTargetAlpha"]);
+    // Sound settings
     settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
     settings.tableLoadSound = config["Internal"]["TableLoadSound"].empty() ? "snd/table_load.mp3" : config["Internal"]["TableLoadSound"];
     
     // Keybinds
-    settings.keyPreviousTable = SDL_GetKeyFromName(config["Keybinds"]["PreviousTable"].empty() ? "LSHIFT" : config["Keybinds"]["PreviousTable"].c_str());
-    settings.keyNextTable = SDL_GetKeyFromName(config["Keybinds"]["NextTable"].empty() ? "RSHIFT" : config["Keybinds"]["NextTable"].c_str());
-    settings.keyFastPrevTable = SDL_GetKeyFromName(config["Keybinds"]["FastPrevTable"].empty() ? "LCTRL" : config["Keybinds"]["FastPrevTable"].c_str());
-    settings.keyFastNextTable = SDL_GetKeyFromName(config["Keybinds"]["FastNextTable"].empty() ? "RCTRL" : config["Keybinds"]["FastNextTable"].c_str());
-    settings.keyJumpNextLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpNextLetter"].empty() ? "SLASH" : config["Keybinds"]["JumpNextLetter"].c_str());
+    settings.keyPreviousTable = SDL_GetKeyFromName(config["Keybinds"]["PreviousTable"].empty() ? "Left Shift" : config["Keybinds"]["PreviousTable"].c_str());
+    settings.keyNextTable = SDL_GetKeyFromName(config["Keybinds"]["NextTable"].empty() ? "Right Shift" : config["Keybinds"]["NextTable"].c_str());
+    settings.keyFastPrevTable = SDL_GetKeyFromName(config["Keybinds"]["FastPrevTable"].empty() ? "Left Ctrl" : config["Keybinds"]["FastPrevTable"].c_str());
+    settings.keyFastNextTable = SDL_GetKeyFromName(config["Keybinds"]["FastNextTable"].empty() ? "Right Ctrl" : config["Keybinds"]["FastNextTable"].c_str());
+    settings.keyJumpNextLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpNextLetter"].empty() ? "/" : config["Keybinds"]["JumpNextLetter"].c_str());
+    LOG_DEBUG("JumpNextLetter keycode: " << settings.keyJumpNextLetter);
     settings.keyJumpPrevLetter = SDL_GetKeyFromName(config["Keybinds"]["JumpPrevLetter"].empty() ? "Z" : config["Keybinds"]["JumpPrevLetter"].c_str());
-    settings.keyLaunchTable = SDL_GetKeyFromName(config["Keybinds"]["LaunchTable"].empty() ? "RETURN" : config["Keybinds"]["LaunchTable"].c_str());
+    LOG_DEBUG("JumpPrevLetter keycode: " << settings.keyJumpPrevLetter);
+    settings.keyLaunchTable = SDL_GetKeyFromName(config["Keybinds"]["LaunchTable"].empty() ? "Return" : config["Keybinds"]["LaunchTable"].c_str());
     settings.keyToggleConfig = SDL_GetKeyFromName(config["Keybinds"]["ToggleConfig"].empty() ? "C" : config["Keybinds"]["ToggleConfig"].c_str());
     settings.keyQuit = SDL_GetKeyFromName(config["Keybinds"]["Quit"].empty() ? "Q" : config["Keybinds"]["Quit"].c_str());
-    settings.keyConfigSave = SDL_GetKeyFromName(config["Keybinds"]["ConfigSave"].empty() ? "SPACE" : config["Keybinds"]["ConfigSave"].c_str());
+    settings.keyConfigSave = SDL_GetKeyFromName(config["Keybinds"]["ConfigSave"].empty() ? "Space" : config["Keybinds"]["ConfigSave"].c_str());
     settings.keyConfigClose = SDL_GetKeyFromName(config["Keybinds"]["ConfigClose"].empty() ? "Q" : config["Keybinds"]["ConfigClose"].c_str());
     settings.keyScreenshotMode = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotMode"].empty() ? "S" : config["Keybinds"]["ScreenshotMode"].c_str());
+    LOG_DEBUG("ScreenshotMode keycode: " << settings.keyScreenshotMode);
     settings.keyScreenshotKey = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotKey"].empty() ? "S" : config["Keybinds"]["ScreenshotKey"].c_str());
+    LOG_DEBUG("ScreenshotKey keycode: " << settings.keyScreenshotKey);
     settings.keyScreenshotQuit = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotQuit"].empty() ? "Q" : config["Keybinds"]["ScreenshotQuit"].c_str());
-
+    LOG_DEBUG("ScreenshotQuit keycode: " << settings.keyScreenshotQuit);
 }
 
 void ConfigManager::writeIniFile(const std::string& filename) {
@@ -159,7 +159,6 @@ void ConfigManager::writeIniFile(const std::string& filename) {
     file << "StartArgs=" << settings.vpxStartArgs << "\n";
     file << "EndArgs=" << settings.vpxEndArgs << "\n";
     file << "\n[Internal]\n";
-    file << "PreloadCount=" << settings.preloadCount << "\n";
     file << "SubCmd=" << settings.vpxSubCmd << "\n";
     file << "DefaultTableImage=" << settings.defaultTableImage.substr(settings.defaultTableImage.find("img/")) << "\n";
     file << "DefaultBackglassImage=" << settings.defaultBackglassImage.substr(settings.defaultBackglassImage.find("img/")) << "\n";
@@ -168,8 +167,6 @@ void ConfigManager::writeIniFile(const std::string& filename) {
     file << "DefaultTableVideo=" << settings.defaultTableVideo.substr(settings.defaultTableVideo.find("img/")) << "\n";
     file << "DefaultBackglassVideo=" << settings.defaultBackglassVideo.substr(settings.defaultBackglassVideo.find("img/")) << "\n";
     file << "DefaultDmdVideo=" << settings.defaultDmdVideo.substr(settings.defaultDmdVideo.find("img/")) << "\n";
-    file << "FadeDurationMs=" << settings.fadeDurationMs << "\n";
-    file << "FadeTargetAlpha=" << (int)settings.fadeTargetAlpha << "\n";
     file << "TableChangeSound=" << settings.tableChangeSound << "\n";
     file << "TableLoadSound=" << settings.tableLoadSound << "\n";
     file << "\n[CustomMedia]\n";
