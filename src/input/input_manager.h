@@ -16,6 +16,7 @@ public:
     bool isFastNextTable(const SDL_Event& event) const;
     bool isJumpNextLetter(const SDL_Event& event) const;
     bool isJumpPrevLetter(const SDL_Event& event) const;
+    bool isRandomTable(const SDL_Event& event) const;
     bool isLaunchTable(const SDL_Event& event) const;
     bool isToggleConfig(const SDL_Event& event) const;
     bool isQuit(const SDL_Event& event) const;

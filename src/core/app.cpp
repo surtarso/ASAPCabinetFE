@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <random>
 
 namespace fs = std::filesystem;
 
@@ -375,6 +376,19 @@ void App::handleEvents() {
                 } else {
                     // Wrap to first entry (e.g., 0 or A)
                     size_t newIndex = letterIndex.begin()->second;
+                    if (newIndex != currentIndex_) {
+                        assets_->loadTableAssets(newIndex, tables_);
+                        currentIndex_ = newIndex;
+                        if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                    }
+                }
+            } else if (inputManager_->isRandomTable(event)) { 
+                LOG_DEBUG("Random table triggered");
+                if (!tables_.empty()) {
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<size_t> dist(0, tables_.size() - 1);
+                    size_t newIndex = dist(gen);
                     if (newIndex != currentIndex_) {
                         assets_->loadTableAssets(newIndex, tables_);
                         currentIndex_ = newIndex;
