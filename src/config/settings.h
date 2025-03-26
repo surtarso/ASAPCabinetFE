@@ -52,6 +52,7 @@ struct Settings {
     int dmdMediaHeight;
 
     // Fade and sound settings
+    int preloadCount;
     int fadeDurationMs;
     Uint8 fadeTargetAlpha;
     std::string tableChangeSound;

@@ -17,14 +17,12 @@ set(SOURCES
     src/main.cpp
     src/core/app.cpp
     src/capture/screenshot_manager.cpp
-    src/config/config_loader.cpp
     src/config/config_gui.cpp
     src/config/config_manager.cpp
     src/input/input_manager.cpp
     src/table/asset_manager.cpp
     src/table/table_manager.cpp
     src/render/renderer.cpp
-    src/render/transition_manager.cpp
     src/render/video_player.cpp
     src/imgui/imgui.cpp
     src/imgui/imgui_draw.cpp

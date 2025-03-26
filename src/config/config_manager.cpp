@@ -38,7 +38,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename << ". Using defaults.");
-        // Set defaults explicitly
+        // Set defaults explicitly (ini file takes over)
         settings.vpxTablesPath = "/home/tarso/Games/vpinball/build/tables/";
         settings.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
         settings.vpxSubCmd = "-Play";
@@ -47,6 +47,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
         // Rest of defaults...
         settings.fadeDurationMs = 1;
         settings.fadeTargetAlpha = 255;
+        settings.preloadCount = 3; // Add default here
         return;
     }
 
@@ -121,6 +122,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     settings.fontSize = std::stoi(config["TitleDisplay"]["Size"].empty() ? "28" : config["TitleDisplay"]["Size"]);
 
     // Fade and sound settings
+    settings.preloadCount = std::stoi(config["Internal"]["PreloadCount"].empty() ? "3" : config["Internal"]["PreloadCount"]);
     settings.fadeDurationMs = std::stoi(config["Internal"]["FadeDurationMs"].empty() ? "1" : config["Internal"]["FadeDurationMs"]);
     settings.fadeTargetAlpha = std::stoi(config["Internal"]["FadeTargetAlpha"].empty() ? "255" : config["Internal"]["FadeTargetAlpha"]);
     settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
@@ -141,6 +143,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     settings.keyScreenshotMode = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotMode"].empty() ? "S" : config["Keybinds"]["ScreenshotMode"].c_str());
     settings.keyScreenshotKey = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotKey"].empty() ? "S" : config["Keybinds"]["ScreenshotKey"].c_str());
     settings.keyScreenshotQuit = SDL_GetKeyFromName(config["Keybinds"]["ScreenshotQuit"].empty() ? "Q" : config["Keybinds"]["ScreenshotQuit"].c_str());
+
 }
 
 void ConfigManager::writeIniFile(const std::string& filename) {
@@ -156,6 +159,7 @@ void ConfigManager::writeIniFile(const std::string& filename) {
     file << "StartArgs=" << settings.vpxStartArgs << "\n";
     file << "EndArgs=" << settings.vpxEndArgs << "\n";
     file << "\n[Internal]\n";
+    file << "PreloadCount=" << settings.preloadCount << "\n";
     file << "SubCmd=" << settings.vpxSubCmd << "\n";
     file << "DefaultTableImage=" << settings.defaultTableImage.substr(settings.defaultTableImage.find("img/")) << "\n";
     file << "DefaultBackglassImage=" << settings.defaultBackglassImage.substr(settings.defaultBackglassImage.find("img/")) << "\n";

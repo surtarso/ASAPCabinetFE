@@ -1,6 +1,6 @@
 #include "core/app.h"
 #include "utils/logging.h"
-#include "config/config_loader.h"
+#include "config/config_manager.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "imgui.h"
@@ -13,6 +13,7 @@
 #include <limits.h>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -30,7 +31,7 @@ App::App(const std::string& configPath)
       inputManager_(nullptr),
       renderer_(nullptr),
       assets_(nullptr),
-      screenshotManager_(nullptr)
+      screenshotManager_(nullptr)  
 {
     exeDir_ = getExecutableDir();
     LOG_DEBUG("Config path: " << configPath_);
@@ -46,6 +47,7 @@ int App::initialize(int argc, char *argv[]) {
     LOG_DEBUG("Initializing SDL");
     initializeSDL();
     configManager_ = std::make_unique<ConfigManager>(configPath_);
+    configManager_->loadConfig();
     if (!isConfigValid()) {
         LOG_DEBUG("Config invalid, running initial config");
         runInitialConfig();
@@ -55,16 +57,6 @@ int App::initialize(int argc, char *argv[]) {
     loadResources();
     LOG_DEBUG("Initialization complete");
     return 0;
-}
-
-void App::run() {
-    LOG_DEBUG("Entering main loop");
-    while (!quit_) {
-        handleEvents();
-        update();
-        render();
-    }
-    LOG_DEBUG("Exiting main loop");
 }
 
 std::string App::getExecutableDir() {
@@ -289,7 +281,7 @@ void App::loadResources() {
               << ", Quit=" << settings.keyQuit);
 
     configEditor_ = std::make_unique<IniEditor>(configPath_, showConfig_, configManager_.get(),
-              assets_.get(), &currentIndex_, &tables_);
+                                                assets_.get(), &currentIndex_, &tables_);
     renderer_ = std::make_unique<Renderer>(primaryRenderer_.get(), secondaryRenderer_.get());
 
     LOG_DEBUG("Loading initial table assets");
@@ -301,7 +293,6 @@ void App::handleEvents() {
     LOG_DEBUG("Handling events");
     const Settings& settings = configManager_->getSettings();
     SDL_Event event;
-    static Uint32 lastTableSwitch = 0; // Track last switch time
     while (SDL_PollEvent(&event)) {
         ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT) {
@@ -311,11 +302,6 @@ void App::handleEvents() {
         }
         if (event.type == SDL_KEYDOWN) {
             LOG_DEBUG("Key pressed: " << SDL_GetKeyName(event.key.keysym.sym));
-            LOG_DEBUG("Settings keyToggleConfig: " << settings.keyToggleConfig
-                      << ", keyNextTable: " << settings.keyNextTable
-                      << ", keyPreviousTable: " << settings.keyPreviousTable);
-            Uint32 currentTime = SDL_GetTicks();
-            bool fastSwitch = (currentTime - lastTableSwitch < 200); // 200ms threshold
             if (inputManager_->isToggleConfig(event)) {
                 showConfig_ = !showConfig_;
                 LOG_DEBUG("Toggled showConfig to: " << (showConfig_ ? 1 : 0));
@@ -323,85 +309,39 @@ void App::handleEvents() {
                 LOG_DEBUG("Previous table triggered");
                 size_t newIndex = (currentIndex_ + tables_.size() - 1) % tables_.size();
                 if (newIndex != currentIndex_) {
-                    if (fastSwitch) {
-                        assets_->loadTableAssets(newIndex, tables_); // Instant swap
-                        currentIndex_ = newIndex;
-                    } else {
-                        transitionManager_.startTransition(assets_->getTableVideoPlayer(), assets_->getBackglassVideoPlayer(),
-                                                          assets_->getDmdVideoPlayer(), tableChangeSound_.get(),
-                                                          primaryRenderer_.get(), secondaryRenderer_.get(),
-                                                          *assets_, newIndex, tables_);
-                        transitionManager_.loadNewContent([this, newIndex]() {
-                            assets_->loadTableAssets(newIndex, tables_);
-                        });
-                        currentIndex_ = newIndex;
-                    }
-                    lastTableSwitch = currentTime;
+                    assets_->loadTableAssets(newIndex, tables_);
+                    currentIndex_ = newIndex;
+                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
                 }
             } else if (inputManager_->isNextTable(event)) {
                 LOG_DEBUG("Next table triggered");
                 size_t newIndex = (currentIndex_ + 1) % tables_.size();
                 if (newIndex != currentIndex_) {
-                    if (fastSwitch) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                    } else {
-                        transitionManager_.startTransition(assets_->getTableVideoPlayer(), assets_->getBackglassVideoPlayer(),
-                                                          assets_->getDmdVideoPlayer(), tableChangeSound_.get(),
-                                                          primaryRenderer_.get(), secondaryRenderer_.get(),
-                                                          *assets_, newIndex, tables_);
-                        transitionManager_.loadNewContent([this, newIndex]() {
-                            assets_->loadTableAssets(newIndex, tables_);
-                        });
-                        currentIndex_ = newIndex;
-                    }
-                    lastTableSwitch = currentTime;
+                    assets_->loadTableAssets(newIndex, tables_);
+                    currentIndex_ = newIndex;
+                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
                 }
             } else if (inputManager_->isFastPrevTable(event)) {
                 LOG_DEBUG("Fast previous table triggered");
                 size_t newIndex = (currentIndex_ + tables_.size() - 10) % tables_.size();
                 if (newIndex != currentIndex_) {
-                    if (fastSwitch) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                    } else {
-                        transitionManager_.startTransition(assets_->getTableVideoPlayer(), assets_->getBackglassVideoPlayer(),
-                                                          assets_->getDmdVideoPlayer(), tableChangeSound_.get(),
-                                                          primaryRenderer_.get(), secondaryRenderer_.get(),
-                                                          *assets_, newIndex, tables_);
-                        transitionManager_.loadNewContent([this, newIndex]() {
-                            assets_->loadTableAssets(newIndex, tables_);
-                        });
-                        currentIndex_ = newIndex;
-                    }
-                    lastTableSwitch = currentTime;
+                    assets_->loadTableAssets(newIndex, tables_);
+                    currentIndex_ = newIndex;
+                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
                 }
             } else if (inputManager_->isFastNextTable(event)) {
                 LOG_DEBUG("Fast next table triggered");
                 size_t newIndex = (currentIndex_ + 10) % tables_.size();
                 if (newIndex != currentIndex_) {
-                    if (fastSwitch) {
-                        assets_->loadTableAssets(newIndex, tables_);
-                        currentIndex_ = newIndex;
-                    } else {
-                        transitionManager_.startTransition(assets_->getTableVideoPlayer(), assets_->getBackglassVideoPlayer(),
-                                                          assets_->getDmdVideoPlayer(), tableChangeSound_.get(),
-                                                          primaryRenderer_.get(), secondaryRenderer_.get(),
-                                                          *assets_, newIndex, tables_);
-                        transitionManager_.loadNewContent([this, newIndex]() {
-                            assets_->loadTableAssets(newIndex, tables_);
-                        });
-                        currentIndex_ = newIndex;
-                    }
-                    lastTableSwitch = currentTime;
+                    assets_->loadTableAssets(newIndex, tables_);
+                    currentIndex_ = newIndex;
+                    if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
                 }
             } else if (inputManager_->isLaunchTable(event)) {
                 LOG_DEBUG("Launch table triggered");
                 if (tableLoadSound_) {
                     LOG_DEBUG("Playing table load sound");
                     Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
-                } else {
-                    LOG_DEBUG("Table load sound not loaded");
                 }
                 std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
                                       settings.vpxSubCmd + " \"" + tables_[currentIndex_].vpxFile + "\" " +
@@ -443,14 +383,7 @@ void App::handleEvents() {
 
 void App::update() {
     LOG_DEBUG("Updating");
-    Uint32 now = SDL_GetTicks();
-    transitionManager_.updateTransition(now, *assets_);
-    transitionManager_.loadNewContent([&]() {
-        assets_->loadTableAssets(currentIndex_, tables_);
-    });
-    if (!transitionManager_.isTransitionActive()) {
-        assets_->clearOldVideoPlayers();
-    }
+    assets_->clearOldVideoPlayers();
     configManager_->applyConfigChanges(primaryWindow_.get(), secondaryWindow_.get());
     LOG_DEBUG("Update complete");
 }
@@ -458,23 +391,16 @@ void App::update() {
 void App::render() {
     LOG_DEBUG("Rendering with showConfig_: " << (showConfig_ ? 1 : 0));
     if (renderer_ && assets_) {
-        static Uint32 lastTransitionEnd = 0;
-        Uint32 currentTime = SDL_GetTicks();
-        if (!transitionManager_.isTransitionActive() && (currentTime - lastTransitionEnd > 100)) {
-            SDL_SetRenderDrawColor(primaryRenderer_.get(), 0, 0, 0, 255);
-            SDL_RenderClear(primaryRenderer_.get());
-            SDL_SetRenderDrawColor(secondaryRenderer_.get(), 0, 0, 0, 255);
-            SDL_RenderClear(secondaryRenderer_.get());
-        }
-        if (!transitionManager_.isTransitionActive() && currentTime - lastTransitionEnd <= 100) {
-            LOG_DEBUG("Grace period after transition: " << (currentTime - lastTransitionEnd));
-        }
+        SDL_SetRenderDrawColor(primaryRenderer_.get(), 0, 0, 0, 255);
+        SDL_RenderClear(primaryRenderer_.get());
+        SDL_SetRenderDrawColor(secondaryRenderer_.get(), 0, 0, 0, 255);
+        SDL_RenderClear(secondaryRenderer_.get());
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        renderer_->render(*assets_, transitionManager_, showConfig_, *configEditor_);
+        renderer_->render(*assets_, showConfig_, *configEditor_);
 
         if (showConfig_) {
             LOG_DEBUG("Calling configEditor_->drawGUI() from App");
@@ -491,12 +417,18 @@ void App::render() {
 
         SDL_RenderPresent(primaryRenderer_.get());
         SDL_RenderPresent(secondaryRenderer_.get());
-
-        if (!transitionManager_.isTransitionActive() && currentTime - lastTransitionEnd >= transitionManager_.duration()) {
-            lastTransitionEnd = currentTime;
-        }
     }
     LOG_DEBUG("Render complete");
+}
+
+void App::run() {
+    LOG_DEBUG("Entering main loop");
+    while (!quit_) {
+        handleEvents();
+        update();
+        render();
+    }
+    LOG_DEBUG("Exiting main loop");
 }
 
 void App::cleanup() {
