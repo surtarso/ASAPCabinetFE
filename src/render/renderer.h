@@ -8,14 +8,16 @@
 
 class Renderer {
 public:
-    Renderer(SDL_Renderer* primary, SDL_Renderer* secondary);
-    void render(AssetManager& assets, TransitionManager& transitionManager, bool showConfig, IniEditor& configEditor);
+    Renderer(SDL_Renderer* primaryRenderer, SDL_Renderer* secondaryRenderer);
+    void render(AssetManager& assets, TransitionManager& transitionManager,
+                bool showConfig, IniEditor& configEditor);
 
 private:
-    SDL_Renderer* primaryRenderer;
-    SDL_Renderer* secondaryRenderer;
+    SDL_Renderer* primaryRenderer_;
+    SDL_Renderer* secondaryRenderer_;
 
-    void renderPrimaryWindow(AssetManager& assets, TransitionManager& transitionManager, bool showConfig, IniEditor& configEditor);
+    void renderPrimaryWindow(AssetManager& assets, TransitionManager& transitionManager,
+                             bool showConfig, IniEditor& configEditor);
     void renderSecondaryWindow(AssetManager& assets, TransitionManager& transitionManager);
 };
 

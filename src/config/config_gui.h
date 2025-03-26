@@ -13,19 +13,30 @@ struct ConfigSection {
     std::unordered_map<std::string, size_t> keyToLineIndex;     // Map key to its line index
 };
 
+class AssetManager; // Forward declaration
+class Table;        // Forward declaration
+
 class IniEditor {
 public:
-    IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager = nullptr);
+    // Main constructor for full app
+    IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
+              AssetManager* assets = nullptr, size_t* currentIndex = nullptr, std::vector<Table>* tables = nullptr);
+    // Legacy constructor for initial config (no assets yet)
+    // IniEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager); // Not needed, handled by default args
     ~IniEditor();
     void drawGUI();
     void handleEvent(const SDL_Event& event);
 
     bool isCapturingKey() const { return isCapturingKey_; }
+    Settings tempSettings_; // Public for App to access
 
 private:
     std::string iniFilename;
     bool& showFlag;
     ConfigManager* configManager_;
+    AssetManager* assets_;           // Pointer to App's assets (optional)
+    size_t* currentIndex_;           // Pointer to App's currentIndex (optional)
+    std::vector<Table>* tables_;     // Pointer to App's tables (optional)
     std::vector<std::string> originalLines;
     std::map<std::string, ConfigSection> iniData;
     std::vector<std::string> sections;

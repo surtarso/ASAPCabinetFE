@@ -15,9 +15,11 @@ struct VideoContext {
     int width;
     int height;
     SDL_mutex* mutex;       // Mutex for thread-safe buffer access
+    bool isPlaying;         // Track if playback has started
 };
 
 VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, int width, int height);
 void cleanupVideoContext(VideoContext* ctx);
-void updateVideoTexture(VideoContext* video, SDL_Renderer* renderer);
+void updateVideoTexture(VideoContext* video);
+
 #endif

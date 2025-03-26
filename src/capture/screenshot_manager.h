@@ -1,22 +1,27 @@
-#ifndef SCREENSHOT_UTILS_H
-#define SCREENSHOT_UTILS_H
+#ifndef SCREENSHOT_MANAGER_H
+#define SCREENSHOT_MANAGER_H
 
 #include <SDL2/SDL.h>
 #include <string>
 #include <vector>
 
+class ConfigManager;
+
 class ScreenshotManager {
 public:
-    ScreenshotManager(const std::string& exeDir);  // Constructor takes exeDir
-    void launchScreenshotMode(const std::string& vpxFile);  // Main entry for screenshot mode
-    void captureScreenshot(const std::string& windowName, const std::string& outputPath);  // Capture single screenshot
+    ScreenshotManager(const std::string& exeDir, ConfigManager* configManager);
+    void launchScreenshotMode(const std::string& vpxFile);
+    void captureScreenshot(const std::string& windowName, const std::string& outputPath);
     void captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage, 
-                               const std::string& dmdImage, SDL_Window* window);  // Capture all needed screenshots
+                               const std::string& dmdImage, SDL_Window* window);
     std::string keycodeToString(SDL_Keycode key);
 private:
-    std::string vpxLogFile;  // Member variable for log path
-    std::string shellEscape(const std::string& str);  // Escape shell strings
-    bool isWindowVisibleLog(const std::string& title);  // Check log for window visibility
+    std::string exeDir_;  // Add this to store base path
+    std::string vpxLogFile;
+    ConfigManager* configManager_;
+    std::string shellEscape(const std::string& str);
+    bool isWindowVisibleLog(const std::string& title);
+    void showHelpWindow(SDL_Window*& helpWindow, SDL_Renderer*& helpRenderer); // Added declaration
 };
 
-#endif // SCREENSHOT_UTILS_H
+#endif // SCREENSHOT_MANAGER_H
