@@ -127,6 +127,7 @@ void App::runInitialConfig() {
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
+
         configEditor.drawGUI();
         ImGui::Render();
         SDL_SetRenderDrawColor(configRenderer, 0, 0, 0, 255);

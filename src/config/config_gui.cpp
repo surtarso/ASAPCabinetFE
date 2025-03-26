@@ -183,7 +183,7 @@ void IniEditor::drawGUI()
     float windowHeight = 500.0f;
     ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
-    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings);
     ImGui::SetWindowFocus();
 
     ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
