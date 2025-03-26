@@ -10,7 +10,6 @@
 #include "config/config_gui.h"
 #include "input/input_manager.h"
 #include "render/renderer.h"
-#include "render/transition_manager.h"
 #include "table/asset_manager.h"
 #include "table/table_manager.h"
 #include "capture/screenshot_manager.h"
@@ -41,9 +40,8 @@ private:
     std::unique_ptr<IniEditor> configEditor_;
     std::unique_ptr<InputManager> inputManager_;
     std::unique_ptr<Renderer> renderer_;
-    std::unique_ptr<AssetManager> assets_; // Change to unique_ptr
-    std::unique_ptr<ScreenshotManager> screenshotManager_; // Change to unique_ptr
-    TransitionManager transitionManager_;
+    std::unique_ptr<AssetManager> assets_;
+    std::unique_ptr<ScreenshotManager> screenshotManager_;
     std::vector<Table> tables_;
 
     std::string getExecutableDir();
