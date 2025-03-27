@@ -238,7 +238,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            soundManager_->playSound("table_change");
+            soundManager_->playSound("scroll_prev");
         }
     };
 
@@ -248,7 +248,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            soundManager_->playSound("table_change");
+            soundManager_->playSound("scroll_next");
         }
     };
 
@@ -258,7 +258,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            soundManager_->playSound("table_change");
+            soundManager_->playSound("scroll_fast_prev");
         }
     };
 
@@ -268,7 +268,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            soundManager_->playSound("table_change");
+            soundManager_->playSound("scroll_fast_next");
         }
     };
 
@@ -283,7 +283,7 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                soundManager_->playSound("table_change");
+                soundManager_->playSound("scroll_jump_prev");
             }
         } else {
             auto lastIt = std::prev(letterIndex.end());
@@ -291,7 +291,7 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                soundManager_->playSound("table_change");
+                soundManager_->playSound("scroll_jump_prev");
             }
         }
     };
@@ -306,14 +306,14 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                soundManager_->playSound("table_change");
+                soundManager_->playSound("scroll_jump_next");
             }
         } else {
             size_t newIndex = letterIndex.begin()->second;
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                soundManager_->playSound("table_change");
+                soundManager_->playSound("scroll_jump_next");
             }
         }
     };
@@ -328,14 +328,14 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                soundManager_->playSound("table_change");
+                soundManager_->playSound("scroll_random");
             }
         }
     };
 
     actionHandlers_["LaunchTable"] = [this]() {
         LOG_DEBUG("Launch table triggered");
-        soundManager_->playSound("table_load");
+        soundManager_->playSound("launch_table");
         const Settings& settings = configManager_->getSettings();
         std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
                               settings.vpxSubCmd + " \"" + tables_[currentIndex_].vpxFile + "\" " +
@@ -349,7 +349,7 @@ void App::initializeActionHandlers() {
 
     actionHandlers_["ScreenshotMode"] = [this]() {
         LOG_DEBUG("Screenshot mode triggered");
-        soundManager_->playSound("table_load");
+        soundManager_->playSound("launch_screenshot");
         screenshotManager_->launchScreenshotMode(tables_[currentIndex_].vpxFile);
     };
 
@@ -362,17 +362,18 @@ void App::initializeActionHandlers() {
 
     actionHandlers_["Quit"] = [this]() {
         LOG_DEBUG("Quit triggered");
+        soundManager_->playSound("quit");
         quit_ = true;
     };
 
     actionHandlers_["ConfigSave"] = [this]() {
         if (showConfig_) {
             LOG_DEBUG("Config save triggered");
+            soundManager_->playSound("config_save");
             Settings& mutableSettings = const_cast<Settings&>(configManager_->getSettings());
             mutableSettings = configEditor_->tempSettings_;
             configManager_->saveConfig();
-    
-            // Reload font with new settings
+            // Reload font and assets...
             const Settings& newSettings = configManager_->getSettings();
             font_.reset(TTF_OpenFont(newSettings.fontPath.c_str(), newSettings.fontSize));
             if (!font_) {
@@ -382,8 +383,6 @@ void App::initializeActionHandlers() {
                 LOG_DEBUG("Font reloaded with size " << newSettings.fontSize);
             }
             assets_->setFont(font_.get());
-    
-            // Now reload assets with the new font
             configManager_->notifyConfigChanged(*assets_, currentIndex_, tables_);
             showConfig_ = false;
         }
@@ -392,6 +391,7 @@ void App::initializeActionHandlers() {
     actionHandlers_["ConfigClose"] = [this]() {
         if (showConfig_) {
             LOG_DEBUG("Config close triggered");
+            soundManager_->playSound("config_close");
             showConfig_ = false;
         }
     };

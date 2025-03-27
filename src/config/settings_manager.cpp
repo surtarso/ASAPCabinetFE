@@ -49,9 +49,6 @@ void SettingsManager::parseIniFile(const std::string& filename) {
         settings.vpxTablesPath = "/home/tarso/Games/vpinball/build/tables/";
         settings.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
         settings.vpxSubCmd = "-Play";
-        settings.tableChangeSound = "snd/table_change.mp3";
-        settings.tableLoadSound = "snd/table_load.mp3";
-        settings.configToggleSound = "snd/config_toggle.mp3";
         return;
     }
 
@@ -90,13 +87,13 @@ void SettingsManager::parseIniFile(const std::string& filename) {
 
     // Default media paths
     std::string exeDir = filename.substr(0, filename.find_last_of('/') + 1);
-    settings.defaultTableImage = exeDir + (config["Internal"]["DefaultTableImage"].empty() ? "img/default_table.png" : config["Internal"]["DefaultTableImage"]);
-    settings.defaultBackglassImage = exeDir + (config["Internal"]["DefaultBackglassImage"].empty() ? "img/default_backglass.png" : config["Internal"]["DefaultBackglassImage"]);
-    settings.defaultDmdImage = exeDir + (config["Internal"]["DefaultDmdImage"].empty() ? "img/default_dmd.png" : config["Internal"]["DefaultDmdImage"]);
-    settings.defaultWheelImage = exeDir + (config["Internal"]["DefaultWheelImage"].empty() ? "img/default_wheel.png" : config["Internal"]["DefaultWheelImage"]);
-    settings.defaultTableVideo = exeDir + (config["Internal"]["DefaultTableVideo"].empty() ? "img/default_table.mp4" : config["Internal"]["DefaultTableVideo"]);
-    settings.defaultBackglassVideo = exeDir + (config["Internal"]["DefaultBackglassVideo"].empty() ? "img/default_backglass.mp4" : config["Internal"]["DefaultBackglassVideo"]);
-    settings.defaultDmdVideo = exeDir + (config["Internal"]["DefaultDmdVideo"].empty() ? "img/default_dmd.mp4" : config["Internal"]["DefaultDmdVideo"]);
+    settings.defaultTableImage = exeDir + (config["DefaultMedia"]["DefaultTableImage"].empty() ? "img/default_table.png" : config["DefaultMedia"]["DefaultTableImage"]);
+    settings.defaultBackglassImage = exeDir + (config["DefaultMedia"]["DefaultBackglassImage"].empty() ? "img/default_backglass.png" : config["DefaultMedia"]["DefaultBackglassImage"]);
+    settings.defaultDmdImage = exeDir + (config["DefaultMedia"]["DefaultDmdImage"].empty() ? "img/default_dmd.png" : config["DefaultMedia"]["DefaultDmdImage"]);
+    settings.defaultWheelImage = exeDir + (config["DefaultMedia"]["DefaultWheelImage"].empty() ? "img/default_wheel.png" : config["DefaultMedia"]["DefaultWheelImage"]);
+    settings.defaultTableVideo = exeDir + (config["DefaultMedia"]["DefaultTableVideo"].empty() ? "img/default_table.mp4" : config["DefaultMedia"]["DefaultTableVideo"]);
+    settings.defaultBackglassVideo = exeDir + (config["DefaultMedia"]["DefaultBackglassVideo"].empty() ? "img/default_backglass.mp4" : config["DefaultMedia"]["DefaultBackglassVideo"]);
+    settings.defaultDmdVideo = exeDir + (config["DefaultMedia"]["DefaultDmdVideo"].empty() ? "img/default_dmd.mp4" : config["DefaultMedia"]["DefaultDmdVideo"]);
 
     // Custom media paths
     settings.customTableImage = config["CustomMedia"]["TableImage"].empty() ? "images/table.png" : config["CustomMedia"]["TableImage"];
@@ -129,10 +126,23 @@ void SettingsManager::parseIniFile(const std::string& filename) {
     sscanf(fontBgColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings.fontBgColor.r, &settings.fontBgColor.g, &settings.fontBgColor.b, &settings.fontBgColor.a);
     settings.fontSize = std::stoi(config["TitleDisplay"]["FontSize"].empty() ? "28" : config["TitleDisplay"]["FontSize"]);
 
-    // Sound settings
-    settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
-    settings.tableLoadSound = config["Internal"]["TableLoadSound"].empty() ? "snd/table_load.mp3" : config["Internal"]["TableLoadSound"];
-    settings.configToggleSound = config["Internal"]["ConfigToggleSound"].empty() ? "snd/config_toggle.mp3" : config["Internal"]["ConfigToggleSound"];
+    
+    // UISounds settings
+    settings.configToggleSound = config["UISounds"]["ConfigToggleSound"].empty() ? "snd/config_toggle.mp3" : config["UISounds"]["ConfigToggleSound"];
+    settings.scrollPrevSound = config["UISounds"]["ScrollPrevSound"].empty() ? "snd/scroll_prev.mp3" : config["UISounds"]["ScrollPrevSound"];
+    settings.scrollNextSound = config["UISounds"]["ScrollNextSound"].empty() ? "snd/scroll_next.mp3" : config["UISounds"]["ScrollNextSound"];
+    settings.scrollFastPrevSound = config["UISounds"]["ScrollFastPrevSound"].empty() ? "snd/scroll_fast_prev.mp3" : config["UISounds"]["ScrollFastPrevSound"];
+    settings.scrollFastNextSound = config["UISounds"]["ScrollFastNextSound"].empty() ? "snd/scroll_fast_next.mp3" : config["UISounds"]["ScrollFastNextSound"];
+    settings.scrollJumpPrevSound = config["UISounds"]["ScrollJumpPrevSound"].empty() ? "snd/scroll_jump_prev.mp3" : config["UISounds"]["ScrollJumpPrevSound"];
+    settings.scrollJumpNextSound = config["UISounds"]["ScrollJumpNextSound"].empty() ? "snd/scroll_jump_next.mp3" : config["UISounds"]["ScrollJumpNextSound"];
+    settings.scrollRandomSound = config["UISounds"]["ScrollRandomSound"].empty() ? "snd/scroll_random.mp3" : config["UISounds"]["ScrollRandomSound"];
+    settings.launchTableSound = config["UISounds"]["LaunchTableSound"].empty() ? "snd/launch_table.mp3" : config["UISounds"]["LaunchTableSound"];
+    settings.launchScreenshotSound = config["UISounds"]["LaunchScreenshotSound"].empty() ? "snd/launch_screenshot.mp3" : config["UISounds"]["LaunchScreenshotSound"];
+    settings.configSaveSound = config["UISounds"]["ConfigSaveSound"].empty() ? "snd/config_save.mp3" : config["UISounds"]["ConfigSaveSound"];
+    settings.configCloseSound = config["UISounds"]["ConfigCloseSound"].empty() ? "snd/config_close.mp3" : config["UISounds"]["ConfigCloseSound"];
+    settings.quitSound = config["UISounds"]["QuitSound"].empty() ? "snd/quit.mp3" : config["UISounds"]["QuitSound"];
+    settings.screenshotTakeSound = config["UISounds"]["ScreenshotTakeSound"].empty() ? "snd/screenshot_take.mp3" : config["UISounds"]["ScreenshotTakeSound"];
+    settings.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty() ? "snd/screenshot_quit.mp3" : config["UISounds"]["ScreenshotQuitSound"];
     
     // Load keybindings
     keybindManager_.loadKeybinds(config["Keybinds"]);
@@ -152,6 +162,7 @@ void SettingsManager::writeIniFile(const std::string& filename) {
     file << "EndArgs=" << settings.vpxEndArgs << "\n";
     file << "\n[Internal]\n";
     file << "SubCmd=" << settings.vpxSubCmd << "\n";
+    file << "\n[DefaultMedia]\n";
     file << "DefaultTableImage=" << settings.defaultTableImage.substr(settings.defaultTableImage.find("img/")) << "\n";
     file << "DefaultBackglassImage=" << settings.defaultBackglassImage.substr(settings.defaultBackglassImage.find("img/")) << "\n";
     file << "DefaultDmdImage=" << settings.defaultDmdImage.substr(settings.defaultBackglassImage.find("img/")) << "\n";
@@ -159,9 +170,6 @@ void SettingsManager::writeIniFile(const std::string& filename) {
     file << "DefaultTableVideo=" << settings.defaultTableVideo.substr(settings.defaultTableVideo.find("img/")) << "\n";
     file << "DefaultBackglassVideo=" << settings.defaultBackglassVideo.substr(settings.defaultBackglassVideo.find("img/")) << "\n";
     file << "DefaultDmdVideo=" << settings.defaultDmdVideo.substr(settings.defaultDmdVideo.find("img/")) << "\n";
-    file << "TableChangeSound=" << settings.tableChangeSound << "\n";
-    file << "TableLoadSound=" << settings.tableLoadSound << "\n";
-    file << "ConfigToggleSound=" << settings.configToggleSound << "\n";
     file << "\n[CustomMedia]\n";
     file << "TableImage=" << settings.customTableImage << "\n";
     file << "BackglassImage=" << settings.customBackglassImage << "\n";
@@ -190,6 +198,22 @@ void SettingsManager::writeIniFile(const std::string& filename) {
     file << "FontBgColor=" << (int)settings.fontBgColor.r << "," << (int)settings.fontBgColor.g << "," << (int)settings.fontBgColor.b << "," << (int)settings.fontBgColor.a << "\n";
     file << "FontSize=" << settings.fontSize << "\n";
     file << "\n";
+    file << "\n[UISounds]\n";
+    file << "ConfigToggleSound=" << settings.configToggleSound << "\n";
+    file << "ScrollPrevSound" << settings.scrollPrevSound << "\n";
+    file << "ScrollNextSound" << settings.scrollNextSound << "\n";
+    file << "ScrollFastPrevSound" << settings.scrollFastPrevSound << "\n";
+    file << "ScrollFastNextSound" << settings.scrollFastNextSound << "\n";
+    file << "ScrollJumpPrevSound" << settings.scrollJumpPrevSound << "\n";
+    file << "ScrollJumpNextSound" << settings.scrollJumpNextSound << "\n";
+    file << "ScrollRandomSound" << settings.scrollRandomSound << "\n";
+    file << "LaunchTableSound" << settings.launchTableSound << "\n";
+    file << "LaunchScreenshotSound" << settings.launchScreenshotSound << "\n";
+    file << "ConfigSaveSound" << settings.configSaveSound << "\n";
+    file << "ConfigCloseSound" << settings.configCloseSound << "\n";
+    file << "QuitSound" << settings.quitSound << "\n";
+    file << "ScreenshotTakeSound" << settings.screenshotTakeSound << "\n";
+    file << "ScreenshotQuitSound" << settings.screenshotQuitSound << "\n";
 
     // Save keybindings
     keybindManager_.saveKeybinds(file);

@@ -51,10 +51,22 @@ struct Settings {
     int dmdMediaWidth;
     int dmdMediaHeight;
 
-    // Fade and sound settings
-    std::string tableChangeSound;
-    std::string tableLoadSound;
+    // sound settings
     std::string configToggleSound;
+    std::string scrollPrevSound;
+    std::string scrollNextSound;
+    std::string scrollFastPrevSound;
+    std::string scrollFastNextSound;
+    std::string scrollJumpPrevSound;
+    std::string scrollJumpNextSound;
+    std::string scrollRandomSound;
+    std::string launchTableSound;
+    std::string launchScreenshotSound;
+    std::string configSaveSound;
+    std::string configCloseSound;
+    std::string quitSound;
+    std::string screenshotTakeSound;
+    std::string screenshotQuitSound;
 };
 
 #endif // SETTINGS_H
