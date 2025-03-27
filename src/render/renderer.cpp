@@ -8,7 +8,7 @@
 Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRenderer)
     : primaryRenderer_(primaryRenderer), secondaryRenderer_(secondaryRenderer) {}
 
-void Renderer::render(AssetManager &assets, bool showConfig, IniEditor &configEditor) {
+void Renderer::render(AssetManager &assets, bool showConfig, InGameConfigEditor &configEditor) {
     (void)configEditor; // Mark as unused
     renderPrimaryWindow(assets, showConfig);
     renderSecondaryWindow(assets);

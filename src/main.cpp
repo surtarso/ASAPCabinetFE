@@ -10,11 +10,6 @@ int main(int argc, char* argv[]) {
     }
 
     App app("config.ini");
-    int result = app.initialize();
-    if (result != 0) { // Exit only on failure
-        std::cerr << "Initialization failed with code " << result << std::endl;
-        return 1;
-    }
     app.run();
     return 0;
 }
