@@ -17,7 +17,7 @@ set(SOURCES
     src/main.cpp
     src/core/app.cpp
     src/core/window_manager.cpp
-    src/core/sound_manager.cpp
+    src/sound/sound_manager.cpp
     src/capture/screenshot_manager.cpp
     src/config/settings_manager.cpp
     src/config/ui/setup_editor.cpp
@@ -46,6 +46,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src/config/ui
     src/keybinds
     src/render
+    src/sound
     src/utils
     src/imgui
     src/imgui/backends

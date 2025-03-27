@@ -8,18 +8,18 @@
 #include <thread>
 #include <vector>
 #include "config/settings_manager.h"
-#include "keybinds/keybind_manager.h" // Updated include
-#include "core/sound_manager.h"
+#include "keybinds/keybind_manager.h"
+#include "sound/isound_manager.h" // Use interface
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
 ScreenshotManager::ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, 
-    KeybindManager* keybindManager, SoundManager* soundManager) 
-: exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), 
-configManager_(configManager), keybindManager_(keybindManager), soundManager_(soundManager) {
-LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
-LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
+                                     KeybindManager* keybindManager, ISoundManager* soundManager) 
+    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), 
+      configManager_(configManager), keybindManager_(keybindManager), soundManager_(soundManager) {
+    LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
+    LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
 }
 
 std::string ScreenshotManager::shellEscape(const std::string& str) {

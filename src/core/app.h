@@ -15,7 +15,7 @@
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "core/window_manager.h"
-#include "core/sound_manager.h"
+#include "sound/sound_manager.h"
 
 class WindowManager; // Forward declaration
 
