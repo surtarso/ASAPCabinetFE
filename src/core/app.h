@@ -19,7 +19,6 @@ class App {
 public:
     App(const std::string& configPath);
     ~App();
-    int initialize();
     void run();
 
 private:
@@ -41,7 +40,7 @@ private:
     std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)> tableLoadSound_;
 
     std::unique_ptr<ConfigManager> configManager_;
-    std::unique_ptr<IniEditor> configEditor_;
+    std::unique_ptr<InGameConfigEditor> configEditor_; // Changed from IniEditor
     std::unique_ptr<InputManager> inputManager_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
@@ -61,6 +60,7 @@ private:
     void update();
     void render();
     void cleanup();
+    void initializeDependencies();
 };
 
 #endif // APP_H

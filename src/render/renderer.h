@@ -8,7 +8,7 @@
 class Renderer {
 public:
     Renderer(SDL_Renderer* primaryRenderer, SDL_Renderer* secondaryRenderer);
-    void render(AssetManager& assets, bool showConfig, IniEditor& configEditor);
+    void render(AssetManager& assets, bool showConfig, InGameConfigEditor& configEditor);
 
 private:
     SDL_Renderer* primaryRenderer_;

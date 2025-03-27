@@ -44,21 +44,127 @@ App::~App() {
     LOG_DEBUG("App destructor completed");
 }
 
-int App::initialize() {
+void App::initializeDependencies() {
     LOG_DEBUG("Initializing SDL");
     initializeSDL();
+
+    // Create ConfigManager and load config
     configManager_ = std::make_unique<ConfigManager>(configPath_);
     configManager_->loadConfig();
+
+    // Run initial config if needed
     if (!isConfigValid()) {
         LOG_DEBUG("Config invalid, running initial config");
         runInitialConfig();
     }
+
+    // Create windows and renderers
     createWindowsAndRenderers();
+
+    // Initialize ImGui
     initializeImGui();
-    loadResources();
+
+    // Load resources (previously in loadResources())
+    LOG_DEBUG("Loading resources");
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd))) {
+        LOG_DEBUG("Current working directory: " << cwd);
+    } else {
+        LOG_DEBUG("Failed to get CWD: " << strerror(errno));
+    }
+
+    const Settings& settings = configManager_->getSettings();
+    std::string trimmedChange = settings.tableChangeSound;
+    std::string trimmedLoad = settings.tableLoadSound;
+    trimmedChange.erase(std::remove_if(trimmedChange.begin(), trimmedChange.end(), isspace), trimmedChange.end());
+    trimmedLoad.erase(std::remove_if(trimmedLoad.begin(), trimmedLoad.end(), isspace), trimmedLoad.end());
+    
+    std::ostringstream changeHex, loadHex;
+    for (char c : settings.tableChangeSound) changeHex << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << " ";
+    for (char c : settings.tableLoadSound) loadHex << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << " ";
+    LOG_DEBUG("Raw TableChangeSound bytes: " << changeHex.str());
+    LOG_DEBUG("Raw TableLoadSound bytes: " << loadHex.str());
+    LOG_DEBUG("Trimmed TableChangeSound: '" << trimmedChange << "'");
+    LOG_DEBUG("Trimmed TableLoadSound: '" << trimmedLoad << "'");
+
+    std::string tableLoadSoundPath = exeDir_ + trimmedLoad;
+    LOG_DEBUG("Loading table load sound from: " << tableLoadSoundPath);
+    std::ifstream testFile(tableLoadSoundPath, std::ios::binary);
+    if (!testFile.good()) {
+        LOG_DEBUG("Error: Cannot open table load sound file for reading (errno: " << errno << " - " << strerror(errno) << ")");
+    } else {
+        LOG_DEBUG("Table load sound file exists and is readable");
+        testFile.close();
+    }
+    tableLoadSound_.reset(Mix_LoadWAV(tableLoadSoundPath.c_str()));
+    if (!tableLoadSound_) {
+        std::cerr << "Mix_LoadWAV Error at " << tableLoadSoundPath << ": " << Mix_GetError() << std::endl;
+    } else {
+        LOG_DEBUG("Table load sound loaded successfully");
+    }
+
+    std::string tableChangeSoundPath = exeDir_ + trimmedChange;
+    LOG_DEBUG("Loading table change sound from: " << tableChangeSoundPath);
+    tableChangeSound_.reset(Mix_LoadWAV(tableChangeSoundPath.c_str()));
+    if (!tableChangeSound_) {
+        std::cerr << "Mix_LoadWAV Error at " << tableChangeSoundPath << ": " << Mix_GetError() << std::endl;
+    } else {
+        LOG_DEBUG("Table change sound loaded successfully");
+    }
+
+    font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
+    if (!font_) {
+        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+    }
+
+    tables_ = loadTableList(settings);
+    if (tables_.empty()) {
+        std::cerr << "Edit config.ini, no .vpx files found in " << settings.vpxTablesPath << std::endl;
+        exit(1);
+    }
+
+    // Populate letterIndex for JumpNextLetter/JumpPrevLetter
+    for (size_t i = 0; i < tables_.size(); ++i) {
+        if (!tables_[i].tableName.empty()) {
+            char firstChar = tables_[i].tableName[0];
+            char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
+            if (letterIndex.find(key) == letterIndex.end()) {
+                letterIndex[key] = i;
+            }
+        }
+    }
+
+    // Create remaining dependencies
+    assets_ = std::make_unique<AssetManager>(primaryRenderer_.get(), secondaryRenderer_.get(), font_.get());
+    assets_->setConfigManager(configManager_.get());
+    inputManager_ = std::make_unique<InputManager>(configManager_->getKeybindManager());
+    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), inputManager_.get());
+    configEditor_ = std::make_unique<InGameConfigEditor>(configPath_, showConfig_, configManager_.get(),
+                                                         &configManager_->getKeybindManager(), assets_.get(),
+                                                         &currentIndex_, &tables_);
+    renderer_ = std::make_unique<Renderer>(primaryRenderer_.get(), secondaryRenderer_.get());
+
+    LOG_DEBUG("Loading initial table assets");
+    assets_->loadTableAssets(currentIndex_, tables_);
+    LOG_DEBUG("Resources loaded");
+
+    // Initialize action handlers
     initializeActionHandlers();
+
     LOG_DEBUG("Initialization complete");
-    return 0;
+}
+
+void App::run() {
+    LOG_DEBUG("Starting App::run");
+    initializeDependencies(); // Call the new method to set up dependencies
+
+    LOG_DEBUG("Entering main loop");
+    while (!quit_) {
+        handleEvents();
+        update();
+        render();
+    }
+    LOG_DEBUG("Exiting main loop");
 }
 
 std::string App::getExecutableDir() {
@@ -113,7 +219,7 @@ void App::runInitialConfig() {
     ImGui_ImplSDL2_InitForSDLRenderer(configWindow, configRenderer);
     ImGui_ImplSDLRenderer2_Init(configRenderer);
     bool showConfig = true;
-    IniEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
+    InitialConfigEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
     configEditor.setFillParentWindow(true);
     while (true) {
         SDL_Event event;
@@ -139,7 +245,7 @@ void App::runInitialConfig() {
         if (!showConfig) {
             if (isConfigValid()) {
                 LOG_DEBUG("Configuration is valid. Proceeding to main UI...");
-                break; // Exit the loop to proceed to App::run()
+                break;
             } else {
                 std::cerr << "Configuration is still invalid. Please ensure VPX.ExecutableCmd and VPX.TablesPath point to valid paths." << std::endl;
                 showConfig = true; // Reopen the config window
@@ -218,87 +324,7 @@ void App::initializeImGui() {
 }
 
 void App::loadResources() {
-    LOG_DEBUG("Loading resources");
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd))) {
-        LOG_DEBUG("Current working directory: " << cwd);
-    } else {
-        LOG_DEBUG("Failed to get CWD: " << strerror(errno));
-    }
-
-    const Settings& settings = configManager_->getSettings();
-    std::string trimmedChange = settings.tableChangeSound;
-    std::string trimmedLoad = settings.tableLoadSound;
-    trimmedChange.erase(std::remove_if(trimmedChange.begin(), trimmedChange.end(), isspace), trimmedChange.end());
-    trimmedLoad.erase(std::remove_if(trimmedLoad.begin(), trimmedLoad.end(), isspace), trimmedLoad.end());
-    
-    std::ostringstream changeHex, loadHex;
-    for (char c : settings.tableChangeSound) changeHex << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << " ";
-    for (char c : settings.tableLoadSound) loadHex << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << " ";
-    LOG_DEBUG("Raw TableChangeSound bytes: " << changeHex.str());
-    LOG_DEBUG("Raw TableLoadSound bytes: " << loadHex.str());
-    LOG_DEBUG("Trimmed TableChangeSound: '" << trimmedChange << "'");
-    LOG_DEBUG("Trimmed TableLoadSound: '" << trimmedLoad << "'");
-
-    std::string tableLoadSoundPath = exeDir_ + trimmedLoad;
-    LOG_DEBUG("Loading table load sound from: " << tableLoadSoundPath);
-    std::ifstream testFile(tableLoadSoundPath, std::ios::binary);
-    if (!testFile.good()) {
-        LOG_DEBUG("Error: Cannot open table load sound file for reading (errno: " << errno << " - " << strerror(errno) << ")");
-    } else {
-        LOG_DEBUG("Table load sound file exists and is readable");
-        testFile.close();
-    }
-    tableLoadSound_.reset(Mix_LoadWAV(tableLoadSoundPath.c_str()));
-    if (!tableLoadSound_) {
-        std::cerr << "Mix_LoadWAV Error at " << tableLoadSoundPath << ": " << Mix_GetError() << std::endl;
-    } else {
-        LOG_DEBUG("Table load sound loaded successfully");
-    }
-
-    std::string tableChangeSoundPath = exeDir_ + trimmedChange;
-    LOG_DEBUG("Loading table change sound from: " << tableChangeSoundPath);
-    tableChangeSound_.reset(Mix_LoadWAV(tableChangeSoundPath.c_str()));
-    if (!tableChangeSound_) {
-        std::cerr << "Mix_LoadWAV Error at " << tableChangeSoundPath << ": " << Mix_GetError() << std::endl;
-    } else {
-        LOG_DEBUG("Table change sound loaded successfully");
-    }
-
-    font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
-    if (!font_) {
-        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
-    }
-
-    tables_ = loadTableList(settings);
-    if (tables_.empty()) {
-        std::cerr << "Edit config.ini, no .vpx files found in " << settings.vpxTablesPath << std::endl;
-        exit(1);
-    }
-
-    // Populate letterIndex for JumpNextLetter/JumpPrevLetter
-    for (size_t i = 0; i < tables_.size(); ++i) {
-        if (!tables_[i].tableName.empty()) {
-            char firstChar = tables_[i].tableName[0];
-            char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
-            if (letterIndex.find(key) == letterIndex.end()) {
-                letterIndex[key] = i;
-            }
-        }
-    }
-
-    assets_ = std::make_unique<AssetManager>(primaryRenderer_.get(), secondaryRenderer_.get(), font_.get());
-    assets_->setConfigManager(configManager_.get());
-    inputManager_ = std::make_unique<InputManager>(configManager_->getKeybindManager()); // Moved up
-    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), inputManager_.get()); // Now uses initialized inputManager_
-    configEditor_ = std::make_unique<IniEditor>(configPath_, showConfig_, configManager_.get(),
-                                                &configManager_->getKeybindManager(), assets_.get(),
-                                                &currentIndex_, &tables_);
-    renderer_ = std::make_unique<Renderer>(primaryRenderer_.get(), secondaryRenderer_.get());
-
-    LOG_DEBUG("Loading initial table assets");
-    assets_->loadTableAssets(currentIndex_, tables_);
-    LOG_DEBUG("Resources loaded");
+    // This method is now empty since its logic was moved to initializeDependencies()
 }
 
 void App::initializeActionHandlers() {
@@ -475,11 +501,10 @@ void App::handleEvents() {
             bool eventConsumed = false;
             if (showConfig_) {
                 configEditor_->handleEvent(event);
-                // If the config GUI is capturing a key, it consumes the event
                 if (configEditor_->isCapturingKey()) {
                     eventConsumed = true;
                 }
-                // Allow ConfigSave and ConfigClose to be processed by App even when config GUI is open
+                // Allow ConfigSave and ConfigClose to be processed even when config GUI is open
                 if (inputManager_->isAction(event, "ConfigSave")) {
                     auto it = actionHandlers_.find("ConfigSave");
                     if (it != actionHandlers_.end()) {
@@ -491,10 +516,6 @@ void App::handleEvents() {
                     if (it != actionHandlers_.end()) {
                         it->second();
                     }
-                    eventConsumed = true;
-                } else {
-                    // If the config GUI is open but not capturing a key, assume it consumes the event
-                    // to prevent other actions (like Quit) from being processed
                     eventConsumed = true;
                 }
             }
@@ -551,16 +572,6 @@ void App::render() {
         SDL_RenderPresent(secondaryRenderer_.get());
     }
     LOG_DEBUG("Render complete");
-}
-
-void App::run() {
-    LOG_DEBUG("Entering main loop");
-    while (!quit_) {
-        handleEvents();
-        update();
-        render();
-    }
-    LOG_DEBUG("Exiting main loop");
 }
 
 void App::cleanup() {
