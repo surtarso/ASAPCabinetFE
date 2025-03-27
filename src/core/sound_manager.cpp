@@ -9,6 +9,21 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     sounds_.emplace("table_change", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     sounds_.emplace("table_load", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     sounds_.emplace("config_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+
+    sounds_.emplace("scroll_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_fast_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_fast_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_jump_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_jump_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("scroll_random", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("launch_table", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("launch_screenshot", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("config_save", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("config_close", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("quit", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("screenshot_take", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    sounds_.emplace("screenshot_quit", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
 }
 
 SoundManager::~SoundManager() {
@@ -33,9 +48,21 @@ void SoundManager::loadSounds() {
         }
     };
 
-    loadSound("table_change", settings_.tableChangeSound);
-    loadSound("table_load", settings_.tableLoadSound);
     loadSound("config_toggle", settings_.configToggleSound);
+    loadSound("scroll_prev", settings_.scrollPrevSound);
+    loadSound("scroll_next", settings_.scrollNextSound);
+    loadSound("scroll_fast_prev", settings_.scrollFastPrevSound);
+    loadSound("scroll_fast_next", settings_.scrollFastNextSound);
+    loadSound("scroll_jump_prev", settings_.scrollJumpPrevSound);
+    loadSound("scroll_jump_next", settings_.scrollJumpNextSound);
+    loadSound("scroll_random", settings_.scrollRandomSound);
+    loadSound("launch_table", settings_.launchTableSound);
+    loadSound("launch_screenshot", settings_.launchScreenshotSound);
+    loadSound("config_save", settings_.configSaveSound);
+    loadSound("config_close", settings_.configCloseSound);
+    loadSound("quit", settings_.quitSound);
+    loadSound("screenshot_take", settings_.screenshotTakeSound);
+    loadSound("screenshot_quit", settings_.screenshotQuitSound);
 }
 
 void SoundManager::playSound(const std::string& key) {

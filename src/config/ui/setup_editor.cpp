@@ -208,7 +208,7 @@ namespace SettingsGuiUtils {
 
 // --- ConfigEditor Implementation ---
 const std::vector<std::string> ConfigEditor::sectionOrder_ = {
-    "VPX", "WindowSettings", "CustomMedia", "MediaDimensions", "TitleDisplay", "Keybinds", "Internal"
+    "VPX", "WindowSettings", "CustomMedia", "MediaDimensions", "TitleDisplay", "UISounds","Keybinds", "DefaultMedia","Internal"
 };
 
 ConfigEditor::ConfigEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager, 
