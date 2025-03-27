@@ -4,11 +4,13 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include "config/settings_manager.h"
-#include "keybinds/keybind_manager.h" // Updated include
+#include "keybinds/keybind_manager.h"
+#include "core/sound_manager.h" // Add this
 
 class ScreenshotManager {
 public:
-    ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, KeybindManager* keybindManager);
+    ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, 
+                      KeybindManager* keybindManager, SoundManager* soundManager); // Add SoundManager
     void launchScreenshotMode(const std::string& vpxFile);
     void showHelpWindow(SDL_Window*& helpWindow, SDL_Renderer*& helpRenderer);
 
@@ -23,7 +25,8 @@ private:
     std::string exeDir_;
     std::string vpxLogFile;
     SettingsManager* configManager_;
-    KeybindManager* keybindManager_; // Updated member
+    KeybindManager* keybindManager_;
+    SoundManager* soundManager_; // Add this
 };
 
 #endif // SCREENSHOT_MANAGER_H
