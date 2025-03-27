@@ -214,6 +214,15 @@ namespace ConfigGuiUtils {
     }
 }
 
+// Define the section order (excluding "Table Overrides", which is handled separately)
+const std::vector<std::string> InitialConfigEditor::sectionOrder_ = {
+    "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
+};
+
+const std::vector<std::string> InGameConfigEditor::sectionOrder_ = {
+    "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
+};
+
 // InitialConfigEditor implementation
 InitialConfigEditor::InitialConfigEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
                                          IKeybindProvider* keybindProvider)
@@ -263,6 +272,13 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
 
         if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
             currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
+            // Skip "Internal" section in release builds
+#ifdef NDEBUG
+            if (currentSectionName == "Internal") {
+                currentSectionName.clear();
+                continue;
+            }
+#endif
             sections_.push_back(currentSectionName);
             iniData_[currentSectionName] = ConfigSection();
         } else if (!currentSectionName.empty()) {
@@ -283,6 +299,22 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
         }
         lineIndex++;
     }
+
+    // Sort sections according to sectionOrder_
+    std::vector<std::string> sortedSections;
+    for (const auto& orderedSection : sectionOrder_) {
+        if (std::find(sections_.begin(), sections_.end(), orderedSection) != sections_.end()) {
+            sortedSections.push_back(orderedSection);
+        }
+    }
+    // Add any sections not in sectionOrder_ at the end
+    for (const auto& section : sections_) {
+        if (std::find(sectionOrder_.begin(), sectionOrder_.end(), section) == sectionOrder_.end()) {
+            sortedSections.push_back(section);
+        }
+    }
+    sections_ = sortedSections;
+
     hasChanges_ = false;
     LOG_DEBUG("Loaded config file: " << filename);
 }
@@ -367,7 +399,10 @@ void InitialConfigEditor::drawGUI() {
 }
 
 void InitialConfigEditor::handleEvent(const SDL_Event& event) {
-    if (isCapturingKey_ && event.type == SDL_KEYDOWN) {
+    if (!isCapturingKey_) return;
+
+    // Handle keyboard input
+    if (event.type == SDL_KEYDOWN) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
             isCapturingKey_ = false;
@@ -396,6 +431,26 @@ void InitialConfigEditor::handleEvent(const SDL_Event& event) {
                 capturedKeyName_.clear();
             }
         }
+    }
+    // Handle joystick input
+    else if (event.type == SDL_JOYBUTTONDOWN) {
+        int joystickId = event.jbutton.which;
+        uint8_t button = event.jbutton.button;
+        std::stringstream ss;
+        ss << "JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button);
+        capturedKeyName_ = ss.str();
+
+        for (auto& keyVal : iniData_[currentSection_].keyValues) {
+            if (keyVal.first == capturingKeyName_) {
+                keyVal.second = capturedKeyName_;
+                hasChanges_ = true;
+                keybindProvider_->setJoystickButton(capturingKeyName_, joystickId, button);
+                break;
+            }
+        }
+        isCapturingKey_ = false;
+        capturingKeyName_.clear();
+        capturedKeyName_.clear();
     }
 }
 
@@ -453,6 +508,13 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
 
         if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
             currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
+            // Skip "Internal" section in release builds
+#ifdef NDEBUG
+            if (currentSectionName == "Internal") {
+                currentSectionName.clear();
+                continue;
+            }
+#endif
             sections_.push_back(currentSectionName);
             iniData_[currentSectionName] = ConfigSection();
         } else if (!currentSectionName.empty()) {
@@ -473,6 +535,26 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
         }
         lineIndex++;
     }
+
+    // Sort sections according to sectionOrder_ (excluding "Table Overrides")
+    std::vector<std::string> sortedSections;
+    for (const auto& orderedSection : sectionOrder_) {
+        if (std::find(sections_.begin(), sections_.end(), orderedSection) != sections_.end()) {
+            sortedSections.push_back(orderedSection);
+        }
+    }
+    // Add any sections not in sectionOrder_ (except "Table Overrides") at the end
+    for (const auto& section : sections_) {
+        if (section != "Table Overrides" && std::find(sectionOrder_.begin(), sectionOrder_.end(), section) == sectionOrder_.end()) {
+            sortedSections.push_back(section);
+        }
+    }
+    // Ensure "Table Overrides" is always last
+    if (std::find(sections_.begin(), sections_.end(), "Table Overrides") != sections_.end()) {
+        sortedSections.push_back("Table Overrides");
+    }
+    sections_ = sortedSections;
+
     hasChanges_ = false;
     LOG_DEBUG("Loaded config file: " << filename);
 }
@@ -567,7 +649,7 @@ void InGameConfigEditor::drawTableOverridesGUI() {
 
     std::strncpy(buf, table.tableImage.c_str(), sizeof(buf));
     buf[sizeof(buf) - 1] = '\0';
-    if (ImGui::InputText("Playfield Image", buf, sizeof(buf))) {
+    if (ImGui::InputText("Table Image", buf, sizeof(buf))) {
         table.tableImage = std::string(buf);
         hasChanges_ = true;
     }
@@ -588,7 +670,7 @@ void InGameConfigEditor::drawTableOverridesGUI() {
 
     std::strncpy(buf, table.tableVideo.c_str(), sizeof(buf));
     buf[sizeof(buf) - 1] = '\0';
-    if (ImGui::InputText("Playfield Video", buf, sizeof(buf))) {
+    if (ImGui::InputText("Table Video", buf, sizeof(buf))) {
         table.tableVideo = std::string(buf);
         hasChanges_ = true;
     }
@@ -611,7 +693,10 @@ void InGameConfigEditor::drawTableOverridesGUI() {
 }
 
 void InGameConfigEditor::handleEvent(const SDL_Event& event) {
-    if (isCapturingKey_ && event.type == SDL_KEYDOWN) {
+    if (!isCapturingKey_) return;
+
+    // Handle keyboard input
+    if (event.type == SDL_KEYDOWN) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
             isCapturingKey_ = false;
@@ -640,5 +725,25 @@ void InGameConfigEditor::handleEvent(const SDL_Event& event) {
                 capturedKeyName_.clear();
             }
         }
+    }
+    // Handle joystick input
+    else if (event.type == SDL_JOYBUTTONDOWN) {
+        int joystickId = event.jbutton.which;
+        uint8_t button = event.jbutton.button;
+        std::stringstream ss;
+        ss << "JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button);
+        capturedKeyName_ = ss.str();
+
+        for (auto& keyVal : iniData_[currentSection_].keyValues) {
+            if (keyVal.first == capturingKeyName_) {
+                keyVal.second = capturedKeyName_;
+                hasChanges_ = true;
+                keybindProvider_->setJoystickButton(capturingKeyName_, joystickId, button);
+                break;
+            }
+        }
+        isCapturingKey_ = false;
+        capturingKeyName_.clear();
+        capturedKeyName_.clear();
     }
 }

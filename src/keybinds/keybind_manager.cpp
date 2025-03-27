@@ -1,8 +1,9 @@
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
 #include <algorithm>
-#include <fstream> // Explicitly include for std::ofstream
-#include <ostream> // Ensure operator<< overloads are available
+#include <fstream>
+#include <ostream>
+#include <sstream>
 
 KeybindManager::KeybindManager() {
     initializeDefaults();
@@ -28,20 +29,30 @@ void KeybindManager::initializeDefaults() {
 
 SDL_Keycode KeybindManager::getKey(const std::string& action) const {
     auto it = keybinds_.find(action);
-    if (it != keybinds_.end()) {
-        return it->second.key;
+    if (it != keybinds_.end() && std::holds_alternative<SDL_Keycode>(it->second.input)) {
+        return std::get<SDL_Keycode>(it->second.input);
     }
-    LOG_DEBUG("Keybind not found for action: " << action);
+    LOG_DEBUG("Keybind not found or not a keyboard input for action: " << action);
     return SDLK_UNKNOWN;
 }
 
 void KeybindManager::setKey(const std::string& action, SDL_Keycode key) {
     auto it = keybinds_.find(action);
     if (it != keybinds_.end()) {
-        it->second.key = key;
+        it->second.input = key;
         LOG_DEBUG("Set key for " << action << " to " << SDL_GetKeyName(key));
     } else {
         LOG_DEBUG("Cannot set key: Action not found: " << action);
+    }
+}
+
+void KeybindManager::setJoystickButton(const std::string& action, int joystickId, uint8_t button) {
+    auto it = keybinds_.find(action);
+    if (it != keybinds_.end()) {
+        it->second.input = JoystickInput{joystickId, button};
+        LOG_DEBUG("Set joystick button for " << action << " to JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button));
+    } else {
+        LOG_DEBUG("Cannot set joystick button: Action not found: " << action);
     }
 }
 
@@ -66,12 +77,32 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
     for (const auto& [key, value] : keybindData) {
         auto it = keybinds_.find(key);
         if (it != keybinds_.end()) {
-            SDL_Keycode keyCode = SDL_GetKeyFromName(value.c_str());
-            if (keyCode != SDLK_UNKNOWN) {
-                it->second.key = keyCode;
-                LOG_DEBUG("Loaded keybind " << key << " = " << value << " (keycode: " << keyCode << ")");
+            // Check if the value is a joystick input (e.g., "JOY_0_BUTTON_3")
+            if (value.find("JOY_") == 0) {
+                size_t joyEnd = value.find("_BUTTON_");
+                if (joyEnd != std::string::npos) {
+                    std::string joyIdStr = value.substr(4, joyEnd - 4);
+                    std::string buttonStr = value.substr(joyEnd + 8);
+                    try {
+                        int joystickId = std::stoi(joyIdStr);
+                        uint8_t button = static_cast<uint8_t>(std::stoi(buttonStr));
+                        it->second.input = JoystickInput{joystickId, button};
+                        LOG_DEBUG("Loaded joystick keybind " << key << " = " << value);
+                    } catch (...) {
+                        LOG_DEBUG("Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
+                    }
+                } else {
+                    LOG_DEBUG("Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
+                }
             } else {
-                LOG_DEBUG("Invalid key name for " << key << ": " << value << ", keeping default");
+                // Assume it's a keyboard input
+                SDL_Keycode keyCode = SDL_GetKeyFromName(value.c_str());
+                if (keyCode != SDLK_UNKNOWN) {
+                    it->second.input = keyCode;
+                    LOG_DEBUG("Loaded keybind " << key << " = " << value << " (keycode: " << keyCode << ")");
+                } else {
+                    LOG_DEBUG("Invalid key name for " << key << ": " << value << ", keeping default");
+                }
             }
         }
     }
@@ -84,9 +115,27 @@ void KeybindManager::saveKeybinds(std::ofstream& file) const {
     }
     file << "[Keybinds]\n";
     for (const auto& action : getActions()) {
-        SDL_Keycode key = getKey(action);
-        const char* keyName = SDL_GetKeyName(key);
-        file << action << "=" << (keyName ? keyName : "Unknown") << "\n";
-        LOG_DEBUG("Saved keybind " << action << " = " << (keyName ? keyName : "Unknown"));
+        const auto& keybind = keybinds_.at(action);
+        if (std::holds_alternative<SDL_Keycode>(keybind.input)) {
+            SDL_Keycode key = std::get<SDL_Keycode>(keybind.input);
+            const char* keyName = SDL_GetKeyName(key);
+            file << action << "=" << (keyName ? keyName : "Unknown") << "\n";
+            LOG_DEBUG("Saved keybind " << action << " = " << (keyName ? keyName : "Unknown"));
+        } else if (std::holds_alternative<JoystickInput>(keybind.input)) {
+            const auto& joyInput = std::get<JoystickInput>(keybind.input);
+            std::stringstream ss;
+            ss << "JOY_" << joyInput.joystickId << "_BUTTON_" << static_cast<int>(joyInput.button);
+            file << action << "=" << ss.str() << "\n";
+            LOG_DEBUG("Saved joystick keybind " << action << " = " << ss.str());
+        }
     }
+}
+
+bool KeybindManager::isJoystickAction(const SDL_JoyButtonEvent& event, const std::string& action) const {
+    auto it = keybinds_.find(action);
+    if (it != keybinds_.end() && std::holds_alternative<JoystickInput>(it->second.input)) {
+        const auto& joyInput = std::get<JoystickInput>(it->second.input);
+        return joyInput.joystickId == event.which && joyInput.button == event.button;
+    }
+    return false;
 }

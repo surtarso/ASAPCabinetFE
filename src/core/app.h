@@ -39,8 +39,11 @@ private:
     std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)> tableChangeSound_;
     std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)> tableLoadSound_;
 
+    // Joystick management
+    std::vector<SDL_Joystick*> joysticks_;
+
     std::unique_ptr<ConfigManager> configManager_;
-    std::unique_ptr<InGameConfigEditor> configEditor_; // Changed from IniEditor
+    std::unique_ptr<InGameConfigEditor> configEditor_;
     std::unique_ptr<InputManager> inputManager_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<AssetManager> assets_;

@@ -156,7 +156,7 @@ void App::initializeDependencies() {
 
 void App::run() {
     LOG_DEBUG("Starting App::run");
-    initializeDependencies(); // Call the new method to set up dependencies
+    initializeDependencies();
 
     LOG_DEBUG("Entering main loop");
     while (!quit_) {
@@ -262,7 +262,7 @@ void App::runInitialConfig() {
 }
 
 void App::initializeSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         exit(1);
     }
@@ -275,6 +275,19 @@ void App::initializeSDL() {
         exit(1);
     }
     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+
+    // Initialize joysticks
+    int numJoysticks = SDL_NumJoysticks();
+    LOG_DEBUG("Found " << numJoysticks << " joysticks");
+    for (int i = 0; i < numJoysticks; ++i) {
+        SDL_Joystick* joystick = SDL_JoystickOpen(i);
+        if (joystick) {
+            joysticks_.push_back(joystick);
+            LOG_DEBUG("Opened joystick " << i << ": " << SDL_JoystickName(joystick));
+        } else {
+            LOG_DEBUG("Failed to open joystick " << i << ": " << SDL_GetError());
+        }
+    }
 }
 
 void App::createWindowsAndRenderers() {
@@ -496,22 +509,52 @@ void App::handleEvents() {
             LOG_DEBUG("SDL_QUIT received");
             return;
         }
-        if (event.type == SDL_KEYDOWN) {
-            LOG_DEBUG("Key pressed: " << SDL_GetKeyName(event.key.keysym.sym));
-            bool eventConsumed = false;
-            if (showConfig_) {
-                configEditor_->handleEvent(event);
-                if (configEditor_->isCapturingKey()) {
-                    eventConsumed = true;
+        // Handle joystick connection/disconnection
+        if (event.type == SDL_JOYDEVICEADDED) {
+            SDL_Joystick* joystick = SDL_JoystickOpen(event.jdevice.which);
+            if (joystick) {
+                joysticks_.push_back(joystick);
+                LOG_DEBUG("Joystick connected: " << SDL_JoystickName(joystick));
+            }
+        } else if (event.type == SDL_JOYDEVICEREMOVED) {
+            for (auto it = joysticks_.begin(); it != joysticks_.end(); ++it) {
+                if (SDL_JoystickInstanceID(*it) == event.jdevice.which) {
+                    SDL_JoystickClose(*it);
+                    joysticks_.erase(it);
+                    LOG_DEBUG("Joystick disconnected: ID " << event.jdevice.which);
+                    break;
                 }
-                // Allow ConfigSave and ConfigClose to be processed even when config GUI is open
-                if (inputManager_->isAction(event, "ConfigSave")) {
+            }
+        }
+
+        bool eventConsumed = false;
+        if (showConfig_) {
+            configEditor_->handleEvent(event);
+            if (configEditor_->isCapturingKey()) {
+                eventConsumed = true;
+            }
+            // Allow ConfigSave and ConfigClose to be processed even when config GUI is open
+            if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, "ConfigSave")) {
+                auto it = actionHandlers_.find("ConfigSave");
+                if (it != actionHandlers_.end()) {
+                    it->second();
+                }
+                eventConsumed = true;
+            } else if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, "ConfigClose")) {
+                auto it = actionHandlers_.find("ConfigClose");
+                if (it != actionHandlers_.end()) {
+                    it->second();
+                }
+                eventConsumed = true;
+            } else if (event.type == SDL_JOYBUTTONDOWN) {
+                const auto& keybindManager = configManager_->getKeybindManager();
+                if (keybindManager.isJoystickAction(event.jbutton, "ConfigSave")) {
                     auto it = actionHandlers_.find("ConfigSave");
                     if (it != actionHandlers_.end()) {
                         it->second();
                     }
                     eventConsumed = true;
-                } else if (inputManager_->isAction(event, "ConfigClose")) {
+                } else if (keybindManager.isJoystickAction(event.jbutton, "ConfigClose")) {
                     auto it = actionHandlers_.find("ConfigClose");
                     if (it != actionHandlers_.end()) {
                         it->second();
@@ -519,13 +562,20 @@ void App::handleEvents() {
                     eventConsumed = true;
                 }
             }
-            if (!eventConsumed) {
-                for (const auto& action : configManager_->getKeybindManager().getActions()) {
-                    if (inputManager_->isAction(event, action)) {
-                        auto it = actionHandlers_.find(action);
-                        if (it != actionHandlers_.end()) {
-                            it->second();
-                        }
+        }
+
+        if (!eventConsumed) {
+            const auto& keybindManager = configManager_->getKeybindManager();
+            for (const auto& action : keybindManager.getActions()) {
+                if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, action)) {
+                    auto it = actionHandlers_.find(action);
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                } else if (event.type == SDL_JOYBUTTONDOWN && keybindManager.isJoystickAction(event.jbutton, action)) {
+                    auto it = actionHandlers_.find(action);
+                    if (it != actionHandlers_.end()) {
+                        it->second();
                     }
                 }
             }
@@ -605,6 +655,14 @@ void App::cleanup() {
         assets_->clearOldVideoPlayers();
         assets_.reset();
     }
+
+    // Close joysticks
+    for (auto joystick : joysticks_) {
+        if (joystick) {
+            SDL_JoystickClose(joystick);
+        }
+    }
+    joysticks_.clear();
 
     if (ImGui::GetCurrentContext()) {
         ImGui_ImplSDLRenderer2_Shutdown();

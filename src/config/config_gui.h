@@ -40,6 +40,8 @@ public:
     Settings tempSettings_; // Public for App to access
 
 private:
+    // Reordered to match constructor initialization list:
+    // iniFilename_, showFlag_, configManager_, keybindProvider_, tempSettings_
     std::string iniFilename_;
     bool& showFlag_;
     ConfigManager* configManager_;
@@ -57,6 +59,9 @@ private:
     bool fillParentWindow_ = false;
     float saveMessageTimer_ = 0.0f;
     std::map<std::string, bool> showPicker_; // Tracks if color picker is visible for each key
+
+    // Static list of section names in desired order (excluding "Table Overrides")
+    static const std::vector<std::string> sectionOrder_;
 
     void loadIniFile(const std::string& filename);
     void saveIniFile(const std::string& filename);
@@ -77,6 +82,8 @@ public:
     Settings tempSettings_; // Public for App to access
 
 private:
+    // Reordered to match constructor initialization list:
+    // iniFilename_, showFlag_, configManager_, keybindProvider_, assets_, currentIndex_, tables_, tempSettings_
     std::string iniFilename_;
     bool& showFlag_;
     ConfigManager* configManager_;
@@ -96,6 +103,9 @@ private:
     std::string capturedKeyName_;
     float saveMessageTimer_ = 0.0f;
     std::map<std::string, bool> showPicker_; // Tracks if color picker is visible for each key
+
+    // Static list of section names in desired order (excluding "Table Overrides")
+    static const std::vector<std::string> sectionOrder_;
 
     void loadIniFile(const std::string& filename);
     void saveIniFile(const std::string& filename);
