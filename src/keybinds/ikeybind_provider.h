@@ -12,8 +12,10 @@ public:
     virtual void setKey(const std::string& action, SDL_Keycode key) = 0;
     virtual std::vector<std::string> getActions() const = 0;
     virtual std::string getTooltip(const std::string& action) const = 0;
-    // Add method for setting joystick buttons
     virtual void setJoystickButton(const std::string& action, int joystickId, uint8_t button) = 0;
+    // New methods for D-pad and axis support
+    virtual void setJoystickHat(const std::string& action, int joystickId, uint8_t hat, uint8_t direction) = 0;
+    virtual void setJoystickAxis(const std::string& action, int joystickId, uint8_t axis, bool positiveDirection) = 0;
 };
 
 #endif // IKEYBIND_PROVIDER_H
