@@ -12,6 +12,8 @@ public:
     virtual void setKey(const std::string& action, SDL_Keycode key) = 0;
     virtual std::vector<std::string> getActions() const = 0;
     virtual std::string getTooltip(const std::string& action) const = 0;
+    // Add method for setting joystick buttons
+    virtual void setJoystickButton(const std::string& action, int joystickId, uint8_t button) = 0;
 };
 
 #endif // IKEYBIND_PROVIDER_H
