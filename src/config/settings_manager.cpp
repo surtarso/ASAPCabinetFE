@@ -51,6 +51,7 @@ void SettingsManager::parseIniFile(const std::string& filename) {
         settings.vpxSubCmd = "-Play";
         settings.tableChangeSound = "snd/table_change.mp3";
         settings.tableLoadSound = "snd/table_load.mp3";
+        settings.configToggleSound = "snd/config_toggle.mp3";
         return;
     }
 
@@ -131,6 +132,7 @@ void SettingsManager::parseIniFile(const std::string& filename) {
     // Sound settings
     settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
     settings.tableLoadSound = config["Internal"]["TableLoadSound"].empty() ? "snd/table_load.mp3" : config["Internal"]["TableLoadSound"];
+    settings.configToggleSound = config["Internal"]["ConfigToggleSound"].empty() ? "snd/config_toggle.mp3" : config["Internal"]["ConfigToggleSound"];
     
     // Load keybindings
     keybindManager_.loadKeybinds(config["Keybinds"]);
@@ -159,6 +161,7 @@ void SettingsManager::writeIniFile(const std::string& filename) {
     file << "DefaultDmdVideo=" << settings.defaultDmdVideo.substr(settings.defaultDmdVideo.find("img/")) << "\n";
     file << "TableChangeSound=" << settings.tableChangeSound << "\n";
     file << "TableLoadSound=" << settings.tableLoadSound << "\n";
+    file << "ConfigToggleSound=" << settings.configToggleSound << "\n";
     file << "\n[CustomMedia]\n";
     file << "TableImage=" << settings.customTableImage << "\n";
     file << "BackglassImage=" << settings.customBackglassImage << "\n";
