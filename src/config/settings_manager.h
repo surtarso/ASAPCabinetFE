@@ -1,5 +1,5 @@
-#ifndef CONFIG_MANAGER_H
-#define CONFIG_MANAGER_H
+#ifndef SETTINGS_MANAGER_H
+#define SETTINGS_MANAGER_H
 
 #include "config/settings.h"
 #include "keybinds/keybind_manager.h"
@@ -10,18 +10,18 @@
 #include <SDL2/SDL_ttf.h>
 
 class AssetManager;
-class Table;
+class TableLoader;
 
-class ConfigManager {
+class SettingsManager {
 public:
-    ConfigManager(const std::string& configPath);
+    SettingsManager(const std::string& configPath);
     void loadConfig(); // Loads config from file
     void saveConfig(); // Saves config to file
     const Settings& getSettings() const; // Access settings
     KeybindManager& getKeybindManager(); // Access keybind manager
     const KeybindManager& getKeybindManager() const; // Const access
     void applyConfigChanges(SDL_Window* mainWindow, SDL_Window* playfieldWindow); // Apply settings to windows
-    void notifyConfigChanged(AssetManager& assetManager, size_t& selectedTableIndex, std::vector<Table>& tables); // Reload assets
+    void notifyConfigChanged(AssetManager& assetManager, size_t& selectedTableIndex, std::vector<TableLoader>& tables); // Reload assets
 
 private:
     Settings settings; // All config data stored here (except keybinds)

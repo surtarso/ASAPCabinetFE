@@ -3,12 +3,12 @@
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
-#include "config/config_manager.h"
+#include "config/settings_manager.h"
 
 Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRenderer)
     : primaryRenderer_(primaryRenderer), secondaryRenderer_(secondaryRenderer) {}
 
-void Renderer::render(AssetManager &assets, bool showConfig, InGameConfigEditor &configEditor) {
+void Renderer::render(AssetManager &assets, bool showConfig, RuntimeEditor &configEditor) {
     (void)configEditor; // Mark as unused
     renderPrimaryWindow(assets, showConfig);
     renderSecondaryWindow(assets);
@@ -16,7 +16,7 @@ void Renderer::render(AssetManager &assets, bool showConfig, InGameConfigEditor 
 
 void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // Removed configEditor parameter
     LOG_DEBUG("Rendering primary window, showConfig: " << (showConfig ? 1 : 0));
-    const Settings &settings = assets.getConfigManager()->getSettings();
+    const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(primaryRenderer_, &windowWidth, &windowHeight);
 
@@ -50,7 +50,7 @@ void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // R
 }
 
 void Renderer::renderSecondaryWindow(AssetManager &assets) {
-    const Settings &settings = assets.getConfigManager()->getSettings();
+    const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(secondaryRenderer_, &windowWidth, &windowHeight);
 

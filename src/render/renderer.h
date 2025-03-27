@@ -2,13 +2,13 @@
 #define RENDERER_H
 
 #include <SDL.h>
-#include "table/asset_manager.h"
-#include "config/config_gui.h"
+#include "render/asset_manager.h"
+#include "config/ui/setup_editor.h"
 
 class Renderer {
 public:
     Renderer(SDL_Renderer* primaryRenderer, SDL_Renderer* secondaryRenderer);
-    void render(AssetManager& assets, bool showConfig, InGameConfigEditor& configEditor);
+    void render(AssetManager& assets, bool showConfig, RuntimeEditor& configEditor);
 
 private:
     SDL_Renderer* primaryRenderer_;

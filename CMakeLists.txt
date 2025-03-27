@@ -17,12 +17,11 @@ set(SOURCES
     src/main.cpp
     src/core/app.cpp
     src/capture/screenshot_manager.cpp
-    src/config/config_gui.cpp
-    src/config/config_manager.cpp
-    src/input/input_manager.cpp
+    src/config/settings_manager.cpp
+    src/config/ui/setup_editor.cpp
     src/keybinds/keybind_manager.cpp
-    src/table/asset_manager.cpp
-    src/table/table_manager.cpp
+    src/render/asset_manager.cpp
+    src/render/table_loader.cpp
     src/render/renderer.cpp
     src/render/video_player.cpp
     src/imgui/imgui.cpp
@@ -42,9 +41,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src/core
     src/capture
     src/config
-    src/input
+    src/config/ui
     src/keybinds
-    src/table
     src/render
     src/utils
     src/imgui

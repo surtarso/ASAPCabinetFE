@@ -1,29 +1,29 @@
 #ifndef SCREENSHOT_MANAGER_H
 #define SCREENSHOT_MANAGER_H
 
-#include <SDL2/SDL.h>
 #include <string>
-#include <vector>
-
-class ConfigManager;
-class InputManager;
+#include <SDL2/SDL.h>
+#include "config/settings_manager.h"
+#include "keybinds/keybind_manager.h" // Updated include
 
 class ScreenshotManager {
 public:
-    ScreenshotManager(const std::string& exeDir, ConfigManager* configManager, InputManager* inputManager);
+    ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, KeybindManager* keybindManager);
     void launchScreenshotMode(const std::string& vpxFile);
-    void captureScreenshot(const std::string& windowName, const std::string& outputPath);
-    void captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage, 
-                               const std::string& dmdImage, SDL_Window* window);
-    std::string keycodeToString(SDL_Keycode key);
+    void showHelpWindow(SDL_Window*& helpWindow, SDL_Renderer*& helpRenderer);
+
 private:
-    std::string exeDir_;  // Add this to store base path
-    std::string vpxLogFile;
-    ConfigManager* configManager_;
-    InputManager* inputManager_; // Add InputManager
-    std::string shellEscape(const std::string& str);
+    void captureScreenshot(const std::string& windowName, const std::string& outputPath);
+    void captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage,
+                               const std::string& dmdImage, SDL_Window* window);
     bool isWindowVisibleLog(const std::string& title);
-    void showHelpWindow(SDL_Window*& helpWindow, SDL_Renderer*& helpRenderer); // Added declaration
+    std::string shellEscape(const std::string& str);
+    std::string keycodeToString(SDL_Keycode key);
+
+    std::string exeDir_;
+    std::string vpxLogFile;
+    SettingsManager* configManager_;
+    KeybindManager* keybindManager_; // Updated member
 };
 
 #endif // SCREENSHOT_MANAGER_H

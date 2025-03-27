@@ -259,3 +259,57 @@ bool KeybindManager::isJoystickAxisAction(const SDL_JoyAxisEvent& event, const s
     }
     return false;
 }
+
+std::string KeybindManager::eventToString(const SDL_Event& event) const {
+    if (event.type == SDL_KEYDOWN) {
+        SDL_Keycode keyCode = event.key.keysym.sym;
+        if (keyCode == SDLK_ESCAPE || keyCode == SDLK_UNKNOWN) {
+            return "";
+        }
+        const char* keyName = SDL_GetKeyName(keyCode);
+        if (keyName && *keyName) {
+            std::string sdlKeyName = std::string(keyName);
+            if (sdlKeyName.substr(0, 5) == "SDLK_") {
+                sdlKeyName = sdlKeyName.substr(5);
+            }
+            std::transform(sdlKeyName.begin(), sdlKeyName.end(), sdlKeyName.begin(), ::toupper);
+            return sdlKeyName;
+        }
+    } else if (event.type == SDL_JOYBUTTONDOWN) {
+        std::stringstream ss;
+        ss << "JOY_" << event.jbutton.which << "_BUTTON_" << static_cast<int>(event.jbutton.button);
+        return ss.str();
+    } else if (event.type == SDL_JOYHATMOTION) {
+        if (event.jhat.value == SDL_HAT_UP || event.jhat.value == SDL_HAT_DOWN ||
+            event.jhat.value == SDL_HAT_LEFT || event.jhat.value == SDL_HAT_RIGHT) {
+            std::stringstream ss;
+            ss << "JOY_" << event.jhat.which << "_HAT_" << static_cast<int>(event.jhat.hat) << "_";
+            switch (event.jhat.value) {
+                case SDL_HAT_UP: ss << "UP"; break;
+                case SDL_HAT_DOWN: ss << "DOWN"; break;
+                case SDL_HAT_LEFT: ss << "LEFT"; break;
+                case SDL_HAT_RIGHT: ss << "RIGHT"; break;
+            }
+            return ss.str();
+        }
+    } else if (event.type == SDL_JOYAXISMOTION) {
+        const int threshold = 16384;
+        if (event.jaxis.value > threshold || event.jaxis.value < -threshold) {
+            bool positiveDirection = (event.jaxis.value > 0);
+            std::stringstream ss;
+            ss << "JOY_" << event.jaxis.which << "_AXIS_" << static_cast<int>(event.jaxis.axis) << "_"
+               << (positiveDirection ? "POSITIVE" : "NEGATIVE");
+            return ss.str();
+        }
+    }
+    return "";
+}
+
+bool KeybindManager::isAction(const SDL_KeyboardEvent& event, const std::string& action) const {
+    SDL_Keycode key = getKey(action);
+    bool match = (event.keysym.sym == key); // Simplified: event.keysym.sym is the correct member
+    LOG_DEBUG("Checking action: " << action << ", key: " << SDL_GetKeyName(event.keysym.sym) 
+              << " (keycode: " << event.keysym.sym << ") against " << SDL_GetKeyName(key) 
+              << " (keycode: " << key << "), Match=" << match);
+    return match;
+}
