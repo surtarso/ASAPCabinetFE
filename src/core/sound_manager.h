@@ -20,8 +20,8 @@ public:
 private:
     std::string exeDir_;
     const Settings& settings_; // Reference to settings for paths
-    std::unordered_map<std::string, std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>> sounds_;
-
+    // std::unordered_map<std::string, std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>> sounds_;
+    std::unordered_map<std::string, std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>> sounds_;
     // Helper to trim whitespace
     std::string trim(const std::string& str);
 };
