@@ -15,7 +15,7 @@
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "core/window_manager.h"
-#include "sound/sound_manager.h"
+#include "sound/isound_manager.h"
 
 class WindowManager; // Forward declaration
 
@@ -37,7 +37,7 @@ private:
 
     std::unique_ptr<WindowManager> windowManager_; // New class for windows/renderers
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
-    std::unique_ptr<SoundManager> soundManager_;
+    std::unique_ptr<ISoundManager> soundManager_;
     std::vector<SDL_Joystick*> joysticks_;
 
     std::unique_ptr<SettingsManager> configManager_;

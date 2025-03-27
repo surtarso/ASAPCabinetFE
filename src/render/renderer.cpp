@@ -10,12 +10,11 @@ Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRendere
 
 void Renderer::render(AssetManager &assets, bool showConfig, RuntimeEditor &configEditor) {
     (void)configEditor; // Mark as unused
-    renderPrimaryWindow(assets, showConfig);
+    renderPrimaryWindow(assets);
     renderSecondaryWindow(assets);
 }
 
-void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // Removed configEditor parameter
-    //LOG_DEBUG("Rendering primary window, showConfig: " << (showConfig ? 1 : 0));
+void Renderer::renderPrimaryWindow(AssetManager &assets) {
     const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(primaryRenderer_, &windowWidth, &windowHeight);
@@ -39,10 +38,10 @@ void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // R
         nameRect.x = 10;
         nameRect.y = windowHeight - nameRect.h - 10;
         SDL_SetRenderDrawColor(primaryRenderer_,
-                                settings.fontBgColor.r,
-                                settings.fontBgColor.g,
-                                settings.fontBgColor.b,
-                                settings.fontBgColor.a);
+                               settings.fontBgColor.r,
+                               settings.fontBgColor.g,
+                               settings.fontBgColor.b,
+                               settings.fontBgColor.a);
         SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
         SDL_RenderFillRect(primaryRenderer_, &bgRect);
         SDL_RenderCopy(primaryRenderer_, assets.tableNameTexture.get(), nullptr, &nameRect);
