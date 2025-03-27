@@ -18,6 +18,7 @@
 #include <algorithm> // For std::transform
 #include <sstream>   // For std::stringstream
 
+// --- Config GUI Utilities ---
 namespace ConfigGuiUtils {
     void DrawSectionsPane(const std::vector<std::string>& sections, std::string& currentSection, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName) {
         ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
@@ -214,7 +215,7 @@ namespace ConfigGuiUtils {
     }
 }
 
-// Define the section order (excluding "Table Overrides", which is handled separately)
+// --- Section Order Definitions ---
 const std::vector<std::string> InitialConfigEditor::sectionOrder_ = {
     "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
 };
@@ -223,7 +224,7 @@ const std::vector<std::string> InGameConfigEditor::sectionOrder_ = {
     "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
 };
 
-// InitialConfigEditor implementation
+// --- InitialConfigEditor Implementation ---
 InitialConfigEditor::InitialConfigEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
                                          IKeybindProvider* keybindProvider)
     : iniFilename_(filename),
@@ -272,7 +273,6 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
 
         if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
             currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
-            // Skip "Internal" section in release builds
 #ifdef NDEBUG
             if (currentSectionName == "Internal") {
                 currentSectionName.clear();
@@ -300,14 +300,12 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
         lineIndex++;
     }
 
-    // Sort sections according to sectionOrder_
     std::vector<std::string> sortedSections;
     for (const auto& orderedSection : sectionOrder_) {
         if (std::find(sections_.begin(), sections_.end(), orderedSection) != sections_.end()) {
             sortedSections.push_back(orderedSection);
         }
     }
-    // Add any sections not in sectionOrder_ at the end
     for (const auto& section : sections_) {
         if (std::find(sectionOrder_.begin(), sectionOrder_.end(), section) == sectionOrder_.end()) {
             sortedSections.push_back(section);
@@ -401,7 +399,7 @@ void InitialConfigEditor::drawGUI() {
 void InitialConfigEditor::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
-    // Handle keyboard input
+    // --- Keyboard Input Capture ---
     if (event.type == SDL_KEYDOWN) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
@@ -432,7 +430,7 @@ void InitialConfigEditor::handleEvent(const SDL_Event& event) {
             }
         }
     }
-    // Handle joystick input
+    // --- Joystick Button Capture ---
     else if (event.type == SDL_JOYBUTTONDOWN) {
         int joystickId = event.jbutton.which;
         uint8_t button = event.jbutton.button;
@@ -452,9 +450,66 @@ void InitialConfigEditor::handleEvent(const SDL_Event& event) {
         capturingKeyName_.clear();
         capturedKeyName_.clear();
     }
+    // --- Joystick Hat (D-pad) Capture ---
+    else if (event.type == SDL_JOYHATMOTION) {
+        int joystickId = event.jhat.which;
+        uint8_t hat = event.jhat.hat;
+        uint8_t value = event.jhat.value;
+        // Only capture simple directions (up, down, left, right), not diagonals
+        if (value == SDL_HAT_UP || value == SDL_HAT_DOWN || value == SDL_HAT_LEFT || value == SDL_HAT_RIGHT) {
+            std::stringstream ss;
+            ss << "JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_";
+            switch (value) {
+                case SDL_HAT_UP: ss << "UP"; break;
+                case SDL_HAT_DOWN: ss << "DOWN"; break;
+                case SDL_HAT_LEFT: ss << "LEFT"; break;
+                case SDL_HAT_RIGHT: ss << "RIGHT"; break;
+            }
+            capturedKeyName_ = ss.str();
+
+            for (auto& keyVal : iniData_[currentSection_].keyValues) {
+                if (keyVal.first == capturingKeyName_) {
+                    keyVal.second = capturedKeyName_;
+                    hasChanges_ = true;
+                    keybindProvider_->setJoystickHat(capturingKeyName_, joystickId, hat, value);
+                    break;
+                }
+            }
+            isCapturingKey_ = false;
+            capturingKeyName_.clear();
+            capturedKeyName_.clear();
+        }
+    }
+    // --- Joystick Axis (Analog Stick) Capture ---
+    else if (event.type == SDL_JOYAXISMOTION) {
+        int joystickId = event.jaxis.which;
+        uint8_t axis = event.jaxis.axis;
+        int value = event.jaxis.value;
+        // Use a threshold to determine if the axis is "pressed"
+        const int threshold = 16384; // SDL joystick axis range is -32768 to 32767
+        if (value > threshold || value < -threshold) {
+            bool positiveDirection = (value > 0);
+            std::stringstream ss;
+            ss << "JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_"
+               << (positiveDirection ? "POSITIVE" : "NEGATIVE");
+            capturedKeyName_ = ss.str();
+
+            for (auto& keyVal : iniData_[currentSection_].keyValues) {
+                if (keyVal.first == capturingKeyName_) {
+                    keyVal.second = capturedKeyName_;
+                    hasChanges_ = true;
+                    keybindProvider_->setJoystickAxis(capturingKeyName_, joystickId, axis, positiveDirection);
+                    break;
+                }
+            }
+            isCapturingKey_ = false;
+            capturingKeyName_.clear();
+            capturedKeyName_.clear();
+        }
+    }
 }
 
-// InGameConfigEditor implementation
+// --- InGameConfigEditor Implementation ---
 InGameConfigEditor::InGameConfigEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
                                        IKeybindProvider* keybindProvider, AssetManager* assets,
                                        size_t* currentIndex, std::vector<Table>* tables)
@@ -471,7 +526,7 @@ InGameConfigEditor::InGameConfigEditor(const std::string& filename, bool& showFl
     if (!sections_.empty()) {
         currentSection_ = sections_[0];
     }
-    sections_.push_back("Table Overrides"); // Add a custom section for table overrides
+    sections_.push_back("Table Overrides");
 }
 
 void InGameConfigEditor::loadIniFile(const std::string& filename) {
@@ -508,7 +563,6 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
 
         if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
             currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
-            // Skip "Internal" section in release builds
 #ifdef NDEBUG
             if (currentSectionName == "Internal") {
                 currentSectionName.clear();
@@ -536,20 +590,17 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
         lineIndex++;
     }
 
-    // Sort sections according to sectionOrder_ (excluding "Table Overrides")
     std::vector<std::string> sortedSections;
     for (const auto& orderedSection : sectionOrder_) {
         if (std::find(sections_.begin(), sections_.end(), orderedSection) != sections_.end()) {
             sortedSections.push_back(orderedSection);
         }
     }
-    // Add any sections not in sectionOrder_ (except "Table Overrides") at the end
     for (const auto& section : sections_) {
         if (section != "Table Overrides" && std::find(sectionOrder_.begin(), sectionOrder_.end(), section) == sectionOrder_.end()) {
             sortedSections.push_back(section);
         }
     }
-    // Ensure "Table Overrides" is always last
     if (std::find(sections_.begin(), sections_.end(), "Table Overrides") != sections_.end()) {
         sortedSections.push_back("Table Overrides");
     }
@@ -695,7 +746,7 @@ void InGameConfigEditor::drawTableOverridesGUI() {
 void InGameConfigEditor::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
-    // Handle keyboard input
+    // --- Keyboard Input Capture ---
     if (event.type == SDL_KEYDOWN) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
@@ -726,7 +777,7 @@ void InGameConfigEditor::handleEvent(const SDL_Event& event) {
             }
         }
     }
-    // Handle joystick input
+    // --- Joystick Button Capture ---
     else if (event.type == SDL_JOYBUTTONDOWN) {
         int joystickId = event.jbutton.which;
         uint8_t button = event.jbutton.button;
@@ -745,5 +796,62 @@ void InGameConfigEditor::handleEvent(const SDL_Event& event) {
         isCapturingKey_ = false;
         capturingKeyName_.clear();
         capturedKeyName_.clear();
+    }
+    // --- Joystick Hat (D-pad) Capture ---
+    else if (event.type == SDL_JOYHATMOTION) {
+        int joystickId = event.jhat.which;
+        uint8_t hat = event.jhat.hat;
+        uint8_t value = event.jhat.value;
+        // Only capture simple directions (up, down, left, right), not diagonals
+        if (value == SDL_HAT_UP || value == SDL_HAT_DOWN || value == SDL_HAT_LEFT || value == SDL_HAT_RIGHT) {
+            std::stringstream ss;
+            ss << "JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_";
+            switch (value) {
+                case SDL_HAT_UP: ss << "UP"; break;
+                case SDL_HAT_DOWN: ss << "DOWN"; break;
+                case SDL_HAT_LEFT: ss << "LEFT"; break;
+                case SDL_HAT_RIGHT: ss << "RIGHT"; break;
+            }
+            capturedKeyName_ = ss.str();
+
+            for (auto& keyVal : iniData_[currentSection_].keyValues) {
+                if (keyVal.first == capturingKeyName_) {
+                    keyVal.second = capturedKeyName_;
+                    hasChanges_ = true;
+                    keybindProvider_->setJoystickHat(capturingKeyName_, joystickId, hat, value);
+                    break;
+                }
+            }
+            isCapturingKey_ = false;
+            capturingKeyName_.clear();
+            capturedKeyName_.clear();
+        }
+    }
+    // --- Joystick Axis (Analog Stick) Capture ---
+    else if (event.type == SDL_JOYAXISMOTION) {
+        int joystickId = event.jaxis.which;
+        uint8_t axis = event.jaxis.axis;
+        int value = event.jaxis.value;
+        // Use a threshold to determine if the axis is "pressed"
+        const int threshold = 16384; // SDL joystick axis range is -32768 to 32767
+        if (value > threshold || value < -threshold) {
+            bool positiveDirection = (value > 0);
+            std::stringstream ss;
+            ss << "JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_"
+               << (positiveDirection ? "POSITIVE" : "NEGATIVE");
+            capturedKeyName_ = ss.str();
+
+            for (auto& keyVal : iniData_[currentSection_].keyValues) {
+                if (keyVal.first == capturingKeyName_) {
+                    keyVal.second = capturedKeyName_;
+                    hasChanges_ = true;
+                    keybindProvider_->setJoystickAxis(capturingKeyName_, joystickId, axis, positiveDirection);
+                    break;
+                }
+            }
+            isCapturingKey_ = false;
+            capturingKeyName_.clear();
+            capturedKeyName_.clear();
+        }
     }
 }

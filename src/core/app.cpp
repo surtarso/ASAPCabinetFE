@@ -18,6 +18,7 @@
 
 namespace fs = std::filesystem;
 
+// --- Constructor and Destructor ---
 App::App(const std::string& configPath) 
     : configPath_(configPath),
       primaryWindow_(nullptr, SDL_DestroyWindow),
@@ -44,6 +45,7 @@ App::~App() {
     LOG_DEBUG("App destructor completed");
 }
 
+// --- Initialization ---
 void App::initializeDependencies() {
     LOG_DEBUG("Initializing SDL");
     initializeSDL();
@@ -64,7 +66,7 @@ void App::initializeDependencies() {
     // Initialize ImGui
     initializeImGui();
 
-    // Load resources (previously in loadResources())
+    // Load resources
     LOG_DEBUG("Loading resources");
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd))) {
@@ -340,6 +342,7 @@ void App::loadResources() {
     // This method is now empty since its logic was moved to initializeDependencies()
 }
 
+// --- Action Handlers ---
 void App::initializeActionHandlers() {
     actionHandlers_["PreviousTable"] = [this]() {
         LOG_DEBUG("Previous table triggered");
@@ -499,6 +502,7 @@ void App::initializeActionHandlers() {
     };
 }
 
+// --- Event Handling ---
 void App::handleEvents() {
     LOG_DEBUG("Handling events");
     SDL_Event event;
@@ -561,6 +565,36 @@ void App::handleEvents() {
                     }
                     eventConsumed = true;
                 }
+            } else if (event.type == SDL_JOYHATMOTION) {
+                const auto& keybindManager = configManager_->getKeybindManager();
+                if (keybindManager.isJoystickHatAction(event.jhat, "ConfigSave")) {
+                    auto it = actionHandlers_.find("ConfigSave");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                } else if (keybindManager.isJoystickHatAction(event.jhat, "ConfigClose")) {
+                    auto it = actionHandlers_.find("ConfigClose");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                }
+            } else if (event.type == SDL_JOYAXISMOTION) {
+                const auto& keybindManager = configManager_->getKeybindManager();
+                if (keybindManager.isJoystickAxisAction(event.jaxis, "ConfigSave")) {
+                    auto it = actionHandlers_.find("ConfigSave");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                } else if (keybindManager.isJoystickAxisAction(event.jaxis, "ConfigClose")) {
+                    auto it = actionHandlers_.find("ConfigClose");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                }
             }
         }
 
@@ -577,6 +611,16 @@ void App::handleEvents() {
                     if (it != actionHandlers_.end()) {
                         it->second();
                     }
+                } else if (event.type == SDL_JOYHATMOTION && keybindManager.isJoystickHatAction(event.jhat, action)) {
+                    auto it = actionHandlers_.find(action);
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                } else if (event.type == SDL_JOYAXISMOTION && keybindManager.isJoystickAxisAction(event.jaxis, action)) {
+                    auto it = actionHandlers_.find(action);
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
                 }
             }
         }
@@ -584,6 +628,7 @@ void App::handleEvents() {
     LOG_DEBUG("Events handled");
 }
 
+// --- Update and Render ---
 void App::update() {
     LOG_DEBUG("Updating");
     assets_->clearOldVideoPlayers();
@@ -624,6 +669,7 @@ void App::render() {
     LOG_DEBUG("Render complete");
 }
 
+// --- Cleanup ---
 void App::cleanup() {
     LOG_DEBUG("Cleaning up");
     if (assets_) {
