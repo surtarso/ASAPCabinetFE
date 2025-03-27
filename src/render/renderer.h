@@ -14,7 +14,7 @@ private:
     SDL_Renderer* primaryRenderer_;
     SDL_Renderer* secondaryRenderer_;
 
-    void renderPrimaryWindow(AssetManager& assets, bool showConfig); // Removed configEditor parameter
+    void renderPrimaryWindow(AssetManager& assets);
     void renderSecondaryWindow(AssetManager& assets);
 };
 

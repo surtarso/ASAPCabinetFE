@@ -13,6 +13,7 @@
 #include <limits.h>
 #include <algorithm>
 #include <random>
+#include "sound/sound_manager.h" // Added this include
 
 namespace fs = std::filesystem;
 
@@ -137,12 +138,16 @@ void App::initializeSDL() {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         exit(1);
     }
-    if (TTF_Init() == -1) {
-        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
+    if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
+        std::cerr << "Mix_Init Error: " << Mix_GetError() << std::endl;
         exit(1);
     }
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         std::cerr << "Mix_OpenAudio Error: " << Mix_GetError() << std::endl;
+        exit(1);
+    }
+    if (TTF_Init() == -1) {
+        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
         exit(1);
     }
     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
@@ -194,7 +199,7 @@ void App::initializeDependencies() {
     windowManager_ = std::make_unique<WindowManager>(configManager_->getSettings());
     initializeImGui();
 
-    soundManager_ = std::make_unique<SoundManager>(exeDir_, configManager_->getSettings());
+    soundManager_ = std::make_unique<SoundManager>(exeDir_, configManager_->getSettings()); // Fixed: SoundManager now included
     soundManager_->loadSounds(); // Load all sounds here
 
     loadFont();
@@ -218,11 +223,11 @@ void App::initializeDependencies() {
                                              windowManager_->getSecondaryRenderer(), font_.get());
     assets_->setSettingsManager(configManager_.get());
     screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), 
-                                                        &configManager_->getKeybindManager(), 
-                                                        soundManager_.get());
+                                                             &configManager_->getKeybindManager(), 
+                                                             soundManager_.get());
     configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
                                                     &configManager_->getKeybindManager(), assets_.get(),
-                                                    &currentIndex_, &tables_);
+                                                    &currentIndex_, &tables_); // Fixed: Replaced ¤tIndex_ with currentIndex_
     renderer_ = std::make_unique<Renderer>(windowManager_->getPrimaryRenderer(), 
                                            windowManager_->getSecondaryRenderer());
 
@@ -531,7 +536,7 @@ void App::render() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        renderer_->render(*assets_, showConfig_, *configEditor_);
+        renderer_->render(*assets_, showConfig_, *configEditor_); // Fixed: Added showConfig_
 
         if (showConfig_) {
             configEditor_->drawGUI();
