@@ -9,14 +9,17 @@
 #include <vector>
 #include "config/settings_manager.h"
 #include "keybinds/keybind_manager.h" // Updated include
+#include "core/sound_manager.h"
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-ScreenshotManager::ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, KeybindManager* keybindManager) 
-    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), configManager_(configManager), keybindManager_(keybindManager) {
-    LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
-    LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
+ScreenshotManager::ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, 
+    KeybindManager* keybindManager, SoundManager* soundManager) 
+: exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), 
+configManager_(configManager), keybindManager_(keybindManager), soundManager_(soundManager) {
+LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
+LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
 }
 
 std::string ScreenshotManager::shellEscape(const std::string& str) {
@@ -153,9 +156,8 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string backglassImage = tableFolder + "/" + settings.customBackglassImage;
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
-    // Access keybindings via KeybindManager (already updated in constructor)
-    SDL_Keycode screenshotKey = configManager_->getKeybindManager().getKey("ScreenshotKey");
-    SDL_Keycode screenshotQuit = configManager_->getKeybindManager().getKey("ScreenshotQuit");
+    SDL_Keycode screenshotKey = keybindManager_->getKey("ScreenshotKey");
+    SDL_Keycode screenshotQuit = keybindManager_->getKey("ScreenshotQuit");
 
     std::string logDir = exeDir_ + "logs";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
@@ -179,7 +181,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     LOG_DEBUG("Waiting 4s for VPX to fully initialize");
-    sleep(4); // Wait for VPX to load
+    sleep(4);
 
     if (!isWindowVisibleLog("Visual Pinball Player")) {
         LOG_DEBUG("Aborting screenshot mode - VPX window not found after 4s");
@@ -189,7 +191,6 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
     LOG_DEBUG("VPX playfield window detected after 4s.");
 
-    // Additional delay to ensure VPX has fully settled and stolen focus
     LOG_DEBUG("Waiting an additional 1s for VPX to settle");
     sleep(1);
 
@@ -252,17 +253,17 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     SDL_RaiseWindow(window);
-    SDL_SetWindowInputFocus(window); // Explicitly set input focus
+    SDL_SetWindowInputFocus(window);
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
-    for (int i = 0; i < 5; i++) { // Increase to 5 attempts
+    for (int i = 0; i < 5; i++) {
         if (std::system(cmd.c_str()) == 0) {
             LOG_DEBUG("Focus stolen to VPX Screenshot window after " << i << " attempts.");
             break;
         }
         LOG_DEBUG("Focus steal attempt " << i << " failed.");
-        SDL_RaiseWindow(window); // Try raising again
-        SDL_SetWindowInputFocus(window); // Try setting focus again
-        usleep(1000000); // Increase delay to 1 second
+        SDL_RaiseWindow(window);
+        SDL_SetWindowInputFocus(window);
+        usleep(1000000);
         if (i == 4) {
             LOG_DEBUG("Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
         }
@@ -285,22 +286,22 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                     running = false;
                     break;
                 }
-                // Cast SDL_Event to SDL_KeyboardEvent since KeybindManager::isAction expects SDL_KeyboardEvent
                 SDL_KeyboardEvent keyEvent = event.key;
                 if (keybindManager_->isAction(keyEvent, "ScreenshotKey")) {
                     LOG_DEBUG("Capture key '" << keycodeToString(screenshotKey) << "' pressed");
+                    soundManager_->playSound("screenshot_take"); // Add sound
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                    // Keep screenshot mode alive
                 } else if (keybindManager_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_DEBUG("Quit key '" << keycodeToString(screenshotQuit) << "' pressed");
-                    running = false; // Exit screenshot mode, which will kill VPX and return to main UI
+                    soundManager_->playSound("screenshot_quit"); // Add sound
+                    running = false;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int x = event.button.x, y = event.button.y;
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_DEBUG("Capturing screenshots via mouse click...");
+                    soundManager_->playSound("screenshot_take"); // Add sound for mouse click too
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                    // Keep screenshot mode alive
                 }
             }
         }

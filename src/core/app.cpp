@@ -218,7 +218,8 @@ void App::initializeDependencies() {
                                              windowManager_->getSecondaryRenderer(), font_.get());
     assets_->setSettingsManager(configManager_.get());
     screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), 
-                                                             &configManager_->getKeybindManager());
+                                                        &configManager_->getKeybindManager(), 
+                                                        soundManager_.get());
     configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
                                                     &configManager_->getKeybindManager(), assets_.get(),
                                                     &currentIndex_, &tables_);

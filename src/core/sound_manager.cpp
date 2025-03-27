@@ -6,10 +6,7 @@
 SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     : exeDir_(exeDir), settings_(settings) {
     // Initialize all expected keys with nullptr and the deleter
-    sounds_.emplace("table_change", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    sounds_.emplace("table_load", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     sounds_.emplace("config_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-
     sounds_.emplace("scroll_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     sounds_.emplace("scroll_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     sounds_.emplace("scroll_fast_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
