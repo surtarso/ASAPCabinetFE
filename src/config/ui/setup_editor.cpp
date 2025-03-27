@@ -8,19 +8,15 @@
 #include "render/table_loader.h"
 #include "imgui.h"
 #include <fstream>
-#include <iostream>
-#include <map>
-#include <unordered_map>
-#include <vector>
-#include <string>
+#include <sstream>
+#include <cctype>
 #include <cstring>
-#include <cctype>    // For toupper
-#include <algorithm> // For std::transform
-#include <sstream>   // For std::stringstream
+#include <algorithm>
 
-// --- Config GUI Utilities ---
+// --- GUI Utilities ---
 namespace SettingsGuiUtils {
-    void DrawSectionsPane(const std::vector<std::string>& sections, std::string& currentSection, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName) {
+    void DrawSectionsPane(const std::vector<std::string>& sections, std::string& currentSection, 
+                          bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName) {
         ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
         if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, ImGui::GetContentRegionAvail().y))) {
             for (const auto& section : sections) {
@@ -30,7 +26,7 @@ namespace SettingsGuiUtils {
                         isCapturingKey = false;
                         capturingKeyName.clear();
                         capturedKeyName.clear();
-                        LOG_DEBUG("Switched to section: " << section << ", reset key capture state");
+                        LOG_DEBUG("Switched to section: " << section);
                     }
                     currentSection = section;
                 }
@@ -42,12 +38,14 @@ namespace SettingsGuiUtils {
         ImGui::EndChild();
     }
 
-    void DrawKeyValuesPane(SettingsSection& section, IKeybindProvider* keybindProvider, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, const std::string& currentSection, std::map<std::string, bool>& showPicker, const std::unordered_map<std::string, std::string>& explanations, bool& hasChanges) {
+    void DrawKeyValuesPane(SettingsSection& section, IKeybindProvider* keybindProvider, 
+                           bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, 
+                           const std::string& currentSection, std::map<std::string, bool>& showPicker, 
+                           const std::unordered_map<std::string, std::string>& explanations, bool& hasChanges) {
         ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
         static bool firstRenderOfKeybinds = true;
         if (currentSection == "Keybinds" && firstRenderOfKeybinds) {
             if (isCapturingKey) {
-                LOG_DEBUG("Resetting unexpected key capture state on entering Keybinds section");
                 isCapturingKey = false;
                 capturingKeyName.clear();
                 capturedKeyName.clear();
@@ -77,8 +75,7 @@ namespace SettingsGuiUtils {
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
-                    std::string tooltip = explanations.at(kv.first);
-                    ImGui::TextWrapped("%s", tooltip.c_str());
+                    ImGui::TextWrapped("%s", explanations.at(kv.first).c_str());
                     ImGui::PopTextWrapPos();
                     ImGui::EndTooltip();
                 }
@@ -88,7 +85,6 @@ namespace SettingsGuiUtils {
             if (currentSection == "TitleDisplay" && (kv.first == "FontColor" || kv.first == "FontBgColor")) {
                 float color[4];
                 ParseColorString(kv.second, color);
-
                 ImGui::ColorButton(("##ColorButton_" + kv.first).c_str(), ImVec4(color[0], color[1], color[2], color[3]));
                 ImGui::SameLine();
                 if (ImGui::Button(("Pick##" + kv.first).c_str())) {
@@ -109,13 +105,10 @@ namespace SettingsGuiUtils {
                 }
             } else if (currentSection == "Keybinds") {
                 SDL_Keycode keyCode = keybindProvider->getKey(kv.first);
-                LOG_DEBUG("Displaying key for " << kv.first << ", keycode: " << keyCode);
                 const char* keyDisplayName = SDL_GetKeyName(keyCode);
-                if (keyDisplayName == nullptr || std::strcmp(keyDisplayName, "") == 0 || std::strcmp(keyDisplayName, "Unknown Key") == 0) {
+                if (!keyDisplayName || !*keyDisplayName || std::strcmp(keyDisplayName, "Unknown Key") == 0) {
                     keyDisplayName = kv.second.c_str();
-                    LOG_DEBUG("SDL_GetKeyName failed for " << kv.first << ", falling back to ini value: " << keyDisplayName);
                 }
-
                 ImGui::Text("%s", keyDisplayName);
                 ImGui::SameLine(350);
                 std::string buttonLabel = (isCapturingKey && capturingKeyName == kv.first) ? "Waiting...##" + kv.first : "Set Key##" + kv.first;
@@ -139,31 +132,32 @@ namespace SettingsGuiUtils {
         ImGui::EndChild();
     }
 
-    void DrawButtonPane(bool& showFlag, const std::string& iniFilename, SettingsManager* configManager, AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, bool& hasChanges, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, float& saveMessageTimer, const std::map<std::string, SettingsSection>& iniData) {
+    void DrawButtonPane(bool& showFlag, const std::string& iniFilename, SettingsManager* configManager, 
+                        AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
+                        bool& hasChanges, bool& isCapturingKey, std::string& capturingKeyName, 
+                        std::string& capturedKeyName, float& saveMessageTimer, 
+                        const std::map<std::string, SettingsSection>& iniData) {
         ImGui::BeginChild("ButtonPane", ImVec2(0, ImGui::GetFrameHeightWithSpacing() * 0.8f), false, ImGuiWindowFlags_NoScrollbar);
         if (ImGui::Button("Save")) {
             std::ofstream file(iniFilename);
             if (!file.is_open()) {
                 LOG_DEBUG("Could not write " << iniFilename);
             } else {
-                LOG_DEBUG("Saving config to " << iniFilename << ":");
                 for (const auto& [section, configSection] : iniData) {
                     file << "[" << section << "]\n";
                     for (const auto& kv : configSection.keyValues) {
-                        LOG_DEBUG(kv.first << " = " << kv.second);
                         file << kv.first << " = " << kv.second << "\n";
                     }
                     file << "\n";
                 }
                 file.close();
-                LOG_DEBUG("Config saved to " << iniFilename);
-
                 configManager->loadConfig();
-                if (configManager && assets && currentIndex && tables) {
+                if (assets && currentIndex && tables) {
                     configManager->notifyConfigChanged(*assets, *currentIndex, *tables);
                 }
                 hasChanges = false;
                 saveMessageTimer = 3.0f;
+                LOG_DEBUG("Config saved to " << iniFilename);
             }
         }
         ImGui::SameLine();
@@ -187,18 +181,15 @@ namespace SettingsGuiUtils {
         std::string token;
         int values[4] = {255, 255, 255, 255};
         int i = 0;
-
         while (std::getline(ss, token, ',') && i < 4) {
             try {
                 values[i] = std::stoi(token);
                 values[i] = std::max(0, std::min(255, values[i]));
             } catch (...) {
-                LOG_DEBUG("Invalid color component in: " + colorStr + ", using default");
                 break;
             }
             i++;
         }
-
         for (int j = 0; j < 4; j++) {
             color[j] = values[j] / 255.0f;
         }
@@ -215,18 +206,13 @@ namespace SettingsGuiUtils {
     }
 }
 
-// --- Section Order Definitions ---
-const std::vector<std::string> SetupEditor::sectionOrder_ = {
+// --- ConfigEditor Implementation ---
+const std::vector<std::string> ConfigEditor::sectionOrder_ = {
     "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
 };
 
-const std::vector<std::string> RuntimeEditor::sectionOrder_ = {
-    "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
-};
-
-// --- SetupEditor Implementation ---
-SetupEditor::SetupEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager,
-                                         IKeybindProvider* keybindProvider)
+ConfigEditor::ConfigEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager, 
+                           IKeybindProvider* keybindProvider)
     : iniFilename_(filename),
       showFlag_(showFlag),
       configManager_(configManager),
@@ -239,7 +225,7 @@ SetupEditor::SetupEditor(const std::string& filename, bool& showFlag, SettingsMa
     }
 }
 
-void SetupEditor::loadIniFile(const std::string& filename) {
+void ConfigEditor::loadIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename);
@@ -317,49 +303,12 @@ void SetupEditor::loadIniFile(const std::string& filename) {
     LOG_DEBUG("Loaded config file: " << filename);
 }
 
-void SetupEditor::saveIniFile(const std::string& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        LOG_DEBUG("Could not write " << filename);
-        return;
-    }
-
-    LOG_DEBUG("Saving config to " << filename << ":");
-    for (size_t i = 0; i < originalLines_.size(); ++i) {
-        if (lineToKey_.find(i) != lineToKey_.end()) {
-            auto [section, key] = lineToKey_[i];
-            for (const auto& kv : iniData_[section].keyValues) {
-                if (kv.first == key && iniData_[section].keyToLineIndex[key] == i) {
-                    LOG_DEBUG(key << " = " << kv.second);
-                    file << key << " = " << kv.second << "\n";
-                    break;
-                }
-            }
-        } else {
-            file << originalLines_[i] << "\n";
-        }
-    }
-    file.close();
-    LOG_DEBUG("Config saved to " << filename);
-
-    configManager_->loadConfig();
-    hasChanges_ = false;
-    saveMessageTimer_ = 3.0f;
-}
-
-void SetupEditor::initExplanations() {
+void ConfigEditor::initExplanations() {
     explanations_ = Tooltips::getTooltips();
 }
 
-void SetupEditor::drawGUI() {
-    LOG_DEBUG("drawGUI called, showConfig_: " << (showFlag_ ? 1 : 0));
-    if (!showFlag_) {
-        LOG_DEBUG("Exiting drawGUI due to showFlag false");
-        return;
-    }
-    LOG_DEBUG("Drawing config GUI");
-    ImGuiContext* ctx = ImGui::GetCurrentContext();
-    LOG_DEBUG("ImGui context in drawGUI: " << (void*)ctx);
+void ConfigEditor::drawGUI() {
+    if (!showFlag_) return;
 
     if (fillParentWindow_) {
         ImGuiIO& io = ImGui::GetIO();
@@ -369,7 +318,8 @@ void SetupEditor::drawGUI() {
     } else {
         float windowWidth = 800.0f;
         float windowHeight = 500.0f;
-        ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, 
+                                       (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
         ImGui::Begin("ASAPCabinetFE Configuration", &showFlag_, ImGuiWindowFlags_NoTitleBar);
     }
@@ -379,8 +329,12 @@ void SetupEditor::drawGUI() {
     SettingsGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
 
     ImGui::SameLine();
-    if (iniData_.find(currentSection_) != iniData_.end()) {
-        SettingsGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
+    if (currentSection_ == "Table Overrides") {
+        drawTableOverridesGUI();
+    } else if (iniData_.find(currentSection_) != iniData_.end()) {
+        SettingsGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, 
+                                            isCapturingKey_, capturingKeyName_, capturedKeyName_, 
+                                            currentSection_, showPicker_, explanations_, hasChanges_);
     } else {
         ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
         ImGui::Text("No section data available.");
@@ -391,15 +345,16 @@ void SetupEditor::drawGUI() {
         saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
     }
 
-    SettingsGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, nullptr, nullptr, nullptr, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
+    SettingsGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, getAssets(), getCurrentIndex(), 
+                                     getTables(), hasChanges_, isCapturingKey_, capturingKeyName_, 
+                                     capturedKeyName_, saveMessageTimer_, iniData_);
 
     ImGui::End();
 }
 
-void SetupEditor::handleEvent(const SDL_Event& event) {
+void ConfigEditor::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
-    // --- Keyboard Input Capture ---
     if (event.type == SDL_KEYDOWN) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         if (keyCode == SDLK_ESCAPE) {
@@ -429,9 +384,7 @@ void SetupEditor::handleEvent(const SDL_Event& event) {
                 capturedKeyName_.clear();
             }
         }
-    }
-    // --- Joystick Button Capture ---
-    else if (event.type == SDL_JOYBUTTONDOWN) {
+    } else if (event.type == SDL_JOYBUTTONDOWN) {
         int joystickId = event.jbutton.which;
         uint8_t button = event.jbutton.button;
         std::stringstream ss;
@@ -449,13 +402,10 @@ void SetupEditor::handleEvent(const SDL_Event& event) {
         isCapturingKey_ = false;
         capturingKeyName_.clear();
         capturedKeyName_.clear();
-    }
-    // --- Joystick Hat (D-pad) Capture ---
-    else if (event.type == SDL_JOYHATMOTION) {
+    } else if (event.type == SDL_JOYHATMOTION) {
         int joystickId = event.jhat.which;
         uint8_t hat = event.jhat.hat;
         uint8_t value = event.jhat.value;
-        // Only capture simple directions (up, down, left, right), not diagonals
         if (value == SDL_HAT_UP || value == SDL_HAT_DOWN || value == SDL_HAT_LEFT || value == SDL_HAT_RIGHT) {
             std::stringstream ss;
             ss << "JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_";
@@ -479,14 +429,11 @@ void SetupEditor::handleEvent(const SDL_Event& event) {
             capturingKeyName_.clear();
             capturedKeyName_.clear();
         }
-    }
-    // --- Joystick Axis (Analog Stick) Capture ---
-    else if (event.type == SDL_JOYAXISMOTION) {
+    } else if (event.type == SDL_JOYAXISMOTION) {
         int joystickId = event.jaxis.which;
         uint8_t axis = event.jaxis.axis;
         int value = event.jaxis.value;
-        // Use a threshold to determine if the axis is "pressed"
-        const int threshold = 16384; // SDL joystick axis range is -32768 to 32767
+        const int threshold = 16384;
         if (value > threshold || value < -threshold) {
             bool positiveDirection = (value > 0);
             std::stringstream ss;
@@ -510,179 +457,14 @@ void SetupEditor::handleEvent(const SDL_Event& event) {
 }
 
 // --- RuntimeEditor Implementation ---
-RuntimeEditor::RuntimeEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager,
-                                       IKeybindProvider* keybindProvider, AssetManager* assets,
-                                       size_t* currentIndex, std::vector<TableLoader>* tables)
-    : iniFilename_(filename),
-      showFlag_(showFlag),
-      configManager_(configManager),
-      keybindProvider_(keybindProvider),
+RuntimeEditor::RuntimeEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager, 
+                             IKeybindProvider* keybindProvider, AssetManager* assets, size_t* currentIndex, 
+                             std::vector<TableLoader>* tables)
+    : ConfigEditor(filename, showFlag, configManager, keybindProvider),
       assets_(assets),
       currentIndex_(currentIndex),
-      tables_(tables),
-      tempSettings_(configManager ? configManager->getSettings() : Settings{}) {
-    loadIniFile(filename);
-    initExplanations();
-    if (!sections_.empty()) {
-        currentSection_ = sections_[0];
-    }
+      tables_(tables) {
     sections_.push_back("Table Overrides");
-}
-
-void RuntimeEditor::loadIniFile(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        LOG_DEBUG("Could not open " << filename);
-        return;
-    }
-
-    std::string line;
-    originalLines_.clear();
-    while (std::getline(file, line)) {
-        originalLines_.push_back(line);
-    }
-    file.close();
-
-    std::string currentSectionName;
-    size_t lineIndex = 0;
-    iniData_.clear();
-    sections_.clear();
-    lineToKey_.clear();
-    for (const auto& line : originalLines_) {
-        size_t start = line.find_first_not_of(" \t");
-        if (start == std::string::npos) {
-            lineIndex++;
-            continue;
-        }
-        std::string trimmedLine = line.substr(start);
-
-        if (trimmedLine.empty() || trimmedLine[0] == ';') {
-            lineIndex++;
-            continue;
-        }
-
-        if (trimmedLine.front() == '[' && trimmedLine.back() == ']') {
-            currentSectionName = trimmedLine.substr(1, trimmedLine.size() - 2);
-#ifdef NDEBUG
-            if (currentSectionName == "Internal") {
-                currentSectionName.clear();
-                continue;
-            }
-#endif
-            sections_.push_back(currentSectionName);
-            iniData_[currentSectionName] = SettingsSection();
-        } else if (!currentSectionName.empty()) {
-            size_t pos = trimmedLine.find('=');
-            if (pos != std::string::npos) {
-                std::string key = trimmedLine.substr(0, pos);
-                std::string value = trimmedLine.substr(pos + 1);
-                size_t endKey = key.find_last_not_of(" \t");
-                if (endKey != std::string::npos)
-                    key = key.substr(0, endKey + 1);
-                size_t startValue = value.find_first_not_of(" \t");
-                if (startValue != std::string::npos)
-                    value = value.substr(startValue);
-                iniData_[currentSectionName].keyValues.emplace_back(key, value);
-                iniData_[currentSectionName].keyToLineIndex[key] = lineIndex;
-                lineToKey_[lineIndex] = {currentSectionName, key};
-            }
-        }
-        lineIndex++;
-    }
-
-    std::vector<std::string> sortedSections;
-    for (const auto& orderedSection : sectionOrder_) {
-        if (std::find(sections_.begin(), sections_.end(), orderedSection) != sections_.end()) {
-            sortedSections.push_back(orderedSection);
-        }
-    }
-    for (const auto& section : sections_) {
-        if (section != "Table Overrides" && std::find(sectionOrder_.begin(), sectionOrder_.end(), section) == sectionOrder_.end()) {
-            sortedSections.push_back(section);
-        }
-    }
-    if (std::find(sections_.begin(), sections_.end(), "Table Overrides") != sections_.end()) {
-        sortedSections.push_back("Table Overrides");
-    }
-    sections_ = sortedSections;
-
-    hasChanges_ = false;
-    LOG_DEBUG("Loaded config file: " << filename);
-}
-
-void RuntimeEditor::saveIniFile(const std::string& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        LOG_DEBUG("Could not write " << filename);
-        return;
-    }
-
-    LOG_DEBUG("Saving config to " << filename << ":");
-    for (size_t i = 0; i < originalLines_.size(); ++i) {
-        if (lineToKey_.find(i) != lineToKey_.end()) {
-            auto [section, key] = lineToKey_[i];
-            for (const auto& kv : iniData_[section].keyValues) {
-                if (kv.first == key && iniData_[section].keyToLineIndex[key] == i) {
-                    LOG_DEBUG(key << " = " << kv.second);
-                    file << key << " = " << kv.second << "\n";
-                    break;
-                }
-            }
-        } else {
-            file << originalLines_[i] << "\n";
-        }
-    }
-    file.close();
-    LOG_DEBUG("Config saved to " << filename);
-
-    configManager_->loadConfig();
-    configManager_->notifyConfigChanged(*assets_, *currentIndex_, *tables_);
-    hasChanges_ = false;
-    saveMessageTimer_ = 3.0f;
-}
-
-void RuntimeEditor::initExplanations() {
-    explanations_ = Tooltips::getTooltips();
-}
-
-void RuntimeEditor::drawGUI() {
-    LOG_DEBUG("drawGUI called, showConfig_: " << (showFlag_ ? 1 : 0));
-    if (!showFlag_) {
-        LOG_DEBUG("Exiting drawGUI due to showFlag false");
-        return;
-    }
-    LOG_DEBUG("Drawing config GUI");
-    ImGuiContext* ctx = ImGui::GetCurrentContext();
-    LOG_DEBUG("ImGui context in drawGUI: " << (void*)ctx);
-
-    float windowWidth = 800.0f;
-    float windowHeight = 500.0f;
-    ImGui::SetNextWindowPos(ImVec2((tempSettings_.mainWindowWidth - windowWidth) / 2.0f, (tempSettings_.mainWindowHeight - windowHeight) / 2.0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
-    ImGui::Begin("ASAPCabinetFE Configuration", &showFlag_, ImGuiWindowFlags_NoTitleBar);
-
-    ImGui::SetWindowFocus();
-
-    SettingsGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
-
-    ImGui::SameLine();
-    if (currentSection_ == "Table Overrides") {
-        drawTableOverridesGUI();
-    } else if (iniData_.find(currentSection_) != iniData_.end()) {
-        SettingsGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
-    } else {
-        ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
-        ImGui::Text("No section data available.");
-        ImGui::EndChild();
-    }
-
-    if (saveMessageTimer_ > 0.0f) {
-        saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
-    }
-
-    SettingsGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, assets_, currentIndex_, tables_, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
-
-    ImGui::End();
 }
 
 void RuntimeEditor::drawTableOverridesGUI() {
@@ -694,7 +476,6 @@ void RuntimeEditor::drawTableOverridesGUI() {
     }
 
     ImGui::Text("Table Overrides for: %s", (*tables_)[*currentIndex_].tableName.c_str());
-
     TableLoader& table = (*tables_)[*currentIndex_];
     char buf[256];
 
@@ -741,117 +522,4 @@ void RuntimeEditor::drawTableOverridesGUI() {
     }
 
     ImGui::EndChild();
-}
-
-void RuntimeEditor::handleEvent(const SDL_Event& event) {
-    if (!isCapturingKey_) return;
-
-    // --- Keyboard Input Capture ---
-    if (event.type == SDL_KEYDOWN) {
-        SDL_Keycode keyCode = event.key.keysym.sym;
-        if (keyCode == SDLK_ESCAPE) {
-            isCapturingKey_ = false;
-            capturingKeyName_.clear();
-            capturedKeyName_.clear();
-        } else if (keyCode != SDLK_UNKNOWN) {
-            const char* keyName = SDL_GetKeyName(keyCode);
-            if (keyName && *keyName) {
-                std::string sdlKeyName = std::string(keyName);
-                if (sdlKeyName.substr(0, 5) == "SDLK_") {
-                    sdlKeyName = sdlKeyName.substr(5);
-                }
-                std::transform(sdlKeyName.begin(), sdlKeyName.end(), sdlKeyName.begin(), ::toupper);
-                capturedKeyName_ = sdlKeyName;
-
-                for (auto& keyVal : iniData_[currentSection_].keyValues) {
-                    if (keyVal.first == capturingKeyName_) {
-                        keyVal.second = capturedKeyName_;
-                        hasChanges_ = true;
-                        keybindProvider_->setKey(capturingKeyName_, keyCode);
-                        break;
-                    }
-                }
-                isCapturingKey_ = false;
-                capturingKeyName_.clear();
-                capturedKeyName_.clear();
-            }
-        }
-    }
-    // --- Joystick Button Capture ---
-    else if (event.type == SDL_JOYBUTTONDOWN) {
-        int joystickId = event.jbutton.which;
-        uint8_t button = event.jbutton.button;
-        std::stringstream ss;
-        ss << "JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button);
-        capturedKeyName_ = ss.str();
-
-        for (auto& keyVal : iniData_[currentSection_].keyValues) {
-            if (keyVal.first == capturingKeyName_) {
-                keyVal.second = capturedKeyName_;
-                hasChanges_ = true;
-                keybindProvider_->setJoystickButton(capturingKeyName_, joystickId, button);
-                break;
-            }
-        }
-        isCapturingKey_ = false;
-        capturingKeyName_.clear();
-        capturedKeyName_.clear();
-    }
-    // --- Joystick Hat (D-pad) Capture ---
-    else if (event.type == SDL_JOYHATMOTION) {
-        int joystickId = event.jhat.which;
-        uint8_t hat = event.jhat.hat;
-        uint8_t value = event.jhat.value;
-        // Only capture simple directions (up, down, left, right), not diagonals
-        if (value == SDL_HAT_UP || value == SDL_HAT_DOWN || value == SDL_HAT_LEFT || value == SDL_HAT_RIGHT) {
-            std::stringstream ss;
-            ss << "JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_";
-            switch (value) {
-                case SDL_HAT_UP: ss << "UP"; break;
-                case SDL_HAT_DOWN: ss << "DOWN"; break;
-                case SDL_HAT_LEFT: ss << "LEFT"; break;
-                case SDL_HAT_RIGHT: ss << "RIGHT"; break;
-            }
-            capturedKeyName_ = ss.str();
-
-            for (auto& keyVal : iniData_[currentSection_].keyValues) {
-                if (keyVal.first == capturingKeyName_) {
-                    keyVal.second = capturedKeyName_;
-                    hasChanges_ = true;
-                    keybindProvider_->setJoystickHat(capturingKeyName_, joystickId, hat, value);
-                    break;
-                }
-            }
-            isCapturingKey_ = false;
-            capturingKeyName_.clear();
-            capturedKeyName_.clear();
-        }
-    }
-    // --- Joystick Axis (Analog Stick) Capture ---
-    else if (event.type == SDL_JOYAXISMOTION) {
-        int joystickId = event.jaxis.which;
-        uint8_t axis = event.jaxis.axis;
-        int value = event.jaxis.value;
-        // Use a threshold to determine if the axis is "pressed"
-        const int threshold = 16384; // SDL joystick axis range is -32768 to 32767
-        if (value > threshold || value < -threshold) {
-            bool positiveDirection = (value > 0);
-            std::stringstream ss;
-            ss << "JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_"
-               << (positiveDirection ? "POSITIVE" : "NEGATIVE");
-            capturedKeyName_ = ss.str();
-
-            for (auto& keyVal : iniData_[currentSection_].keyValues) {
-                if (keyVal.first == capturingKeyName_) {
-                    keyVal.second = capturedKeyName_;
-                    hasChanges_ = true;
-                    keybindProvider_->setJoystickAxis(capturingKeyName_, joystickId, axis, positiveDirection);
-                    break;
-                }
-            }
-            isCapturingKey_ = false;
-            capturingKeyName_.clear();
-            capturedKeyName_.clear();
-        }
-    }
 }

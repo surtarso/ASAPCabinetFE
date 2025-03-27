@@ -9,11 +9,13 @@
 #include <SDL2/SDL_mixer.h>
 #include "config/settings_manager.h"
 #include "config/ui/setup_editor.h"
-#include "keybinds/keybind_manager.h" // Updated include
+#include "keybinds/keybind_manager.h"
 #include "render/renderer.h"
 #include "render/asset_manager.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
+
+class WindowManager; // Forward declaration
 
 class App {
 public:
@@ -29,17 +31,12 @@ private:
     bool quit_ = false;
     bool showConfig_ = false;
     size_t currentIndex_ = 0;
-    std::map<char, size_t> letterIndex; // For JumpNextLetter/JumpPrevLetter
+    std::map<char, size_t> letterIndex;
 
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> primaryWindow_;
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> secondaryWindow_;
-    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> primaryRenderer_;
-    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> secondaryRenderer_;
+    std::unique_ptr<WindowManager> windowManager_; // New class for windows/renderers
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
     std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)> tableChangeSound_;
     std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)> tableLoadSound_;
-
-    // Joystick management
     std::vector<SDL_Joystick*> joysticks_;
 
     std::unique_ptr<SettingsManager> configManager_;
@@ -54,11 +51,14 @@ private:
     bool isConfigValid();
     void runInitialConfig();
     void initializeSDL();
-    void createWindowsAndRenderers();
+    void initializeJoysticks();
+    void loadSounds();
+    void loadFont();
     void initializeImGui();
-    void loadResources();
     void initializeActionHandlers();
     void handleEvents();
+    void handleConfigEvents(const SDL_Event& event);
+    void handleRegularEvents(const SDL_Event& event);
     void update();
     void render();
     void cleanup();

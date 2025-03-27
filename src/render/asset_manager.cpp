@@ -92,7 +92,7 @@ void AssetManager::clearOldVideoPlayers() {
 }
 
 SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string& path) {
-    LOG_DEBUG("Attempting to load texture: " << path);
+    //LOG_DEBUG("Attempting to load texture: " << path);
 
     FILE* redirected;
 #ifdef _WIN32

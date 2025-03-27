@@ -23,7 +23,7 @@ void display(void* data, void* id) {
     (void)id;    // Silence warning
     VideoContext* ctx = static_cast<VideoContext*>(data);
     ctx->isPlaying = true; // Mark as playing once frames are being delivered
-    LOG_DEBUG("Display callback triggered for video context: " << ctx);
+    //LOG_DEBUG("Display callback triggered for video context: " << ctx);
 }
 
 VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, int width, int height) {

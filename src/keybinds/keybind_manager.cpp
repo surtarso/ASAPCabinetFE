@@ -308,8 +308,8 @@ std::string KeybindManager::eventToString(const SDL_Event& event) const {
 bool KeybindManager::isAction(const SDL_KeyboardEvent& event, const std::string& action) const {
     SDL_Keycode key = getKey(action);
     bool match = (event.keysym.sym == key); // Simplified: event.keysym.sym is the correct member
-    LOG_DEBUG("Checking action: " << action << ", key: " << SDL_GetKeyName(event.keysym.sym) 
-              << " (keycode: " << event.keysym.sym << ") against " << SDL_GetKeyName(key) 
-              << " (keycode: " << key << "), Match=" << match);
+    // LOG_DEBUG("Checking action: " << action << ", key: " << SDL_GetKeyName(event.keysym.sym) 
+    //           << " (keycode: " << event.keysym.sym << ") against " << SDL_GetKeyName(key) 
+    //           << " (keycode: " << key << "), Match=" << match);
     return match;
 }
