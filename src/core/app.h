@@ -14,10 +14,11 @@
 #include "render/asset_manager.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
-#include "core/window_manager.h"
+#include "core/iwindow_manager.h"
 #include "sound/isound_manager.h"
+#include "utils/sdl_guards.h" //RAII guards
 
-class WindowManager; // Forward declaration
+class IWindowManager; // Forward declaration
 
 class App {
 public:
@@ -35,7 +36,13 @@ private:
     size_t currentIndex_ = 0;
     std::map<char, size_t> letterIndex;
 
-    std::unique_ptr<WindowManager> windowManager_; // New class for windows/renderers
+    // SDL RAII guards
+    SDLInitGuard sdlGuard_;           // Manages SDL_Init and SDL_Quit
+    MixerGuard mixerGuard_;           // Manages Mix_OpenAudio and Mix_CloseAudio
+    TTFInitGuard ttfGuard_;           // Manages TTF_Init and TTF_Quit
+    IMGInitGuard imgGuard_;           // Manages IMG_Init and IMG_Quit
+
+    std::unique_ptr<IWindowManager> windowManager_;
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
     std::unique_ptr<ISoundManager> soundManager_;
     std::vector<SDL_Joystick*> joysticks_;
@@ -51,7 +58,7 @@ private:
     std::string getExecutableDir();
     bool isConfigValid();
     void runInitialConfig();
-    void initializeSDL();
+    void initializeSDL();             // Updated to use guards
     void initializeJoysticks();
     void loadSounds();
     void loadFont();
@@ -62,7 +69,7 @@ private:
     void handleRegularEvents(const SDL_Event& event);
     void update();
     void render();
-    void cleanup();
+    void cleanup();                   // Simplified due to guards
     void initializeDependencies();
 };
 

@@ -1,6 +1,11 @@
 #include "core/app.h"
-#include "utils/logging.h"
+#include "core/iwindow_manager.h"
+#include "core/window_manager.h"
 #include "config/settings_manager.h"
+#include "sound/sound_manager.h"
+#include "utils/sdl_guards.h"
+#include "utils/logging.h"
+
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "imgui.h"
@@ -13,12 +18,15 @@
 #include <limits.h>
 #include <algorithm>
 #include <random>
-#include "sound/sound_manager.h" // Added this include
 
 namespace fs = std::filesystem;
 
 App::App(const std::string& configPath) 
     : configPath_(configPath),
+      sdlGuard_(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK),
+      mixerGuard_(44100, MIX_DEFAULT_FORMAT, 2, 2048),
+      ttfGuard_(),
+      imgGuard_(IMG_INIT_PNG | IMG_INIT_JPG),
       font_(nullptr, TTF_CloseFont),
       soundManager_(nullptr),
       configManager_(nullptr),
@@ -134,24 +142,31 @@ void App::runInitialConfig() {
 }
 
 void App::initializeSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+    // Check if initialization succeeded using guard status
+    if (!sdlGuard_.success) {
+        std::cerr << "SDL initialization failed" << std::endl;
         exit(1);
     }
+    if (!mixerGuard_.success) {
+        std::cerr << "SDL_mixer initialization failed" << std::endl;
+        exit(1);
+    }
+    if (!ttfGuard_.success) {
+        std::cerr << "TTF initialization failed" << std::endl;
+        exit(1);
+    }
+    if (!imgGuard_.flags) {
+        std::cerr << "IMG initialization failed" << std::endl;
+        exit(1);
+    }
+    
+    // Mixer-specific init that isn't covered by MixerGuard
     if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
         std::cerr << "Mix_Init Error: " << Mix_GetError() << std::endl;
         exit(1);
     }
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cerr << "Mix_OpenAudio Error: " << Mix_GetError() << std::endl;
-        exit(1);
-    }
-    if (TTF_Init() == -1) {
-        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
-        exit(1);
-    }
-    IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
-    LOG_DEBUG("SDL initialized successfully");
+    
+    LOG_DEBUG("SDL initialized successfully with RAII guards");
 }
 
 void App::initializeJoysticks() {
@@ -199,8 +214,8 @@ void App::initializeDependencies() {
     windowManager_ = std::make_unique<WindowManager>(configManager_->getSettings());
     initializeImGui();
 
-    soundManager_ = std::make_unique<SoundManager>(exeDir_, configManager_->getSettings()); // Fixed: SoundManager now included
-    soundManager_->loadSounds(); // Load all sounds here
+    soundManager_ = std::make_unique<SoundManager>(exeDir_, configManager_->getSettings());
+    soundManager_->loadSounds();
 
     loadFont();
     tables_ = loadTableList(configManager_->getSettings());
@@ -536,7 +551,7 @@ void App::render() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        renderer_->render(*assets_, showConfig_, *configEditor_); // Fixed: Added showConfig_
+        renderer_->render(*assets_, showConfig_, *configEditor_);
 
         if (showConfig_) {
             configEditor_->drawGUI();
@@ -596,10 +611,6 @@ void App::cleanup() {
     }
 
     font_.reset();
-    Mix_Quit();
-    TTF_Quit();
-    IMG_Quit();
-    SDL_Quit();
-
+    // No manual SDL cleanup needed - guards handle SDL_Quit, Mix_Quit, TTF_Quit, IMG_Quit
     LOG_DEBUG("Cleanup complete");
 }
