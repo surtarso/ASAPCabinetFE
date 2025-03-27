@@ -1,19 +1,20 @@
 #ifndef WINDOW_MANAGER_H
 #define WINDOW_MANAGER_H
 
+#include "core/iwindow_manager.h" // Inherit from interface
 #include <SDL2/SDL.h>
 #include <memory>
 #include "config/settings_manager.h"
 
-class WindowManager {
+class WindowManager : public IWindowManager { // Implement IWindowManager
 public:
     explicit WindowManager(const Settings& settings);
     ~WindowManager() = default;
 
-    SDL_Window* getPrimaryWindow() { return primaryWindow_.get(); }
-    SDL_Window* getSecondaryWindow() { return secondaryWindow_.get(); }
-    SDL_Renderer* getPrimaryRenderer() { return primaryRenderer_.get(); }
-    SDL_Renderer* getSecondaryRenderer() { return secondaryRenderer_.get(); }
+    SDL_Window* getPrimaryWindow() override { return primaryWindow_.get(); }
+    SDL_Window* getSecondaryWindow() override { return secondaryWindow_.get(); }
+    SDL_Renderer* getPrimaryRenderer() override { return primaryRenderer_.get(); }
+    SDL_Renderer* getSecondaryRenderer() override { return secondaryRenderer_.get(); }
 
 private:
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> primaryWindow_;
