@@ -7,12 +7,12 @@
 #include <functional>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "config/config_manager.h"
-#include "config/config_gui.h"
-#include "input/input_manager.h"
+#include "config/settings_manager.h"
+#include "config/ui/setup_editor.h"
+#include "keybinds/keybind_manager.h" // Updated include
 #include "render/renderer.h"
-#include "table/asset_manager.h"
-#include "table/table_manager.h"
+#include "render/asset_manager.h"
+#include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 
 class App {
@@ -42,13 +42,12 @@ private:
     // Joystick management
     std::vector<SDL_Joystick*> joysticks_;
 
-    std::unique_ptr<ConfigManager> configManager_;
-    std::unique_ptr<InGameConfigEditor> configEditor_;
-    std::unique_ptr<InputManager> inputManager_;
+    std::unique_ptr<SettingsManager> configManager_;
+    std::unique_ptr<RuntimeEditor> configEditor_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_;
-    std::vector<Table> tables_;
+    std::vector<TableLoader> tables_;
     std::map<std::string, ActionHandler> actionHandlers_;
 
     std::string getExecutableDir();

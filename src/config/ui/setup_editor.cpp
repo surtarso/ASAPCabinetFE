@@ -1,11 +1,11 @@
 // Tarso Galvão Mar/2025
 
-#include "config/config_gui.h"
-#include "config/tooltips.h"
-#include "config/config_manager.h"
+#include "config/ui/setup_editor.h"
+#include "config/ui/tooltips.h"
+#include "config/settings_manager.h"
 #include "utils/logging.h"
-#include "table/asset_manager.h"
-#include "table/table_manager.h"
+#include "render/asset_manager.h"
+#include "render/table_loader.h"
 #include "imgui.h"
 #include <fstream>
 #include <iostream>
@@ -19,7 +19,7 @@
 #include <sstream>   // For std::stringstream
 
 // --- Config GUI Utilities ---
-namespace ConfigGuiUtils {
+namespace SettingsGuiUtils {
     void DrawSectionsPane(const std::vector<std::string>& sections, std::string& currentSection, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName) {
         ImGui::BeginChild("SectionsPane", ImVec2(200, -ImGui::GetFrameHeightWithSpacing()), true);
         if (ImGui::BeginListBox("##Sections", ImVec2(-FLT_MIN, ImGui::GetContentRegionAvail().y))) {
@@ -42,7 +42,7 @@ namespace ConfigGuiUtils {
         ImGui::EndChild();
     }
 
-    void DrawKeyValuesPane(ConfigSection& section, IKeybindProvider* keybindProvider, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, const std::string& currentSection, std::map<std::string, bool>& showPicker, const std::unordered_map<std::string, std::string>& explanations, bool& hasChanges) {
+    void DrawKeyValuesPane(SettingsSection& section, IKeybindProvider* keybindProvider, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, const std::string& currentSection, std::map<std::string, bool>& showPicker, const std::unordered_map<std::string, std::string>& explanations, bool& hasChanges) {
         ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
         static bool firstRenderOfKeybinds = true;
         if (currentSection == "Keybinds" && firstRenderOfKeybinds) {
@@ -139,7 +139,7 @@ namespace ConfigGuiUtils {
         ImGui::EndChild();
     }
 
-    void DrawButtonPane(bool& showFlag, const std::string& iniFilename, ConfigManager* configManager, AssetManager* assets, size_t* currentIndex, std::vector<Table>* tables, bool& hasChanges, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, float& saveMessageTimer, const std::map<std::string, ConfigSection>& iniData) {
+    void DrawButtonPane(bool& showFlag, const std::string& iniFilename, SettingsManager* configManager, AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, bool& hasChanges, bool& isCapturingKey, std::string& capturingKeyName, std::string& capturedKeyName, float& saveMessageTimer, const std::map<std::string, SettingsSection>& iniData) {
         ImGui::BeginChild("ButtonPane", ImVec2(0, ImGui::GetFrameHeightWithSpacing() * 0.8f), false, ImGuiWindowFlags_NoScrollbar);
         if (ImGui::Button("Save")) {
             std::ofstream file(iniFilename);
@@ -216,16 +216,16 @@ namespace ConfigGuiUtils {
 }
 
 // --- Section Order Definitions ---
-const std::vector<std::string> InitialConfigEditor::sectionOrder_ = {
+const std::vector<std::string> SetupEditor::sectionOrder_ = {
     "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
 };
 
-const std::vector<std::string> InGameConfigEditor::sectionOrder_ = {
+const std::vector<std::string> RuntimeEditor::sectionOrder_ = {
     "VPX", "Window", "Font", "Sound", "TitleDisplay", "Keybinds", "Internal"
 };
 
-// --- InitialConfigEditor Implementation ---
-InitialConfigEditor::InitialConfigEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
+// --- SetupEditor Implementation ---
+SetupEditor::SetupEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager,
                                          IKeybindProvider* keybindProvider)
     : iniFilename_(filename),
       showFlag_(showFlag),
@@ -239,7 +239,7 @@ InitialConfigEditor::InitialConfigEditor(const std::string& filename, bool& show
     }
 }
 
-void InitialConfigEditor::loadIniFile(const std::string& filename) {
+void SetupEditor::loadIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename);
@@ -280,7 +280,7 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
             }
 #endif
             sections_.push_back(currentSectionName);
-            iniData_[currentSectionName] = ConfigSection();
+            iniData_[currentSectionName] = SettingsSection();
         } else if (!currentSectionName.empty()) {
             size_t pos = trimmedLine.find('=');
             if (pos != std::string::npos) {
@@ -317,7 +317,7 @@ void InitialConfigEditor::loadIniFile(const std::string& filename) {
     LOG_DEBUG("Loaded config file: " << filename);
 }
 
-void InitialConfigEditor::saveIniFile(const std::string& filename) {
+void SetupEditor::saveIniFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not write " << filename);
@@ -347,11 +347,11 @@ void InitialConfigEditor::saveIniFile(const std::string& filename) {
     saveMessageTimer_ = 3.0f;
 }
 
-void InitialConfigEditor::initExplanations() {
+void SetupEditor::initExplanations() {
     explanations_ = Tooltips::getTooltips();
 }
 
-void InitialConfigEditor::drawGUI() {
+void SetupEditor::drawGUI() {
     LOG_DEBUG("drawGUI called, showConfig_: " << (showFlag_ ? 1 : 0));
     if (!showFlag_) {
         LOG_DEBUG("Exiting drawGUI due to showFlag false");
@@ -376,11 +376,11 @@ void InitialConfigEditor::drawGUI() {
 
     ImGui::SetWindowFocus();
 
-    ConfigGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
+    SettingsGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
 
     ImGui::SameLine();
     if (iniData_.find(currentSection_) != iniData_.end()) {
-        ConfigGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
+        SettingsGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
     } else {
         ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
         ImGui::Text("No section data available.");
@@ -391,12 +391,12 @@ void InitialConfigEditor::drawGUI() {
         saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
     }
 
-    ConfigGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, nullptr, nullptr, nullptr, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
+    SettingsGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, nullptr, nullptr, nullptr, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
 
     ImGui::End();
 }
 
-void InitialConfigEditor::handleEvent(const SDL_Event& event) {
+void SetupEditor::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
     // --- Keyboard Input Capture ---
@@ -509,10 +509,10 @@ void InitialConfigEditor::handleEvent(const SDL_Event& event) {
     }
 }
 
-// --- InGameConfigEditor Implementation ---
-InGameConfigEditor::InGameConfigEditor(const std::string& filename, bool& showFlag, ConfigManager* configManager,
+// --- RuntimeEditor Implementation ---
+RuntimeEditor::RuntimeEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager,
                                        IKeybindProvider* keybindProvider, AssetManager* assets,
-                                       size_t* currentIndex, std::vector<Table>* tables)
+                                       size_t* currentIndex, std::vector<TableLoader>* tables)
     : iniFilename_(filename),
       showFlag_(showFlag),
       configManager_(configManager),
@@ -529,7 +529,7 @@ InGameConfigEditor::InGameConfigEditor(const std::string& filename, bool& showFl
     sections_.push_back("Table Overrides");
 }
 
-void InGameConfigEditor::loadIniFile(const std::string& filename) {
+void RuntimeEditor::loadIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename);
@@ -570,7 +570,7 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
             }
 #endif
             sections_.push_back(currentSectionName);
-            iniData_[currentSectionName] = ConfigSection();
+            iniData_[currentSectionName] = SettingsSection();
         } else if (!currentSectionName.empty()) {
             size_t pos = trimmedLine.find('=');
             if (pos != std::string::npos) {
@@ -610,7 +610,7 @@ void InGameConfigEditor::loadIniFile(const std::string& filename) {
     LOG_DEBUG("Loaded config file: " << filename);
 }
 
-void InGameConfigEditor::saveIniFile(const std::string& filename) {
+void RuntimeEditor::saveIniFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not write " << filename);
@@ -641,11 +641,11 @@ void InGameConfigEditor::saveIniFile(const std::string& filename) {
     saveMessageTimer_ = 3.0f;
 }
 
-void InGameConfigEditor::initExplanations() {
+void RuntimeEditor::initExplanations() {
     explanations_ = Tooltips::getTooltips();
 }
 
-void InGameConfigEditor::drawGUI() {
+void RuntimeEditor::drawGUI() {
     LOG_DEBUG("drawGUI called, showConfig_: " << (showFlag_ ? 1 : 0));
     if (!showFlag_) {
         LOG_DEBUG("Exiting drawGUI due to showFlag false");
@@ -663,13 +663,13 @@ void InGameConfigEditor::drawGUI() {
 
     ImGui::SetWindowFocus();
 
-    ConfigGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
+    SettingsGuiUtils::DrawSectionsPane(sections_, currentSection_, isCapturingKey_, capturingKeyName_, capturedKeyName_);
 
     ImGui::SameLine();
     if (currentSection_ == "Table Overrides") {
         drawTableOverridesGUI();
     } else if (iniData_.find(currentSection_) != iniData_.end()) {
-        ConfigGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
+        SettingsGuiUtils::DrawKeyValuesPane(iniData_[currentSection_], keybindProvider_, isCapturingKey_, capturingKeyName_, capturedKeyName_, currentSection_, showPicker_, explanations_, hasChanges_);
     } else {
         ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
         ImGui::Text("No section data available.");
@@ -680,12 +680,12 @@ void InGameConfigEditor::drawGUI() {
         saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
     }
 
-    ConfigGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, assets_, currentIndex_, tables_, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
+    SettingsGuiUtils::DrawButtonPane(showFlag_, iniFilename_, configManager_, assets_, currentIndex_, tables_, hasChanges_, isCapturingKey_, capturingKeyName_, capturedKeyName_, saveMessageTimer_, iniData_);
 
     ImGui::End();
 }
 
-void InGameConfigEditor::drawTableOverridesGUI() {
+void RuntimeEditor::drawTableOverridesGUI() {
     ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.5f), true);
     if (!tables_ || !currentIndex_ || tables_->empty()) {
         ImGui::Text("No tables available.");
@@ -695,7 +695,7 @@ void InGameConfigEditor::drawTableOverridesGUI() {
 
     ImGui::Text("Table Overrides for: %s", (*tables_)[*currentIndex_].tableName.c_str());
 
-    Table& table = (*tables_)[*currentIndex_];
+    TableLoader& table = (*tables_)[*currentIndex_];
     char buf[256];
 
     std::strncpy(buf, table.tableImage.c_str(), sizeof(buf));
@@ -743,7 +743,7 @@ void InGameConfigEditor::drawTableOverridesGUI() {
     ImGui::EndChild();
 }
 
-void InGameConfigEditor::handleEvent(const SDL_Event& event) {
+void RuntimeEditor::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
     // --- Keyboard Input Capture ---

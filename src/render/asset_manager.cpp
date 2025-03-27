@@ -1,5 +1,5 @@
-#include "table/asset_manager.h"
-#include "config/config_manager.h"
+#include "render/asset_manager.h"
+#include "config/settings_manager.h"
 #include "utils/logging.h"
 #include <SDL_image.h>
 #include <iostream>
@@ -19,8 +19,8 @@ AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_F
       secondaryRenderer(secondary),
       font(f) {}
 
-void AssetManager::loadTableAssets(size_t index, const std::vector<Table>& tables) {
-    const Table& table = tables[index];
+void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
+    const TableLoader& table = tables[index];
     const Settings& settings = configManager_->getSettings();
 
     tableTexture.reset(loadTexture(primaryRenderer, table.tableImage));

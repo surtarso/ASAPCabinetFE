@@ -1,6 +1,6 @@
-#include "table/table_manager.h"
+#include "render/table_loader.h"
 #include "utils/logging.h"
-#include "config/config_manager.h"
+#include "config/settings_manager.h"
 #include <algorithm>
 #include <iostream>
 #include <cctype>
@@ -30,15 +30,15 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
         return "";
 }
 
-std::vector<Table> loadTableList(const Settings& settings) {
-    std::vector<Table> tables;
+std::vector<TableLoader> loadTableList(const Settings& settings) {
+    std::vector<TableLoader> tables;
     if (settings.vpxTablesPath.empty() || !fs::exists(settings.vpxTablesPath)) {
         LOG_DEBUG("Invalid or empty VPX tables path: " << settings.vpxTablesPath);
         return tables;
     }
     for (const auto& entry : fs::recursive_directory_iterator(settings.vpxTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
-            Table table;
+            TableLoader table;
             table.vpxFile = entry.path().string();
             table.folder = entry.path().parent_path().string();
             table.tableName = entry.path().stem().string();
@@ -52,7 +52,7 @@ std::vector<Table> loadTableList(const Settings& settings) {
             tables.push_back(table);
         }
     }
-    std::sort(tables.begin(), tables.end(), [](const Table& a, const Table& b) {
+    std::sort(tables.begin(), tables.end(), [](const TableLoader& a, const TableLoader& b) {
         return a.tableName < b.tableName;
     });
     letterIndex.clear();

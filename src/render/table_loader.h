@@ -1,5 +1,5 @@
-#ifndef TABLE_MANAGER_H
-#define TABLE_MANAGER_H
+#ifndef TABLE_LOADER_H
+#define TABLE_LOADER_H
 
 #include <string>
 #include <vector>
@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-struct Table {
+struct TableLoader {
     std::string tableName;
     std::string vpxFile;
     std::string folder;
@@ -26,6 +26,6 @@ extern std::map<char, int> letterIndex;
 
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath);
 std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath);
-std::vector<Table> loadTableList(const Settings& settings); // Update signature
+std::vector<TableLoader> loadTableList(const Settings& settings); // Update signature
 
 #endif

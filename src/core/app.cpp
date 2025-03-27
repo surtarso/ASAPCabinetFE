@@ -1,6 +1,6 @@
 #include "core/app.h"
 #include "utils/logging.h"
-#include "config/config_manager.h"
+#include "config/settings_manager.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "imgui.h"
@@ -30,7 +30,6 @@ App::App(const std::string& configPath)
       tableLoadSound_(nullptr, Mix_FreeChunk),
       configManager_(nullptr),
       configEditor_(nullptr),
-      inputManager_(nullptr),
       renderer_(nullptr),
       assets_(nullptr),
       screenshotManager_(nullptr)  
@@ -50,8 +49,8 @@ void App::initializeDependencies() {
     LOG_DEBUG("Initializing SDL");
     initializeSDL();
 
-    // Create ConfigManager and load config
-    configManager_ = std::make_unique<ConfigManager>(configPath_);
+    // Create SettingsManager and load config
+    configManager_ = std::make_unique<SettingsManager>(configPath_);
     configManager_->loadConfig();
 
     // Run initial config if needed
@@ -138,12 +137,11 @@ void App::initializeDependencies() {
 
     // Create remaining dependencies
     assets_ = std::make_unique<AssetManager>(primaryRenderer_.get(), secondaryRenderer_.get(), font_.get());
-    assets_->setConfigManager(configManager_.get());
-    inputManager_ = std::make_unique<InputManager>(configManager_->getKeybindManager());
-    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), inputManager_.get());
-    configEditor_ = std::make_unique<InGameConfigEditor>(configPath_, showConfig_, configManager_.get(),
-                                                         &configManager_->getKeybindManager(), assets_.get(),
-                                                         &currentIndex_, &tables_);
+    assets_->setSettingsManager(configManager_.get());
+    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(), &configManager_->getKeybindManager());
+    configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
+                                                    &configManager_->getKeybindManager(), assets_.get(),
+                                                    &currentIndex_, &tables_);
     renderer_ = std::make_unique<Renderer>(primaryRenderer_.get(), secondaryRenderer_.get());
 
     LOG_DEBUG("Loading initial table assets");
@@ -221,7 +219,7 @@ void App::runInitialConfig() {
     ImGui_ImplSDL2_InitForSDLRenderer(configWindow, configRenderer);
     ImGui_ImplSDLRenderer2_Init(configRenderer);
     bool showConfig = true;
-    InitialConfigEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
+    SetupEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
     configEditor.setFillParentWindow(true);
     while (true) {
         SDL_Event event;
@@ -532,26 +530,29 @@ void App::handleEvents() {
         }
 
         bool eventConsumed = false;
+        const auto& keybindManager = configManager_->getKeybindManager();
         if (showConfig_) {
             configEditor_->handleEvent(event);
             if (configEditor_->isCapturingKey()) {
                 eventConsumed = true;
             }
             // Allow ConfigSave and ConfigClose to be processed even when config GUI is open
-            if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, "ConfigSave")) {
-                auto it = actionHandlers_.find("ConfigSave");
-                if (it != actionHandlers_.end()) {
-                    it->second();
+            if (event.type == SDL_KEYDOWN) {
+                SDL_KeyboardEvent keyEvent = event.key;
+                if (keybindManager.isAction(keyEvent, "ConfigSave")) {
+                    auto it = actionHandlers_.find("ConfigSave");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
+                } else if (keybindManager.isAction(keyEvent, "ConfigClose")) {
+                    auto it = actionHandlers_.find("ConfigClose");
+                    if (it != actionHandlers_.end()) {
+                        it->second();
+                    }
+                    eventConsumed = true;
                 }
-                eventConsumed = true;
-            } else if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, "ConfigClose")) {
-                auto it = actionHandlers_.find("ConfigClose");
-                if (it != actionHandlers_.end()) {
-                    it->second();
-                }
-                eventConsumed = true;
             } else if (event.type == SDL_JOYBUTTONDOWN) {
-                const auto& keybindManager = configManager_->getKeybindManager();
                 if (keybindManager.isJoystickAction(event.jbutton, "ConfigSave")) {
                     auto it = actionHandlers_.find("ConfigSave");
                     if (it != actionHandlers_.end()) {
@@ -566,7 +567,6 @@ void App::handleEvents() {
                     eventConsumed = true;
                 }
             } else if (event.type == SDL_JOYHATMOTION) {
-                const auto& keybindManager = configManager_->getKeybindManager();
                 if (keybindManager.isJoystickHatAction(event.jhat, "ConfigSave")) {
                     auto it = actionHandlers_.find("ConfigSave");
                     if (it != actionHandlers_.end()) {
@@ -581,7 +581,6 @@ void App::handleEvents() {
                     eventConsumed = true;
                 }
             } else if (event.type == SDL_JOYAXISMOTION) {
-                const auto& keybindManager = configManager_->getKeybindManager();
                 if (keybindManager.isJoystickAxisAction(event.jaxis, "ConfigSave")) {
                     auto it = actionHandlers_.find("ConfigSave");
                     if (it != actionHandlers_.end()) {
@@ -599,12 +598,14 @@ void App::handleEvents() {
         }
 
         if (!eventConsumed) {
-            const auto& keybindManager = configManager_->getKeybindManager();
             for (const auto& action : keybindManager.getActions()) {
-                if (event.type == SDL_KEYDOWN && inputManager_->isAction(event, action)) {
-                    auto it = actionHandlers_.find(action);
-                    if (it != actionHandlers_.end()) {
-                        it->second();
+                if (event.type == SDL_KEYDOWN) {
+                    SDL_KeyboardEvent keyEvent = event.key;
+                    if (keybindManager.isAction(keyEvent, action)) {
+                        auto it = actionHandlers_.find(action);
+                        if (it != actionHandlers_.end()) {
+                            it->second();
+                        }
                     }
                 } else if (event.type == SDL_JOYBUTTONDOWN && keybindManager.isJoystickAction(event.jbutton, action)) {
                     auto it = actionHandlers_.find(action);

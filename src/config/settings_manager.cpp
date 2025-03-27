@@ -1,48 +1,48 @@
-#include "config/config_manager.h"
-#include "table/asset_manager.h"
-#include "table/table_manager.h"
+#include "config/settings_manager.h"
+#include "render/asset_manager.h"
+#include "render/table_loader.h"
 #include "utils/logging.h"
 #include <fstream>
 #include <sstream>
 #include <map>
 
-ConfigManager::ConfigManager(const std::string& configPath) : configPath_(configPath) {
+SettingsManager::SettingsManager(const std::string& configPath) : configPath_(configPath) {
     loadConfig();
 }
 
-void ConfigManager::loadConfig() {
+void SettingsManager::loadConfig() {
     parseIniFile(configPath_);
 }
 
-void ConfigManager::saveConfig() {
+void SettingsManager::saveConfig() {
     writeIniFile(configPath_);
 }
 
-const Settings& ConfigManager::getSettings() const {
+const Settings& SettingsManager::getSettings() const {
     return settings;
 }
 
-KeybindManager& ConfigManager::getKeybindManager() {
+KeybindManager& SettingsManager::getKeybindManager() {
     return keybindManager_;
 }
 
-const KeybindManager& ConfigManager::getKeybindManager() const {
+const KeybindManager& SettingsManager::getKeybindManager() const {
     return keybindManager_;
 }
 
-void ConfigManager::applyConfigChanges(SDL_Window* mainWindow, SDL_Window* playfieldWindow) {
+void SettingsManager::applyConfigChanges(SDL_Window* mainWindow, SDL_Window* playfieldWindow) {
     SDL_SetWindowFullscreen(mainWindow, settings.mainWindowWidth == 0 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SDL_SetWindowSize(mainWindow, settings.mainWindowWidth, settings.mainWindowHeight);
     SDL_SetWindowFullscreen(playfieldWindow, settings.secondWindowWidth == 0 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SDL_SetWindowSize(playfieldWindow, settings.secondWindowWidth, settings.secondWindowHeight);
 }
 
-void ConfigManager::notifyConfigChanged(AssetManager& assetManager, size_t& selectedTableIndex, std::vector<Table>& tables) {
+void SettingsManager::notifyConfigChanged(AssetManager& assetManager, size_t& selectedTableIndex, std::vector<TableLoader>& tables) {
     loadConfig();
     assetManager.loadTableAssets(selectedTableIndex, tables);
 }
 
-void ConfigManager::parseIniFile(const std::string& filename) {
+void SettingsManager::parseIniFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not open " << filename << ". Using defaults.");
@@ -136,7 +136,7 @@ void ConfigManager::parseIniFile(const std::string& filename) {
     keybindManager_.loadKeybinds(config["Keybinds"]);
 }
 
-void ConfigManager::writeIniFile(const std::string& filename) {
+void SettingsManager::writeIniFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
         LOG_DEBUG("Could not write " << filename);

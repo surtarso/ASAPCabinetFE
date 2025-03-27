@@ -7,14 +7,14 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-#include "config/config_manager.h"
-#include "input/input_manager.h"
+#include "config/settings_manager.h"
+#include "keybinds/keybind_manager.h" // Updated include
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-ScreenshotManager::ScreenshotManager(const std::string& exeDir, ConfigManager* configManager, InputManager* inputManager) 
-    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), configManager_(configManager), inputManager_(inputManager) {
+ScreenshotManager::ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, KeybindManager* keybindManager) 
+    : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), configManager_(configManager), keybindManager_(keybindManager) {
     LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
     LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
 }
@@ -153,7 +153,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string backglassImage = tableFolder + "/" + settings.customBackglassImage;
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
-    // Access keybindings via KeybindManager (for display purposes)
+    // Access keybindings via KeybindManager (already updated in constructor)
     SDL_Keycode screenshotKey = configManager_->getKeybindManager().getKey("ScreenshotKey");
     SDL_Keycode screenshotQuit = configManager_->getKeybindManager().getKey("ScreenshotQuit");
 
@@ -280,16 +280,18 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 LOG_DEBUG("Quit via SDL_QUIT");
                 running = false;
             } else if (event.type == SDL_KEYDOWN) {
-                if (!inputManager_) {
-                    LOG_DEBUG("Error: inputManager_ is null, cannot process key events");
+                if (!keybindManager_) {
+                    LOG_DEBUG("Error: keybindManager_ is null, cannot process key events");
                     running = false;
                     break;
                 }
-                if (inputManager_->isAction(event, "ScreenshotKey")) {
+                // Cast SDL_Event to SDL_KeyboardEvent since KeybindManager::isAction expects SDL_KeyboardEvent
+                SDL_KeyboardEvent keyEvent = event.key;
+                if (keybindManager_->isAction(keyEvent, "ScreenshotKey")) {
                     LOG_DEBUG("Capture key '" << keycodeToString(screenshotKey) << "' pressed");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
                     // Keep screenshot mode alive
-                } else if (inputManager_->isAction(event, "ScreenshotQuit")) {
+                } else if (keybindManager_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_DEBUG("Quit key '" << keycodeToString(screenshotQuit) << "' pressed");
                     running = false; // Exit screenshot mode, which will kill VPX and return to main UI
                 }
