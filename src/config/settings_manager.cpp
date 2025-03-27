@@ -126,7 +126,7 @@ void SettingsManager::parseIniFile(const std::string& filename) {
     sscanf(fontColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings.fontColor.r, &settings.fontColor.g, &settings.fontColor.b, &settings.fontColor.a);
     std::string fontBgColorStr = config["TitleDisplay"]["FontBgColor"].empty() ? "0,0,0,128" : config["TitleDisplay"]["FontBgColor"];
     sscanf(fontBgColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings.fontBgColor.r, &settings.fontBgColor.g, &settings.fontBgColor.b, &settings.fontBgColor.a);
-    settings.fontSize = std::stoi(config["TitleDisplay"]["Size"].empty() ? "28" : config["TitleDisplay"]["Size"]);
+    settings.fontSize = std::stoi(config["TitleDisplay"]["FontSize"].empty() ? "28" : config["TitleDisplay"]["FontSize"]);
 
     // Sound settings
     settings.tableChangeSound = config["Internal"]["TableChangeSound"].empty() ? "snd/table_change.mp3" : config["Internal"]["TableChangeSound"];
@@ -185,7 +185,7 @@ void SettingsManager::writeIniFile(const std::string& filename) {
     file << "FontPath=" << settings.fontPath << "\n";
     file << "FontColor=" << (int)settings.fontColor.r << "," << (int)settings.fontColor.g << "," << (int)settings.fontColor.b << "," << (int)settings.fontColor.a << "\n";
     file << "FontBgColor=" << (int)settings.fontBgColor.r << "," << (int)settings.fontBgColor.g << "," << (int)settings.fontBgColor.b << "," << (int)settings.fontBgColor.a << "\n";
-    file << "Size=" << settings.fontSize << "\n";
+    file << "FontSize=" << settings.fontSize << "\n";
     file << "\n";
 
     // Save keybindings

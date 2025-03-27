@@ -38,6 +38,7 @@ public:
     void setSettingsManager(SettingsManager* cm) { configManager_ = cm; }
     SettingsManager* getSettingsManager() { return configManager_; }
     TTF_Font* getFont() { return font; }
+    void setFont(TTF_Font* f) { font = f; }
 
 private:
     SDL_Renderer* primaryRenderer;

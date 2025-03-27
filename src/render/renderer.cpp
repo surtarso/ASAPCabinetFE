@@ -15,7 +15,7 @@ void Renderer::render(AssetManager &assets, bool showConfig, RuntimeEditor &conf
 }
 
 void Renderer::renderPrimaryWindow(AssetManager &assets, bool showConfig) { // Removed configEditor parameter
-    LOG_DEBUG("Rendering primary window, showConfig: " << (showConfig ? 1 : 0));
+    //LOG_DEBUG("Rendering primary window, showConfig: " << (showConfig ? 1 : 0));
     const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(primaryRenderer_, &windowWidth, &windowHeight);

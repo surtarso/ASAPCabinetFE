@@ -1,0 +1,46 @@
+#include "window_manager.h"
+#include <iostream>
+
+WindowManager::WindowManager(const Settings& settings)
+    : primaryWindow_(nullptr, SDL_DestroyWindow),
+      secondaryWindow_(nullptr, SDL_DestroyWindow),
+      primaryRenderer_(nullptr, SDL_DestroyRenderer),
+      secondaryRenderer_(nullptr, SDL_DestroyRenderer) {
+    // Create primary window (Playfield)
+    primaryWindow_.reset(SDL_CreateWindow("Playfield",
+                                          SDL_WINDOWPOS_CENTERED_DISPLAY(settings.mainWindowMonitor),
+                                          SDL_WINDOWPOS_CENTERED,
+                                          settings.mainWindowWidth,
+                                          settings.mainWindowHeight,
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
+    if (!primaryWindow_) {
+        std::cerr << "Failed to create primary window: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+    primaryRenderer_.reset(SDL_CreateRenderer(primaryWindow_.get(), -1, 
+                                              SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+    if (!primaryRenderer_) {
+        std::cerr << "Failed to create primary renderer: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+    SDL_SetRenderDrawBlendMode(primaryRenderer_.get(), SDL_BLENDMODE_BLEND);
+
+    // Create secondary window (Backglass)
+    secondaryWindow_.reset(SDL_CreateWindow("Backglass",
+                                            SDL_WINDOWPOS_CENTERED_DISPLAY(settings.secondWindowMonitor),
+                                            SDL_WINDOWPOS_CENTERED,
+                                            settings.secondWindowWidth,
+                                            settings.secondWindowHeight,
+                                            SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
+    if (!secondaryWindow_) {
+        std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+    secondaryRenderer_.reset(SDL_CreateRenderer(secondaryWindow_.get(), -1, 
+                                                SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+    if (!secondaryRenderer_) {
+        std::cerr << "Failed to create secondary renderer: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+    SDL_SetRenderDrawBlendMode(secondaryRenderer_.get(), SDL_BLENDMODE_BLEND);
+}
