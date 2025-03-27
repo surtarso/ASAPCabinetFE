@@ -1,5 +1,4 @@
 #include "core/app.h"
-#include "core/window_manager.h"
 #include "utils/logging.h"
 #include "config/settings_manager.h"
 #include <SDL2/SDL_ttf.h>
@@ -20,8 +19,7 @@ namespace fs = std::filesystem;
 App::App(const std::string& configPath) 
     : configPath_(configPath),
       font_(nullptr, TTF_CloseFont),
-      tableChangeSound_(nullptr, Mix_FreeChunk),
-      tableLoadSound_(nullptr, Mix_FreeChunk),
+      soundManager_(nullptr),
       configManager_(nullptr),
       configEditor_(nullptr),
       renderer_(nullptr),
@@ -165,28 +163,6 @@ void App::initializeJoysticks() {
     }
 }
 
-void App::loadSounds() {
-    const Settings& settings = configManager_->getSettings();
-    std::string trimmedChange = settings.tableChangeSound;
-    std::string trimmedLoad = settings.tableLoadSound;
-    trimmedChange.erase(std::remove_if(trimmedChange.begin(), trimmedChange.end(), isspace), trimmedChange.end());
-    trimmedLoad.erase(std::remove_if(trimmedLoad.begin(), trimmedLoad.end(), isspace), trimmedLoad.end());
-
-    std::string tableLoadSoundPath = exeDir_ + trimmedLoad;
-    LOG_DEBUG("Loading table load sound from: " << tableLoadSoundPath);
-    tableLoadSound_.reset(Mix_LoadWAV(tableLoadSoundPath.c_str()));
-    if (!tableLoadSound_) {
-        std::cerr << "Mix_LoadWAV Error at " << tableLoadSoundPath << ": " << Mix_GetError() << std::endl;
-    }
-
-    std::string tableChangeSoundPath = exeDir_ + trimmedChange;
-    LOG_DEBUG("Loading table change sound from: " << tableChangeSoundPath);
-    tableChangeSound_.reset(Mix_LoadWAV(tableChangeSoundPath.c_str()));
-    if (!tableChangeSound_) {
-        std::cerr << "Mix_LoadWAV Error at " << tableChangeSoundPath << ": " << Mix_GetError() << std::endl;
-    }
-}
-
 void App::loadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
@@ -218,7 +194,9 @@ void App::initializeDependencies() {
     windowManager_ = std::make_unique<WindowManager>(configManager_->getSettings());
     initializeImGui();
 
-    loadSounds();
+    soundManager_ = std::make_unique<SoundManager>(exeDir_, configManager_->getSettings());
+    soundManager_->loadSounds(); // Load all sounds here
+
     loadFont();
     tables_ = loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
@@ -260,7 +238,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            soundManager_->playSound("table_change");
         }
     };
 
@@ -270,7 +248,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            soundManager_->playSound("table_change");
         }
     };
 
@@ -280,7 +258,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            soundManager_->playSound("table_change");
         }
     };
 
@@ -290,7 +268,7 @@ void App::initializeActionHandlers() {
         if (newIndex != currentIndex_) {
             assets_->loadTableAssets(newIndex, tables_);
             currentIndex_ = newIndex;
-            if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+            soundManager_->playSound("table_change");
         }
     };
 
@@ -305,7 +283,7 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                soundManager_->playSound("table_change");
             }
         } else {
             auto lastIt = std::prev(letterIndex.end());
@@ -313,7 +291,7 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                soundManager_->playSound("table_change");
             }
         }
     };
@@ -328,14 +306,14 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                soundManager_->playSound("table_change");
             }
         } else {
             size_t newIndex = letterIndex.begin()->second;
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                soundManager_->playSound("table_change");
             }
         }
     };
@@ -350,14 +328,14 @@ void App::initializeActionHandlers() {
             if (newIndex != currentIndex_) {
                 assets_->loadTableAssets(newIndex, tables_);
                 currentIndex_ = newIndex;
-                if (tableChangeSound_) Mix_PlayChannel(-1, tableChangeSound_.get(), 0);
+                soundManager_->playSound("table_change");
             }
         }
     };
 
     actionHandlers_["LaunchTable"] = [this]() {
         LOG_DEBUG("Launch table triggered");
-        if (tableLoadSound_) Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
+        soundManager_->playSound("table_load");
         const Settings& settings = configManager_->getSettings();
         std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
                               settings.vpxSubCmd + " \"" + tables_[currentIndex_].vpxFile + "\" " +
@@ -371,11 +349,13 @@ void App::initializeActionHandlers() {
 
     actionHandlers_["ScreenshotMode"] = [this]() {
         LOG_DEBUG("Screenshot mode triggered");
-        if (tableLoadSound_) Mix_PlayChannel(-1, tableLoadSound_.get(), 0);
+        soundManager_->playSound("table_load");
         screenshotManager_->launchScreenshotMode(tables_[currentIndex_].vpxFile);
     };
 
     actionHandlers_["ToggleConfig"] = [this]() {
+        LOG_DEBUG("ToggleConfig action triggered");
+        soundManager_->playSound("config_toggle");
         showConfig_ = !showConfig_;
         LOG_DEBUG("Toggled showConfig to: " << (showConfig_ ? 1 : 0));
     };

@@ -54,6 +54,7 @@ struct Settings {
     // Fade and sound settings
     std::string tableChangeSound;
     std::string tableLoadSound;
+    std::string configToggleSound;
 };
 
 #endif // SETTINGS_H

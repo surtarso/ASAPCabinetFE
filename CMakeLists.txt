@@ -17,6 +17,7 @@ set(SOURCES
     src/main.cpp
     src/core/app.cpp
     src/core/window_manager.cpp
+    src/core/sound_manager.cpp
     src/capture/screenshot_manager.cpp
     src/config/settings_manager.cpp
     src/config/ui/setup_editor.cpp
