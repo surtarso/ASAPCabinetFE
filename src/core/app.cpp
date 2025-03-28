@@ -38,7 +38,8 @@ App::App(const std::string &configPath)
       renderer_(nullptr),
       assets_(nullptr),
       screenshotManager_(nullptr),
-      inputManager_(nullptr)
+      inputManager_(nullptr),
+      prevShowConfig_(false)
 {
     exeDir_ = getExecutableDir();
     LOG_DEBUG("Config path: " << configPath_);
@@ -55,10 +56,41 @@ void App::run()
 {
     initializeDependencies();
     while (!inputManager_->shouldQuit())
-    { // check quit state
+    {
         handleEvents();
         update();
         render();
+    }
+}
+
+void App::onConfigSaved()
+{
+    LOG_DEBUG("Config saved detected, forcing font reload");
+    reloadFont();
+    LOG_DEBUG("Font reload completed in onConfigSaved");
+}
+
+void App::reloadFont()
+{
+    const Settings& settings = configManager_->getSettings();
+    font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
+    if (!font_)
+    {
+        std::cerr << "Failed to reload font: " << TTF_GetError() << std::endl;
+    }
+    else
+    {
+        assets_->setFont(font_.get());
+        const TableLoader& table = tables_[currentIndex_];
+        assets_->tableNameTexture.reset(assets_->renderText(
+            assets_->getPrimaryRenderer(), font_.get(), table.tableName,
+            settings.fontColor, assets_->tableNameRect));
+        int texWidth = 0;
+        if (assets_->tableNameTexture)
+        {
+            SDL_QueryTexture(assets_->tableNameTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+        }
+        LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
     }
 }
 
@@ -269,12 +301,13 @@ void App::initializeDependencies()
                                                              soundManager_.get());
     configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
                                                     &configManager_->getKeybindManager(), assets_.get(),
-                                                    &currentIndex_, &tables_);
+                                                    &currentIndex_, &tables_, this);
     renderer_ = std::make_unique<Renderer>(windowManager_->getPrimaryRenderer(),
                                            windowManager_->getSecondaryRenderer());
     inputManager_ = std::make_unique<InputManager>(&configManager_->getKeybindManager());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(),
-                                   currentIndex_, tables_, showConfig_, getExecutableDir()); // Pass exeDir
+                                   currentIndex_, tables_, showConfig_, getExecutableDir());
+    inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 
     assets_->loadTableAssets(currentIndex_, tables_);
@@ -289,6 +322,10 @@ void App::handleEvents()
     {
         ImGui_ImplSDL2_ProcessEvent(&event);
         inputManager_->handleEvent(event);
+        if (showConfig_)
+        {
+            configEditor_->handleEvent(event);
+        }
 
         if (event.type == SDL_JOYDEVICEADDED)
         {
@@ -319,6 +356,7 @@ void App::update()
 {
     assets_->clearOldVideoPlayers();
     configManager_->applyConfigChanges(windowManager_->getPrimaryWindow(), windowManager_->getSecondaryWindow());
+    prevShowConfig_ = inputManager_->isConfigActive();
 }
 
 void App::render()
