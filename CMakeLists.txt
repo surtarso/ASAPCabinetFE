@@ -21,6 +21,7 @@ set(SOURCES
     src/capture/screenshot_manager.cpp
     src/config/settings_manager.cpp
     src/config/ui/setup_editor.cpp
+    src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/render/asset_manager.cpp
     src/render/table_loader.cpp
