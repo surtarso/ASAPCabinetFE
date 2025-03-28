@@ -27,7 +27,7 @@ public:
     ~App();
     void run();
     void reloadFont(); // Added back for ConfigEditor to call
-    void onConfigSaved();
+    void onConfigSaved(bool isStandalone = false); // Modified to take isStandalone parameter
 
 private:
     std::string exeDir_;
