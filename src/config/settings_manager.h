@@ -34,4 +34,4 @@ private:
     void writeIniFile(const std::string& filename);
 };
 
-#endif // CONFIG_MANAGER_H
+#endif // SETTINGS_MANAGER_H

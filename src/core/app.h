@@ -4,21 +4,22 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "config/settings_manager.h"
 #include "config/ui/setup_editor.h"
-#include "keybinds/keybind_manager.h"
+#include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
 #include "render/asset_manager.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "core/iwindow_manager.h"
 #include "sound/isound_manager.h"
-#include "utils/sdl_guards.h" //RAII guards
+#include "utils/sdl_guards.h"
 
-class IWindowManager; // Forward declaration
+class IWindowManager;
+class IRenderer;
+class IInputManager;
 
 class App {
 public:
@@ -27,20 +28,17 @@ public:
     void run();
 
 private:
-    using ActionHandler = std::function<void()>;
-
     std::string exeDir_;
     std::string configPath_;
-    bool quit_ = false;
-    bool showConfig_ = false;
+    bool quit_ = false; // Still needed for main loop
+    bool showConfig_ = false; // Kept for rendering logic
     size_t currentIndex_ = 0;
-    std::map<char, size_t> letterIndex;
+    // letterIndex_ moved to InputManager
 
-    // SDL RAII guards
-    SDLInitGuard sdlGuard_;           // Manages SDL_Init and SDL_Quit
-    MixerGuard mixerGuard_;           // Manages Mix_OpenAudio and Mix_CloseAudio
-    TTFInitGuard ttfGuard_;           // Manages TTF_Init and TTF_Quit
-    IMGInitGuard imgGuard_;           // Manages IMG_Init and IMG_Quit
+    SDLInitGuard sdlGuard_;
+    MixerGuard mixerGuard_;
+    TTFInitGuard ttfGuard_;
+    IMGInitGuard imgGuard_;
 
     std::unique_ptr<IWindowManager> windowManager_;
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
@@ -52,24 +50,20 @@ private:
     std::unique_ptr<IRenderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_;
+    std::unique_ptr<IInputManager> inputManager_;
     std::vector<TableLoader> tables_;
-    std::map<std::string, ActionHandler> actionHandlers_;
 
     std::string getExecutableDir();
     bool isConfigValid();
     void runInitialConfig();
-    void initializeSDL();             // Updated to use guards
+    void initializeSDL();
     void initializeJoysticks();
-    void loadSounds();
     void loadFont();
     void initializeImGui();
-    void initializeActionHandlers();
     void handleEvents();
-    void handleConfigEvents(const SDL_Event& event);
-    void handleRegularEvents(const SDL_Event& event);
     void update();
     void render();
-    void cleanup();                   // Simplified due to guards
+    void cleanup();
     void initializeDependencies();
 };
 
