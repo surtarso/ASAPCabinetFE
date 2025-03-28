@@ -34,7 +34,6 @@ private:
     std::string configPath_;
     bool quit_ = false;
     bool showConfig_ = false;
-    bool prevShowConfig_ = false;
     size_t currentIndex_ = 0;
 
     SDLInitGuard sdlGuard_;
@@ -56,6 +55,7 @@ private:
     std::vector<TableLoader> tables_;
 
     std::string getExecutableDir();
+    bool prevShowConfig_ = false;
     bool isConfigValid();
     void runInitialConfig();
     void initializeSDL();
