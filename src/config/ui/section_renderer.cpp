@@ -1,14 +1,18 @@
 #include "config/ui/section_renderer.h"
 #include "utils/tooltips.h"
+extern "C" {
+#include "tinyfiledialogs.h"
+}
 #include "imgui.h"
 #include "utils/logging.h"
 #include <sstream>
+#include <filesystem>
 
 SectionRenderer::SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler)
     : configService_(configService), currentSection_(currentSection), inputHandler_(inputHandler) {}
 
 void SectionRenderer::renderSectionsPane(const std::vector<std::string>& sectionOrder) {
-    ImGui::BeginChild("SectionsPane", ImVec2(250, 0), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild("SectionsPane", ImVec2(250, 0), false);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
     ImGui::TextColored(ImVec4(0.9f, 0.9f, 1.0f, 1.0f), "Configuration Sections");
     ImGui::Separator();
@@ -28,7 +32,7 @@ void SectionRenderer::renderSectionsPane(const std::vector<std::string>& section
 }
 
 void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData) {
-    ImGui::BeginChild("KeyValuesPane", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 2.5f), true);
+    ImGui::BeginChild("KeyValuesPane", ImVec2(0, 0), false);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
     ImGui::TextColored(ImVec4(0.9f, 0.9f, 1.0f, 1.0f), "Settings - %s", currentSection_.c_str());
     ImGui::Separator();
@@ -86,7 +90,52 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
+            } else if (key.find("Path") != std::string::npos || key.find("Cmd") != std::string::npos) {
+                char buffer[1024];
+                strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+                buffer[sizeof(buffer) - 1] = '\0';
+                ImGui::SetNextItemWidth(-60);
+                if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
+                    value = std::string(buffer);
+                    LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << value);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Browse", ImVec2(50, 0))) {
+                    std::string selectedPath;
+                    if (key.find("Path") != std::string::npos) {
+                        // Folder picker for Path keys
+                        const char* folderPath = tinyfd_selectFolderDialog("Select Folder", "");
+                        if (folderPath) {
+                            selectedPath = folderPath;
+                        }
+                    } else if (key.find("Cmd") != std::string::npos) {
+                        // Executable picker for Cmd keys
+                        const char* filterPatterns[1] = { "*" };
+                        const char* filePath = tinyfd_openFileDialog(
+                            "Select Executable",
+                            "",
+                            1,
+                            filterPatterns,
+                            "Executable Files",
+                            0
+                        );
+                        if (filePath) {
+                            selectedPath = filePath;
+                        }
+                    }
+
+                    if (!selectedPath.empty()) {
+                        for (auto& [k, v] : section.keyValues) {
+                            if (k == key) {
+                                v = selectedPath;
+                                LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << selectedPath);
+                                break;
+                            }
+                        }
+                    }
+                }
             } else {
+                // For all other keys (Image, Video, Sound, etc.), use a simple text input
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';

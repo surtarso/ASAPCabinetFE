@@ -17,8 +17,8 @@ class App;
 class ConfigUI {
 public:
     ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-                AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
-                App* app, bool& showConfig, bool standaloneMode = false);
+             AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
+             App* app, bool& showConfig, bool standaloneMode = false);
     void drawGUI();
     void handleEvent(const SDL_Event& event);
     void saveConfig();
@@ -33,18 +33,20 @@ private:
     size_t* currentIndex_;
     std::vector<TableLoader>* tables_;
     App* app_;
-    bool& showConfig_; // Reference to App's showConfig_
+    bool& showConfig_;
     bool standaloneMode_;
     std::string currentSection_;
     bool hasChanges_ = false;
     float saveMessageTimer_ = 0.0f;
     std::map<std::string, bool> showPicker_;
+    std::map<std::string, SettingsSection> lastSavedIniData_; // Store last saved state
 
     SectionRenderer sectionRenderer_;
     ButtonHandler buttonHandler_;
     InputHandler inputHandler_;
 
     static const std::vector<std::string> sectionOrder_;
+    void discardChanges(); // New method to discard changes
 };
 
 #endif // CONFIG_UI_H

@@ -17,6 +17,9 @@ private:
     IConfigService* configService_;
     std::string& currentSection_;
     InputHandler& inputHandler_;
+    bool showPicker_ = false;
+    std::string currentKey_;
+    std::string currentSectionForPicker_;
     void renderTooltip(const std::string& key);
 };
 

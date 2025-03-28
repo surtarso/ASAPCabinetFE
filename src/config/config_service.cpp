@@ -20,8 +20,14 @@ void ConfigService::loadConfig() {
 
 void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& iniData) {
     writeIniFile(iniData);
-    parseIniFile(); // Reload to sync settings_
+    iniData_ = iniData; // Update in-memory iniData_
+    parseIniFile(); // Reload to sync settings_ and keybindManager_
     LOG_DEBUG("Config saved to " << configPath_);
+}
+
+void ConfigService::setIniData(const std::map<std::string, SettingsSection>& iniData) {
+    iniData_ = iniData;
+    parseIniFile(); // Sync settings_ and keybindManager_
 }
 
 void ConfigService::setDefaultSettings() {
@@ -121,7 +127,7 @@ void ConfigService::parseIniFile() {
         lineIndex++;
     }
 
-    setDefaultSettings(); // Base defaults, then override
+    setDefaultSettings();
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
     settings_.vpxTablesPath = config["VPX"]["TablesPath"].empty() ? settings_.vpxTablesPath : config["VPX"]["TablesPath"];
     settings_.vpxExecutableCmd = config["VPX"]["ExecutableCmd"].empty() ? settings_.vpxExecutableCmd : config["VPX"]["ExecutableCmd"];
