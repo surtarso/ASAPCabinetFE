@@ -41,6 +41,7 @@ App::App(const std::string &configPath)
       inputManager_(nullptr),
       prevShowConfig_(false) {
     exeDir_ = getExecutableDir();
+    configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("Config path: " << configPath_);
     LOG_DEBUG("Exe dir set to: " << exeDir_);
 }
