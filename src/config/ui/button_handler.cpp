@@ -18,6 +18,7 @@ void ButtonHandler::renderButtonPane() {
     }
     ImGui::SameLine();
     if (ImGui::Button("Close", ImVec2(100, 0))) {
+        if (onClose_) onClose_(); // Call the onClose callback
         showConfig_ = false;
         LOG_DEBUG("Config closed");
     }

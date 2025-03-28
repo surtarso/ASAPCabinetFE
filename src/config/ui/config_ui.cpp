@@ -25,11 +25,19 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
     if (!configService_->getIniData().empty()) {
         currentSection_ = configService_->getIniData().begin()->first;
     }
+    lastSavedIniData_ = configService_->getIniData(); // Store initial state
     buttonHandler_.setOnSave([this]() { saveConfig(); });
+    buttonHandler_.setOnClose([this]() { discardChanges(); }); // Set onClose callback
 }
 
 void ConfigUI::drawGUI() {
     if (!showConfig_) return;
+
+    // Decrement the save message timer
+    if (saveMessageTimer_ > 0.0f) {
+        saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
+        if (saveMessageTimer_ < 0.0f) saveMessageTimer_ = 0.0f; // Ensure it doesn't go negative
+    }
 
     ImGuiIO& io = ImGui::GetIO();
     if (standaloneMode_) {
@@ -49,9 +57,8 @@ void ConfigUI::drawGUI() {
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.3f, 0.4f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.4f, 0.5f, 1.0f));
 
-    // Two equal-height panes on top
-    float buttonHeight = ImGui::GetFrameHeightWithSpacing() * 1.2f; // Tighter button area
-    float paneHeight = ImGui::GetContentRegionAvail().y - buttonHeight; // Exact height for panes
+    float buttonHeight = ImGui::GetFrameHeightWithSpacing() * 1.2f;
+    float paneHeight = ImGui::GetContentRegionAvail().y - buttonHeight;
     ImGui::BeginChild("LeftPane", ImVec2(250, paneHeight), false);
     sectionRenderer_.renderSectionsPane(sectionOrder_);
     ImGui::EndChild();
@@ -62,7 +69,6 @@ void ConfigUI::drawGUI() {
     sectionRenderer_.renderKeyValuesPane(iniData);
     ImGui::EndChild();
 
-    // Buttons below both panes, full-width, minimal height
     ImGui::BeginChild("ButtonPane", ImVec2(0, buttonHeight), false);
     buttonHandler_.renderButtonPane();
     ImGui::EndChild();
@@ -75,9 +81,16 @@ void ConfigUI::drawGUI() {
 void ConfigUI::saveConfig() {
     LOG_DEBUG("ConfigUI::saveConfig called");
     configService_->saveConfig(configService_->getIniData());
+    lastSavedIniData_ = configService_->getIniData(); // Update last saved state
     if (app_) app_->onConfigSaved();
     hasChanges_ = false;
     saveMessageTimer_ = 3.0f;
+}
+
+void ConfigUI::discardChanges() {
+    LOG_DEBUG("ConfigUI::discardChanges called");
+    configService_->setIniData(lastSavedIniData_); // Reset to last saved state
+    hasChanges_ = false;
 }
 
 void ConfigUI::handleEvent(const SDL_Event& event) {

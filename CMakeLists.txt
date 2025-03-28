@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(ASAPCabinetFE VERSION 2.0.0 LANGUAGES CXX)
+project(ASAPCabinetFE VERSION 2.0.0 LANGUAGES CXX C)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -30,30 +30,40 @@ set(SOURCES
     src/render/table_loader.cpp
     src/render/renderer.cpp
     src/render/video_player.cpp
-    src/imgui/imgui.cpp
-    src/imgui/imgui_draw.cpp
-    src/imgui/imgui_widgets.cpp
-    src/imgui/imgui_tables.cpp
-    src/imgui/backends/imgui_impl_sdl2.cpp
-    src/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    # ImGui sources
+    ${CMAKE_SOURCE_DIR}/external/imgui/imgui.cpp
+    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_draw.cpp
+    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_widgets.cpp
+    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_tables.cpp
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdl2.cpp
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    # tinyfiledialogs source
+    ${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c
 )
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+# Set language for tinyfiledialogs.c to C
+set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE C)
+
+# Suppress all warnings for tinyfiledialogs.c
+set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES COMPILE_FLAGS "-w")
+
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-    src
-    src/core
-    src/capture
-    src/config
-    src/config/ui
-    src/keybinds
-    src/render
-    src/sound
-    src/utils
-    src/imgui
-    src/imgui/backends
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/capture
+    ${CMAKE_SOURCE_DIR}/src/config
+    ${CMAKE_SOURCE_DIR}/src/config/ui
+    ${CMAKE_SOURCE_DIR}/src/keybinds
+    ${CMAKE_SOURCE_DIR}/src/render
+    ${CMAKE_SOURCE_DIR}/src/sound
+    ${CMAKE_SOURCE_DIR}/src/utils
+    ${CMAKE_SOURCE_DIR}/external/imgui
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends
+    ${CMAKE_SOURCE_DIR}/external/tinyfiledialogs
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
@@ -117,4 +127,4 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     # logs:
     COMMAND ${CMAKE_COMMAND} -E make_directory
     ${CMAKE_BINARY_DIR}/logs
-    )
+)
