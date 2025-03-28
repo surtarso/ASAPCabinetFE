@@ -8,7 +8,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
       settingsManager_(nullptr), currentIndex_(nullptr), tables_(nullptr), showConfig_(nullptr),
       exeDir_("") {}
 
-void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, SettingsManager* settings,
+void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, ConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableLoader>& tables,
                                    bool& showConfig, const std::string& exeDir) {
     assets_ = assets;
@@ -17,7 +17,7 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, S
     currentIndex_ = &currentIndex; 
     tables_ = &tables;
     showConfig_ = &showConfig;
-    exeDir_ = exeDir; // Store exeDir
+    exeDir_ = exeDir;
     screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, settings, 
                                                             dynamic_cast<KeybindManager*>(keybindProvider_), 
                                                             soundManager_);
@@ -33,7 +33,6 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, S
     }
 }
 
-// Rest of the file unchanged - just showing the changed part
 void InputManager::registerActions() {
     actionHandlers_["PreviousTable"] = [this]() {
         LOG_DEBUG("Previous table triggered");
@@ -156,10 +155,9 @@ void InputManager::registerActions() {
             soundManager_->playSound("launch_screenshot");
             inScreenshotMode_ = true;
             screenshotManager_->launchScreenshotMode(tables_->at(*currentIndex_).vpxFile);
-            inScreenshotMode_ = false; // Reset when done
+            inScreenshotMode_ = false;
             LOG_DEBUG("Exited screenshot mode");
         }
-        // Subsequent 'S' presses handled in launchScreenshotMode
     };
 
     actionHandlers_["ToggleConfig"] = [this]() {
@@ -187,11 +185,11 @@ void InputManager::registerActions() {
     actionHandlers_["ConfigSave"] = [this]() {
         LOG_DEBUG("ConfigSave triggered");
         if (runtimeEditor_) {
-            runtimeEditor_->saveConfig();
+            runtimeEditor_->saveConfig(); // Need to implement in ConfigUI
             soundManager_->playSound("config_save");
-            LOG_DEBUG("Config saved via RuntimeEditor");
+            LOG_DEBUG("Config saved via ConfigUI");
         } else {
-            LOG_DEBUG("Error: RuntimeEditor not set");
+            LOG_DEBUG("Error: ConfigUI not set");
         }
     };
 
@@ -226,7 +224,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
     if (*showConfig_) {
         handleConfigEvents(event);
-    } else if (!inScreenshotMode_) { // Skip regular events in screenshot mode
+    } else if (!inScreenshotMode_) {
         handleRegularEvents(event);
     }
 }

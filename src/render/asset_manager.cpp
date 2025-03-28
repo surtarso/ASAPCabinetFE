@@ -1,5 +1,5 @@
 #include "render/asset_manager.h"
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 #include "utils/logging.h"
 #include <SDL_image.h>
 #include <iostream>

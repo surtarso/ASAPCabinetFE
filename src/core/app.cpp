@@ -1,7 +1,7 @@
 #include "core/app.h"
 #include "core/iwindow_manager.h"
 #include "core/window_manager.h"
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 #include "sound/sound_manager.h"
 #include "utils/sdl_guards.h"
 #include "utils/logging.h"
@@ -39,67 +39,55 @@ App::App(const std::string &configPath)
       assets_(nullptr),
       screenshotManager_(nullptr),
       inputManager_(nullptr),
-      prevShowConfig_(false)
-{
+      prevShowConfig_(false) {
     exeDir_ = getExecutableDir();
     LOG_DEBUG("Config path: " << configPath_);
     LOG_DEBUG("Exe dir set to: " << exeDir_);
 }
 
-App::~App()
-{
+App::~App() {
     cleanup();
     LOG_DEBUG("App destructor completed");
 }
 
-void App::run()
-{
+void App::run() {
     initializeDependencies();
-    while (!inputManager_->shouldQuit())
-    {
+    while (!inputManager_->shouldQuit()) {
         handleEvents();
         update();
         render();
     }
 }
 
-void App::onConfigSaved()
-{
+void App::onConfigSaved() {
     LOG_DEBUG("Config saved detected, forcing font reload");
     reloadFont();
     LOG_DEBUG("Font reload completed in onConfigSaved");
 }
 
-void App::reloadFont()
-{
+void App::reloadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
-    if (!font_)
-    {
+    if (!font_) {
         std::cerr << "Failed to reload font: " << TTF_GetError() << std::endl;
-    }
-    else
-    {
+    } else {
         assets_->setFont(font_.get());
         const TableLoader& table = tables_[currentIndex_];
         assets_->tableNameTexture.reset(assets_->renderText(
             assets_->getPrimaryRenderer(), font_.get(), table.tableName,
             settings.fontColor, assets_->tableNameRect));
         int texWidth = 0;
-        if (assets_->tableNameTexture)
-        {
+        if (assets_->tableNameTexture) {
             SDL_QueryTexture(assets_->tableNameTexture.get(), nullptr, nullptr, &texWidth, nullptr);
         }
         LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
     }
 }
 
-std::string App::getExecutableDir()
-{
+std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
-    if (count == -1)
-    {
+    if (count == -1) {
         LOG_DEBUG("Warning: Couldn't determine executable path, using './'");
         return "./";
     }
@@ -109,38 +97,11 @@ std::string App::getExecutableDir()
     return (lastSlash == std::string::npos) ? "./" : fullPath.substr(0, lastSlash + 1);
 }
 
-bool App::isConfigValid()
-{
-    const Settings &settings = configManager_->getSettings();
-    if (settings.vpxExecutableCmd.empty() || !fs::exists(settings.vpxExecutableCmd))
-    {
-        std::cerr << "Invalid VPX executable path: " << settings.vpxExecutableCmd << std::endl;
-        return false;
-    }
-    if (settings.vpxTablesPath.empty() || !fs::exists(settings.vpxTablesPath))
-    {
-        std::cerr << "Invalid table path: " << settings.vpxTablesPath << std::endl;
-        return false;
-    }
-    bool hasVpxFiles = false;
-    for (const auto &entry : fs::recursive_directory_iterator(settings.vpxTablesPath))
-    {
-        if (entry.path().extension() == ".vpx")
-        {
-            hasVpxFiles = true;
-            break;
-        }
-    }
-    if (!hasVpxFiles)
-    {
-        std::cerr << "No .vpx files found in table path or subdirectories: " << settings.vpxTablesPath << std::endl;
-        return false;
-    }
-    return true;
+bool App::isConfigValid() {
+    return configManager_->isConfigValid();
 }
 
-void App::runInitialConfig()
-{
+void App::runInitialConfig() {
     SDL_Window *configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                 800, 500, SDL_WINDOW_SHOWN);
@@ -152,18 +113,15 @@ void App::runInitialConfig()
     ImGui_ImplSDLRenderer2_Init(configRenderer);
 
     bool showConfig = true;
-    SetupEditor configEditor(configPath_, showConfig, configManager_.get(), &configManager_->getKeybindManager());
-    configEditor.setFillParentWindow(true);
+    ConfigUI configEditor(configManager_.get(), &configManager_->getKeybindManager(), 
+                          nullptr, nullptr, nullptr, this, showConfig, true);
 
-    while (true)
-    {
+    while (true) {
         SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
+        while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             configEditor.handleEvent(event);
-            if (event.type == SDL_QUIT)
-            {
+            if (event.type == SDL_QUIT) {
                 std::cerr << "Config window closed without saving. Exiting..." << std::endl;
                 exit(1);
             }
@@ -179,10 +137,8 @@ void App::runInitialConfig()
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), configRenderer);
         SDL_RenderPresent(configRenderer);
 
-        if (!showConfig && isConfigValid())
-            break;
-        else if (!showConfig)
-        {
+        if (!showConfig && isConfigValid()) break;
+        else if (!showConfig) {
             std::cerr << "Configuration invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
             showConfig = true;
         }
@@ -195,31 +151,25 @@ void App::runInitialConfig()
     SDL_DestroyWindow(configWindow);
 }
 
-void App::initializeSDL()
-{
-    if (!sdlGuard_.success)
-    {
+void App::initializeSDL() {
+    if (!sdlGuard_.success) {
         std::cerr << "SDL initialization failed" << std::endl;
         exit(1);
     }
-    if (!mixerGuard_.success)
-    {
+    if (!mixerGuard_.success) {
         std::cerr << "SDL_mixer initialization failed" << std::endl;
         exit(1);
     }
-    if (!ttfGuard_.success)
-    {
+    if (!ttfGuard_.success) {
         std::cerr << "TTF initialization failed" << std::endl;
         exit(1);
     }
-    if (!imgGuard_.flags)
-    {
+    if (!imgGuard_.flags) {
         std::cerr << "IMG initialization failed" << std::endl;
         exit(1);
     }
 
-    if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3)
-    {
+    if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
         std::cerr << "Mix_Init Error: " << Mix_GetError() << std::endl;
         exit(1);
     }
@@ -227,37 +177,29 @@ void App::initializeSDL()
     LOG_DEBUG("SDL initialized successfully with RAII guards");
 }
 
-void App::initializeJoysticks()
-{
+void App::initializeJoysticks() {
     int numJoysticks = SDL_NumJoysticks();
     LOG_DEBUG("Found " << numJoysticks << " joysticks");
-    for (int i = 0; i < numJoysticks; ++i)
-    {
+    for (int i = 0; i < numJoysticks; ++i) {
         SDL_Joystick *joystick = SDL_JoystickOpen(i);
-        if (joystick)
-        {
+        if (joystick) {
             joysticks_.push_back(joystick);
             LOG_DEBUG("Opened joystick " << i << ": " << SDL_JoystickName(joystick));
-        }
-        else
-        {
+        } else {
             LOG_DEBUG("Failed to open joystick " << i << ": " << SDL_GetError());
         }
     }
 }
 
-void App::loadFont()
-{
+void App::loadFont() {
     const Settings &settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
-    if (!font_)
-    {
+    if (!font_) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
 }
 
-void App::initializeImGui()
-{
+void App::initializeImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
@@ -265,18 +207,17 @@ void App::initializeImGui()
     ImGui_ImplSDLRenderer2_Init(windowManager_->getPrimaryRenderer());
 }
 
-void App::initializeDependencies()
-{
+void App::initializeDependencies() {
     initializeSDL();
     initializeJoysticks();
 
-    configManager_ = std::make_unique<SettingsManager>(configPath_);
+    configManager_ = std::make_unique<ConfigService>(configPath_);
     configManager_->loadConfig();
 
-    if (!isConfigValid())
-    {
+    if (!isConfigValid()) {
         LOG_DEBUG("Config invalid, running initial config");
         runInitialConfig();
+        configManager_->loadConfig();
     }
 
     windowManager_ = std::make_unique<WindowManager>(configManager_->getSettings());
@@ -287,8 +228,7 @@ void App::initializeDependencies()
 
     loadFont();
     tables_ = loadTableList(configManager_->getSettings());
-    if (tables_.empty())
-    {
+    if (tables_.empty()) {
         std::cerr << "Edit config.ini, no .vpx files found in " << configManager_->getSettings().vpxTablesPath << std::endl;
         exit(1);
     }
@@ -299,9 +239,8 @@ void App::initializeDependencies()
     screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, configManager_.get(),
                                                              &configManager_->getKeybindManager(),
                                                              soundManager_.get());
-    configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
-                                                    &configManager_->getKeybindManager(), assets_.get(),
-                                                    &currentIndex_, &tables_, this);
+    configEditor_ = std::make_unique<ConfigUI>(configManager_.get(), &configManager_->getKeybindManager(),
+                                               assets_.get(), &currentIndex_, &tables_, this, showConfig_, false);
     renderer_ = std::make_unique<Renderer>(windowManager_->getPrimaryRenderer(),
                                            windowManager_->getSecondaryRenderer());
     inputManager_ = std::make_unique<InputManager>(&configManager_->getKeybindManager());
@@ -315,33 +254,24 @@ void App::initializeDependencies()
     LOG_DEBUG("Initialization complete");
 }
 
-void App::handleEvents()
-{
+void App::handleEvents() {
     SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
+    while (SDL_PollEvent(&event)) {
         ImGui_ImplSDL2_ProcessEvent(&event);
         inputManager_->handleEvent(event);
-        if (showConfig_)
-        {
+        if (showConfig_) {
             configEditor_->handleEvent(event);
         }
 
-        if (event.type == SDL_JOYDEVICEADDED)
-        {
+        if (event.type == SDL_JOYDEVICEADDED) {
             SDL_Joystick *joystick = SDL_JoystickOpen(event.jdevice.which);
-            if (joystick)
-            {
+            if (joystick) {
                 joysticks_.push_back(joystick);
                 LOG_DEBUG("Joystick connected: " << SDL_JoystickName(joystick));
             }
-        }
-        else if (event.type == SDL_JOYDEVICEREMOVED)
-        {
-            for (auto it = joysticks_.begin(); it != joysticks_.end(); ++it)
-            {
-                if (SDL_JoystickInstanceID(*it) == event.jdevice.which)
-                {
+        } else if (event.type == SDL_JOYDEVICEREMOVED) {
+            for (auto it = joysticks_.begin(); it != joysticks_.end(); ++it) {
+                if (SDL_JoystickInstanceID(*it) == event.jdevice.which) {
                     SDL_JoystickClose(*it);
                     joysticks_.erase(it);
                     LOG_DEBUG("Joystick disconnected: ID " << event.jdevice.which);
@@ -352,17 +282,14 @@ void App::handleEvents()
     }
 }
 
-void App::update()
-{
+void App::update() {
     assets_->clearOldVideoPlayers();
-    configManager_->applyConfigChanges(windowManager_->getPrimaryWindow(), windowManager_->getSecondaryWindow());
+    // applyConfigChanges removed - handle via events later
     prevShowConfig_ = inputManager_->isConfigActive();
 }
 
-void App::render()
-{
-    if (renderer_ && assets_)
-    {
+void App::render() {
+    if (renderer_ && assets_) {
         SDL_SetRenderDrawColor(windowManager_->getPrimaryRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(windowManager_->getPrimaryRenderer());
         SDL_SetRenderDrawColor(windowManager_->getSecondaryRenderer(), 0, 0, 0, 255);
@@ -374,14 +301,12 @@ void App::render()
 
         renderer_->render(*assets_);
 
-        if (showConfig_)
-        {
+        if (showConfig_) {
             configEditor_->drawGUI();
         }
 
         ImGui::Render();
-        if (ImGui::GetDrawData())
-        {
+        if (ImGui::GetDrawData()) {
             ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), windowManager_->getPrimaryRenderer());
         }
 
@@ -390,28 +315,23 @@ void App::render()
     }
 }
 
-void App::cleanup()
-{
+void App::cleanup() {
     LOG_DEBUG("Cleaning up");
-    if (assets_)
-    {
+    if (assets_) {
         VideoContext *tablePlayer = assets_->getTableVideoPlayer();
-        if (tablePlayer && tablePlayer->player)
-        {
+        if (tablePlayer && tablePlayer->player) {
             libvlc_media_player_stop(tablePlayer->player);
             libvlc_media_player_release(tablePlayer->player);
             tablePlayer->player = nullptr;
         }
         VideoContext *backglassPlayer = assets_->getBackglassVideoPlayer();
-        if (backglassPlayer && backglassPlayer->player)
-        {
+        if (backglassPlayer && backglassPlayer->player) {
             libvlc_media_player_stop(backglassPlayer->player);
             libvlc_media_player_release(backglassPlayer->player);
             backglassPlayer->player = nullptr;
         }
         VideoContext *dmdPlayer = assets_->getDmdVideoPlayer();
-        if (dmdPlayer && dmdPlayer->player)
-        {
+        if (dmdPlayer && dmdPlayer->player) {
             libvlc_media_player_stop(dmdPlayer->player);
             libvlc_media_player_release(dmdPlayer->player);
             dmdPlayer->player = nullptr;
@@ -427,15 +347,12 @@ void App::cleanup()
         assets_.reset();
     }
 
-    for (auto joystick : joysticks_)
-    {
-        if (joystick)
-            SDL_JoystickClose(joystick);
+    for (auto joystick : joysticks_) {
+        if (joystick) SDL_JoystickClose(joystick);
     }
     joysticks_.clear();
 
-    if (ImGui::GetCurrentContext())
-    {
+    if (ImGui::GetCurrentContext()) {
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();

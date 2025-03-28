@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 
 Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRenderer)
     : primaryRenderer_(primaryRenderer), secondaryRenderer_(secondaryRenderer) {}

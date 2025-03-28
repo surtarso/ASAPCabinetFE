@@ -4,7 +4,7 @@
 #include "core/iwindow_manager.h" // Inherit from interface
 #include <SDL2/SDL.h>
 #include <memory>
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 
 class WindowManager : public IWindowManager { // Implement IWindowManager
 public:

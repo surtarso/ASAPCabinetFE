@@ -5,10 +5,10 @@
 #include "keybinds/ikeybind_provider.h"
 #include "render/asset_manager.h"
 #include "sound/isound_manager.h"
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
-#include "config/ui/setup_editor.h"
+#include "config/ui/config_ui.h"
 #include <map>
 #include <vector>
 
@@ -17,12 +17,12 @@ public:
     InputManager(IKeybindProvider* keybindProvider);
     void handleEvent(const SDL_Event& event) override;
     void registerActions() override;
-    void setDependencies(AssetManager* assets, ISoundManager* sound, SettingsManager* settings,
+    void setDependencies(AssetManager* assets, ISoundManager* sound, ConfigService* settings,
                          size_t& currentIndex, const std::vector<TableLoader>& tables,
                          bool& showConfig, const std::string& exeDir) override;
     bool isConfigActive() const override { return *showConfig_; }
     bool shouldQuit() const override { return quit_; }
-    void setRuntimeEditor(RuntimeEditor* editor) override { runtimeEditor_ = editor; }
+    void setRuntimeEditor(ConfigUI* editor) override { runtimeEditor_ = editor; }
 
 private:
     using ActionHandler = std::function<void()>;
@@ -33,12 +33,12 @@ private:
     IKeybindProvider* keybindProvider_;
     AssetManager* assets_;
     ISoundManager* soundManager_;
-    SettingsManager* settingsManager_;
+    ConfigService* settingsManager_;
     size_t* currentIndex_;
     const std::vector<TableLoader>* tables_;
     bool* showConfig_;
     std::string exeDir_;
-    RuntimeEditor* runtimeEditor_ = nullptr;
+    ConfigUI* runtimeEditor_ = nullptr;
     std::map<std::string, ActionHandler> actionHandlers_;
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
