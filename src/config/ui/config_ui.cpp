@@ -20,14 +20,33 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       showConfig_(showConfig),
       standaloneMode_(standaloneMode),
       sectionRenderer_(configService, currentSection_, inputHandler_),
-      buttonHandler_(configService, app, showConfig_, hasChanges_, saveMessageTimer_, inputHandler_),
+      buttonHandler_(configService, app, showConfig_, hasChanges_, saveMessageTimer_, inputHandler_, standaloneMode),
       inputHandler_(keybindProvider) {
-    if (!configService_->getIniData().empty()) {
+    // Initialize currentSection_ to the first visible section in sectionOrder_
+    for (const auto& section : sectionOrder_) {
+        if (standaloneMode_ && section != "VPX") {
+            continue; // In standalone mode, only VPX is visible
+        }
+#ifndef DEBUG_LOGGING
+        if (section == "Internal") {
+            continue; // Hide Internal in release builds
+        }
+#endif
+        // Check if the section exists in iniData before setting it
+        if (configService_->getIniData().count(section) > 0) {
+            currentSection_ = section;
+            break;
+        }
+    }
+
+    // If no valid section was found (unlikely), fall back to the first in iniData
+    if (currentSection_.empty() && !configService_->getIniData().empty()) {
         currentSection_ = configService_->getIniData().begin()->first;
     }
+
     lastSavedIniData_ = configService_->getIniData(); // Store initial state
     buttonHandler_.setOnSave([this]() { saveConfig(); });
-    buttonHandler_.setOnClose([this]() { discardChanges(); }); // Set onClose callback
+    buttonHandler_.setOnClose([this]() { discardChanges(); });
 }
 
 void ConfigUI::drawGUI() {
@@ -59,8 +78,23 @@ void ConfigUI::drawGUI() {
 
     float buttonHeight = ImGui::GetFrameHeightWithSpacing() * 1.2f;
     float paneHeight = ImGui::GetContentRegionAvail().y - buttonHeight;
+
+    // Filter sections in standalone mode
+    std::vector<std::string> visibleSections;
+    for (const auto& section : sectionOrder_) {
+        if (standaloneMode_ && section != "VPX") {
+            continue; // In standalone mode, only show VPX
+        }
+#ifndef DEBUG_LOGGING
+        if (section == "Internal") {
+            continue; // Hide Internal in release builds
+        }
+#endif
+        visibleSections.push_back(section);
+    }
+
     ImGui::BeginChild("LeftPane", ImVec2(250, paneHeight), false);
-    sectionRenderer_.renderSectionsPane(sectionOrder_);
+    sectionRenderer_.renderSectionsPane(visibleSections); // Use filtered sections
     ImGui::EndChild();
 
     ImGui::SameLine();
@@ -82,14 +116,14 @@ void ConfigUI::saveConfig() {
     LOG_DEBUG("ConfigUI::saveConfig called");
     configService_->saveConfig(configService_->getIniData());
     lastSavedIniData_ = configService_->getIniData(); // Update last saved state
-    if (app_) app_->onConfigSaved();
+    if (app_) app_->onConfigSaved(standaloneMode_);
     hasChanges_ = false;
     saveMessageTimer_ = 3.0f;
 }
 
 void ConfigUI::discardChanges() {
     LOG_DEBUG("ConfigUI::discardChanges called");
-    configService_->setIniData(lastSavedIniData_); // Reset to last saved state
+    configService_->setIniData(lastSavedIniData_);
     hasChanges_ = false;
 }
 

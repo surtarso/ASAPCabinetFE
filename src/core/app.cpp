@@ -60,10 +60,14 @@ void App::run() {
     }
 }
 
-void App::onConfigSaved() {
+void App::onConfigSaved(bool isStandalone) {
     LOG_DEBUG("Config saved detected, forcing font reload");
-    reloadFont();
-    LOG_DEBUG("Font reload completed in onConfigSaved");
+    if (!isStandalone) {
+        reloadFont(); // Only reload font if not in standalone mode
+        LOG_DEBUG("Font reload completed in onConfigSaved");
+    } else {
+        LOG_DEBUG("Skipping font reload in standalone mode");
+    }
 }
 
 void App::reloadFont() {

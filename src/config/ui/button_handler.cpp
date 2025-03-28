@@ -3,22 +3,22 @@
 #include "imgui.h"
 #include "utils/logging.h"
 
-ButtonHandler::ButtonHandler(IConfigService* configService, App* app, bool& showConfig, bool& hasChanges, float& saveMessageTimer, const InputHandler& inputHandler)
-    : configService_(configService), app_(app), showConfig_(showConfig), hasChanges_(hasChanges), saveMessageTimer_(saveMessageTimer), inputHandler_(inputHandler) {}
+ButtonHandler::ButtonHandler(IConfigService* configService, App* app, bool& showConfig, bool& hasChanges, float& saveMessageTimer, const InputHandler& inputHandler, bool standaloneMode)
+    : configService_(configService), app_(app), showConfig_(showConfig), hasChanges_(hasChanges), saveMessageTimer_(saveMessageTimer), inputHandler_(inputHandler), standaloneMode_(standaloneMode) {}
 
 void ButtonHandler::renderButtonPane() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
     if (ImGui::Button("Save", ImVec2(100, 0))) {
         if (onSave_) onSave_();
         configService_->saveConfig(configService_->getIniData());
-        if (app_) app_->onConfigSaved();
+        if (app_) app_->onConfigSaved(standaloneMode_); // Pass standaloneMode_
         hasChanges_ = false;
         saveMessageTimer_ = 3.0f;
         LOG_DEBUG("Config saved");
     }
     ImGui::SameLine();
     if (ImGui::Button("Close", ImVec2(100, 0))) {
-        if (onClose_) onClose_(); // Call the onClose callback
+        if (onClose_) onClose_();
         showConfig_ = false;
         LOG_DEBUG("Config closed");
     }
