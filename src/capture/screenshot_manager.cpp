@@ -7,14 +7,14 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-#include "config/settings_manager.h"
+#include "config/config_service.h"
 #include "keybinds/keybind_manager.h"
 #include "sound/isound_manager.h" // Use interface
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-ScreenshotManager::ScreenshotManager(const std::string& exeDir, SettingsManager* configManager, 
+ScreenshotManager::ScreenshotManager(const std::string& exeDir, ConfigService* configManager, 
                                      KeybindManager* keybindManager, ISoundManager* soundManager) 
     : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), 
       configManager_(configManager), keybindManager_(keybindManager), soundManager_(soundManager) {

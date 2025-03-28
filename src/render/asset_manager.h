@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-class SettingsManager;
+class ConfigService;
 
 class AssetManager {
 public:
@@ -35,8 +35,8 @@ public:
     VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
     VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
 
-    void setSettingsManager(SettingsManager* cm) { configManager_ = cm; }
-    SettingsManager* getSettingsManager() { return configManager_; }
+    void setSettingsManager(ConfigService* cm) { configManager_ = cm; }
+    ConfigService* getSettingsManager() { return configManager_; }
     TTF_Font* getFont() { return font; }
     void setFont(TTF_Font* f) { font = f; }
 
@@ -44,7 +44,7 @@ private:
     SDL_Renderer* primaryRenderer;
     SDL_Renderer* secondaryRenderer;
     TTF_Font* font;
-    SettingsManager* configManager_;
+    ConfigService* configManager_;
     std::vector<VideoContext*> oldVideoPlayers_;
 };
 

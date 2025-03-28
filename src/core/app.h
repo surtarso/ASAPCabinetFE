@@ -6,8 +6,8 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "config/settings_manager.h"
-#include "config/ui/setup_editor.h"
+#include "config/config_service.h"
+#include "config/ui/config_ui.h"
 #include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
 #include "render/asset_manager.h"
@@ -46,8 +46,8 @@ private:
     std::unique_ptr<ISoundManager> soundManager_;
     std::vector<SDL_Joystick*> joysticks_;
 
-    std::unique_ptr<SettingsManager> configManager_;
-    std::unique_ptr<RuntimeEditor> configEditor_;
+    std::unique_ptr<ConfigService> configManager_;
+    std::unique_ptr<ConfigUI> configEditor_;
     std::unique_ptr<IRenderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_;
