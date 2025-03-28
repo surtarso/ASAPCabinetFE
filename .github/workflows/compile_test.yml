@@ -5,9 +5,10 @@ on:
     branches: [ "main" ]
     paths:
       - ".github/workflows/compile_test.yml"
-      - "src/**"              # Watch all source files
-      - "CMakeLists.txt"      # Watch CMakeLists.txt instead of Makefile
-      - "src/imgui/**"        # Watch ImGui files
+      - "src/**"                      # Watch all source files
+      - "CMakeLists.txt"              # Watch CMakeLists.txt instead of Makefile
+      - "external/imgui/**"           # Watch ImGui files
+      - "external/tinyfiledialogs/**" # Watch tinyfiledialogs files
   pull_request:
     branches: [ "main" ]
 
