@@ -54,11 +54,11 @@ public:
     Settings tempSettings_;
 
 protected:
-    App* app_; // For calling reloadFont
     std::string iniFilename_;
     bool& showFlag_;
     SettingsManager* configManager_;
     IKeybindProvider* keybindProvider_;
+    App* app_; // For calling reloadFont
     std::vector<std::string> originalLines_;
     std::map<std::string, SettingsSection> iniData_;
     std::vector<std::string> sections_;

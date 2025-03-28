@@ -264,11 +264,11 @@ const std::vector<std::string> ConfigEditor::sectionOrder_ = {
 
 ConfigEditor::ConfigEditor(const std::string& filename, bool& showFlag, SettingsManager* configManager,
                            IKeybindProvider* keybindProvider, App* app)
-    : iniFilename_(filename),
+    : tempSettings_(configManager ? configManager->getSettings() : Settings{}),
+      iniFilename_(filename),
       showFlag_(showFlag),
       configManager_(configManager),
       keybindProvider_(keybindProvider),
-      tempSettings_(configManager ? configManager->getSettings() : Settings{}),
       app_(app)
 {
     loadIniFile(filename);
