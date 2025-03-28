@@ -8,8 +8,7 @@
 Renderer::Renderer(SDL_Renderer *primaryRenderer, SDL_Renderer *secondaryRenderer)
     : primaryRenderer_(primaryRenderer), secondaryRenderer_(secondaryRenderer) {}
 
-void Renderer::render(AssetManager &assets, bool showConfig, RuntimeEditor &configEditor) {
-    (void)configEditor; // Mark as unused
+void Renderer::render(AssetManager &assets) {
     renderPrimaryWindow(assets);
     renderSecondaryWindow(assets);
 }

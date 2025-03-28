@@ -10,7 +10,7 @@
 #include "config/settings_manager.h"
 #include "config/ui/setup_editor.h"
 #include "keybinds/keybind_manager.h"
-#include "render/renderer.h"
+#include "render/irenderer.h"
 #include "render/asset_manager.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
@@ -49,7 +49,7 @@ private:
 
     std::unique_ptr<SettingsManager> configManager_;
     std::unique_ptr<RuntimeEditor> configEditor_;
-    std::unique_ptr<Renderer> renderer_;
+    std::unique_ptr<IRenderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_;
     std::vector<TableLoader> tables_;

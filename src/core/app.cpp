@@ -2,6 +2,8 @@
 #include "core/iwindow_manager.h"
 #include "core/window_manager.h"
 #include "config/settings_manager.h"
+#include "render/irenderer.h" // Changed from renderer.h
+#include "render/renderer.h"  // Still need concrete class for creation
 #include "sound/sound_manager.h"
 #include "utils/sdl_guards.h"
 #include "utils/logging.h"
@@ -242,7 +244,7 @@ void App::initializeDependencies() {
                                                              soundManager_.get());
     configEditor_ = std::make_unique<RuntimeEditor>(configPath_, showConfig_, configManager_.get(),
                                                     &configManager_->getKeybindManager(), assets_.get(),
-                                                    &currentIndex_, &tables_); // Fixed: Replaced ¤tIndex_ with currentIndex_
+                                                    &currentIndex_, &tables_);
     renderer_ = std::make_unique<Renderer>(windowManager_->getPrimaryRenderer(), 
                                            windowManager_->getSecondaryRenderer());
 
@@ -540,7 +542,6 @@ void App::update() {
 }
 
 void App::render() {
-    // Render the frame
     if (renderer_ && assets_) {
         SDL_SetRenderDrawColor(windowManager_->getPrimaryRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(windowManager_->getPrimaryRenderer());
@@ -551,7 +552,7 @@ void App::render() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        renderer_->render(*assets_, showConfig_, *configEditor_);
+        renderer_->render(*assets_); // Simplified call
 
         if (showConfig_) {
             configEditor_->drawGUI();
