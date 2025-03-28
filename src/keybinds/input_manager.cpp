@@ -185,13 +185,20 @@ void InputManager::registerActions() {
     };
 
     actionHandlers_["ConfigSave"] = [this]() {
-        LOG_DEBUG("ConfigSave placeholder");
-        // TODO: Needs configEditor_
+        LOG_DEBUG("ConfigSave triggered");
+        if (runtimeEditor_) {
+            runtimeEditor_->saveConfig();
+            soundManager_->playSound("config_save");
+            LOG_DEBUG("Config saved via RuntimeEditor");
+        } else {
+            LOG_DEBUG("Error: RuntimeEditor not set");
+        }
     };
 
     actionHandlers_["ConfigClose"] = [this]() {
         LOG_DEBUG("ConfigClose triggered");
         *showConfig_ = false;
+        soundManager_->playSound("config_close");
     };
 }
 

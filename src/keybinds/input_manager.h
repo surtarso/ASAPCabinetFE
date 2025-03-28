@@ -8,6 +8,7 @@
 #include "config/settings_manager.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
+#include "config/ui/setup_editor.h"
 #include <map>
 #include <vector>
 
@@ -21,12 +22,13 @@ public:
                          bool& showConfig, const std::string& exeDir) override;
     bool isConfigActive() const override { return *showConfig_; }
     bool shouldQuit() const override { return quit_; }
+    void setRuntimeEditor(RuntimeEditor* editor) override { runtimeEditor_ = editor; }
 
 private:
     using ActionHandler = std::function<void()>;
 
-    void handleConfigEvents(const SDL_Event& event);    // Added
-    void handleRegularEvents(const SDL_Event& event);   // Added
+    void handleConfigEvents(const SDL_Event& event);
+    void handleRegularEvents(const SDL_Event& event);
 
     IKeybindProvider* keybindProvider_;
     AssetManager* assets_;
@@ -36,7 +38,8 @@ private:
     const std::vector<TableLoader>* tables_;
     bool* showConfig_;
     std::string exeDir_;
-    std::map<std::string, ActionHandler> actionHandlers_;  // Declared here
+    RuntimeEditor* runtimeEditor_ = nullptr;
+    std::map<std::string, ActionHandler> actionHandlers_;
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
     bool inScreenshotMode_ = false;

@@ -26,14 +26,16 @@ public:
     App(const std::string& configPath);
     ~App();
     void run();
+    void reloadFont(); // Added back for ConfigEditor to call
+    void onConfigSaved();
 
 private:
     std::string exeDir_;
     std::string configPath_;
-    bool quit_ = false; // Still needed for main loop
-    bool showConfig_ = false; // Kept for rendering logic
+    bool quit_ = false;
+    bool showConfig_ = false;
+    bool prevShowConfig_ = false;
     size_t currentIndex_ = 0;
-    // letterIndex_ moved to InputManager
 
     SDLInitGuard sdlGuard_;
     MixerGuard mixerGuard_;
