@@ -90,7 +90,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
-            } else if (key.find("Path") != std::string::npos || key.find("Cmd") != std::string::npos) {
+            } else if (key.find("Path") != std::string::npos || key.find("ExecutableCmd") != std::string::npos) {
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';
