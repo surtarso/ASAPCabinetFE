@@ -239,55 +239,55 @@ namespace Tooltips {
 
             // DefaultMedia
             {"DefaultTableImage",
-                "Default relative path to the table image."
+                "Relative path to the default table image."
             },
             {"DefaultPuPTableImage",
-                "Default relative path to the PuP table image."
+                "Relative path to the default PuP table image."
             },
             {"DefaultBackglassImage",
-                "Default relative path to the backglass image."
+                "Relative path to the default backglass image."
             },
             {"DefaultPuPBackglassImage",
-                "Default relative path to the PuP backglass image."
+                "Relative path to the default PuP backglass image."
             },
             {"DefaultDmdImage",
-                "Default relative path to the DMD image."
+                "Relative path to the default DMD image."
             },
             {"DefaultPuPDmdImage",
-                "Default relative path to the PuP DMD image."
+                "Relative path to the default PuP DMD image."
             },
             {"DefaultPuPFullDmdImage",
-                "Default relative path to the PuP full DMD image."
+                "Relative path to the default PuP full DMD image."
             },
             {"DefaultPupTopperImage",
-                "Default relative path to the PuP topper image."
+                "Relative path to the default PuP topper image."
             },
             {"DefaultWheelImage",
-                "Default relative path to the wheel image."
+                "Relative path to the default wheel image."
             },
             {"DefaultTableVideo",
-                "Default relative path to the table video."
+                "Relative path to the default table video."
             },
             {"DefaultPuPTableVideo",
-                "Default relative path to the PuP table video."
+                "Relative path to the default PuP table video."
             },
             {"DefaultBackglassVideo",
-                "Default relative path to the backglass video."
+                "Relative path to the default backglass video."
             },
             {"DefaultPuPBackglassVideo",
-                "Default relative path to the PuP backglass video."
+                "Relative path to the default PuP backglass video."
             },
             {"DefaultDmdVideo",
-                "Default relative path to the DMD video."
+                "Relative path to the default DMD video."
             },
             {"DefaultPuPDmdVideo",
-                "Default relative path to the PuP DMD video."
+                "Relative path to the default PuP DMD video."
             },
             {"DefaultPuPFullDmdVideo",
-                "Default relative path to the PuP full DMD video."
+                "Relative path to the default PuP full DMD video."
             },
             {"DefaultPuPTopperVideo",
-                "Default relative path to the PuP topper video."
+                "Relative path to the default PuP topper video."
             },
 
             // UISounds
