@@ -70,16 +70,18 @@ make -j$(nproc)
   ```
 
 ### Default Keymap
-| Action             | Key Combination  | Description                               |
+| Action             |        Key       | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
 | Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.          |
-| Scroll by Letter   | Z and /          | Scroll tables alphabetically (prev/next). |
-| Launch Table       | Enter            | Open the selected table.                  |
+| Scroll by Letter   | z and /          | Scroll tables alphabetically (prev/next). |
+| Launch Table       | Enter            | Launch the selected table with VPinballX  |
 | Quit               | ESC or q         | Exit the table config/application.        |
-| Config             | c                | Open config                               |
+| Config             | c                | Toggle config panel                       |
 | Save config        | Spacebar         | Saves configuration to config.ini         |
 | Launch in SS mode  | s                | Open the selected table in ss mode.       |
+| Take Screenshot    | s                | Takes a SS while in SS mode               |
+| Quit SS mode       | q                | Quit SS mode and return to launcher       |
 
 ## Generator Tools
 > [!WARNING]
