@@ -8,7 +8,7 @@ on:
       - "src/**"                      # Watch all source files
       - "CMakeLists.txt"              # Watch CMakeLists.txt instead of Makefile
       - "external/imgui/**"           # Watch ImGui files
-      - "external/tinyfiledialogs/**" # Watch tinyfiledialogs files
+      - "external/ImGuiFileDialog/**" # Watch ImGuiFileDialog files
   pull_request:
     branches: [ "main" ]
 
