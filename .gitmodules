@@ -1,6 +1,3 @@
-[submodule "external/tinyfiledialogs"]
-	path = external/tinyfiledialogs
-	url = https://github.com/native-toolkit/tinyfiledialogs.git
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
