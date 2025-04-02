@@ -1,7 +1,9 @@
 #include "core/app.h"
 #include "core/iwindow_manager.h"
 #include "core/window_manager.h"
-#include "core/dependency_factory.h"  // For creating components
+#include "core/dependency_factory.h"
+#include "core/joystick_manager.h"
+#include "core/first_run.h"  // For runInitialConfig
 #include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
@@ -12,22 +14,24 @@
 
 namespace fs = std::filesystem;
 
+// Constructor: Sets up initial state and joystick manager
 App::App(const std::string& configPath) 
     : configPath_(configPath), 
       font_(nullptr, TTF_CloseFont),
-      joystick_manager_(std::make_unique<JoystickManager>()) {  // Still handles joysticks
+      joystickManager_(std::make_unique<JoystickManager>()) {
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("Config path: " << configPath_);
     LOG_DEBUG("Exe dir set to: " << exeDir_);
 }
 
+// Destructor: Triggers cleanup
 App::~App() {
     cleanup();
     LOG_DEBUG("App destructor completed");
 }
 
-// Main loop: Runs the app until quit is triggered
+// Main loop: Runs the app until quit
 void App::run() {
     initializeDependencies();
     while (!inputManager_->shouldQuit()) {
@@ -37,7 +41,7 @@ void App::run() {
     }
 }
 
-// Callback from ConfigUI when settings are saved
+// Callback: Handles config save events from ConfigUI
 void App::onConfigSaved(bool isStandalone) {
     LOG_DEBUG("Config saved detected, forcing font reload");
     if (!isStandalone) {
@@ -68,7 +72,7 @@ void App::reloadFont() {
     }
 }
 
-// Gets the directory of the executable
+// Resolves the executable’s directory for relative paths
 std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
@@ -82,81 +86,54 @@ std::string App::getExecutableDir() {
     return (lastSlash == std::string::npos) ? "./" : fullPath.substr(0, lastSlash + 1);
 }
 
-// Checks if the config has required fields
+// Checks if config has required fields
 bool App::isConfigValid() {
     return configManager_->isConfigValid();
 }
 
-// Runs the initial config wizard if config is invalid
-void App::runInitialConfig() {
-    SDL_Window* configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
-                                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                                800, 500, SDL_WINDOW_SHOWN);
-    SDL_Renderer* configRenderer = SDL_CreateRenderer(configWindow, -1, SDL_RENDERER_ACCELERATED);
-    guiManager_ = std::make_unique<GuiManager>(configWindow, configRenderer);  // Temp GuiManager for setup
-    guiManager_->initialize();
-
-    bool showConfig = true;
-    ConfigUI configEditor(configManager_.get(), &configManager_->getKeybindManager(), 
-                          nullptr, nullptr, nullptr, this, showConfig, true);
-
-    while (true) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            guiManager_->processEvent(event);
-            configEditor.handleEvent(event);
-            if (event.type == SDL_QUIT) {
-                std::cerr << "Config window closed without saving. Exiting..." << std::endl;
-                exit(1);
-            }
-        }
-        guiManager_->newFrame();
-        configEditor.drawGUI();
-        guiManager_->render(configRenderer);
-        SDL_RenderPresent(configRenderer);
-
-        if (!showConfig && isConfigValid()) break;
-        else if (!showConfig) {
-            std::cerr << "Configuration invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
-            showConfig = true;
-        }
-    }
-
-    guiManager_.reset();  // Cleanup temp GuiManager
-    SDL_DestroyRenderer(configRenderer);
-    SDL_DestroyWindow(configWindow);
-}
-
-// Loads the font from config settings
+// Loads font from config settings
 void App::loadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
     if (!font_) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
+    // Note: Not setting assets_->setFont() here—assets_ isn’t created yet
 }
 
-// Sets up all components using the factory
-void App::initializeDependencies() {
-    configManager_ = DependencyFactory::createConfigService(configPath_);
-    if (!isConfigValid()) {
-        LOG_DEBUG("Config invalid, running initial config");
-        runInitialConfig();
-        configManager_->loadConfig();
-    }
-
-    windowManager_ = DependencyFactory::createWindowManager(configManager_->getSettings());
-    guiManager_ = DependencyFactory::createGuiManager(windowManager_.get());
-    soundManager_ = DependencyFactory::createSoundManager(exeDir_, configManager_->getSettings());
-    loadFont();
-
-    // Load tables directly here since TableManager is optional for now
+// Loads VPX tables from settings
+void App::loadTables() {
     tables_ = loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
         std::cerr << "Edit config.ini, no .vpx files found in " << configManager_->getSettings().vpxTablesPath << std::endl;
         exit(1);
     }
+    LOG_DEBUG("Loaded " << tables_.size() << " tables");
+}
 
+// Initializes all components using DependencyFactory
+void App::initializeDependencies() {
+    // Step 1: Config setup and initial run if needed
+    configManager_ = DependencyFactory::createConfigService(configPath_);
+    if (!isConfigValid()) {
+        LOG_DEBUG("Config invalid, running initial config");
+        if (!runInitialConfig(configManager_.get(), configPath_)) {
+            std::cerr << "Initial config failed or was aborted. Exiting..." << std::endl;
+            exit(1);
+        }
+        configManager_->loadConfig();  // Reload after wizard
+    }
+
+    // Step 2: Core systems (order matters for dependencies)
+    windowManager_ = DependencyFactory::createWindowManager(configManager_->getSettings());
+    guiManager_ = DependencyFactory::createGuiManager(windowManager_.get());
+    soundManager_ = DependencyFactory::createSoundManager(exeDir_, configManager_->getSettings());
+
+    // Step 3: Load font and tables (app-specific logic)
+    loadFont();
+    loadTables();
+
+    // Step 4: Create remaining components via factory
     assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get());
     assets_->setSettingsManager(configManager_.get());
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
@@ -164,16 +141,19 @@ void App::initializeDependencies() {
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
+    // Step 5: Configure input manager (post-creation setup)
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
                                    currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
+
+    // Step 6: Load initial table assets
     assets_->loadTableAssets(currentIndex_, tables_);
 
     LOG_DEBUG("Initialization complete");
 }
 
-// Handles SDL events (input, joystick, etc.)
+// Processes SDL events (input, joysticks)
 void App::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -183,14 +163,14 @@ void App::handleEvents() {
             configEditor_->handleEvent(event);
         }
         if (event.type == SDL_JOYDEVICEADDED) {
-            joystick_manager_->addJoystick(event.jdevice.which);
+            joystickManager_->addJoystick(event.jdevice.which);
         } else if (event.type == SDL_JOYDEVICEREMOVED) {
-            joystick_manager_->removeJoystick(event.jdevice.which);
+            joystickManager_->removeJoystick(event.jdevice.which);
         }
     }
 }
 
-// Updates app state (e.g., video cleanup, config state)
+// Updates app state (e.g., clears old video players)
 void App::update() {
     assets_->clearOldVideoPlayers();
     prevShowConfig_ = inputManager_->isConfigActive();
@@ -220,33 +200,8 @@ void App::render() {
 void App::cleanup() {
     LOG_DEBUG("Cleaning up");
     if (assets_) {
-        VideoContext* tablePlayer = assets_->getTableVideoPlayer();
-        if (tablePlayer && tablePlayer->player) {
-            libvlc_media_player_stop(tablePlayer->player);
-            libvlc_media_player_release(tablePlayer->player);
-            tablePlayer->player = nullptr;
-        }
-        VideoContext* backglassPlayer = assets_->getBackglassVideoPlayer();
-        if (backglassPlayer && backglassPlayer->player) {
-            libvlc_media_player_stop(backglassPlayer->player);
-            libvlc_media_player_release(backglassPlayer->player);
-            backglassPlayer->player = nullptr;
-        }
-        VideoContext* dmdPlayer = assets_->getDmdVideoPlayer();
-        if (dmdPlayer && dmdPlayer->player) {
-            libvlc_media_player_stop(dmdPlayer->player);
-            libvlc_media_player_release(dmdPlayer->player);
-            dmdPlayer->player = nullptr;
-        }
-
-        cleanupVideoContext(tablePlayer);
-        assets_->tableVideoPlayer = nullptr;
-        cleanupVideoContext(backglassPlayer);
-        assets_->backglassVideoPlayer = nullptr;
-        cleanupVideoContext(dmdPlayer);
-        assets_->dmdVideoPlayer = nullptr;
-        assets_->clearOldVideoPlayers();
-        assets_.reset();
+        assets_->cleanupVideoPlayers();  // Delegate video cleanup to AssetManager
+        assets_.reset();                 // Reset assets (smart pointers handle textures)
     }
     LOG_DEBUG("Cleanup complete");
 }

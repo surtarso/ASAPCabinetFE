@@ -14,7 +14,7 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, I
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
-    currentIndex_ = &currentIndex;  // Fixed typo: ¤tIndex → currentIndex
+    currentIndex_ = &currentIndex;  // Fixed typo: ¤tIndex → &currentIndex
     tables_ = &tables;
     showConfig_ = &showConfig;
     exeDir_ = exeDir;
@@ -234,6 +234,10 @@ void InputManager::handleConfigEvents(const SDL_Event& event) {
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
     for (const auto& action : keybindProvider_->getActions()) {
+        // Skip config-specific actions when config is closed
+        if (action == "ConfigSave" || action == "ConfigClose") {
+            continue;
+        }
         if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();

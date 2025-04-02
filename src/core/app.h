@@ -21,45 +21,54 @@
 
 class App {
 public:
+    // Constructor: Initializes app with config file path
     App(const std::string& configPath);
+    
+    // Destructor: Ensures proper cleanup
     ~App();
+    
+    // Main loop: Runs the application
     void run();
-    void reloadFont();           // Called by ConfigUI when font settings change
-    void onConfigSaved(bool isStandalone = false); // Callback for config save events
+    
+    // Reloads font when settings change (called by ConfigUI)
+    void reloadFont();
+    
+    // Callback for config save events from ConfigUI
+    void onConfigSaved(bool isStandalone = false);
 
 private:
     // Core app state
-    std::string exeDir_;         // Directory where the executable lives
+    std::string exeDir_;         // Directory of the executable
     std::string configPath_;     // Path to config.ini
-    bool quit_ = false;          // Flag to exit the main loop
-    bool showConfig_ = false;    // Toggle for showing config UI
-    size_t currentIndex_ = 0;    // Index of the current table in tables_
+    bool quit_ = false;          // Flag to exit main loop
+    bool showConfig_ = false;    // Toggles config UI visibility
+    size_t currentIndex_ = 0;    // Index of current table in tables_
 
-    // Major components (owned by App, ordered as initialized)
-    std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; // Font for text rendering
-    std::unique_ptr<JoystickManager> joystick_manager_;  // Manages joystick initialization
-    std::unique_ptr<IWindowManager> windowManager_; // Handles SDL windows and renderers
-    std::unique_ptr<GuiManager> guiManager_;        // Manages ImGui lifecycle
-    std::unique_ptr<ISoundManager> soundManager_;   // Sound playback system
-    std::unique_ptr<IConfigService> configManager_; // Config file management
-    std::unique_ptr<ConfigUI> configEditor_;        // UI for editing config
-    std::unique_ptr<IRenderer> renderer_;           // Renders assets to screens
-    std::unique_ptr<AssetManager> assets_;          // Manages textures and media
+    // Major components (owned by App, ordered by init sequence)
+    std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;  // Font for text rendering
+    std::unique_ptr<JoystickManager> joystickManager_;    // Manages joystick input
+    std::unique_ptr<IWindowManager> windowManager_;       // SDL window and renderer management
+    std::unique_ptr<GuiManager> guiManager_;              // ImGui lifecycle management
+    std::unique_ptr<ISoundManager> soundManager_;         // Sound playback system
+    std::unique_ptr<IConfigService> configManager_;       // Config file handling
+    std::unique_ptr<ConfigUI> configEditor_;              // Config editing UI
+    std::unique_ptr<IRenderer> renderer_;                 // Renders assets to screens
+    std::unique_ptr<AssetManager> assets_;                // Manages textures and videos
     std::unique_ptr<ScreenshotManager> screenshotManager_; // Screenshot capture logic
-    std::unique_ptr<IInputManager> inputManager_;   // Handles user input
-    std::vector<TableLoader> tables_;               // List of VPX tables
+    std::unique_ptr<IInputManager> inputManager_;         // Handles user input
+    std::vector<TableLoader> tables_;                     // List of loaded VPX tables
 
     // Private helpers
-    std::string getExecutableDir();     // Gets the app's executable directory
+    std::string getExecutableDir();     // Resolves executable directory
     bool prevShowConfig_ = false;       // Tracks previous config UI state
-    bool isConfigValid();               // Checks if config is usable
-    void runInitialConfig();            // Runs setup wizard if config is invalid
-    void loadFont();                    // Loads font from settings
+    bool isConfigValid();               // Validates config integrity
+    void loadTables();                  // Loads VPX tables from settings
+    void loadFont();                    // Loads font from config settings
     void handleEvents();                // Processes SDL events
     void update();                      // Updates app state
-    void render();                      // Draws to screens
+    void render();                      // Renders to screens
     void cleanup();                     // Frees resources on shutdown
-    void initializeDependencies();      // Sets up all components
+    void initializeDependencies();      // Initializes all components
 };
 
 #endif // APP_H
