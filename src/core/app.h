@@ -16,50 +16,50 @@
 #include "core/iwindow_manager.h"
 #include "core/system_initializer.h"
 #include "sound/isound_manager.h"
-
-class IWindowManager;
-class IRenderer;
-class IInputManager;
+#include "core/gui_manager.h"
+#include "core/dependency_factory.h"
 
 class App {
 public:
     App(const std::string& configPath);
     ~App();
     void run();
-    void reloadFont(); // Added back for ConfigEditor to call
-    void onConfigSaved(bool isStandalone = false); // Modified to take isStandalone parameter
+    void reloadFont();           // Called by ConfigUI when font settings change
+    void onConfigSaved(bool isStandalone = false); // Callback for config save events
 
 private:
-    std::string exeDir_;
-    std::string configPath_;
-    bool quit_ = false;
-    bool showConfig_ = false;
-    size_t currentIndex_ = 0;
+    // Core app state
+    std::string exeDir_;         // Directory where the executable lives
+    std::string configPath_;     // Path to config.ini
+    bool quit_ = false;          // Flag to exit the main loop
+    bool showConfig_ = false;    // Toggle for showing config UI
+    size_t currentIndex_ = 0;    // Index of the current table in tables_
 
-    std::unique_ptr<SystemInitializer> system_;
-    std::unique_ptr<IWindowManager> windowManager_;
-    std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
-    std::unique_ptr<ISoundManager> soundManager_;
+    // Major components (owned by App, ordered as initialized)
+    std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; // Font for text rendering
+    std::unique_ptr<SystemInitializer> system_;     // Manages joystick initialization
+    std::unique_ptr<IWindowManager> windowManager_; // Handles SDL windows and renderers
+    std::unique_ptr<GuiManager> guiManager_;        // Manages ImGui lifecycle
+    std::unique_ptr<ISoundManager> soundManager_;   // Sound playback system
+    std::unique_ptr<IConfigService> configManager_; // Config file management
+    std::unique_ptr<ConfigUI> configEditor_;        // UI for editing config
+    std::unique_ptr<IRenderer> renderer_;           // Renders assets to screens
+    std::unique_ptr<AssetManager> assets_;          // Manages textures and media
+    std::unique_ptr<ScreenshotManager> screenshotManager_; // Screenshot capture logic
+    std::unique_ptr<IInputManager> inputManager_;   // Handles user input
+    std::vector<TableLoader> tables_;               // List of VPX tables
 
-    std::unique_ptr<IConfigService> configManager_;
-    std::unique_ptr<ConfigUI> configEditor_;
-    std::unique_ptr<IRenderer> renderer_;
-    std::unique_ptr<AssetManager> assets_;
-    std::unique_ptr<ScreenshotManager> screenshotManager_;
-    std::unique_ptr<IInputManager> inputManager_;
-    std::vector<TableLoader> tables_;
-
-    std::string getExecutableDir();
-    bool prevShowConfig_ = false;
-    bool isConfigValid();
-    void runInitialConfig();
-    void loadFont();
-    void initializeImGui();
-    void handleEvents();
-    void update();
-    void render();
-    void cleanup();
-    void initializeDependencies();
+    // Private helpers
+    std::string getExecutableDir();     // Gets the app's executable directory
+    bool prevShowConfig_ = false;       // Tracks previous config UI state
+    bool isConfigValid();               // Checks if config is usable
+    void runInitialConfig();            // Runs setup wizard if config is invalid
+    void loadFont();                    // Loads font from settings
+    void handleEvents();                // Processes SDL events
+    void update();                      // Updates app state
+    void render();                      // Draws to screens
+    void cleanup();                     // Frees resources on shutdown
+    void initializeDependencies();      // Sets up all components
 };
 
 #endif // APP_H
