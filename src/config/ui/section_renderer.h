@@ -1,7 +1,7 @@
 #ifndef SECTION_RENDERER_H
 #define SECTION_RENDERER_H
 
-#include "config/config_service.h"
+#include "config/iconfig_service.h"
 #include "config/ui/input_handler.h"
 #include <string>
 #include <vector>

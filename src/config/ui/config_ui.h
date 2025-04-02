@@ -1,7 +1,7 @@
 #ifndef CONFIG_UI_H
 #define CONFIG_UI_H
 
-#include "config/config_service.h"
+#include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
 #include "render/asset_manager.h"
 #include "render/table_loader.h"

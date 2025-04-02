@@ -1,6 +1,7 @@
 #ifndef CONFIG_SERVICE_H
 #define CONFIG_SERVICE_H
 
+#include "config/iconfig_service.h"
 #include "config/settings.h"
 #include "keybinds/keybind_manager.h"
 #include <string>
@@ -14,18 +15,6 @@ struct SettingsSection {
     std::unordered_map<std::string, size_t> keyToLineIndex;
 };
 
-class IConfigService {
-public:
-    virtual ~IConfigService() = default;
-    virtual const Settings& getSettings() const = 0;
-    virtual bool isConfigValid() const = 0;
-    virtual void loadConfig() = 0;
-    virtual void saveConfig(const std::map<std::string, SettingsSection>& iniData) = 0;
-    virtual const std::map<std::string, SettingsSection>& getIniData() const = 0;
-    virtual void setIniData(const std::map<std::string, SettingsSection>& iniData) = 0; // New method
-    virtual KeybindManager& getKeybindManager() = 0;
-};
-
 class ConfigService : public IConfigService {
 public:
     ConfigService(const std::string& configPath);
@@ -34,7 +23,7 @@ public:
     void loadConfig() override;
     void saveConfig(const std::map<std::string, SettingsSection>& iniData) override;
     const std::map<std::string, SettingsSection>& getIniData() const override { return iniData_; }
-    void setIniData(const std::map<std::string, SettingsSection>& iniData) override; // New method
+    void setIniData(const std::map<std::string, SettingsSection>& iniData) override;
     KeybindManager& getKeybindManager() override { return keybindManager_; }
 
 private:

@@ -9,7 +9,7 @@
 #include <vector>
 #include "config/config_service.h"
 #include "keybinds/keybind_manager.h"
-#include "sound/isound_manager.h" // Use interface
+#include "sound/isound_manager.h" 
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>

@@ -1,7 +1,7 @@
 #ifndef BUTTON_HANDLER_H
 #define BUTTON_HANDLER_H
 
-#include "config/config_service.h"
+#include "config/iconfig_service.h"
 #include "config/ui/input_handler.h"
 #include <functional>
 #include <string>
