@@ -7,17 +7,17 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-#include "config/config_service.h"
-#include "keybinds/keybind_manager.h"
-#include "sound/isound_manager.h" 
+#include "config/iconfig_service.h"
+#include "keybinds/ikeybind_provider.h"
+#include "sound/isound_manager.h"
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-ScreenshotManager::ScreenshotManager(const std::string& exeDir, ConfigService* configManager, 
-                                     KeybindManager* keybindManager, ISoundManager* soundManager) 
+ScreenshotManager::ScreenshotManager(const std::string& exeDir, IConfigService* configManager, 
+                                     IKeybindProvider* keybindProvider, ISoundManager* soundManager) 
     : exeDir_(exeDir), vpxLogFile(exeDir + "logs/VPinballX.log"), 
-      configManager_(configManager), keybindManager_(keybindManager), soundManager_(soundManager) {
+      configManager_(configManager), keybindProvider_(keybindProvider), soundManager_(soundManager) {
     LOG_DEBUG("ScreenshotManager initialized with exeDir: " << exeDir_);
     LOG_DEBUG("VPX_LOG_FILE set to: " << vpxLogFile);
 }
@@ -156,8 +156,8 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string backglassImage = tableFolder + "/" + settings.customBackglassImage;
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
-    SDL_Keycode screenshotKey = keybindManager_->getKey("ScreenshotKey");
-    SDL_Keycode screenshotQuit = keybindManager_->getKey("ScreenshotQuit");
+    SDL_Keycode screenshotKey = keybindProvider_->getKey("ScreenshotKey");
+    SDL_Keycode screenshotQuit = keybindProvider_->getKey("ScreenshotQuit");
 
     std::string logDir = exeDir_ + "logs";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
@@ -281,26 +281,26 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 LOG_DEBUG("Quit via SDL_QUIT");
                 running = false;
             } else if (event.type == SDL_KEYDOWN) {
-                if (!keybindManager_) {
-                    LOG_DEBUG("Error: keybindManager_ is null, cannot process key events");
+                if (!keybindProvider_) {
+                    LOG_DEBUG("Error: keybindProvider_ is null, cannot process key events");
                     running = false;
                     break;
                 }
                 SDL_KeyboardEvent keyEvent = event.key;
-                if (keybindManager_->isAction(keyEvent, "ScreenshotKey")) {
+                if (keybindProvider_->isAction(keyEvent, "ScreenshotKey")) {
                     LOG_DEBUG("Capture key '" << keycodeToString(screenshotKey) << "' pressed");
-                    soundManager_->playSound("screenshot_take"); // Add sound
+                    soundManager_->playSound("screenshot_take");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
-                } else if (keybindManager_->isAction(keyEvent, "ScreenshotQuit")) {
+                } else if (keybindProvider_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_DEBUG("Quit key '" << keycodeToString(screenshotQuit) << "' pressed");
-                    soundManager_->playSound("screenshot_quit"); // Add sound
+                    soundManager_->playSound("screenshot_quit");
                     running = false;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int x = event.button.x, y = event.button.y;
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_DEBUG("Capturing screenshots via mouse click...");
-                    soundManager_->playSound("screenshot_take"); // Add sound for mouse click too
+                    soundManager_->playSound("screenshot_take");
                     captureAllScreenshots(tableImage, backglassImage, dmdImage, window);
                 }
             }

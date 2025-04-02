@@ -20,17 +20,15 @@ public:
     void setJoystickButton(const std::string& action, int joystickId, uint8_t button) override;
     void setJoystickHat(const std::string& action, int joystickId, uint8_t hat, uint8_t direction) override;
     void setJoystickAxis(const std::string& action, int joystickId, uint8_t axis, bool positiveDirection) override;
-    std::string eventToString(const SDL_Event& event) const override; // New method
+    std::string eventToString(const SDL_Event& event) const override;
+    bool isAction(const SDL_KeyboardEvent& event, const std::string& action) const override;
+    bool isJoystickAction(const SDL_JoyButtonEvent& event, const std::string& action) const override;
+    bool isJoystickHatAction(const SDL_JoyHatEvent& event, const std::string& action) const override;
+    bool isJoystickAxisAction(const SDL_JoyAxisEvent& event, const std::string& action) const override;
 
     // Methods for loading/saving keybindings
     void loadKeybinds(const std::map<std::string, std::string>& keybindData);
     void saveKeybinds(std::ofstream& file) const;
-
-    // Check if an action is bound to a keyboard or joystick input and matches the event
-    bool isAction(const SDL_KeyboardEvent& event, const std::string& action) const; // Renamed from InputManager::isAction
-    bool isJoystickAction(const SDL_JoyButtonEvent& event, const std::string& action) const;
-    bool isJoystickHatAction(const SDL_JoyHatEvent& event, const std::string& action) const;
-    bool isJoystickAxisAction(const SDL_JoyAxisEvent& event, const std::string& action) const;
 
 private:
     struct JoystickInput {

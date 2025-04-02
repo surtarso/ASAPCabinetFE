@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-class ConfigService;
+class IConfigService;  // Forward declare instead of including config_service.h
 
 class AssetManager {
 public:
@@ -35,8 +35,8 @@ public:
     VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
     VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
 
-    void setSettingsManager(ConfigService* cm) { configManager_ = cm; }
-    ConfigService* getSettingsManager() { return configManager_; }
+    void setSettingsManager(IConfigService* cm) { configManager_ = cm; }  // Changed to IConfigService*
+    IConfigService* getSettingsManager() { return configManager_; }      // Changed to IConfigService*
     TTF_Font* getFont() { return font; }
     void setFont(TTF_Font* f) { font = f; }
 
@@ -44,7 +44,7 @@ private:
     SDL_Renderer* primaryRenderer;
     SDL_Renderer* secondaryRenderer;
     TTF_Font* font;
-    ConfigService* configManager_;
+    IConfigService* configManager_;  // Changed to IConfigService*
     std::vector<VideoContext*> oldVideoPlayers_;
 };
 

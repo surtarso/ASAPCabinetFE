@@ -6,21 +6,19 @@
 InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
       settingsManager_(nullptr), currentIndex_(nullptr), tables_(nullptr), showConfig_(nullptr),
-      exeDir_("") {}
+      exeDir_(""), screenshotManager_(nullptr) {}
 
-void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, ConfigService* settings,
+void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableLoader>& tables,
-                                   bool& showConfig, const std::string& exeDir) {
+                                   bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager) {
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
-    currentIndex_ = &currentIndex; 
+    currentIndex_ = &currentIndex;  // Fixed typo: ¤tIndex → currentIndex
     tables_ = &tables;
     showConfig_ = &showConfig;
     exeDir_ = exeDir;
-    screenshotManager_ = std::make_unique<ScreenshotManager>(exeDir_, settings, 
-                                                            dynamic_cast<KeybindManager*>(keybindProvider_), 
-                                                            soundManager_);
+    screenshotManager_ = screenshotManager;  // Injected, not created
 
     for (size_t i = 0; i < tables_->size(); ++i) {
         if (!tables_->at(i).tableName.empty()) {
@@ -185,7 +183,7 @@ void InputManager::registerActions() {
     actionHandlers_["ConfigSave"] = [this]() {
         LOG_DEBUG("ConfigSave triggered");
         if (runtimeEditor_) {
-            runtimeEditor_->saveConfig(); // Need to implement in ConfigUI
+            runtimeEditor_->saveConfig();
             soundManager_->playSound("config_save");
             LOG_DEBUG("Config saved via ConfigUI");
         } else {
@@ -211,13 +209,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return; // Handled in App
     }
 
-    auto* km = dynamic_cast<KeybindManager*>(keybindProvider_);
-    if (!km) {
-        LOG_DEBUG("Error: keybindProvider_ is not a KeybindManager");
-        return;
-    }
-
-    if (event.type == SDL_KEYDOWN && km->isAction(event.key, "ToggleConfig")) {
+    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
         actionHandlers_["ToggleConfig"]();
         return;
     }
@@ -230,33 +222,28 @@ void InputManager::handleEvent(const SDL_Event& event) {
 }
 
 void InputManager::handleConfigEvents(const SDL_Event& event) {
-    auto* km = dynamic_cast<KeybindManager*>(keybindProvider_);
-    if (!km) return;
-
     if (event.type == SDL_KEYDOWN) {
-        if (km->isAction(event.key, "ConfigSave")) {
+        if (keybindProvider_->isAction(event.key, "ConfigSave")) {
             actionHandlers_["ConfigSave"]();
-        } else if (km->isAction(event.key, "ConfigClose") || km->isAction(event.key, "Quit")) {
+        } else if (keybindProvider_->isAction(event.key, "ConfigClose") || 
+                   keybindProvider_->isAction(event.key, "Quit")) {
             actionHandlers_["Quit"]();
         }
     }
 }
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
-    auto* km = dynamic_cast<KeybindManager*>(keybindProvider_);
-    if (!km) return;
-
-    for (const auto& action : km->getActions()) {
-        if (event.type == SDL_KEYDOWN && km->isAction(event.key, action)) {
+    for (const auto& action : keybindProvider_->getActions()) {
+        if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();
-        } else if (event.type == SDL_JOYBUTTONDOWN && km->isJoystickAction(event.jbutton, action)) {
+        } else if (event.type == SDL_JOYBUTTONDOWN && keybindProvider_->isJoystickAction(event.jbutton, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();
-        } else if (event.type == SDL_JOYHATMOTION && km->isJoystickHatAction(event.jhat, action)) {
+        } else if (event.type == SDL_JOYHATMOTION && keybindProvider_->isJoystickHatAction(event.jhat, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();
-        } else if (event.type == SDL_JOYAXISMOTION && km->isJoystickAxisAction(event.jaxis, action)) {
+        } else if (event.type == SDL_JOYAXISMOTION && keybindProvider_->isJoystickAxisAction(event.jaxis, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();
         }

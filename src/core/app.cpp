@@ -3,7 +3,6 @@
 #include "core/window_manager.h"
 #include "config/config_service.h"
 #include "sound/sound_manager.h"
-#include "utils/sdl_guards.h"
 #include "utils/logging.h"
 #include "render/irenderer.h"
 #include "render/renderer.h"
@@ -27,10 +26,7 @@ namespace fs = std::filesystem;
 
 App::App(const std::string &configPath)
     : configPath_(configPath),
-      sdlGuard_(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK),
-      mixerGuard_(44100, MIX_DEFAULT_FORMAT, 2, 2048),
-      ttfGuard_(),
-      imgGuard_(IMG_INIT_PNG | IMG_INIT_JPG),
+      system_(std::make_unique<SystemInitializer>()),
       font_(nullptr, TTF_CloseFont),
       soundManager_(nullptr),
       configManager_(nullptr),
@@ -63,7 +59,7 @@ void App::run() {
 void App::onConfigSaved(bool isStandalone) {
     LOG_DEBUG("Config saved detected, forcing font reload");
     if (!isStandalone) {
-        reloadFont(); // Only reload font if not in standalone mode
+        reloadFont();
         LOG_DEBUG("Font reload completed in onConfigSaved");
     } else {
         LOG_DEBUG("Skipping font reload in standalone mode");
@@ -156,46 +152,6 @@ void App::runInitialConfig() {
     SDL_DestroyWindow(configWindow);
 }
 
-void App::initializeSDL() {
-    if (!sdlGuard_.success) {
-        std::cerr << "SDL initialization failed" << std::endl;
-        exit(1);
-    }
-    if (!mixerGuard_.success) {
-        std::cerr << "SDL_mixer initialization failed" << std::endl;
-        exit(1);
-    }
-    if (!ttfGuard_.success) {
-        std::cerr << "TTF initialization failed" << std::endl;
-        exit(1);
-    }
-    if (!imgGuard_.flags) {
-        std::cerr << "IMG initialization failed" << std::endl;
-        exit(1);
-    }
-
-    if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
-        std::cerr << "Mix_Init Error: " << Mix_GetError() << std::endl;
-        exit(1);
-    }
-
-    LOG_DEBUG("SDL initialized successfully with RAII guards");
-}
-
-void App::initializeJoysticks() {
-    int numJoysticks = SDL_NumJoysticks();
-    LOG_DEBUG("Found " << numJoysticks << " joysticks");
-    for (int i = 0; i < numJoysticks; ++i) {
-        SDL_Joystick *joystick = SDL_JoystickOpen(i);
-        if (joystick) {
-            joysticks_.push_back(joystick);
-            LOG_DEBUG("Opened joystick " << i << ": " << SDL_JoystickName(joystick));
-        } else {
-            LOG_DEBUG("Failed to open joystick " << i << ": " << SDL_GetError());
-        }
-    }
-}
-
 void App::loadFont() {
     const Settings &settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
@@ -213,9 +169,6 @@ void App::initializeImGui() {
 }
 
 void App::initializeDependencies() {
-    initializeSDL();
-    initializeJoysticks();
-
     configManager_ = std::make_unique<ConfigService>(configPath_);
     configManager_->loadConfig();
 
@@ -245,12 +198,13 @@ void App::initializeDependencies() {
                                                              &configManager_->getKeybindManager(),
                                                              soundManager_.get());
     configEditor_ = std::make_unique<ConfigUI>(configManager_.get(), &configManager_->getKeybindManager(),
-                                               assets_.get(), &currentIndex_, &tables_, this, showConfig_, false);
+                                               assets_.get(), &currentIndex_, &tables_, this, showConfig_, false);  // Fixed: &currentIndex_
     renderer_ = std::make_unique<Renderer>(windowManager_->getPrimaryRenderer(),
                                            windowManager_->getSecondaryRenderer());
     inputManager_ = std::make_unique<InputManager>(&configManager_->getKeybindManager());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(),
-                                   currentIndex_, tables_, showConfig_, getExecutableDir());
+                                   currentIndex_, tables_, showConfig_, getExecutableDir(), 
+                                   screenshotManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 
@@ -269,27 +223,15 @@ void App::handleEvents() {
         }
 
         if (event.type == SDL_JOYDEVICEADDED) {
-            SDL_Joystick *joystick = SDL_JoystickOpen(event.jdevice.which);
-            if (joystick) {
-                joysticks_.push_back(joystick);
-                LOG_DEBUG("Joystick connected: " << SDL_JoystickName(joystick));
-            }
+            system_->addJoystick(event.jdevice.which);
         } else if (event.type == SDL_JOYDEVICEREMOVED) {
-            for (auto it = joysticks_.begin(); it != joysticks_.end(); ++it) {
-                if (SDL_JoystickInstanceID(*it) == event.jdevice.which) {
-                    SDL_JoystickClose(*it);
-                    joysticks_.erase(it);
-                    LOG_DEBUG("Joystick disconnected: ID " << event.jdevice.which);
-                    break;
-                }
-            }
+            system_->removeJoystick(event.jdevice.which);
         }
     }
 }
 
 void App::update() {
     assets_->clearOldVideoPlayers();
-    // applyConfigChanges removed - handle via events later
     prevShowConfig_ = inputManager_->isConfigActive();
 }
 
@@ -351,11 +293,6 @@ void App::cleanup() {
         assets_->clearOldVideoPlayers();
         assets_.reset();
     }
-
-    for (auto joystick : joysticks_) {
-        if (joystick) SDL_JoystickClose(joystick);
-    }
-    joysticks_.clear();
 
     if (ImGui::GetCurrentContext()) {
         ImGui_ImplSDLRenderer2_Shutdown();

@@ -14,8 +14,8 @@
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "core/iwindow_manager.h"
+#include "core/system_initializer.h"
 #include "sound/isound_manager.h"
-#include "utils/sdl_guards.h"
 
 class IWindowManager;
 class IRenderer;
@@ -36,17 +36,12 @@ private:
     bool showConfig_ = false;
     size_t currentIndex_ = 0;
 
-    SDLInitGuard sdlGuard_;
-    MixerGuard mixerGuard_;
-    TTFInitGuard ttfGuard_;
-    IMGInitGuard imgGuard_;
-
+    std::unique_ptr<SystemInitializer> system_;
     std::unique_ptr<IWindowManager> windowManager_;
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_;
     std::unique_ptr<ISoundManager> soundManager_;
-    std::vector<SDL_Joystick*> joysticks_;
 
-    std::unique_ptr<ConfigService> configManager_;
+    std::unique_ptr<IConfigService> configManager_;
     std::unique_ptr<ConfigUI> configEditor_;
     std::unique_ptr<IRenderer> renderer_;
     std::unique_ptr<AssetManager> assets_;
@@ -58,8 +53,6 @@ private:
     bool prevShowConfig_ = false;
     bool isConfigValid();
     void runInitialConfig();
-    void initializeSDL();
-    void initializeJoysticks();
     void loadFont();
     void initializeImGui();
     void handleEvents();

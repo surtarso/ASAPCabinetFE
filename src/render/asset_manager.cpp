@@ -1,5 +1,5 @@
 #include "render/asset_manager.h"
-#include "config/config_service.h"
+#include "config/iconfig_service.h"  // Changed to iconfig_service.h
 #include "utils/logging.h"
 #include <SDL_image.h>
 #include <iostream>
@@ -17,7 +17,8 @@ AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_F
       dmdVideoPlayer(nullptr),
       primaryRenderer(primary),
       secondaryRenderer(secondary),
-      font(f) {}
+      font(f),
+      configManager_(nullptr) {}  // Initialize configManager_
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
     const TableLoader& table = tables[index];
