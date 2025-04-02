@@ -14,7 +14,7 @@
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "core/iwindow_manager.h"
-#include "core/system_initializer.h"
+#include "core/joystick_manager.h"
 #include "sound/isound_manager.h"
 #include "core/gui_manager.h"
 #include "core/dependency_factory.h"
@@ -37,7 +37,7 @@ private:
 
     // Major components (owned by App, ordered as initialized)
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; // Font for text rendering
-    std::unique_ptr<SystemInitializer> system_;     // Manages joystick initialization
+    std::unique_ptr<JoystickManager> system_;     // Manages joystick initialization
     std::unique_ptr<IWindowManager> windowManager_; // Handles SDL windows and renderers
     std::unique_ptr<GuiManager> guiManager_;        // Manages ImGui lifecycle
     std::unique_ptr<ISoundManager> soundManager_;   // Sound playback system
