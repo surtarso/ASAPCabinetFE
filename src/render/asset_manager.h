@@ -58,7 +58,7 @@ public:
     TTF_Font* getFont() { return font; }
     void setFont(TTF_Font* f) { font = f; }
 
-    // NEW: Cleanup method for all video players (moved from App)
+    // Cleanup method for all video players (moved from App)
     void cleanupVideoPlayers();
 
 private:
