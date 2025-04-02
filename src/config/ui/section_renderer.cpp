@@ -1,12 +1,11 @@
 #include "config/ui/section_renderer.h"
 #include "utils/tooltips.h"
-extern "C" {
-#include "tinyfiledialogs.h"
-}
+#include "ImGuiFileDialog.h"
 #include "imgui.h"
 #include "utils/logging.h"
 #include <sstream>
 #include <filesystem>
+#include <algorithm>
 
 SectionRenderer::SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler)
     : configService_(configService), currentSection_(currentSection), inputHandler_(inputHandler) {}
@@ -45,12 +44,18 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             maxKeyWidth = std::max(maxKeyWidth, std::min(keyWidth, 250.0f));
         }
 
+        // Dialog sizing—big enough to browse, small enough to fit
+        ImGuiIO& io = ImGui::GetIO();
+        ImVec2 maxSize = ImVec2(io.DisplaySize.x * 0.8f, io.DisplaySize.y * 0.8f);
+        ImVec2 minSize = ImVec2(600, 400);
+
         for (auto& [key, value] : section.keyValues) {
             ImGui::PushID(key.c_str());
             ImGui::AlignTextToFramePadding();
             ImGui::Text("%s:", key.c_str());
             ImGui::SameLine(maxKeyWidth);
 
+            // Tooltip "?"—green and handy
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -86,63 +91,76 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                             std::to_string(int(color[1] * 255)) + "," + 
                             std::to_string(int(color[2] * 255)) + "," + 
                             std::to_string(int(color[3] * 255));
-                    LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Color updated: " << currentSection_ << "." << key << " = " << value);
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
-            } else if (key.find("Path") != std::string::npos || key.find("ExecutableCmd") != std::string::npos) {
+            } else if (key.find("Path") != std::string::npos || key.find("ExecutableCmd") != std::string::npos || key == "FontPath") {
+                // Text field—where the magic lands
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';
                 ImGui::SetNextItemWidth(-60);
                 if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
                     value = std::string(buffer);
-                    LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Text updated: " << currentSection_ << "." << key << " = " << value);
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Browse", ImVec2(50, 0))) {
-                    std::string selectedPath;
-                    if (key.find("Path") != std::string::npos) {
-                        // Folder picker for Path keys
-                        const char* folderPath = tinyfd_selectFolderDialog("Select Folder", "");
-                        if (folderPath) {
-                            selectedPath = folderPath;
-                        }
-                    } else if (key.find("Cmd") != std::string::npos) {
-                        // Executable picker for Cmd keys
-                        const char* filterPatterns[1] = { "*" };
-                        const char* filePath = tinyfd_openFileDialog(
-                            "Select Executable",
-                            "",
-                            1,
-                            filterPatterns,
-                            "Executable Files",
-                            0
-                        );
-                        if (filePath) {
-                            selectedPath = filePath;
-                        }
+                    IGFD::FileDialogConfig config;
+                    // Safe path—fallback if empty or invalid
+                    if (!value.empty() && std::filesystem::exists(value)) {
+                        config.path = value;
+                    } else if (key == "FontPath") {
+                        config.path = "/usr/share/fonts/";
+                    } else {
+                        config.path = std::string(getenv("HOME"));
                     }
-
-                    if (!selectedPath.empty()) {
-                        for (auto& [k, v] : section.keyValues) {
-                            if (k == key) {
-                                v = selectedPath;
-                                LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << selectedPath);
-                                break;
-                            }
-                        }
+                    config.flags = ImGuiFileDialogFlags_Modal; // Lock ConfigUI
+                    if (key == "FontPath") {
+                        ImGuiFileDialog::Instance()->OpenDialog("FontDlg", "Select Font", ".ttf", config);
+                    } else if (key.find("Path") != std::string::npos) {
+                        ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + key, "Select Folder", nullptr, config);
+                    } else if (key.find("ExecutableCmd") != std::string::npos) {
+                        ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select Executable", "((.*))", config);
                     }
                 }
+                // Dialogs—sync value and text field
+                if (key == "FontPath" && ImGuiFileDialog::Instance()->Display("FontDlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (ImGuiFileDialog::Instance()->IsOk()) {
+                        value = std::filesystem::path(ImGuiFileDialog::Instance()->GetFilePathName()).filename().string();
+                        strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+                        LOG_DEBUG("Font picked: " << currentSection_ << "." << key << " = " << value);
+                    }
+                    ImGuiFileDialog::Instance()->Close();
+                }
+                if (key.find("Path") != std::string::npos && 
+                    ImGuiFileDialog::Instance()->Display("FolderDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (ImGuiFileDialog::Instance()->IsOk()) {
+                        value = ImGuiFileDialog::Instance()->GetCurrentPath(); // Folder fix!
+                        strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+                        LOG_DEBUG("Folder picked: " << currentSection_ << "." << key << " = " << value);
+                    }
+                    ImGuiFileDialog::Instance()->Close();
+                }
+                if (key.find("ExecutableCmd") != std::string::npos && 
+                    ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (ImGuiFileDialog::Instance()->IsOk()) {
+                        value = ImGuiFileDialog::Instance()->GetFilePathName();
+                        strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+                        LOG_DEBUG("Executable picked: " << currentSection_ << "." << key << " = " << value);
+                    }
+                    ImGuiFileDialog::Instance()->Close();
+                }
             } else {
-                // For all other keys (Image, Video, Sound, etc.), use a simple text input
+                // Generic text input—no fuss
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';
                 ImGui::SetNextItemWidth(-1);
                 if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
                     value = std::string(buffer);
-                    LOG_DEBUG("Updated " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Updated: " << currentSection_ << "." << key << " = " << value);
                 }
             }
             ImGui::PopID();
