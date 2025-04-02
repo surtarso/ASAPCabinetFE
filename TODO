@@ -1,16 +1,13 @@
 FIX
-
-- config size and font on different resolutions (e.g. 4k)
+- config scale on different resolutions (e.g. 4k)
 
 TODO
 - toggle view title/wheel
-- move debug logs to debug build
 - create a make install target
 - add pup windows to capture
 - incorporate generate_media.sh?
 
 UI:
-- add new vars explanations
 - add table info from vpx (vpxtool?)
 - add blinking arrows on sides to indicate table flow/keys
 
@@ -22,5 +19,4 @@ On hold:
 - add splash screen on start?
 
 Later:
-- release artifacts in CI
 - adapt to be crossplatform
