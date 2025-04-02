@@ -22,7 +22,10 @@ set(SOURCES
     src/core/joystick_manager.cpp
     src/core/window_manager.cpp
     src/sound/sound_manager.cpp
+    src/capture/process_handler.cpp
+    src/capture/screenshot_capture.cpp
     src/capture/screenshot_manager.cpp
+    src/capture/screenshot_window.cpp
     src/config/config_service.cpp
     src/config/ui/button_handler.cpp
     src/config/ui/config_ui.cpp

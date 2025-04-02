@@ -1,7 +1,7 @@
 #include "core/dependency_factory.h"
 #include "core/app.h"
-#include "config/config_service.h"  // Still need concrete type for creation
-#include "sound/sound_manager.h"    // Still need concrete type for creation
+#include "config/config_service.h"
+#include "sound/sound_manager.h"
 #include "utils/logging.h"
 
 std::unique_ptr<WindowManager> DependencyFactory::createWindowManager(const Settings& settings) {
@@ -24,10 +24,10 @@ std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* wind
                                       windowManager->getSecondaryRenderer());
 }
 
-std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {  // Fixed: ISoundManager
+std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {
     auto sound = std::make_unique<SoundManager>(exeDir, settings);
     sound->loadSounds();
-    return sound;  // Implicitly upcast to ISoundManager
+    return sound;
 }
 
 std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
@@ -36,14 +36,20 @@ std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std:
     return config;
 }
 
-std::unique_ptr<ScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, IConfigService* configService, ISoundManager* soundManager) {
+std::unique_ptr<ScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, 
+                                                                             IConfigService* configService, 
+                                                                             ISoundManager* soundManager) {
     return std::make_unique<ScreenshotManager>(exeDir, configService, &configService->getKeybindManager(), soundManager);
 }
 
-std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, ScreenshotManager* screenshotManager) {
+std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, 
+                                                                   ScreenshotManager* screenshotManager) {
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
+    size_t dummyIndex = 0;  // Already added for size_t&
+    bool dummyShowConfig = false;  // Added: Temporary bool variable
+    input->setDependencies(nullptr, nullptr, configService, dummyIndex, {}, dummyShowConfig, "", screenshotManager);  // Use dummies
     input->registerActions();
-    return input;  // setDependencies called later in App
+    return input;
 }
 
 std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, AssetManager* assets, 
