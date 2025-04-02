@@ -41,18 +41,16 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui_tables.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdl2.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdlrenderer2.cpp
-    # tinyfiledialogs source
-    ${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c
 )
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Set language for tinyfiledialogs.c to C
-set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE C)
+# set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE C)
 
 # Suppress all warnings for tinyfiledialogs.c
-set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES COMPILE_FLAGS "-w")
+# set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES COMPILE_FLAGS "-w")
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -67,7 +65,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/utils
     ${CMAKE_SOURCE_DIR}/external/imgui
     ${CMAKE_SOURCE_DIR}/external/imgui/backends
-    ${CMAKE_SOURCE_DIR}/external/tinyfiledialogs
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
