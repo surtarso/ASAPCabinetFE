@@ -6,9 +6,24 @@
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
+#include <vector>
 
+// Constructor: Scan fonts with full paths
 SectionRenderer::SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler)
-    : configService_(configService), currentSection_(currentSection), inputHandler_(inputHandler) {}
+    : configService_(configService), currentSection_(currentSection), inputHandler_(inputHandler) {
+    std::string fontDir = "/usr/share/fonts/";
+    if (std::filesystem::exists(fontDir)) {
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(fontDir)) {
+            if (entry.path().extension() == ".ttf") {
+                availableFonts_.push_back(entry.path().string()); // Full paths
+            }
+        }
+        std::sort(availableFonts_.begin(), availableFonts_.end());
+        LOG_DEBUG("Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
+    } else {
+        LOG_DEBUG("Font directory " << fontDir << " not found!");
+    }
+}
 
 void SectionRenderer::renderSectionsPane(const std::vector<std::string>& sectionOrder) {
     ImGui::BeginChild("SectionsPane", ImVec2(250, 0), false);
@@ -44,18 +59,19 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             maxKeyWidth = std::max(maxKeyWidth, std::min(keyWidth, 250.0f));
         }
 
-        // Dialog sizing—big enough to browse, small enough to fit
         ImGuiIO& io = ImGui::GetIO();
         ImVec2 maxSize = ImVec2(io.DisplaySize.x * 0.8f, io.DisplaySize.y * 0.8f);
         ImVec2 minSize = ImVec2(600, 400);
 
-        for (auto& [key, value] : section.keyValues) {
-            ImGui::PushID(key.c_str());
+        std::vector<std::pair<std::string, std::string>> keyValuesCopy = section.keyValues;
+        for (auto& [key, value] : keyValuesCopy) {
+            std::string keyCopy = key;
+            ImGui::PushID(keyCopy.c_str());
+            LOG_DEBUG("Rendering key: " << keyCopy);
             ImGui::AlignTextToFramePadding();
-            ImGui::Text("%s:", key.c_str());
+            ImGui::Text("%s:", keyCopy.c_str());
             ImGui::SameLine(maxKeyWidth);
 
-            // Tooltip "?"—green and handy
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -63,7 +79,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             if (ImGui::Button("?", ImVec2(16, 0))) {}
             ImGui::PopStyleVar();
             ImGui::PopStyleColor(3);
-            renderTooltip(key);
+            renderTooltip(keyCopy);
             ImGui::SameLine();
 
             if (currentSection_ == "Keybinds") {
@@ -71,9 +87,9 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                 ImGui::Text("%s", label.c_str());
                 ImGui::SameLine(ImGui::GetWindowWidth() - 80.0f);
                 if (ImGui::Button("Set", ImVec2(60, 0))) {
-                    inputHandler_.startCapturing(key);
+                    inputHandler_.startCapturing(keyCopy);
                 }
-            } else if (key == "FontColor" || key == "FontBgColor") {
+            } else if (keyCopy == "FontColor" || keyCopy == "FontBgColor") {
                 std::vector<int> rgba(4);
                 std::stringstream ss(value);
                 std::string token;
@@ -85,86 +101,97 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                 if (ImGui::ColorButton("##color", ImVec4(color[0], color[1], color[2], color[3]), ImGuiColorEditFlags_AlphaPreview, ImVec2(20, 20))) {
                     ImGui::OpenPopup("ColorPicker");
                 }
-                if (ImGui::BeginPopup("ColorPicker")) {
+                bool popupOpen = ImGui::BeginPopup("ColorPicker");
+                if (popupOpen) {
                     ImGui::ColorPicker4("##picker", color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
                     value = std::to_string(int(color[0] * 255)) + "," + 
                             std::to_string(int(color[1] * 255)) + "," + 
                             std::to_string(int(color[2] * 255)) + "," + 
                             std::to_string(int(color[3] * 255));
-                    LOG_DEBUG("Color updated: " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
+                    hasChanges_ = true;
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
-            } else if (key.find("Path") != std::string::npos || key.find("ExecutableCmd") != std::string::npos || key == "FontPath") {
-                // Text field—where the magic lands
+            } else if (keyCopy == "FontPath") {
+                ImGui::SetNextItemWidth(-1);
+                std::string displayValue = value.empty() ? "None" : std::filesystem::path(value).filename().string();
+                static std::string preview = displayValue;
+                if (ImGui::BeginCombo("##fontCombo", preview.c_str())) {
+                    for (size_t i = 0; i < availableFonts_.size(); ++i) {
+                        std::string fontName = std::filesystem::path(availableFonts_[i]).filename().string();
+                        bool isSelected = (availableFonts_[i] == value);
+                        if (ImGui::Selectable(fontName.c_str(), isSelected)) {
+                            value = availableFonts_[i];
+                            preview = fontName;
+                            LOG_DEBUG("Font selected: " << currentSection_ << "." << keyCopy << " = " << value);
+                            hasChanges_ = true;
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+            } else if (keyCopy.find("Path") != std::string::npos || keyCopy.find("ExecutableCmd") != std::string::npos) {
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';
                 ImGui::SetNextItemWidth(-60);
                 if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
                     value = std::string(buffer);
-                    LOG_DEBUG("Text updated: " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Text updated: " << currentSection_ << "." << keyCopy << " = " << value);
+                    hasChanges_ = true;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Browse", ImVec2(50, 0))) {
                     IGFD::FileDialogConfig config;
-                    // Safe path—fallback if empty or invalid
                     if (!value.empty() && std::filesystem::exists(value)) {
                         config.path = value;
-                    } else if (key == "FontPath") {
-                        config.path = "/usr/share/fonts/";
                     } else {
                         config.path = std::string(getenv("HOME"));
                     }
-                    config.flags = ImGuiFileDialogFlags_Modal; // Lock ConfigUI
-                    if (key == "FontPath") {
-                        ImGuiFileDialog::Instance()->OpenDialog("FontDlg", "Select Font", ".ttf", config);
-                    } else if (key.find("Path") != std::string::npos) {
-                        ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + key, "Select Folder", nullptr, config);
-                    } else if (key.find("ExecutableCmd") != std::string::npos) {
-                        ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select Executable", "((.*))", config);
+                    config.flags = ImGuiFileDialogFlags_Modal;
+                    if (keyCopy.find("Path") != std::string::npos) {
+                        ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + keyCopy, "Select Folder", nullptr, config);
+                    } else if (keyCopy.find("ExecutableCmd") != std::string::npos) {
+                        ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + keyCopy, "Select Executable", "((.*))", config);
                     }
                 }
-                // Dialogs—sync value and text field
-                if (key == "FontPath" && ImGuiFileDialog::Instance()->Display("FontDlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (keyCopy.find("Path") != std::string::npos && 
+                    ImGuiFileDialog::Instance()->Display("FolderDlg_" + keyCopy, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                     if (ImGuiFileDialog::Instance()->IsOk()) {
-                        value = std::filesystem::path(ImGuiFileDialog::Instance()->GetFilePathName()).filename().string();
+                        value = ImGuiFileDialog::Instance()->GetCurrentPath();
                         strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
-                        LOG_DEBUG("Font picked: " << currentSection_ << "." << key << " = " << value);
+                        LOG_DEBUG("Folder picked: " << currentSection_ << "." << keyCopy << " = " << value);
+                        hasChanges_ = true;
                     }
                     ImGuiFileDialog::Instance()->Close();
                 }
-                if (key.find("Path") != std::string::npos && 
-                    ImGuiFileDialog::Instance()->Display("FolderDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                    if (ImGuiFileDialog::Instance()->IsOk()) {
-                        value = ImGuiFileDialog::Instance()->GetCurrentPath(); // Folder fix!
-                        strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
-                        LOG_DEBUG("Folder picked: " << currentSection_ << "." << key << " = " << value);
-                    }
-                    ImGuiFileDialog::Instance()->Close();
-                }
-                if (key.find("ExecutableCmd") != std::string::npos && 
-                    ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (keyCopy.find("ExecutableCmd") != std::string::npos && 
+                    ImGuiFileDialog::Instance()->Display("FileDlg_" + keyCopy, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                     if (ImGuiFileDialog::Instance()->IsOk()) {
                         value = ImGuiFileDialog::Instance()->GetFilePathName();
                         strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
-                        LOG_DEBUG("Executable picked: " << currentSection_ << "." << key << " = " << value);
+                        LOG_DEBUG("Executable picked: " << currentSection_ << "." << keyCopy << " = " << value);
+                        hasChanges_ = true;
                     }
                     ImGuiFileDialog::Instance()->Close();
                 }
             } else {
-                // Generic text input—no fuss
                 char buffer[1024];
                 strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
                 buffer[sizeof(buffer) - 1] = '\0';
                 ImGui::SetNextItemWidth(-1);
                 if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
                     value = std::string(buffer);
-                    LOG_DEBUG("Updated: " << currentSection_ << "." << key << " = " << value);
+                    LOG_DEBUG("Updated: " << currentSection_ << "." << keyCopy << " = " << value);
+                    hasChanges_ = true;
                 }
             }
             ImGui::PopID();
         }
+        section.keyValues = keyValuesCopy;
     }
     ImGui::PopStyleVar();
     ImGui::EndChild();

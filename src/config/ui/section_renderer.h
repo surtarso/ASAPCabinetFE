@@ -17,6 +17,8 @@ private:
     IConfigService* configService_;
     std::string& currentSection_;
     InputHandler& inputHandler_;
+    std::vector<std::string> availableFonts_;
+    bool hasChanges_ = false;
     bool showPicker_ = false;
     std::string currentKey_;
     std::string currentSectionForPicker_;
