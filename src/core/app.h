@@ -37,7 +37,7 @@ private:
 
     // Major components (owned by App, ordered as initialized)
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; // Font for text rendering
-    std::unique_ptr<JoystickManager> system_;     // Manages joystick initialization
+    std::unique_ptr<JoystickManager> joystick_manager_;  // Manages joystick initialization
     std::unique_ptr<IWindowManager> windowManager_; // Handles SDL windows and renderers
     std::unique_ptr<GuiManager> guiManager_;        // Manages ImGui lifecycle
     std::unique_ptr<ISoundManager> soundManager_;   // Sound playback system
