@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 App::App(const std::string& configPath) 
     : configPath_(configPath), 
       font_(nullptr, TTF_CloseFont),
-      system_(std::make_unique<JoystickManager>()) {  // Still handles joysticks
+      joystick_manager_(std::make_unique<JoystickManager>()) {  // Still handles joysticks
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("Config path: " << configPath_);
@@ -183,9 +183,9 @@ void App::handleEvents() {
             configEditor_->handleEvent(event);
         }
         if (event.type == SDL_JOYDEVICEADDED) {
-            system_->addJoystick(event.jdevice.which);
+            joystick_manager_->addJoystick(event.jdevice.which);
         } else if (event.type == SDL_JOYDEVICEREMOVED) {
-            system_->removeJoystick(event.jdevice.which);
+            joystick_manager_->removeJoystick(event.jdevice.which);
         }
     }
 }
