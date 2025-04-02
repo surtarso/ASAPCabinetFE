@@ -14,11 +14,11 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, I
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
-    currentIndex_ = &currentIndex;  // Fixed typo: ¤tIndex → &currentIndex
+    currentIndex_ = &currentIndex;
     tables_ = &tables;
     showConfig_ = &showConfig;
     exeDir_ = exeDir;
-    screenshotManager_ = screenshotManager;  // Injected, not created
+    screenshotManager_ = screenshotManager;
 
     for (size_t i = 0; i < tables_->size(); ++i) {
         if (!tables_->at(i).tableName.empty()) {
@@ -209,6 +209,10 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return; // Handled in App
     }
 
+    if (screenshotManager_->isActive()) {
+        return; // Let ScreenshotManager handle its own events
+    }
+
     if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
         actionHandlers_["ToggleConfig"]();
         return;
@@ -216,7 +220,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
     if (*showConfig_) {
         handleConfigEvents(event);
-    } else if (!inScreenshotMode_) {
+    } else {
         handleRegularEvents(event);
     }
 }
@@ -234,9 +238,9 @@ void InputManager::handleConfigEvents(const SDL_Event& event) {
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
     for (const auto& action : keybindProvider_->getActions()) {
-        // Skip config-specific actions when config is closed
-        if (action == "ConfigSave" || action == "ConfigClose") {
-            continue;
+        if (action == "ConfigSave" || action == "ConfigClose" || 
+            action == "ScreenshotKey" || action == "ScreenshotQuit") {
+            continue; // Skip config and screenshot-specific actions
         }
         if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, action)) {
             auto it = actionHandlers_.find(action);
