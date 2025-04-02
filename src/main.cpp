@@ -1,4 +1,6 @@
 #include "core/app.h"
+#include "core/first_run.h"
+#include "core/dependency_factory.h"
 #include "version.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -39,8 +41,19 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    SDLBootstrap bootstrap;  // RAII for SDL/TTF/IMG init and cleanup
-    App app("config.ini");
+    SDLBootstrap bootstrap;
+    std::string configPath = "config.ini";
+    auto configService = DependencyFactory::createConfigService(configPath);
+
+    if (!configService->isConfigValid()) {
+        if (!runInitialConfig(configService.get(), configPath)) {
+            std::cerr << "Initial configuration failed or was aborted. Exiting..." << std::endl;
+            return 1;
+        }
+        configService->loadConfig();  // Reload after first-run setup
+    }
+
+    App app(configPath);
     app.run();
     return 0;
 }

@@ -17,6 +17,7 @@ set(SOURCES
     src/main.cpp
     src/core/app.cpp
     src/core/dependency_factory.cpp
+    src/core/first_run.cpp
     src/core/gui_manager.cpp
     src/core/joystick_manager.cpp
     src/core/window_manager.cpp
