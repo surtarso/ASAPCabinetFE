@@ -43,17 +43,13 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdlrenderer2.cpp
     # ImGui File Dialog
     ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog/ImGuiFileDialog.cpp
-
 )
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Set language for tinyfiledialogs.c to C
-# set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE C)
-
-# Suppress all warnings for tinyfiledialogs.c
-# set_source_files_properties(${CMAKE_SOURCE_DIR}/external/tinyfiledialogs/tinyfiledialogs.c PROPERTIES COMPILE_FLAGS "-w")
+# Suppress all warnings for ImGuiFileDialog.cpp
+set_source_files_properties(${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog/ImGuiFileDialog.cpp PROPERTIES COMPILE_FLAGS "-w")
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
