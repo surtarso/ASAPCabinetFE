@@ -16,6 +16,7 @@ configure_file(
 set(SOURCES
     src/main.cpp
     src/core/app.cpp
+    src/core/system_initializer.cpp
     src/core/window_manager.cpp
     src/sound/sound_manager.cpp
     src/capture/screenshot_manager.cpp

@@ -17,9 +17,9 @@ public:
     InputManager(IKeybindProvider* keybindProvider);
     void handleEvent(const SDL_Event& event) override;
     void registerActions() override;
-    void setDependencies(AssetManager* assets, ISoundManager* sound, ConfigService* settings,
+    void setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableLoader>& tables,
-                         bool& showConfig, const std::string& exeDir) override;
+                         bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager) override;  // Added ScreenshotManager*
     bool isConfigActive() const override { return *showConfig_; }
     bool shouldQuit() const override { return quit_; }
     void setRuntimeEditor(ConfigUI* editor) override { runtimeEditor_ = editor; }
@@ -33,7 +33,7 @@ private:
     IKeybindProvider* keybindProvider_;
     AssetManager* assets_;
     ISoundManager* soundManager_;
-    ConfigService* settingsManager_;
+    IConfigService* settingsManager_;
     size_t* currentIndex_;
     const std::vector<TableLoader>* tables_;
     bool* showConfig_;
@@ -43,7 +43,7 @@ private:
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
     bool inScreenshotMode_ = false;
-    std::unique_ptr<ScreenshotManager> screenshotManager_;
+    ScreenshotManager* screenshotManager_;  // Changed to raw pointer, injected
 };
 
 #endif // INPUT_MANAGER_H
