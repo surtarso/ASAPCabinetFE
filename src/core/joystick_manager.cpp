@@ -1,30 +1,18 @@
-#include "core/system_initializer.h"
+#include "core/joystick_manager.h"
 #include "utils/logging.h"
 #include <iostream>
 
-SystemInitializer::SystemInitializer()
-    : sdlGuard_(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK),
-      mixerGuard_(44100, MIX_DEFAULT_FORMAT, 2, 2048),
-      ttfGuard_(),
-      imgGuard_(IMG_INIT_PNG | IMG_INIT_JPG) {
-    if (!isInitialized()) {
-        std::cerr << "System initialization failed" << std::endl;
-        exit(1);
-    }
-    if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
-        std::cerr << "Mix_Init Error: " << Mix_GetError() << std::endl;
-        exit(1);
-    }
+JoystickManager::JoystickManager() {
     initializeJoysticks();
-    LOG_DEBUG("SystemInitializer constructed");
+    LOG_DEBUG("JoystickManager constructed");
 }
 
-SystemInitializer::~SystemInitializer() {
+JoystickManager::~JoystickManager() {
     cleanupJoysticks();
-    LOG_DEBUG("SystemInitializer destroyed");
+    LOG_DEBUG("JoystickManager destroyed");
 }
 
-void SystemInitializer::initializeJoysticks() {
+void JoystickManager::initializeJoysticks() {
     int numJoysticks = SDL_NumJoysticks();
     LOG_DEBUG("Found " << numJoysticks << " joysticks");
     for (int i = 0; i < numJoysticks; ++i) {
@@ -38,14 +26,14 @@ void SystemInitializer::initializeJoysticks() {
     }
 }
 
-void SystemInitializer::cleanupJoysticks() {
+void JoystickManager::cleanupJoysticks() {
     for (auto joystick : joysticks_) {
         if (joystick) SDL_JoystickClose(joystick);
     }
     joysticks_.clear();
 }
 
-void SystemInitializer::addJoystick(int index) {
+void JoystickManager::addJoystick(int index) {
     SDL_Joystick* joystick = SDL_JoystickOpen(index);
     if (joystick) {
         joysticks_.push_back(joystick);
@@ -53,7 +41,7 @@ void SystemInitializer::addJoystick(int index) {
     }
 }
 
-void SystemInitializer::removeJoystick(SDL_JoystickID id) {
+void JoystickManager::removeJoystick(SDL_JoystickID id) {
     for (auto it = joysticks_.begin(); it != joysticks_.end(); ++it) {
         if (SDL_JoystickInstanceID(*it) == id) {
             SDL_JoystickClose(*it);

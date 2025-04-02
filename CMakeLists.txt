@@ -18,7 +18,7 @@ set(SOURCES
     src/core/app.cpp
     src/core/dependency_factory.cpp
     src/core/gui_manager.cpp
-    src/core/system_initializer.cpp
+    src/core/joystick_manager.cpp
     src/core/window_manager.cpp
     src/sound/sound_manager.cpp
     src/capture/screenshot_manager.cpp

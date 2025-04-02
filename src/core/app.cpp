@@ -14,10 +14,10 @@ namespace fs = std::filesystem;
 
 App::App(const std::string& configPath) 
     : configPath_(configPath), 
-      font_(nullptr, TTF_CloseFont),  // Custom deleter for TTF_Font
-      system_(std::make_unique<SystemInitializer>()) {
+      font_(nullptr, TTF_CloseFont),
+      system_(std::make_unique<JoystickManager>()) {  // Still handles joysticks
     exeDir_ = getExecutableDir();
-    configPath_ = exeDir_ + configPath_;  // Rebuild configPath_ after exeDir_
+    configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("Config path: " << configPath_);
     LOG_DEBUG("Exe dir set to: " << exeDir_);
 }
