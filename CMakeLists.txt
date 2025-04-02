@@ -34,13 +34,16 @@ set(SOURCES
     src/render/table_loader.cpp
     src/render/renderer.cpp
     src/render/video_player.cpp
-    # ImGui sources
+    # Dear ImGui sources
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui_draw.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui_widgets.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui_tables.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdl2.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    # ImGui File Dialog
+    ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog/ImGuiFileDialog.cpp
+
 )
 
 # Define the executable
@@ -63,8 +66,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/render
     ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils
+    # Dear ImGui
     ${CMAKE_SOURCE_DIR}/external/imgui
     ${CMAKE_SOURCE_DIR}/external/imgui/backends
+    # ImGui File Dialog
+    ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
