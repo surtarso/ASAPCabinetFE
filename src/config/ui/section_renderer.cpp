@@ -67,7 +67,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
         for (auto& [key, value] : keyValuesCopy) {
             std::string keyCopy = key;
             ImGui::PushID(keyCopy.c_str());
-            LOG_DEBUG("Rendering key: " << keyCopy);
+            //LOG_DEBUG("Rendering key: " << keyCopy);
             ImGui::AlignTextToFramePadding();
             ImGui::Text("%s:", keyCopy.c_str());
             ImGui::SameLine(maxKeyWidth);

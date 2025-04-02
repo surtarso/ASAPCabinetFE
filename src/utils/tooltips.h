@@ -151,13 +151,13 @@ namespace Tooltips {
 
             // TitleDisplay
             {"FontPath",
-                "Absolute path to the font file used in the UI."
+                "Select a font for the table title display."
             },
             {"FontColor",
-                "Color of the table title text in R,G,B,A format (0-255).\nExample: 255,255,255,255 for white."
+                "Color of the table title display text."
             },
             {"FontBgColor",
-                "Background color behind the table title in R,G,B,A format (0-255).\nExample: 0,0,0,128 for semi-transparent black."
+                "Background color behind the table title."
             },
             {"FontSize",
                 "Font size in points for table title text rendering."
