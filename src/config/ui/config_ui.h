@@ -46,7 +46,7 @@ private:
     InputHandler inputHandler_;
 
     static const std::vector<std::string> sectionOrder_;
-    void discardChanges(); // New method to discard changes
+    void discardChanges(); // To discard changes
 };
 
 #endif // CONFIG_UI_H

@@ -86,7 +86,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     }
 }
 
-// NEW: Cleanup all active video players (moved from App::cleanup)
+// Cleanup all active video players (moved from App::cleanup)
 void AssetManager::cleanupVideoPlayers() {
     LOG_DEBUG("Cleaning up video players in AssetManager");
     
@@ -138,15 +138,27 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
     FILE* redirected;
 #ifdef _WIN32
     redirected = freopen("nul", "w", stderr);
+    if (!redirected) {
+        LOG_DEBUG("Failed to redirect stderr to nul for texture load: " << path);
+    }
 #else
     redirected = freopen("/dev/null", "w", stderr);
+    if (!redirected) {
+        LOG_DEBUG("Failed to redirect stderr to /dev/null for texture load: " << path);
+    }
 #endif
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     FILE* restored;
 #ifdef _WIN32
     restored = freopen("CON", "w", stderr);
+    if (!restored) {
+        LOG_DEBUG("Failed to restore stderr from nul after loading texture: " << path);
+    }
 #else
     restored = freopen("/dev/tty", "w", stderr);
+    if (!restored) {
+        LOG_DEBUG("Failed to restore stderr from /dev/null after loading texture: " << path);
+    }
 #endif
     if (!tex) {
         LOG_DEBUG("Failed to load texture " << path << ": " << IMG_GetError());
