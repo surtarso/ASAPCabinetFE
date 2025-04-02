@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 #include "config/config_service.h"
 #include "keybinds/keybind_manager.h"
-#include "sound/isound_manager.h" // Already correct
+#include "sound/isound_manager.h" 
 
 class ScreenshotManager {
 public:
@@ -26,7 +26,7 @@ private:
     std::string vpxLogFile;
     ConfigService* configManager_;
     KeybindManager* keybindManager_;
-    ISoundManager* soundManager_; // Fix: ISoundManager*
+    ISoundManager* soundManager_; 
 };
 
 #endif // SCREENSHOT_MANAGER_H

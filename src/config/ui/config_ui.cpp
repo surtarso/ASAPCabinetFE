@@ -65,8 +65,12 @@ void ConfigUI::drawGUI() {
         ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, 
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
     } else {
+        // TODO: This should be centered relative to main window size
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2 - 400, io.DisplaySize.y / 2 - 250), ImGuiCond_Always);
+        // TODO: This should be relative to the main window size while keeping the aspect ratio
         ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Always);
+        // TODO: User should be able to select the config font size or
+        // it should be relative to the main window size?
         ImGui::Begin("##ConfigUI", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
     }
 
@@ -85,11 +89,11 @@ void ConfigUI::drawGUI() {
         if (standaloneMode_ && section != "VPX") {
             continue; // In standalone mode, only show VPX
         }
-#ifndef DEBUG_LOGGING
+    #ifndef DEBUG_LOGGING
         if (section == "Internal") {
             continue; // Hide Internal in release builds
         }
-#endif
+    #endif
         visibleSections.push_back(section);
     }
 

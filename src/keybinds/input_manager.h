@@ -5,7 +5,7 @@
 #include "keybinds/ikeybind_provider.h"
 #include "render/asset_manager.h"
 #include "sound/isound_manager.h"
-#include "config/config_service.h"
+#include "config/iconfig_service.h"
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "config/ui/config_ui.h"

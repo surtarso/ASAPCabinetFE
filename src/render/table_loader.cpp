@@ -1,6 +1,6 @@
 #include "render/table_loader.h"
 #include "utils/logging.h"
-#include "config/config_service.h"
+#include "config/iconfig_service.h"
 #include <algorithm>
 #include <iostream>
 #include <cctype>

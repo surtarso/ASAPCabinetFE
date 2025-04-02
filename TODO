@@ -1,5 +1,9 @@
-TODO
+FIX
 
+- config size and font on different resolutions (e.g. 4k)
+
+TODO
+- toggle view title/wheel
 - move debug logs to debug build
 - create a make install target
 - add pup windows to capture
@@ -7,9 +11,7 @@ TODO
 
 UI:
 - add new vars explanations
-- add keybind-assign UI
 - add table info from vpx (vpxtool?)
-- remove flicker from table switch
 - add blinking arrows on sides to indicate table flow/keys
 
 On hold:
