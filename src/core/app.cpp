@@ -19,9 +19,29 @@ App::App(const std::string& configPath)
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()) {
     exeDir_ = getExecutableDir();
-    configPath_ = exeDir_ + configPath_;
+    configPath_ = exeDir_ + configPath_;  // Make configPath absolute
     LOG_DEBUG("Config path: " << configPath_);
     LOG_DEBUG("Exe dir set to: " << exeDir_);
+
+    // Load config early to get logFile setting
+    configManager_ = DependencyFactory::createConfigService(configPath_);
+    // Ensure logFile is absolute by prepending exeDir_
+    std::string logFile = configManager_->getSettings().logFile;
+    if (!logFile.empty() && 
+        logFile.find('/') != 0 &&  // Check if not already absolute
+        logFile.find('\\') != 0) {  // Windows compatibility
+        logFile = exeDir_ + logFile;
+    } else if (logFile.empty()) {
+        logFile = exeDir_ + "logs/debug.log";  // Fallback to default absolute path
+    }
+    // Initialize logger with absolute path
+    Logger::getInstance().initialize(logFile,
+    #ifdef DEBUG_LOGGING
+            true
+    #else
+            false
+    #endif
+    );
 }
 
 App::~App() {
@@ -105,6 +125,7 @@ void App::loadTables() {
 
 void App::initializeDependencies() {
     configManager_ = DependencyFactory::createConfigService(configPath_);
+    // Logger already initialized in constructor, no need to re-initialize here
     if (!isConfigValid()) {
         LOG_DEBUG("Config invalid, running initial config");
         if (!runInitialConfig(configManager_.get(), configPath_)) {
@@ -129,7 +150,7 @@ void App::initializeDependencies() {
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get());  // No change here, just showing context
+                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 

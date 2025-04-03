@@ -1,6 +1,7 @@
 #ifndef ICONFIG_SERVICE_H
 #define ICONFIG_SERVICE_H
 
+#include <filesystem>
 #include "config/settings.h"  // For Settings
 #include "keybinds/keybind_manager.h"  // For KeybindManager
 #include <map>

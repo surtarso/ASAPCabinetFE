@@ -1,6 +1,7 @@
 #include "keybinds/input_manager.h"
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
+#include <iostream>
 #include <random>
 
 InputManager::InputManager(IKeybindProvider* keybindProvider)

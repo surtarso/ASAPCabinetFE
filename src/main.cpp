@@ -1,14 +1,17 @@
+#include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
 #include "core/dependency_factory.h"
 #include "utils/logging.h"
-#include "version.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
+#include <string>
+#include <filesystem>
 
 struct SDLBootstrap {
+    std::string configPath;
     SDLBootstrap() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK) < 0) {
             LOG_DEBUG("SDL_Init failed: " << SDL_GetError());
@@ -49,24 +52,14 @@ struct SDLBootstrap {
 };
 
 int main(int argc, char* argv[]) {
+    std::string configPath = "config.ini";
     if (argc == 2 && std::string(argv[1]) == "--version") {
         std::cout << "ASAPCabinetFE version " << PROJECT_VERSION << std::endl;
         return 0;
     }
 
-    SDLBootstrap bootstrap;
-    std::string configPath = "config.ini";
-    auto configService = DependencyFactory::createConfigService(configPath);
-
-    if (!configService->isConfigValid()) {
-        if (!runInitialConfig(configService.get(), configPath)) {
-            LOG_DEBUG("Initial configuration failed or was aborted. Exiting...");
-            return 1;
-        }
-        configService->loadConfig();  // Reload after first-run setup
-    }
-
-    App app(configPath);
+    SDLBootstrap bootstrap; // Initialize SDL
+    App app(configPath);    // App handles config validation and logger initialization
     app.run();
     return 0;
 }
