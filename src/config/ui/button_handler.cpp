@@ -11,14 +11,15 @@ void ButtonHandler::renderButtonPane() {
     if (ImGui::Button("Save", ImVec2(100, 0))) {
         if (onSave_) onSave_();
         configService_->saveConfig(configService_->getIniData());
-        if (app_) app_->onConfigSaved(standaloneMode_); // Pass standaloneMode_
+        if (app_) app_->onConfigSaved(standaloneMode_);
         hasChanges_ = false;
-        saveMessageTimer_ = 3.0f;
+        saveMessageTimer_ = 1.5f;
         LOG_DEBUG("Config saved");
     }
     ImGui::SameLine();
     if (ImGui::Button("Close", ImVec2(100, 0))) {
         if (onClose_) onClose_();
+        saveMessageTimer_ = 0.0f;
         showConfig_ = false;
         LOG_DEBUG("Config closed");
     }
