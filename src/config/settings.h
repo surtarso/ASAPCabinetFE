@@ -73,6 +73,8 @@ struct Settings {
     std::string quitSound;
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
+
+    std::string logFile;
 };
 
 #endif // SETTINGS_H

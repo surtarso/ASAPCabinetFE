@@ -2,6 +2,7 @@
 #include "utils/logging.h"
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 ConfigService::ConfigService(const std::string& configPath) 
     : configPath_(configPath), keybindManager_() {
@@ -84,6 +85,7 @@ void ConfigService::setDefaultSettings() {
     settings_.screenshotQuitSound = "snd/screenshot_quit.mp3";
     settings_.enableDpiScaling = true;
     settings_.dpiScale = 1.0f;
+    settings_.logFile = "logs/debug.log"; // Set default log file path
 }
 
 void ConfigService::parseIniFile() {
@@ -199,6 +201,7 @@ void ConfigService::parseIniFile() {
         (config["DPISettings"]["EnableDpiScaling"] == "true");
     settings_.dpiScale = std::stof(config["DPISettings"]["DpiScale"].empty() ? "1.0" : config["DPISettings"]["DpiScale"]);
     keybindManager_.loadKeybinds(config["Keybinds"]);
+    settings_.logFile = config["Internal"]["LogFile"].empty() ? "logs/debug.log" : config["Internal"]["LogFile"];
 }
 
 void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& iniData) {
