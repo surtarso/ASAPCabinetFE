@@ -89,12 +89,13 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             } else if (keyCopy == "FontColor" || keyCopy == "FontBgColor") {
                 std::vector<int> rgba(4);
                 std::stringstream ss;
+                ss << value;  // Initialize stringstream with value
                 std::string token;
                 for (int i = 0; i < 4 && std::getline(ss, token, ','); ++i) {
                     rgba[i] = std::stoi(token);
                 }
                 float color[4] = {rgba[0] / 255.0f, rgba[1] / 255.0f, rgba[2] / 255.0f, rgba[3] / 255.0f};
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
                 if (ImGui::ColorButton("##color", ImVec4(color[0], color[1], color[2], color[3]), ImGuiColorEditFlags_AlphaPreview, ImVec2(20, 20))) {
                     ImGui::OpenPopup("ColorPicker");
                 }
@@ -105,8 +106,8 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                             std::to_string(int(color[1] * 255)) + "," +
                             std::to_string(int(color[2] * 255)) + "," +
                             std::to_string(int(color[3] * 255));
-                    LOG_DEBUG("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
                     hasChanges_ = true;
+                    LOG_DEBUG("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
