@@ -18,7 +18,7 @@ class App;
 class DependencyFactory {
 public:
     static std::unique_ptr<WindowManager> createWindowManager(const Settings& settings);
-    static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager);
+    static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager, IConfigService* configService);
     static std::unique_ptr<AssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font);
     static std::unique_ptr<Renderer> createRenderer(IWindowManager* windowManager);
     static std::unique_ptr<ISoundManager> createSoundManager(const std::string& exeDir, const Settings& settings);

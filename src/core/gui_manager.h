@@ -6,13 +6,14 @@
 
 struct ImGuiContext;
 class IWindowManager;
+class IConfigService;
 
 class GuiManager {
 public:
     // Constructor for main app (uses IWindowManager)
-    GuiManager(IWindowManager* windowManager);
+    GuiManager(IWindowManager* windowManager, IConfigService* configService);
     // Constructor for initial config (uses raw SDL window/renderer)
-    GuiManager(SDL_Window* window, SDL_Renderer* renderer);
+    GuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService);
     ~GuiManager();
 
     void initialize();           // Sets up ImGui context
@@ -22,6 +23,7 @@ public:
 
 private:
     IWindowManager* windowManager_;  // Main app window manager (nullptr in config mode)
+    IConfigService* configService_;  // Changed to interface pointer
     SDL_Window* configWindow_;       // Config window (nullptr in main app mode)
     SDL_Renderer* configRenderer_;   // Config renderer (nullptr in main app mode)
     ImGuiContext* context_;          // ImGui context

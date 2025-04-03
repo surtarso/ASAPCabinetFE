@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <vector>
+#include <iomanip>
 
 // Constructor: Scan fonts with full paths
 SectionRenderer::SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler)
@@ -54,10 +55,6 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
     if (!currentSection_.empty() && iniData.count(currentSection_)) {
         auto& section = iniData[currentSection_];
         float maxKeyWidth = 150.0f;
-        for (const auto& [key, _] : section.keyValues) {
-            float keyWidth = ImGui::CalcTextSize(key.c_str()).x + 10.0f;
-            maxKeyWidth = std::max(maxKeyWidth, std::min(keyWidth, 250.0f));
-        }
 
         ImGuiIO& io = ImGui::GetIO();
         ImVec2 maxSize = ImVec2(io.DisplaySize.x * 0.8f, io.DisplaySize.y * 0.8f);
@@ -91,7 +88,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                 }
             } else if (keyCopy == "FontColor" || keyCopy == "FontBgColor") {
                 std::vector<int> rgba(4);
-                std::stringstream ss(value);
+                std::stringstream ss;
                 std::string token;
                 for (int i = 0; i < 4 && std::getline(ss, token, ','); ++i) {
                     rgba[i] = std::stoi(token);
@@ -104,9 +101,9 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                 bool popupOpen = ImGui::BeginPopup("ColorPicker");
                 if (popupOpen) {
                     ImGui::ColorPicker4("##picker", color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
-                    value = std::to_string(int(color[0] * 255)) + "," + 
-                            std::to_string(int(color[1] * 255)) + "," + 
-                            std::to_string(int(color[2] * 255)) + "," + 
+                    value = std::to_string(int(color[0] * 255)) + "," +
+                            std::to_string(int(color[1] * 255)) + "," +
+                            std::to_string(int(color[2] * 255)) + "," +
                             std::to_string(int(color[3] * 255));
                     LOG_DEBUG("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
                     hasChanges_ = true;

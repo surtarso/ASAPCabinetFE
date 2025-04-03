@@ -115,7 +115,7 @@ void App::initializeDependencies() {
     }
 
     windowManager_ = DependencyFactory::createWindowManager(configManager_->getSettings());
-    guiManager_ = DependencyFactory::createGuiManager(windowManager_.get());
+    guiManager_ = DependencyFactory::createGuiManager(windowManager_.get(), configManager_.get());
     soundManager_ = DependencyFactory::createSoundManager(exeDir_, configManager_->getSettings());
 
     loadFont();
