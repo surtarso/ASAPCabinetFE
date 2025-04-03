@@ -141,6 +141,12 @@ namespace Tooltips {
                 "Background color behind the table title."},
             {"FontSize",
                 "Font size in points for table title text rendering."},
+            {"ShowWheel",
+                "Toggle visibility of the wheel image in the main window.\n"
+                "Set to true to show the wheel, false to hide it."},
+            {"ShowTitle",
+                "Toggle visibility of table titles in the main window.\n"
+                "Set to true to show titles, false to hide them."},
 
             // MediaDimensions
             {"WheelImageSize",

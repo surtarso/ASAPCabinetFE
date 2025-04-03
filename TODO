@@ -1,8 +1,4 @@
-FIX
-- config scale on different resolutions (e.g. 4k)
-
 TODO
-- toggle view title/wheel
 - create a make install target
 - add pup windows to capture
 - incorporate generate_media.sh?
