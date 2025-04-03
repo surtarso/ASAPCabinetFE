@@ -105,6 +105,12 @@ void ConfigUI::drawGUI() {
 
     ImGui::BeginChild("ButtonPane", ImVec2(0, buttonHeight), false);
     buttonHandler_.renderButtonPane();
+    
+    // Clear "Saved!" message if another message needs to be shown
+    if (inputHandler_.isCapturingKey()) {
+        saveMessageTimer_ = 0.0f;
+    }
+    
     ImGui::EndChild();
 
     ImGui::PopStyleColor(3);
@@ -118,12 +124,13 @@ void ConfigUI::saveConfig() {
     lastSavedIniData_ = configService_->getIniData(); // Update last saved state
     if (app_) app_->onConfigSaved(standaloneMode_);
     hasChanges_ = false;
-    saveMessageTimer_ = 3.0f;
+    saveMessageTimer_ = 1.5f; // Reduced from 3.0f to 1.5f
 }
 
 void ConfigUI::discardChanges() {
     LOG_DEBUG("ConfigUI::discardChanges called");
     configService_->setIniData(lastSavedIniData_);
+    saveMessageTimer_ = 0.0f; // Reset timer when discarding changes
     hasChanges_ = false;
 }
 
