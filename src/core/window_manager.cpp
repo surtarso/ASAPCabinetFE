@@ -7,11 +7,16 @@ WindowManager::WindowManager(const Settings& settings)
       primaryRenderer_(nullptr, SDL_DestroyRenderer),
       secondaryRenderer_(nullptr, SDL_DestroyRenderer) {
     // Create primary window (Playfield)
+    int scaledMainWidth = settings.enableDpiScaling ? 
+        static_cast<int>(settings.mainWindowWidth * settings.dpiScale) : settings.mainWindowWidth;
+    int scaledMainHeight = settings.enableDpiScaling ? 
+        static_cast<int>(settings.mainWindowHeight * settings.dpiScale) : settings.mainWindowHeight;
+
     primaryWindow_.reset(SDL_CreateWindow("Playfield",
                                           SDL_WINDOWPOS_CENTERED_DISPLAY(settings.mainWindowMonitor),
                                           SDL_WINDOWPOS_CENTERED,
-                                          settings.mainWindowWidth,
-                                          settings.mainWindowHeight,
+                                          scaledMainWidth,
+                                          scaledMainHeight,
                                           SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!primaryWindow_) {
         std::cerr << "Failed to create primary window: " << SDL_GetError() << std::endl;
@@ -26,11 +31,16 @@ WindowManager::WindowManager(const Settings& settings)
     SDL_SetRenderDrawBlendMode(primaryRenderer_.get(), SDL_BLENDMODE_BLEND);
 
     // Create secondary window (Backglass)
+    int scaledSecondWidth = settings.enableDpiScaling ? 
+        static_cast<int>(settings.secondWindowWidth * settings.dpiScale) : settings.secondWindowWidth;
+    int scaledSecondHeight = settings.enableDpiScaling ? 
+        static_cast<int>(settings.secondWindowHeight * settings.dpiScale) : settings.secondWindowHeight;
+
     secondaryWindow_.reset(SDL_CreateWindow("Backglass",
                                             SDL_WINDOWPOS_CENTERED_DISPLAY(settings.secondWindowMonitor),
                                             SDL_WINDOWPOS_CENTERED,
-                                            settings.secondWindowWidth,
-                                            settings.secondWindowHeight,
+                                            scaledSecondWidth,
+                                            scaledSecondHeight,
                                             SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!secondaryWindow_) {
         std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;

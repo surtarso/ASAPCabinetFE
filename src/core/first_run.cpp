@@ -20,7 +20,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
         return false;
     }
 
-    auto guiManager = std::make_unique<GuiManager>(configWindow, configRenderer);
+    auto guiManager = std::make_unique<GuiManager>(configWindow, configRenderer, configService);
     guiManager->initialize();
 
     bool showConfig = true;

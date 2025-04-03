@@ -8,8 +8,8 @@ std::unique_ptr<WindowManager> DependencyFactory::createWindowManager(const Sett
     return std::make_unique<WindowManager>(settings);
 }
 
-std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* windowManager) {
-    auto gui = std::make_unique<GuiManager>(windowManager);
+std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* windowManager, IConfigService* configService) {
+    auto gui = std::make_unique<GuiManager>(windowManager, configService);
     gui->initialize();
     return gui;
 }

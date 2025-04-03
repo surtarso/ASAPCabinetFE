@@ -12,6 +12,10 @@ struct Settings {
     std::string vpxStartArgs;
     std::string vpxEndArgs;
 
+    // DPI settings
+    float dpiScale = 1.0f;
+    bool enableDpiScaling = true;
+
     // Default media paths
     std::string defaultTableImage;
     std::string defaultBackglassImage;

@@ -4,8 +4,8 @@
 #include "imgui.h"
 
 const std::vector<std::string> ConfigUI::sectionOrder_ = {
-    "VPX", "WindowSettings", "CustomMedia", "MediaDimensions", "TitleDisplay", 
-    "UISounds", "Keybinds", "DefaultMedia", "Internal", "Table Overrides"
+    "VPX", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
+    "Keybinds", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
 };
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
@@ -65,12 +65,8 @@ void ConfigUI::drawGUI() {
         ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, 
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
     } else {
-        // TODO: This should be centered relative to main window size
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2 - 400, io.DisplaySize.y / 2 - 250), ImGuiCond_Always);
-        // TODO: This should be relative to the main window size while keeping the aspect ratio
         ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Always);
-        // TODO: User should be able to select the config font size or
-        // it should be relative to the main window size?
         ImGui::Begin("##ConfigUI", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
     }
 
