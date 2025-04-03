@@ -1,4 +1,5 @@
-#include "window_manager.h"
+#include "core/window_manager.h"
+#include "utils/logging.h"
 #include <iostream>
 
 WindowManager::WindowManager(const Settings& settings)
@@ -19,13 +20,13 @@ WindowManager::WindowManager(const Settings& settings)
                                           scaledMainHeight,
                                           SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!primaryWindow_) {
-        std::cerr << "Failed to create primary window: " << SDL_GetError() << std::endl;
+        LOG_ERROR("Failed to create primary window: " << SDL_GetError());
         exit(1);
     }
     primaryRenderer_.reset(SDL_CreateRenderer(primaryWindow_.get(), -1, 
                                               SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
     if (!primaryRenderer_) {
-        std::cerr << "Failed to create primary renderer: " << SDL_GetError() << std::endl;
+        LOG_ERROR("Failed to create primary renderer: " << SDL_GetError());
         exit(1);
     }
     SDL_SetRenderDrawBlendMode(primaryRenderer_.get(), SDL_BLENDMODE_BLEND);
@@ -43,13 +44,13 @@ WindowManager::WindowManager(const Settings& settings)
                                             scaledSecondHeight,
                                             SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!secondaryWindow_) {
-        std::cerr << "Failed to create secondary window: " << SDL_GetError() << std::endl;
+        LOG_ERROR("Failed to create secondary window: " << SDL_GetError());
         exit(1);
     }
     secondaryRenderer_.reset(SDL_CreateRenderer(secondaryWindow_.get(), -1, 
                                                 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
     if (!secondaryRenderer_) {
-        std::cerr << "Failed to create secondary renderer: " << SDL_GetError() << std::endl;
+        LOG_ERROR("Failed to create secondary renderer: " << SDL_GetError());
         exit(1);
     }
     SDL_SetRenderDrawBlendMode(secondaryRenderer_.get(), SDL_BLENDMODE_BLEND);

@@ -144,7 +144,7 @@ void InputManager::registerActions() {
         LOG_DEBUG("Launching: " << command);
         int result = std::system(command.c_str());
         if (result != 0) {
-            std::cerr << "Warning: VPX launch failed with exit code " << result << std::endl;
+            LOG_ERROR("Warning: VPX launch failed with exit code " << result);
         }
     };
 
@@ -177,7 +177,7 @@ void InputManager::registerActions() {
             LOG_DEBUG("Closed config");
         } else {
             quit_ = true;
-            LOG_DEBUG("Quitting app");
+            LOG_INFO("Quitting app");
         }
     };
 

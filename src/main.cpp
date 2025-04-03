@@ -14,14 +14,14 @@ struct SDLBootstrap {
     std::string configPath;
     SDLBootstrap() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK) < 0) {
-            LOG_DEBUG("SDL_Init failed: " << SDL_GetError());
+            LOG_ERROR("SDL_Init failed: " << SDL_GetError());
             throw std::runtime_error("SDL initialization failed");
         }
         
         // Get system DPI
         float ddpi, hdpi, vdpi;
         if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-            LOG_DEBUG("Warning: Could not get DPI: " << SDL_GetError());
+            LOG_ERROR("Warning: Could not get DPI: " << SDL_GetError());
             ddpi = 96.0f; // Default fallback DPI
         }
         
@@ -30,24 +30,24 @@ struct SDLBootstrap {
         SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
 
         if (TTF_Init() < 0) {
-            LOG_DEBUG("TTF_Init failed: " << TTF_GetError());
+            LOG_ERROR("TTF_Init failed: " << TTF_GetError());
             SDL_Quit();
             throw std::runtime_error("TTF initialization failed");
         }
         int imgFlags = IMG_INIT_PNG;
         if (!(IMG_Init(imgFlags) & imgFlags)) {
-            LOG_DEBUG("IMG_Init failed: " << IMG_GetError());
+            LOG_ERROR("IMG_Init failed: " << IMG_GetError());
             TTF_Quit();
             SDL_Quit();
             throw std::runtime_error("IMG initialization failed");
         }
-        LOG_DEBUG("SDL subsystems initialized");
+        LOG_INFO("SDL subsystems initialized");
     }
     ~SDLBootstrap() {
         IMG_Quit();
         TTF_Quit();
         SDL_Quit();
-        LOG_DEBUG("SDL subsystems cleaned up");
+        LOG_INFO("SDL subsystems cleaned up");
     }
 };
 

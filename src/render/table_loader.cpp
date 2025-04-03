@@ -15,7 +15,7 @@ std::string getImagePath(const std::string& root, const std::string& imagePath, 
     }
     LOG_DEBUG("Falling back to default: " << defaultImagePath);
     if (!fs::exists(defaultImagePath)) {
-        LOG_DEBUG("Default image not found: " << defaultImagePath);
+        LOG_ERROR("Default image not found: " << defaultImagePath);
     }
     return defaultImagePath;
 }
@@ -33,7 +33,7 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
 std::vector<TableLoader> loadTableList(const Settings& settings) {
     std::vector<TableLoader> tables;
     if (settings.vpxTablesPath.empty() || !fs::exists(settings.vpxTablesPath)) {
-        LOG_DEBUG("Invalid or empty VPX tables path: " << settings.vpxTablesPath);
+        LOG_ERROR("Invalid or empty VPX tables path: " << settings.vpxTablesPath);
         return tables;
     }
     for (const auto& entry : fs::recursive_directory_iterator(settings.vpxTablesPath)) {

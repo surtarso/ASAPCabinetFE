@@ -3,19 +3,20 @@
 #include <iostream>
 
 bool runInitialConfig(IConfigService* configService, const std::string& configPath) {
+    LOG_INFO("Config Path: " << configPath);
     SDL_Window* configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                 800, 500, SDL_WINDOW_SHOWN);
     
         LOG_DEBUG("Running initial config with path: " << configPath);
         if (!configWindow) {
-            std::cerr << "Failed to create config window: " << SDL_GetError() << std::endl;
+            LOG_ERROR("Failed to create config window: " << SDL_GetError());
         return false;
     }
 
     SDL_Renderer* configRenderer = SDL_CreateRenderer(configWindow, -1, SDL_RENDERER_ACCELERATED);
     if (!configRenderer) {
-        std::cerr << "Failed to create config renderer: " << SDL_GetError() << std::endl;
+        LOG_ERROR("Failed to create config renderer: " << SDL_GetError());
         SDL_DestroyWindow(configWindow);
         return false;
     }
@@ -33,7 +34,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
             guiManager->processEvent(event);
             configEditor.handleEvent(event);
             if (event.type == SDL_QUIT) {
-                std::cerr << "Config window closed without saving. Exiting..." << std::endl;
+                LOG_ERROR("Config window closed without saving. Exiting...");
                 return false;
             }
         }
@@ -44,7 +45,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
 
         if (!showConfig && configService->isConfigValid()) break;
         else if (!showConfig) {
-            std::cerr << "Configuration invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath." << std::endl;
+            LOG_ERROR("Configuration invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath.");
             showConfig = true;
         }
     }
@@ -52,6 +53,6 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
     guiManager.reset();
     SDL_DestroyRenderer(configRenderer);
     SDL_DestroyWindow(configWindow);
-    LOG_DEBUG("Initial config completed");
+    LOG_INFO("Initial config completed");
     return true;
 }

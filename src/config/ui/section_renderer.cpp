@@ -22,7 +22,7 @@ SectionRenderer::SectionRenderer(IConfigService* configService, std::string& cur
         std::sort(availableFonts_.begin(), availableFonts_.end());
         LOG_DEBUG("Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
     } else {
-        LOG_DEBUG("Font directory " << fontDir << " not found!");
+        LOG_ERROR("Font directory " << fontDir << " not found!");
     }
 }
 
@@ -107,7 +107,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                             std::to_string(int(color[2] * 255)) + "," +
                             std::to_string(int(color[3] * 255));
                     hasChanges_ = true;
-                    LOG_DEBUG("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
+                    LOG_INFO("Color updated: " << currentSection_ << "." << keyCopy << " = " << value);
                     ImGui::EndPopup();
                 }
                 ImGui::PopStyleVar();
@@ -122,7 +122,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                         if (ImGui::Selectable(fontName.c_str(), isSelected)) {
                             value = availableFonts_[i];
                             preview = fontName;
-                            LOG_DEBUG("Font selected: " << currentSection_ << "." << keyCopy << " = " << value);
+                            LOG_INFO("Font selected: " << currentSection_ << "." << keyCopy << " = " << value);
                             hasChanges_ = true;
                         }
                         if (isSelected) {
@@ -161,7 +161,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                     if (ImGuiFileDialog::Instance()->IsOk()) {
                         value = ImGuiFileDialog::Instance()->GetCurrentPath();
                         strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
-                        LOG_DEBUG("Folder picked: " << currentSection_ << "." << keyCopy << " = " << value);
+                        LOG_INFO("Folder picked: " << currentSection_ << "." << keyCopy << " = " << value);
                         hasChanges_ = true;
                     }
                     ImGuiFileDialog::Instance()->Close();
@@ -171,7 +171,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                     if (ImGuiFileDialog::Instance()->IsOk()) {
                         value = ImGuiFileDialog::Instance()->GetFilePathName();
                         strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
-                        LOG_DEBUG("Executable picked: " << currentSection_ << "." << keyCopy << " = " << value);
+                        LOG_INFO("Executable picked: " << currentSection_ << "." << keyCopy << " = " << value);
                         hasChanges_ = true;
                     }
                     ImGuiFileDialog::Instance()->Close();
