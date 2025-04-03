@@ -16,7 +16,7 @@ video_daemon.sh
 compile.sh
 screenshot_daemon.cpp
 logs/
-
+.codebuddy
 
 # Prerequisites
 *.d

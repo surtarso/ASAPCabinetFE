@@ -1,5 +1,6 @@
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
+#include "utils/tooltips.h"
 #include <algorithm>
 #include <fstream>
 #include <ostream>
@@ -11,21 +12,21 @@ KeybindManager::KeybindManager() {
 }
 
 void KeybindManager::initializeDefaults() {
-    keybinds_["PreviousTable"] = {SDLK_LSHIFT, "Key to select the previous table in the list."};
-    keybinds_["NextTable"] = {SDLK_RSHIFT, "Key to select the next table in the list."};
-    keybinds_["FastPrevTable"] = {SDLK_LCTRL, "Key to quickly jump back 10 tables."};
-    keybinds_["FastNextTable"] = {SDLK_RCTRL, "Key to quickly jump forward 10 tables."};
-    keybinds_["JumpNextLetter"] = {SDLK_SLASH, "Key to jump to the next table starting with a different letter."};
-    keybinds_["JumpPrevLetter"] = {SDLK_z, "Key to jump to the previous table starting with a different letter."};
-    keybinds_["RandomTable"] = {SDLK_r, "Key to jump to a random table."};
-    keybinds_["LaunchTable"] = {SDLK_RETURN, "Key to launch the selected table."};
-    keybinds_["ToggleConfig"] = {SDLK_c, "Key to open or close the configuration menu."};
-    keybinds_["Quit"] = {SDLK_q, "Key to exit menus and application."};
-    keybinds_["ConfigSave"] = {SDLK_SPACE, "Key to save changes in the configuration menu."};
-    keybinds_["ConfigClose"] = {SDLK_q, "Key to close the configuration menu without saving."};
-    keybinds_["ScreenshotMode"] = {SDLK_s, "Key to launch a table in screenshot mode."};
-    keybinds_["ScreenshotKey"] = {SDLK_s, "Key to take a screenshot while in screenshot mode."};
-    keybinds_["ScreenshotQuit"] = {SDLK_q, "Key to quit screenshot mode."};
+    keybinds_["PreviousTable"] = {SDLK_LSHIFT};
+    keybinds_["NextTable"] = {SDLK_RSHIFT};
+    keybinds_["FastPrevTable"] = {SDLK_LCTRL};
+    keybinds_["FastNextTable"] = {SDLK_RCTRL};
+    keybinds_["JumpNextLetter"] = {SDLK_SLASH};
+    keybinds_["JumpPrevLetter"] = {SDLK_z};
+    keybinds_["RandomTable"] = {SDLK_r};
+    keybinds_["LaunchTable"] = {SDLK_RETURN};
+    keybinds_["ToggleConfig"] = {SDLK_c};
+    keybinds_["Quit"] = {SDLK_q};
+    keybinds_["ConfigSave"] = {SDLK_SPACE};
+    keybinds_["ConfigClose"] = {SDLK_q};
+    keybinds_["ScreenshotMode"] = {SDLK_s};
+    keybinds_["ScreenshotKey"] = {SDLK_s};
+    keybinds_["ScreenshotQuit"] = {SDLK_q};
 }
 
 // --- Keyboard Input Handling ---
@@ -98,11 +99,8 @@ std::vector<std::string> KeybindManager::getActions() const {
 }
 
 std::string KeybindManager::getTooltip(const std::string& action) const {
-    auto it = keybinds_.find(action);
-    if (it != keybinds_.end()) {
-        return it->second.tooltip;
-    }
-    return "";
+    const auto& tooltips = Tooltips::getTooltips();
+    return tooltips.count(action) ? tooltips.at(action) : "";
 }
 
 // --- Load and Save Keybinds ---
