@@ -65,6 +65,8 @@ void ConfigService::setDefaultSettings() {
     settings_.fontColor = {255, 255, 255, 255};
     settings_.fontBgColor = {0, 0, 0, 128};
     settings_.fontSize = 28;
+    settings_.showWheel = true;
+    settings_.showTitle = true;
     settings_.configToggleSound = "snd/config_toggle.mp3";
     settings_.scrollPrevSound = "snd/scroll_prev.mp3";
     settings_.scrollNextSound = "snd/scroll_next.mp3";
@@ -168,6 +170,13 @@ void ConfigService::parseIniFile() {
     std::string fontBgColorStr = config["TitleDisplay"]["FontBgColor"].empty() ? "0,0,0,128" : config["TitleDisplay"]["FontBgColor"];
     sscanf(fontBgColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings_.fontBgColor.r, &settings_.fontBgColor.g, &settings_.fontBgColor.b, &settings_.fontBgColor.a);
     settings_.fontSize = std::stoi(config["TitleDisplay"]["FontSize"].empty() ? "28" : config["TitleDisplay"]["FontSize"]);
+    
+    // Parse show/hide settings
+    settings_.showWheel = config["TitleDisplay"]["ShowWheel"].empty() ? true : 
+        (config["TitleDisplay"]["ShowWheel"] == "true");
+    settings_.showTitle = config["TitleDisplay"]["ShowTitle"].empty() ? true : 
+        (config["TitleDisplay"]["ShowTitle"] == "true");
+
     if (settings_.enableDpiScaling) {
         settings_.fontSize = static_cast<int>(settings_.fontSize * settings_.dpiScale);
     }
@@ -185,7 +194,7 @@ void ConfigService::parseIniFile() {
     settings_.configCloseSound = config["UISounds"]["ConfigCloseSound"].empty() ? settings_.configCloseSound : config["UISounds"]["ConfigCloseSound"];
     settings_.quitSound = config["UISounds"]["QuitSound"].empty() ? settings_.quitSound : config["UISounds"]["QuitSound"];
     settings_.screenshotTakeSound = config["UISounds"]["ScreenshotTakeSound"].empty() ? settings_.screenshotTakeSound : config["UISounds"]["ScreenshotTakeSound"];
-    settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuit Sound"].empty()? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
+    settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty()? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
     settings_.enableDpiScaling = config["DPISettings"]["EnableDpiScaling"].empty() ? true : 
         (config["DPISettings"]["EnableDpiScaling"] == "true");
     settings_.dpiScale = std::stof(config["DPISettings"]["DpiScale"].empty() ? "1.0" : config["DPISettings"]["DpiScale"]);

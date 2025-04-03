@@ -46,6 +46,8 @@ struct Settings {
     SDL_Color fontColor;
     SDL_Color fontBgColor;
     int fontSize;
+    bool showWheel;
+    bool showTitle;
 
     int secondWindowMonitor;
     int secondWindowWidth;

@@ -28,12 +28,15 @@ void Renderer::renderPrimaryWindow(AssetManager &assets) {
     } else if (assets.tableTexture) {
         SDL_RenderCopy(primaryRenderer_, assets.tableTexture.get(), nullptr, &tableRect);
     }
-    if (assets.wheelTexture) {
-        wheelRect.x = windowWidth - wheelRect.w - settings.wheelImageMargin; // Bottom-right
+    
+    // Only render wheel if enabled
+    if (settings.showWheel && assets.wheelTexture) {
+        wheelRect.x = windowWidth - wheelRect.w - settings.wheelImageMargin;
         wheelRect.y = windowHeight - wheelRect.h - settings.wheelImageMargin;
         SDL_RenderCopy(primaryRenderer_, assets.wheelTexture.get(), nullptr, &wheelRect);
     }
-    if (assets.tableNameTexture) {
+    // Only render title if enabled
+    if (settings.showTitle && assets.tableNameTexture) {
         nameRect.x = 10;
         nameRect.y = windowHeight - nameRect.h - 10;
         SDL_SetRenderDrawColor(primaryRenderer_,
