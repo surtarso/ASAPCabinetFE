@@ -46,7 +46,7 @@ App::App(const std::string& configPath)
 
 App::~App() {
     cleanup();
-    LOG_DEBUG("App destructor completed");
+    LOG_INFO("App destructor completed");
 }
 
 void App::run() {
@@ -74,7 +74,7 @@ void App::reloadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
     if (!font_) {
-        std::cerr << "Failed to reload font: " << TTF_GetError() << std::endl;
+        LOG_ERROR("Failed to reload font: " << TTF_GetError());
     } else {
         assets_->setFont(font_.get());
         const TableLoader& table = tables_[currentIndex_];
@@ -93,7 +93,7 @@ std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1) {
-        LOG_DEBUG("Warning: Couldn't determine executable path, using './'");
+        LOG_ERROR("Warning: Couldn't determine executable path, using './'");
         return "./";
     }
     path[count] = '\0';
@@ -110,14 +110,14 @@ void App::loadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
     if (!font_) {
-        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+        LOG_ERROR("Failed to load font: " << TTF_GetError());
     }
 }
 
 void App::loadTables() {
     tables_ = loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
-        std::cerr << "Edit config.ini, no .vpx files found in " << configManager_->getSettings().vpxTablesPath << std::endl;
+        LOG_ERROR("Edit config.ini, no .vpx files found in " << configManager_->getSettings().vpxTablesPath);
         exit(1);
     }
     LOG_DEBUG("Loaded " << tables_.size() << " tables");
@@ -127,9 +127,9 @@ void App::initializeDependencies() {
     configManager_ = DependencyFactory::createConfigService(configPath_);
     // Logger already initialized in constructor, no need to re-initialize here
     if (!isConfigValid()) {
-        LOG_DEBUG("Config invalid, running initial config");
+        LOG_INFO("Config invalid, running initial config");
         if (!runInitialConfig(configManager_.get(), configPath_)) {
-            std::cerr << "Initial config failed or was aborted. Exiting..." << std::endl;
+            LOG_ERROR("Initial config failed or was aborted. Exiting...");
             exit(1);
         }
         configManager_->loadConfig();
@@ -156,7 +156,7 @@ void App::initializeDependencies() {
 
     assets_->loadTableAssets(currentIndex_, tables_);
 
-    LOG_DEBUG("Initialization complete");
+    LOG_INFO("Initialization complete");
 }
 
 void App::handleEvents() {
@@ -207,5 +207,5 @@ void App::cleanup() {
         assets_->cleanupVideoPlayers();
         assets_.reset();
     }
-    LOG_DEBUG("Cleanup complete");
+    LOG_INFO("Cleanup complete");
 }

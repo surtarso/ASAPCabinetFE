@@ -17,7 +17,7 @@ GuiManager::~GuiManager() {
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext(context_);
-        LOG_DEBUG("GuiManager destroyed");
+        LOG_INFO("GuiManager destroyed");
     }
 }
 

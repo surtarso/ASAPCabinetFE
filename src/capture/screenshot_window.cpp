@@ -23,19 +23,19 @@ bool ScreenshotWindow::initialize(int width, int height) {
         SDL_WINDOWPOS_CENTERED_DISPLAY(settings.mainWindowMonitor),
         width, height, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
     if (!window_) {
-        LOG_DEBUG("SDL_CreateWindow Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateWindow Error: " << SDL_GetError());
         return false;
     }
 
     renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer_) {
-        LOG_DEBUG("SDL_CreateRenderer Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateRenderer Error: " << SDL_GetError());
         return false;
     }
 
     font_ = TTF_OpenFont(settings.fontPath.c_str(), 14);
     if (!font_) {
-        LOG_DEBUG("TTF_OpenFont Error: " << TTF_GetError());
+        LOG_ERROR("TTF_OpenFont Error: " << TTF_GetError());
         return false;
     }
 
@@ -47,13 +47,13 @@ bool ScreenshotWindow::initialize(int width, int height) {
     SDL_Color white = {255, 255, 255, 255};
     SDL_Surface* textSurface = TTF_RenderText_Solid(font_, buttonText_.c_str(), white);
     if (!textSurface) {
-        LOG_DEBUG("TTF_RenderText_Solid Error: " << TTF_GetError());
+        LOG_ERROR("TTF_RenderText_Solid Error: " << TTF_GetError());
         return false;
     }
     textTexture_ = SDL_CreateTextureFromSurface(renderer_, textSurface);
     SDL_FreeSurface(textSurface);
     if (!textTexture_) {
-        LOG_DEBUG("SDL_CreateTextureFromSurface Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateTextureFromSurface Error: " << SDL_GetError());
         return false;
     }
 
@@ -79,14 +79,14 @@ void ScreenshotWindow::raiseAndFocus() {
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
     for (int i = 0; i < 5; i++) {
         if (std::system(cmd.c_str()) == 0) {
-            LOG_DEBUG("Focus stolen to VPX Screenshot window after " << i << " attempts.");
+            LOG_INFO("Focus stolen to VPX Screenshot window after " << i << " attempts.");
             break;
         }
         LOG_DEBUG("Focus steal attempt " << i << " failed.");
         SDL_RaiseWindow(window_);
         usleep(1000000);
         if (i == 4) {
-            LOG_DEBUG("Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
+            LOG_INFO("Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
         }
     }
 }
@@ -108,5 +108,5 @@ void ScreenshotWindow::cleanup() {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
     }
-    LOG_DEBUG("ScreenshotWindow cleaned up.");
+    LOG_INFO("ScreenshotWindow cleaned up.");
 }

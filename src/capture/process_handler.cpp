@@ -14,7 +14,7 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
     std::string vpxLogFile = logDir + "vpx_launch.log";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
     if (std::system(mkdirCmd.c_str()) != 0) {
-        LOG_DEBUG("Warning: Failed to prepare log directory: " << logDir);
+        LOG_ERROR("Warning: Failed to prepare log directory: " << logDir);
     }
 
     std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
@@ -24,16 +24,16 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
 
     FILE* pipe = popen(command.c_str(), "r");
     if (!pipe) {
-        LOG_DEBUG("Error: Failed to launch VPX process.");
+        LOG_ERROR("Error: Failed to launch VPX process.");
         return false;
     }
 
     char buffer[128];
     if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
         vpxPid_ = std::stoi(buffer);
-        LOG_DEBUG("VPX process launched with PID: " << vpxPid_);
+        LOG_INFO("VPX process launched with PID: " << vpxPid_);
     } else {
-        LOG_DEBUG("Error: Failed to retrieve VPX PID.");
+        LOG_ERROR("Error: Failed to retrieve VPX PID.");
         pclose(pipe);
         return false;
     }
@@ -52,7 +52,7 @@ void ProcessHandler::terminateVPX() {
                 kill(vpxPid_, SIGKILL);
             }
         } else {
-            LOG_DEBUG("Warning: Failed to terminate VPX process with PID: " << vpxPid_);
+            LOG_ERROR("Warning: Failed to terminate VPX process with PID: " << vpxPid_);
         }
         vpxPid_ = -1;
     }

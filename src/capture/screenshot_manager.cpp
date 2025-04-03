@@ -21,25 +21,25 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
     if (!process_.launchVPX(vpxFile)) {
-        LOG_DEBUG("Failed to launch VPX, aborting screenshot mode.");
+        LOG_ERROR("Failed to launch VPX, aborting screenshot mode.");
         return;
     }
 
-    LOG_DEBUG("Waiting 4s for VPX to fully initialize");
+    LOG_INFO("Waiting 4s for VPX to fully initialize");
     sleep(4);
 
     if (!capture_.isWindowVisible("Visual Pinball Player")) {
-        LOG_DEBUG("Aborting screenshot mode - VPX window not found after 4s");
+        LOG_ERROR("Aborting screenshot mode - VPX window not found after 4s");
         process_.terminateVPX();
         return;
     }
-    LOG_DEBUG("VPX playfield window detected after 4s.");
+    LOG_INFO("VPX playfield window detected after 4s.");
 
     LOG_DEBUG("Waiting an additional 1s for VPX to settle");
     sleep(1);
 
     if (!window_.initialize(215, 35)) {
-        LOG_DEBUG("Failed to initialize screenshot window, aborting.");
+        LOG_ERROR("Failed to initialize screenshot window, aborting.");
         process_.terminateVPX();
         return;
     }
@@ -54,11 +54,11 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
             } else if (event.type == SDL_KEYDOWN) {
                 SDL_KeyboardEvent keyEvent = event.key;
                 if (keybindProvider_->isAction(keyEvent, "ScreenshotKey")) {
-                    LOG_DEBUG("Capture key pressed");
+                    LOG_INFO("Capture key pressed");
                     soundManager_->playSound("screenshot_take");
                     capture_.captureAllScreenshots(tableImage, backglassImage, dmdImage, window_.getWindow());
                 } else if (keybindProvider_->isAction(keyEvent, "ScreenshotQuit")) {
-                    LOG_DEBUG("Quit key pressed");
+                    LOG_INFO("Quit key pressed");
                     soundManager_->playSound("screenshot_quit");
                     isRunning_ = false;
                 }
@@ -66,7 +66,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 int x = event.button.x, y = event.button.y;
                 SDL_Rect button = {0, 0, 215, 35};
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
-                    LOG_DEBUG("Capturing screenshots via mouse click...");
+                    LOG_INFO("Capturing screenshots with mouse click...");
                     soundManager_->playSound("screenshot_take");
                     capture_.captureAllScreenshots(tableImage, backglassImage, dmdImage, window_.getWindow());
                 }
@@ -82,5 +82,5 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         LOG_DEBUG("Draining leftover event: type " << event.type);
     }
     isRunning_ = false;
-    LOG_DEBUG("Screenshot mode exited");
+    LOG_INFO("Screenshot mode exited");
 }

@@ -6,6 +6,12 @@
 #include <memory>
 #include "utils/logging.h"
 
+// ANSI color codes
+#define COLOR_RED     "\033[31m"  // For ERROR
+#define COLOR_GREEN   "\033[32m"  // For INFO
+#define COLOR_YELLOW  "\033[33m"  // For DEBUG
+#define COLOR_RESET   "\033[0m"
+
 Logger& Logger::getInstance() {
     static Logger instance;
     return instance;
@@ -21,6 +27,7 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
     logFile_.open(logFile, std::ios::out | std::ios::app);
     if (!logFile_.is_open()) {
         std::cerr << "Failed to open log file: " << logFile << std::endl;
+        return;
     }
     
     info("Logger initialized");
@@ -28,7 +35,7 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
 
 Logger::~Logger() {
     if (logFile_.is_open()) {
-        info("Logger shutting down");
+        debug("Logger shutting down");
         logFile_.close();
     }
 }
@@ -41,17 +48,32 @@ void Logger::log(const std::string& level, const std::string& message) {
     std::stringstream logMessage;
     logMessage << "[" << timestamp << "] " << level << ": " << message;
     
+    // Write to file (no color)
     if (logFile_.is_open()) {
         logFile_ << logMessage.str() << std::endl;
     }
     
+    // Write to console with color (if debugBuild_)
     if (debugBuild_) {
-        std::cout << logMessage.str() << std::endl;
+        std::string colorCode;
+        if (level == "ERROR") {
+            colorCode = COLOR_RED;
+        } else if (level == "INFO") {
+            colorCode = COLOR_GREEN;
+        } else if (level == "DEBUG") {
+            colorCode = COLOR_YELLOW;
+        } else {
+            colorCode = COLOR_RESET; // Default to no color change
+        }
+        
+        std::cout << colorCode << logMessage.str() << COLOR_RESET << std::endl;
     }
 }
 
 void Logger::debug(const std::string& message) {
-    log("DEBUG", message);
+    if (debugBuild_) { // Only log debug messages in debug builds
+        log("DEBUG", message);
+    }
 }
 
 void Logger::error(const std::string& message) {

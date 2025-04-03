@@ -7,15 +7,15 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     : exeDir_(exeDir), settings_(settings) {
     // Initialize SDL_mixer
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        LOG_DEBUG("Mix_OpenAudio failed: " << Mix_GetError());
+        LOG_ERROR("Mix_OpenAudio failed: " << Mix_GetError());
         throw std::runtime_error("Failed to initialize audio");
     }
     if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
-        LOG_DEBUG("Mix_Init failed: " << Mix_GetError());
+        LOG_ERROR("Mix_Init failed: " << Mix_GetError());
         Mix_CloseAudio();
         throw std::runtime_error("Failed to initialize MP3 support");
     }
-    LOG_DEBUG("SDL_mixer initialized in SoundManager");
+    LOG_INFO("SDL_mixer initialized in SoundManager");
 
     // Prepopulate sounds map
     sounds_.emplace("config_toggle", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
@@ -39,7 +39,7 @@ SoundManager::~SoundManager() {
     sounds_.clear();  // unique_ptr handles Mix_FreeMusic
     Mix_CloseAudio();
     Mix_Quit();
-    LOG_DEBUG("SoundManager destroyed");
+    LOG_INFO("SoundManager destroyed");
 }
 
 void SoundManager::loadSounds() {
@@ -49,7 +49,7 @@ void SoundManager::loadSounds() {
         if (sounds_.find(key) != sounds_.end()) {
             sounds_.at(key).reset(Mix_LoadMUS(fullPath.c_str()));
             if (!sounds_.at(key)) {
-                std::cerr << "Mix_LoadMUS Error for " << key << " at " << fullPath << ": " << Mix_GetError() << std::endl;
+                LOG_ERROR("Mix_LoadMUS Error for " << key << " at " << fullPath << ": " << Mix_GetError());
             } else {
                 LOG_DEBUG("Sound '" << key << "' loaded successfully");
             }
@@ -78,7 +78,7 @@ void SoundManager::playSound(const std::string& key) {
         LOG_DEBUG("Playing sound: " << key);
         Mix_PlayMusic(sounds_.at(key).get(), 1);  // Play once
     } else {
-        LOG_DEBUG("Sound '" << key << "' not found or not loaded");
+        LOG_ERROR("Sound '" << key << "' not found or not loaded");
     }
 }
 

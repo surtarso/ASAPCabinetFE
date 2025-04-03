@@ -45,7 +45,7 @@ void KeybindManager::setKey(const std::string& action, SDL_Keycode key) {
         it->second.input = key;
         LOG_DEBUG("Set key for " << action << " to " << SDL_GetKeyName(key));
     } else {
-        LOG_DEBUG("Cannot set key: Action not found: " << action);
+        LOG_ERROR("Cannot set key: Action not found: " << action);
     }
 }
 
@@ -56,7 +56,7 @@ void KeybindManager::setJoystickButton(const std::string& action, int joystickId
         it->second.input = JoystickInput{joystickId, button};
         LOG_DEBUG("Set joystick button for " << action << " to JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button));
     } else {
-        LOG_DEBUG("Cannot set joystick button: Action not found: " << action);
+        LOG_ERROR("Cannot set joystick button: Action not found: " << action);
     }
 }
 
@@ -74,7 +74,7 @@ void KeybindManager::setJoystickHat(const std::string& action, int joystickId, u
         }
         LOG_DEBUG("Set joystick hat for " << action << " to JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_" << directionStr);
     } else {
-        LOG_DEBUG("Cannot set joystick hat: Action not found: " << action);
+        LOG_ERROR("Cannot set joystick hat: Action not found: " << action);
     }
 }
 
@@ -84,7 +84,7 @@ void KeybindManager::setJoystickAxis(const std::string& action, int joystickId, 
         it->second.input = JoystickAxisInput{joystickId, axis, positiveDirection};
         LOG_DEBUG("Set joystick axis for " << action << " to JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_" << (positiveDirection ? "POSITIVE" : "NEGATIVE"));
     } else {
-        LOG_DEBUG("Cannot set joystick axis: Action not found: " << action);
+        LOG_ERROR("Cannot set joystick axis: Action not found: " << action);
     }
 }
 
@@ -120,7 +120,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                         it->second.input = JoystickInput{joystickId, button};
                         LOG_DEBUG("Loaded joystick keybind " << key << " = " << value);
                     } catch (...) {
-                        LOG_DEBUG("Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
+                        LOG_ERROR("Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
                     }
                 }
                 // Check if the value is a joystick hat (e.g., "JOY_0_HAT_0_LEFT")
@@ -142,7 +142,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                             it->second.input = JoystickHatInput{joystickId, hat, direction};
                             LOG_DEBUG("Loaded joystick hat keybind " << key << " = " << value);
                         } catch (...) {
-                            LOG_DEBUG("Invalid joystick hat keybind format for " << key << ": " << value << ", keeping default");
+                            LOG_ERROR("Invalid joystick hat keybind format for " << key << ": " << value << ", keeping default");
                         }
                     }
                 }
@@ -161,7 +161,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                             it->second.input = JoystickAxisInput{joystickId, axis, positiveDirection};
                             LOG_DEBUG("Loaded joystick axis keybind " << key << " = " << value);
                         } catch (...) {
-                            LOG_DEBUG("Invalid joystick axis keybind format for " << key << ": " << value << ", keeping default");
+                            LOG_ERROR("Invalid joystick axis keybind format for " << key << ": " << value << ", keeping default");
                         }
                     }
                 }
@@ -172,7 +172,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                     it->second.input = keyCode;
                     LOG_DEBUG("Loaded keybind " << key << " = " << value << " (keycode: " << keyCode << ")");
                 } else {
-                    LOG_DEBUG("Invalid key name for " << key << ": " << value << ", keeping default");
+                    LOG_ERROR("Invalid key name for " << key << ": " << value << ", keeping default");
                 }
             }
         }

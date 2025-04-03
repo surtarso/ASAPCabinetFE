@@ -91,7 +91,7 @@ void ConfigService::setDefaultSettings() {
 void ConfigService::parseIniFile() {
     std::ifstream file(configPath_);
     if (!file.is_open()) {
-        LOG_DEBUG("Could not open " << configPath_ << ". Using defaults.");
+        LOG_INFO("Could not open " << configPath_ << ". Using defaults.");
         setDefaultSettings();
         return;
     }
@@ -207,7 +207,7 @@ void ConfigService::parseIniFile() {
 void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& iniData) {
     std::ofstream file(configPath_);
     if (!file.is_open()) {
-        LOG_DEBUG("Could not write " << configPath_);
+        LOG_ERROR("Could not write " << configPath_);
         return;
     }
 

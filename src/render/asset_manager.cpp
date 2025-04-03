@@ -144,7 +144,7 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 #else
     redirected = freopen("/dev/null", "w", stderr);
     if (!redirected) {
-        LOG_DEBUG("Failed to redirect stderr to /dev/null for texture load: " << path);
+        LOG_ERROR("Failed to redirect stderr to /dev/null for texture load: " << path);
     }
 #endif
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
@@ -157,11 +157,11 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 #else
     restored = freopen("/dev/tty", "w", stderr);
     if (!restored) {
-        LOG_DEBUG("Failed to restore stderr from /dev/null after loading texture: " << path);
+        LOG_ERROR("Failed to restore stderr from /dev/null after loading texture: " << path);
     }
 #endif
     if (!tex) {
-        LOG_DEBUG("Failed to load texture " << path << ": " << IMG_GetError());
+        LOG_ERROR("Failed to load texture " << path << ": " << IMG_GetError());
     } else {
         LOG_DEBUG("Successfully loaded texture: " << path);
     }
@@ -172,12 +172,12 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect) {
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     if (!surf) {
-        LOG_DEBUG("TTF_RenderUTF8_Blended error: " << TTF_GetError());
+        LOG_ERROR("TTF_RenderUTF8_Blended error: " << TTF_GetError());
         return nullptr;
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
     if (!texture) {
-        LOG_DEBUG("SDL_CreateTextureFromSurface error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateTextureFromSurface error: " << SDL_GetError());
     } else {
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         textRect.w = surf->w;
