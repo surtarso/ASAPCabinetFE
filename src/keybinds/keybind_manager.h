@@ -2,6 +2,7 @@
 #define KEYBIND_MANAGER_H
 
 #include "keybinds/ikeybind_provider.h"
+#include "utils/tooltips.h"
 #include <map>
 #include <string>
 #include <variant>
@@ -50,7 +51,6 @@ private:
 
     struct Keybind {
         std::variant<SDL_Keycode, JoystickInput, JoystickHatInput, JoystickAxisInput> input;
-        std::string tooltip;
     };
 
     std::map<std::string, Keybind> keybinds_;
