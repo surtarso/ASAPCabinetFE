@@ -1,14 +1,17 @@
 TODO
-- create a make install target
+
 - add pup windows to capture
 - incorporate generate_media.sh?
 
 UI:
-- add table info from vpx (vpxtool?)
+- add table info from vpx file (vpxtool?)
 - add blinking arrows on sides to indicate table flow/keys
+- title margin
+- free title/wheel positions to config
 
 On hold:
 - create default videos
+- create a make install target
 
 Later:
 - adapt to be crossplatform
