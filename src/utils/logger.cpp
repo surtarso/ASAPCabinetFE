@@ -35,7 +35,7 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
 
 Logger::~Logger() {
     if (logFile_.is_open()) {
-        debug("Logger shutting down");
+        info("Logger shutting down");
         logFile_.close();
     }
 }
