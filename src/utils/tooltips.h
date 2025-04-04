@@ -223,6 +223,7 @@ namespace Tooltips {
             {"SubCmd",
                 "VPinballX internal command to play .vpx tables.\n"
                 "Use VPinballX --help command line menu to see more."},
+            {"LogFile", "Path to the debug log file, relative to exec dir."},
 
             // UI Sounds
             {"ScrollPrevSound", "Sound played when scrolling to previous table."},
