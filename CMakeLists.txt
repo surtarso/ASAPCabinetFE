@@ -31,6 +31,7 @@ set(SOURCES
     src/config/ui/config_ui.cpp
     src/config/ui/input_handler.cpp
     src/config/ui/section_renderer.cpp
+    src/config/ui/ui_element_renderer.cpp
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/render/asset_manager.cpp
