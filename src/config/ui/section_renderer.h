@@ -3,9 +3,11 @@
 
 #include "config/iconfig_service.h"
 #include "config/ui/input_handler.h"
+#include "imgui.h"
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 
 class SectionRenderer {
 public:
@@ -19,10 +21,14 @@ private:
     InputHandler& inputHandler_;
     std::vector<std::string> availableFonts_;
     bool hasChanges_ = false;
-    bool showPicker_ = false;
-    std::string currentKey_;
-    std::string currentSectionForPicker_;
+
+    // Dispatcher table for key-specific rendering
+    std::map<std::string, std::function<void(const std::string&, std::string&, SettingsSection&)>> keyRenderers_;
+
     void renderTooltip(const std::string& key);
+    void initializeFontList();
+    void initializeKeyRenderers();
+    void renderKeyValue(const std::string& key, std::string& value, SettingsSection& section);
 };
 
 #endif // SECTION_RENDERER_H
