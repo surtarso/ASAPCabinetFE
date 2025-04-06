@@ -11,7 +11,7 @@
 ## TL:DR
 ```sh
 sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
-git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
+git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
