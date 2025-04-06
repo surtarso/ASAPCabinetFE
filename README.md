@@ -53,7 +53,7 @@ sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libs
 
 Clone the Repository
 ```sh
-git clone --recurse-submodules https://github.com/surtarso/ASAPCabinetFE.git
+git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git
 cd ASAPCabinetFE
 ```
 
