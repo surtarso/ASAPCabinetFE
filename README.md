@@ -75,13 +75,14 @@ make -j$(nproc)
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
 | Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.          |
 | Scroll by Letter   | z and /          | Scroll tables alphabetically (prev/next). |
+| Scroll Random      | r                | Move to a random table.                   |
 | Launch Table       | Enter            | Launch the selected table with VPinballX  |
 | Quit               | ESC or q         | Exit the table config/application.        |
-| Config             | c                | Toggle config panel                       |
-| Save config        | Spacebar         | Saves configuration to config.ini         |
-| Launch in SS mode  | s                | Open the selected table in ss mode.       |
-| Take Screenshot    | s                | Takes a SS while in SS mode               |
-| Quit SS mode       | q                | Quit SS mode and return to launcher       |
+| Config             | c                | Toggle config panel.                      |
+| Save config        | Spacebar         | Saves configuration to config.ini.        |
+| Launch SShot mode  | s                | Open the table in screenshot mode.        |
+| Take Screenshot    | s                | Takes a shot while in Screenshot mode.    |
+| Quit SShot mode    | q                | Quit SShot mode and return to launcher.   |
 
 ## Generator Tools
 > [!WARNING]
