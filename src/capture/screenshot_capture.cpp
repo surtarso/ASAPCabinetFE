@@ -1,9 +1,9 @@
 #include "capture/screenshot_capture.h"
 #include "utils/logging.h"
-#include <SDL2/SDL.h>      // Added for SDL_Window and SDL_RaiseWindow
-#include <sstream>         // Added for std::ostringstream
+#include <SDL2/SDL.h>      // for SDL_Window and SDL_RaiseWindow
+#include <sstream>         // for std::ostringstream
 #include <thread>
-#include <unistd.h>        // Already included, kept for clarity
+#include <unistd.h>
 #include <sys/stat.h>
 
 ScreenshotCapture::ScreenshotCapture(const std::string& exeDir) : exeDir_(exeDir) {}
