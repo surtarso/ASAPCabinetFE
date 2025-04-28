@@ -77,7 +77,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     }
 
     process_.terminateVPX();
-    window_.cleanup();  // Added: Clean up the window explicitly
+    window_.cleanup();  // Clean up the window explicitly
     while (SDL_PollEvent(&event)) {
         LOG_DEBUG("Draining leftover event: type " << event.type);
     }
