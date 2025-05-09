@@ -109,9 +109,6 @@ Start the table with 's' instead of 'enter´. Once inside the game, use 's' for 
 - **Runtime Errors**:
   - Check that `config.ini` exists and is readable/writable.
   - Install missing runtime libraries (e.g., `sudo apt-get install libsdl2-2.0-0`).
-- **Other Platforms**:
-  - *Windows*: Use MinGW/MSYS2 with equivalent libraries.
-  - *macOS*: Use Homebrew (e.g., `brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer libvlc glew`).
 
 ## Contribute
 Contributions are very welcome! Open issues or pull requests to help improve this app.
