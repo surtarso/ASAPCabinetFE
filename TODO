@@ -2,6 +2,7 @@ TODO
 
 - add pup windows to capture
 - incorporate generate_media.sh?
+- use json instead of memory
 
 UI:
 - add table info from vpx file (vpxtool?)
