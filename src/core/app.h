@@ -30,7 +30,6 @@ public:
 private:
     std::string exeDir_;
     std::string configPath_;
-    bool quit_ = false;
     bool showConfig_ = false;
     size_t currentIndex_ = 0;
 
