@@ -1,14 +1,18 @@
 TODO
 
-- add pup windows to capture
+- add pup windows to screenshot capture
 - incorporate generate_media.sh?
-- use json instead of memory
+- use json instead of memory for file info
+- create an optional third window (for separate dmd)
+- configurable window positions
 
 UI:
 - add table info from vpx file (vpxtool?)
 - add blinking arrows on sides to indicate table flow/keys
-- title margin
+- configurable title margin
 - free title/wheel positions to config
+- some sort of table count/display scrollbar thingymabob
+- (optional) really quit? dialog
 
 On hold:
 - create default videos
