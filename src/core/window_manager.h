@@ -11,16 +11,16 @@ public:
     explicit WindowManager(const Settings& settings);
     ~WindowManager() = default;
 
-    SDL_Window* getPrimaryWindow() override { return primaryWindow_.get(); }
-    SDL_Window* getSecondaryWindow() override { return secondaryWindow_.get(); }
-    SDL_Renderer* getPrimaryRenderer() override { return primaryRenderer_.get(); }
-    SDL_Renderer* getSecondaryRenderer() override { return secondaryRenderer_.get(); }
+    SDL_Window* getPlayfieldWindow() override { return playfieldWindow_.get(); }
+    SDL_Window* getBackglassWindow() override { return backglassWindow_.get(); }
+    SDL_Renderer* getPlayfieldRenderer() override { return playfieldRenderer_.get(); }
+    SDL_Renderer* getBackglassRenderer() override { return backglassRenderer_.get(); }
 
 private:
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> primaryWindow_;
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> secondaryWindow_;
-    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> primaryRenderer_;
-    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> secondaryRenderer_;
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> playfieldWindow_;
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> backglassWindow_;
+    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> playfieldRenderer_;
+    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> backglassRenderer_;
 };
 
 #endif // WINDOW_MANAGER_H

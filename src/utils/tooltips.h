@@ -113,22 +113,22 @@ namespace Tooltips {
                 "1.0 = 100%, 1.5 = 150%, etc."},
 
             // WindowSettings
-            {"MainMonitor",
+            {"PlayfieldMonitor",
                 "Index of the monitor for the table playfield window.\n"
                 "You can use 'xrandr' to get yours."},
-            {"MainWidth",
+            {"PlayfieldWidth",
                 "Width of the main window in pixels.\n"
                 "This should be relative to your playfield media width."},
-            {"MainHeight",
+            {"PlayfieldHeight",
                 "Height of the main window in pixels.\n"
                 "This should be relative to your playfield media height."},
-            {"SecondMonitor",
+            {"BackglassMonitor",
                 "Index of the monitor for the backglass/DMD window.\n"
                 "You can use 'xrandr' to get yours."},
-            {"SecondWidth",
+            {"BackglassWidth",
                 "Width of the secondary window in pixels.\n"
                 "This should be relative to your backglass + DMD media width."},
-            {"SecondHeight",
+            {"BackglassHeight",
                 "Height of the secondary window in pixels.\n"
                 "This should be relative to your backglass + DMD media height."},
 

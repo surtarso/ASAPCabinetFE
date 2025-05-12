@@ -37,8 +37,8 @@ void GuiManager::initialize() {
     }
 
     if (windowManager_) {
-        ImGui_ImplSDL2_InitForSDLRenderer(windowManager_->getPrimaryWindow(), windowManager_->getPrimaryRenderer());
-        ImGui_ImplSDLRenderer2_Init(windowManager_->getPrimaryRenderer());
+        ImGui_ImplSDL2_InitForSDLRenderer(windowManager_->getPlayfieldWindow(), windowManager_->getPlayfieldRenderer());
+        ImGui_ImplSDLRenderer2_Init(windowManager_->getPlayfieldRenderer());
     } else {
         ImGui_ImplSDL2_InitForSDLRenderer(configWindow_, configRenderer_);
         ImGui_ImplSDLRenderer2_Init(configRenderer_);

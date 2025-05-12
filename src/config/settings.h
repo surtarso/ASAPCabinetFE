@@ -35,9 +35,9 @@ struct Settings {
     std::string customDmdVideo;
 
     // Window settings
-    int mainWindowMonitor;
-    int mainWindowWidth;
-    int mainWindowHeight;
+    int playfieldWindowMonitor;
+    int playfieldWindowWidth;
+    int playfieldWindowHeight;
     int wheelImageSize;
     int wheelImageMargin;
 
@@ -49,9 +49,9 @@ struct Settings {
     bool showWheel;
     bool showTitle;
 
-    int secondWindowMonitor;
-    int secondWindowWidth;
-    int secondWindowHeight;
+    int backglassWindowMonitor;
+    int backglassWindowWidth;
+    int backglassWindowHeight;
     int backglassMediaWidth;
     int backglassMediaHeight;
     int dmdMediaWidth;

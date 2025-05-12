@@ -6,15 +6,15 @@
 
 class Renderer : public IRenderer { // Implement IRenderer
 public:
-    Renderer(SDL_Renderer* primaryRenderer, SDL_Renderer* secondaryRenderer);
+    Renderer(SDL_Renderer* playfieldRenderer, SDL_Renderer* backglassRenderer);
     void render(AssetManager& assets) override; // Simplified signature
 
 private:
-    SDL_Renderer* primaryRenderer_;
-    SDL_Renderer* secondaryRenderer_;
+    SDL_Renderer* playfieldRenderer_;
+    SDL_Renderer* backglassRenderer_;
 
-    void renderPrimaryWindow(AssetManager& assets);
-    void renderSecondaryWindow(AssetManager& assets);
+    void renderPlayfieldWindow(AssetManager& assets);
+    void renderBackglassWindow(AssetManager& assets);
 };
 
 #endif // RENDERER_H

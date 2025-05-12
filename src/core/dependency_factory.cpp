@@ -15,13 +15,13 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
 }
 
 std::unique_ptr<AssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font) {
-    return std::make_unique<AssetManager>(windowManager->getPrimaryRenderer(), 
-                                          windowManager->getSecondaryRenderer(), font);
+    return std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
+                                          windowManager->getBackglassRenderer(), font);
 }
 
 std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {
-    return std::make_unique<Renderer>(windowManager->getPrimaryRenderer(), 
-                                      windowManager->getSecondaryRenderer());
+    return std::make_unique<Renderer>(windowManager->getPlayfieldRenderer(), 
+                                      windowManager->getBackglassRenderer());
 }
 
 std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {

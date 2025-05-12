@@ -37,22 +37,22 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["FontSize"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
     };
-    keyRenderers_["MainMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["PlayfieldMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderMonitorCombo(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["SecondMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["BackglassMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderMonitorCombo(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["MainWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["SecondWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["MainHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["PlayfieldHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["SecondHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+    keyRenderers_["BackglassHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
 }
