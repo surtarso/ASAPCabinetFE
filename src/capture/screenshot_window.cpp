@@ -19,8 +19,8 @@ ScreenshotWindow::~ScreenshotWindow() {
 bool ScreenshotWindow::initialize(int width, int height) {
     const Settings& settings = configManager_->getSettings();
     window_ = SDL_CreateWindow("VPX Screenshot",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(settings.mainWindowMonitor),
-        SDL_WINDOWPOS_CENTERED_DISPLAY(settings.mainWindowMonitor),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(settings.playfieldWindowMonitor),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(settings.playfieldWindowMonitor),
         width, height, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
     if (!window_) {
         LOG_ERROR("SDL_CreateWindow Error: " << SDL_GetError());

@@ -79,7 +79,7 @@ void App::reloadFont() {
         assets_->setFont(font_.get());
         const TableLoader& table = tables_[currentIndex_];
         assets_->tableNameTexture.reset(assets_->renderText(
-            assets_->getPrimaryRenderer(), font_.get(), table.tableName,
+            assets_->getPlayfieldRenderer(), font_.get(), table.tableName,
             settings.fontColor, assets_->tableNameRect));
         int texWidth = 0;
         if (assets_->tableNameTexture) {
@@ -184,20 +184,20 @@ void App::update() {
 
 void App::render() {
     if (renderer_ && assets_) {
-        SDL_SetRenderDrawColor(windowManager_->getPrimaryRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(windowManager_->getPrimaryRenderer());
-        SDL_SetRenderDrawColor(windowManager_->getSecondaryRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(windowManager_->getSecondaryRenderer());
+        SDL_SetRenderDrawColor(windowManager_->getPlayfieldRenderer(), 0, 0, 0, 255);
+        SDL_RenderClear(windowManager_->getPlayfieldRenderer());
+        SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
+        SDL_RenderClear(windowManager_->getBackglassRenderer());
 
         guiManager_->newFrame();
         renderer_->render(*assets_);
         if (showConfig_) {
             configEditor_->drawGUI();
         }
-        guiManager_->render(windowManager_->getPrimaryRenderer());
+        guiManager_->render(windowManager_->getPlayfieldRenderer());
 
-        SDL_RenderPresent(windowManager_->getPrimaryRenderer());
-        SDL_RenderPresent(windowManager_->getSecondaryRenderer());
+        SDL_RenderPresent(windowManager_->getPlayfieldRenderer());
+        SDL_RenderPresent(windowManager_->getBackglassRenderer());
     }
 }
 

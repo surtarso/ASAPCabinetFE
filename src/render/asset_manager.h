@@ -46,8 +46,8 @@ public:
     VideoContext* dmdVideoPlayer;
 
     // Getters for renderers and video players
-    SDL_Renderer* getPrimaryRenderer() { return primaryRenderer; }
-    SDL_Renderer* getSecondaryRenderer() { return secondaryRenderer; }
+    SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
+    SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     VideoContext* getTableVideoPlayer() { return tableVideoPlayer; }
     VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
     VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
@@ -62,8 +62,8 @@ public:
     void cleanupVideoPlayers();
 
 private:
-    SDL_Renderer* primaryRenderer;      // Main window renderer
-    SDL_Renderer* secondaryRenderer;    // Backglass/DMD renderer
+    SDL_Renderer* playfieldRenderer;      // Main window renderer
+    SDL_Renderer* backglassRenderer;    // Backglass/DMD renderer
     TTF_Font* font;                     // Font for text rendering
     IConfigService* configManager_;     // Pointer to config service for settings
     std::vector<VideoContext*> oldVideoPlayers_;  // Queue of old video players to clean
