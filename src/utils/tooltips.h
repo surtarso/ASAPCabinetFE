@@ -160,11 +160,14 @@ namespace Tooltips {
                 "Set to true to show titles, false to hide them."},
 
             // MediaDimensions
-            {"WheelMediaSize",
-                "Size of the wheel image in pixels.\n"
-                "This considers a square image."},
-            {"WheelMediaMargin",
-                "Margin around the wheel image in pixels."},
+            {"WheelMediaHeight",
+                "Height of the wheel image in pixels."},
+            {"WheelMediaWidth",
+                "Width of the wheel image in pixels."},
+            {"WheelMediaX",
+                "X position of the wheel image."},
+            {"WheelMediaY",
+                "Y position of the wheel image."},
 
             {"PlayfieldMediaWidth",
                 "Width of the playfield media in pixels."},
