@@ -187,7 +187,7 @@ void renderResolution(const std::string& key, std::string& value, bool& hasChang
         LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
     }
     ImGui::SameLine();
-    const char* commonRes[] = {"600", "720", "768", "800", "900", "1024", "1080", "1200", "1280", "1366", "1440", "1600", "1920", "2160", "2560", "3840"};
+    const char* commonRes[] = {"128", "256", "512", "600", "720", "768", "800", "900", "1024", "1080", "1200", "1280", "1366", "1440", "1600", "1920", "2160", "2560", "3840"};
     int currentIndex = -1;
     for (int i = 0; i < IM_ARRAYSIZE(commonRes); ++i) {
         if (value == commonRes[i]) {
