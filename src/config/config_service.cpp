@@ -66,6 +66,11 @@ void ConfigService::setDefaultSettings() {
     settings_.wheelMediaSize = 300;
     settings_.wheelMediaMargin = 24;
 
+    settings_.playfieldMediaWidth = 1080;
+    settings_.playfieldMediaHeight = 1920;
+    settings_.playfieldMediaX = 0;
+    settings_.playfieldMediaY = 0;
+
     settings_.backglassMediaWidth = 1024;
     settings_.backglassMediaHeight = 768;
     settings_.backglassMediaX = 0;
@@ -185,6 +190,12 @@ void ConfigService::parseIniFile() {
     // media size/pos
     settings_.wheelMediaSize = std::stoi(config["MediaDimensions"]["WheelMediaSize"].empty() ? "300" : config["MediaDimensions"]["WheelMediaSize"]);
     settings_.wheelMediaMargin = std::stoi(config["MediaDimensions"]["WheelMediaMargin"].empty() ? "24" : config["MediaDimensions"]["WheelMediaMargin"]);
+    
+    settings_.playfieldMediaWidth = std::stoi(config["MediaDimensions"]["PlayfieldMediaWidth"].empty() ? "1080" : config["MediaDimensions"]["PlayfieldMediaWidth"]);
+    settings_.playfieldMediaHeight = std::stoi(config["MediaDimensions"]["PlayfieldMediaHeight"].empty() ? "1920" : config["MediaDimensions"]["PlayfieldMediaHeight"]);
+    settings_.playfieldMediaX = std::stoi(config["MediaDimensions"]["PlayfieldMediaX"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaX"]);
+    settings_.playfieldMediaY = std::stoi(config["MediaDimensions"]["PlayfieldMediaY"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaY"]);
+
     settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassMediaWidth"]);
     settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassMediaHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassMediaHeight"]);
     settings_.backglassMediaX = std::stoi(config["MediaDimensions"]["BackglassMediaX"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaX"]);
