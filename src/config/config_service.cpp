@@ -63,12 +63,18 @@ void ConfigService::setDefaultSettings() {
     settings_.dmdWindowWidth = 1024;
     settings_.dmdWindowHeight = 256;
 
-    settings_.wheelImageSize = 300;
-    settings_.wheelImageMargin = 24;
+    settings_.wheelMediaSize = 300;
+    settings_.wheelMediaMargin = 24;
+
     settings_.backglassMediaWidth = 1024;
     settings_.backglassMediaHeight = 768;
+    settings_.backglassMediaX = 0;
+    settings_.backglassMediaY = 0;
+
     settings_.dmdMediaWidth = 1024;
     settings_.dmdMediaHeight = 256;
+    settings_.dmdMediaX = 0;
+    settings_.dmdMediaY = 0;
 
     settings_.fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     settings_.fontColor = {255, 255, 255, 255};
@@ -176,13 +182,20 @@ void ConfigService::parseIniFile() {
     settings_.dmdWindowMonitor = std::stoi(config["WindowSettings"]["DMDMonitor"].empty() ? "0" : config["WindowSettings"]["DMDMonitor"]);
     settings_.dmdWindowWidth = std::stoi(config["WindowSettings"]["DMDWidth"].empty() ? "1024" : config["WindowSettings"]["DMDWidth"]);
     settings_.dmdWindowHeight = std::stoi(config["WindowSettings"]["DMDHeight"].empty() ? "256" : config["WindowSettings"]["DMDHeight"]);
-    // title and media
-    settings_.wheelImageSize = std::stoi(config["MediaDimensions"]["WheelMediaSize"].empty() ? "300" : config["MediaDimensions"]["WheelMediaSize"]);
-    settings_.wheelImageMargin = std::stoi(config["MediaDimensions"]["WheelMediaMargin"].empty() ? "24" : config["MediaDimensions"]["WheelMediaMargin"]);
+    // media size/pos
+    settings_.wheelMediaSize = std::stoi(config["MediaDimensions"]["WheelMediaSize"].empty() ? "300" : config["MediaDimensions"]["WheelMediaSize"]);
+    settings_.wheelMediaMargin = std::stoi(config["MediaDimensions"]["WheelMediaMargin"].empty() ? "24" : config["MediaDimensions"]["WheelMediaMargin"]);
     settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassMediaWidth"]);
     settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassMediaHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassMediaHeight"]);
+    settings_.backglassMediaX = std::stoi(config["MediaDimensions"]["BackglassMediaX"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaX"]);
+    settings_.backglassMediaY = std::stoi(config["MediaDimensions"]["BackglassMediaY"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaY"]);
+
     settings_.dmdMediaWidth = std::stoi(config["MediaDimensions"]["DMDMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["DMDMediaWidth"]);
     settings_.dmdMediaHeight = std::stoi(config["MediaDimensions"]["DMDMediaHeight"].empty() ? "256" : config["MediaDimensions"]["DMDMediaHeight"]);
+    settings_.dmdMediaX = std::stoi(config["MediaDimensions"]["DMDMediaX"].empty() ? "0" : config["MediaDimensions"]["DMDMediaX"]);
+    settings_.dmdMediaY = std::stoi(config["MediaDimensions"]["DMDMediaY"].empty() ? "0" : config["MediaDimensions"]["DMDMediaY"]);
+
+    // font
     settings_.fontPath = config["TitleDisplay"]["FontPath"].empty() ? settings_.fontPath : config["TitleDisplay"]["FontPath"];
     std::string fontColorStr = config["TitleDisplay"]["FontColor"].empty() ? "255,255,255,255" : config["TitleDisplay"]["FontColor"];
     sscanf(fontColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings_.fontColor.r, &settings_.fontColor.g, &settings_.fontColor.b, &settings_.fontColor.a);

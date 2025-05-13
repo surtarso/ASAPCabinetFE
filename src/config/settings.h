@@ -55,15 +55,19 @@ struct Settings {
     bool showWheel;
     bool showTitle;
 
-    // media sizes
-    int wheelImageSize;
-    int wheelImageMargin;
+    // media sizes/positions
+    int wheelMediaSize;
+    int wheelMediaMargin;
     
     int backglassMediaWidth;
     int backglassMediaHeight;
+    int backglassMediaX;
+    int backglassMediaY;
     
     int dmdMediaWidth;
     int dmdMediaHeight;
+    int dmdMediaX;
+    int dmdMediaY;
 
     // sound settings
     std::string configToggleSound;

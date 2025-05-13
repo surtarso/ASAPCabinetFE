@@ -2,7 +2,6 @@ TODO
 
 - use json instead of memory for file info
 - configurable window positions
-- configurable media aligment within windows (center, left etc)
 - configurable title margin
 - free title/wheel positions to config
 - live update of window position/monitor index

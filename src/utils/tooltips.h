@@ -167,11 +167,19 @@ namespace Tooltips {
                 "Width of the backglass media in pixels."},
             {"BackglassMediaHeight",
                 "Height of the backglass media in pixels."},
+            {"BackglassMediaX",
+                "X position of the backglass media."},
+            {"BackglassMediaY",
+                "Y position of the backglass media."},
             {"DMDMediaWidth",
                 "Width of the DMD media in pixels."},
             {"DMDMediaHeight",
                 "Height of the DMD media in pixels.\n"
                 "This should match your DMD window height."},
+            {"DMDMediaX",
+                "X position of the DMD media."},
+            {"DMDMediaY",
+                "Y position of the DMD media."},
 
             // Default Media
             {"DefaultTableImage",
