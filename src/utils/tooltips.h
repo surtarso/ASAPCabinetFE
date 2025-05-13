@@ -114,23 +114,32 @@ namespace Tooltips {
 
             // WindowSettings
             {"PlayfieldMonitor",
-                "Index of the monitor for the table playfield window.\n"
+                "Index of the monitor for the table Playfield window.\n"
                 "You can use 'xrandr' to get yours."},
             {"PlayfieldWidth",
                 "Width of the main window in pixels.\n"
-                "This should be relative to your playfield media width."},
+                "This should be relative to your Playfield media width."},
             {"PlayfieldHeight",
                 "Height of the main window in pixels.\n"
-                "This should be relative to your playfield media height."},
+                "This should be relative to your Playfield media height."},
             {"BackglassMonitor",
-                "Index of the monitor for the backglass/DMD window.\n"
+                "Index of the monitor for the Backglass window.\n"
                 "You can use 'xrandr' to get yours."},
             {"BackglassWidth",
-                "Width of the secondary window in pixels.\n"
-                "This should be relative to your backglass + DMD media width."},
+                "Width of the Backglass window in pixels.\n"
+                "This should be relative to your Backglass media width."},
             {"BackglassHeight",
-                "Height of the secondary window in pixels.\n"
-                "This should be relative to your backglass + DMD media height."},
+                "Height of the Backglass window in pixels.\n"
+                "This should be relative to your Backglass media height."},
+            {"DMDMonitor",
+                "Index of the monitor for the DMD window.\n"
+                "You can use 'xrandr' to get yours."},
+            {"DMDWidth",
+                "Width of the DMD window in pixels.\n"
+                "This should be relative to your DMD media width."},
+            {"DMDHeight",
+                "Height of the DMD window in pixels.\n"
+                "This should be relative to your DMD media height."},
 
             // TitleDisplay
             {"FontPath",
@@ -149,18 +158,18 @@ namespace Tooltips {
                 "Set to true to show titles, false to hide them."},
 
             // MediaDimensions
-            {"WheelImageSize",
+            {"WheelMediaSize",
                 "Size of the wheel image in pixels.\n"
                 "This considers a square image."},
-            {"WheelImageMargin",
+            {"WheelMediaMargin",
                 "Margin around the wheel image in pixels."},
-            {"BackglassWidth",
+            {"BackglassMediaWidth",
                 "Width of the backglass media in pixels."},
-            {"BackglassHeight",
+            {"BackglassMediaHeight",
                 "Height of the backglass media in pixels."},
-            {"DmdWidth",
+            {"DMDMediaWidth",
                 "Width of the DMD media in pixels."},
-            {"DmdHeight",
+            {"DMDMediaHeight",
                 "Height of the DMD media in pixels.\n"
                 "This should match your DMD window height."},
 

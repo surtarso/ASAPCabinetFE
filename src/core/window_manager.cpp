@@ -5,8 +5,11 @@
 WindowManager::WindowManager(const Settings& settings)
     : playfieldWindow_(nullptr, SDL_DestroyWindow),
       backglassWindow_(nullptr, SDL_DestroyWindow),
+      dmdWindow_(nullptr, SDL_DestroyWindow),
       playfieldRenderer_(nullptr, SDL_DestroyRenderer),
-      backglassRenderer_(nullptr, SDL_DestroyRenderer) {
+      backglassRenderer_(nullptr, SDL_DestroyRenderer),
+      dmdRenderer_(nullptr, SDL_DestroyRenderer) {
+
     // Create primary window (Playfield)
     int scaledPlayfieldWidth = settings.enableDpiScaling ? 
         static_cast<int>(settings.playfieldWindowWidth * settings.dpiScale) : settings.playfieldWindowWidth;
@@ -20,13 +23,13 @@ WindowManager::WindowManager(const Settings& settings)
                                           scaledPlayfieldHeight,
                                           SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!playfieldWindow_) {
-        LOG_ERROR("Failed to create primary window: " << SDL_GetError());
+        LOG_ERROR("Failed to create playfield window: " << SDL_GetError());
         exit(1);
     }
     playfieldRenderer_.reset(SDL_CreateRenderer(playfieldWindow_.get(), -1, 
                                               SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
     if (!playfieldRenderer_) {
-        LOG_ERROR("Failed to create primary renderer: " << SDL_GetError());
+        LOG_ERROR("Failed to create playfield renderer: " << SDL_GetError());
         exit(1);
     }
     SDL_SetRenderDrawBlendMode(playfieldRenderer_.get(), SDL_BLENDMODE_BLEND);
@@ -44,14 +47,38 @@ WindowManager::WindowManager(const Settings& settings)
                                             scaledBackglassHeight,
                                             SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
     if (!backglassWindow_) {
-        LOG_ERROR("Failed to create secondary window: " << SDL_GetError());
+        LOG_ERROR("Failed to create backglass window: " << SDL_GetError());
         exit(1);
     }
     backglassRenderer_.reset(SDL_CreateRenderer(backglassWindow_.get(), -1, 
                                                 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
     if (!backglassRenderer_) {
-        LOG_ERROR("Failed to create secondary renderer: " << SDL_GetError());
+        LOG_ERROR("Failed to create backglass renderer: " << SDL_GetError());
         exit(1);
     }
     SDL_SetRenderDrawBlendMode(backglassRenderer_.get(), SDL_BLENDMODE_BLEND);
+
+    // Create third window (DMD)
+    int scaledDMDWidth = settings.enableDpiScaling ? 
+        static_cast<int>(settings.dmdWindowWidth * settings.dpiScale) : settings.dmdWindowWidth;
+    int scaledDMDHeight = settings.enableDpiScaling ? 
+        static_cast<int>(settings.dmdWindowHeight * settings.dpiScale) : settings.dmdWindowHeight;
+
+    dmdWindow_.reset(SDL_CreateWindow("DMD",
+                                            SDL_WINDOWPOS_CENTERED_DISPLAY(settings.dmdWindowMonitor),
+                                            SDL_WINDOWPOS_CENTERED,
+                                            scaledDMDWidth,
+                                            scaledDMDHeight,
+                                            SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
+    if (!dmdWindow_) {
+        LOG_ERROR("Failed to create dmd window: " << SDL_GetError());
+        exit(1);
+    }
+    dmdRenderer_.reset(SDL_CreateRenderer(dmdWindow_.get(), -1, 
+                                                SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+    if (!dmdRenderer_) {
+        LOG_ERROR("Failed to create dmd renderer: " << SDL_GetError());
+        exit(1);
+    }
+    SDL_SetRenderDrawBlendMode(dmdRenderer_.get(), SDL_BLENDMODE_BLEND);
 }

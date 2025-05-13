@@ -13,7 +13,7 @@ class IConfigService;  // Forward declare to avoid including full header
 class AssetManager {
 public:
     // Constructor: Takes renderers and font, initializes smart pointers
-    AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_Font* f);
+    AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f);
     
     // Loads all assets (textures, videos) for a given table index
     void loadTableAssets(size_t index, const std::vector<TableLoader>& tables);
@@ -48,6 +48,7 @@ public:
     // Getters for renderers and video players
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
+    SDL_Renderer* getDMDRenderer() { return dmdRenderer; }
     VideoContext* getTableVideoPlayer() { return tableVideoPlayer; }
     VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
     VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
@@ -62,8 +63,9 @@ public:
     void cleanupVideoPlayers();
 
 private:
-    SDL_Renderer* playfieldRenderer;      // Main window renderer
-    SDL_Renderer* backglassRenderer;    // Backglass/DMD renderer
+    SDL_Renderer* playfieldRenderer;    // Playfield renderer
+    SDL_Renderer* backglassRenderer;    // Backglass renderer
+    SDL_Renderer* dmdRenderer;          // DMD renderer
     TTF_Font* font;                     // Font for text rendering
     IConfigService* configManager_;     // Pointer to config service for settings
     std::vector<VideoContext*> oldVideoPlayers_;  // Queue of old video players to clean

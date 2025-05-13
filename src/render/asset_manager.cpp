@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 // Constructor: Initializes renderers, font, and nulls out pointers
-AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_Font* f)
+AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f)
     : tableTexture(nullptr, SDL_DestroyTexture),
       wheelTexture(nullptr, SDL_DestroyTexture),
       backglassTexture(nullptr, SDL_DestroyTexture),
@@ -16,8 +16,9 @@ AssetManager::AssetManager(SDL_Renderer* primary, SDL_Renderer* secondary, TTF_F
       tableVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
       dmdVideoPlayer(nullptr),
-      playfieldRenderer(primary),
-      backglassRenderer(secondary),
+      playfieldRenderer(playfield),
+      backglassRenderer(backglass),
+      dmdRenderer(dmd),
       font(f),
       configManager_(nullptr) {}
 
@@ -30,7 +31,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     tableTexture.reset(loadTexture(playfieldRenderer, table.tableImage));
     wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
     backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
-    dmdTexture.reset(loadTexture(backglassRenderer, table.dmdImage));
+    dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
 
     // Render table name text if font is available
     if (font) {
@@ -77,7 +78,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
 
     LOG_DEBUG("Loading DMD video: " << table.dmdVideo);
     if (!table.dmdVideo.empty() && settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
-        dmdVideoPlayer = setupVideoPlayer(backglassRenderer, table.dmdVideo, settings.dmdMediaWidth, settings.dmdMediaHeight);
+        dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo, settings.dmdMediaWidth, settings.dmdMediaHeight);
         if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
             LOG_DEBUG("Failed to play DMD video: " << table.dmdVideo);
         }

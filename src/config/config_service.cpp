@@ -36,6 +36,7 @@ void ConfigService::setDefaultSettings() {
     settings_.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
     settings_.vpxSubCmd = "-Play";
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
+
     settings_.defaultTableImage = exeDir + "img/default_table.png";
     settings_.defaultBackglassImage = exeDir + "img/default_backglass.png";
     settings_.defaultDmdImage = exeDir + "img/default_dmd.png";
@@ -43,6 +44,7 @@ void ConfigService::setDefaultSettings() {
     settings_.defaultTableVideo = exeDir + "img/default_table.mp4";
     settings_.defaultBackglassVideo = exeDir + "img/default_backglass.mp4";
     settings_.defaultDmdVideo = exeDir + "img/default_dmd.mp4";
+
     settings_.customTableImage = "images/table.png";
     settings_.customBackglassImage = "images/backglass.png";
     settings_.customDmdImage = "images/marquee.png";
@@ -50,24 +52,31 @@ void ConfigService::setDefaultSettings() {
     settings_.customTableVideo = "video/table.mp4";
     settings_.customBackglassVideo = "video/backglass.mp4";
     settings_.customDmdVideo = "video/dmd.mp4";
+
     settings_.playfieldWindowMonitor = 1;
     settings_.playfieldWindowWidth = 1080;
     settings_.playfieldWindowHeight = 1920;
-    settings_.wheelImageSize = 300;
-    settings_.wheelImageMargin = 24;
     settings_.backglassWindowMonitor = 0;
     settings_.backglassWindowWidth = 1024;
-    settings_.backglassWindowHeight = 1024;
+    settings_.backglassWindowHeight = 768;
+    settings_.dmdWindowMonitor = 0;
+    settings_.dmdWindowWidth = 1024;
+    settings_.dmdWindowHeight = 256;
+
+    settings_.wheelImageSize = 300;
+    settings_.wheelImageMargin = 24;
     settings_.backglassMediaWidth = 1024;
     settings_.backglassMediaHeight = 768;
     settings_.dmdMediaWidth = 1024;
     settings_.dmdMediaHeight = 256;
+
     settings_.fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     settings_.fontColor = {255, 255, 255, 255};
     settings_.fontBgColor = {0, 0, 0, 128};
     settings_.fontSize = 28;
     settings_.showWheel = true;
     settings_.showTitle = true;
+
     settings_.configToggleSound = "snd/config_toggle.mp3";
     settings_.scrollPrevSound = "snd/scroll_prev.mp3";
     settings_.scrollNextSound = "snd/scroll_next.mp3";
@@ -83,6 +92,7 @@ void ConfigService::setDefaultSettings() {
     settings_.quitSound = "snd/quit.mp3";
     settings_.screenshotTakeSound = "snd/screenshot_take.mp3";
     settings_.screenshotQuitSound = "snd/screenshot_quit.mp3";
+
     settings_.enableDpiScaling = true;
     settings_.dpiScale = 1.0f;
     settings_.logFile = "logs/debug.log"; // Set default log file path
@@ -140,6 +150,7 @@ void ConfigService::parseIniFile() {
     settings_.vpxSubCmd = config["Internal"]["SubCmd"].empty() ? settings_.vpxSubCmd : config["Internal"]["SubCmd"];
     settings_.vpxStartArgs = config["VPX"]["StartArgs"];
     settings_.vpxEndArgs = config["VPX"]["EndArgs"];
+    // default media
     settings_.defaultTableImage = exeDir + (config["DefaultMedia"]["DefaultTableImage"].empty() ? "img/default_table.png" : config["DefaultMedia"]["DefaultTableImage"]);
     settings_.defaultBackglassImage = exeDir + (config["DefaultMedia"]["DefaultBackglassImage"].empty() ? "img/default_backglass.png" : config["DefaultMedia"]["DefaultBackglassImage"]);
     settings_.defaultDmdImage = exeDir + (config["DefaultMedia"]["DefaultDmdImage"].empty() ? "img/default_dmd.png" : config["DefaultMedia"]["DefaultDmdImage"]);
@@ -147,6 +158,7 @@ void ConfigService::parseIniFile() {
     settings_.defaultTableVideo = exeDir + (config["DefaultMedia"]["DefaultTableVideo"].empty() ? "img/default_table.mp4" : config["DefaultMedia"]["DefaultTableVideo"]);
     settings_.defaultBackglassVideo = exeDir + (config["DefaultMedia"]["DefaultBackglassVideo"].empty() ? "img/default_backglass.mp4" : config["DefaultMedia"]["DefaultBackglassVideo"]);
     settings_.defaultDmdVideo = exeDir + (config["DefaultMedia"]["DefaultDmdVideo"].empty() ? "img/default_dmd.mp4" : config["DefaultMedia"]["DefaultDmdVideo"]);
+    // custom media
     settings_.customTableImage = config["CustomMedia"]["TableImage"].empty() ? settings_.customTableImage : config["CustomMedia"]["TableImage"];
     settings_.customBackglassImage = config["CustomMedia"]["BackglassImage"].empty() ? settings_.customBackglassImage : config["CustomMedia"]["BackglassImage"];
     settings_.customDmdImage = config["CustomMedia"]["DmdImage"].empty() ? settings_.customDmdImage : config["CustomMedia"]["DmdImage"];
@@ -154,25 +166,29 @@ void ConfigService::parseIniFile() {
     settings_.customTableVideo = config["CustomMedia"]["TableVideo"].empty() ? settings_.customTableVideo : config["CustomMedia"]["TableVideo"];
     settings_.customBackglassVideo = config["CustomMedia"]["BackglassVideo"].empty() ? settings_.customBackglassVideo : config["CustomMedia"]["BackglassVideo"];
     settings_.customDmdVideo = config["CustomMedia"]["DmdVideo"].empty() ? settings_.customDmdVideo : config["CustomMedia"]["DmdVideo"];
+    // windows
     settings_.playfieldWindowMonitor = std::stoi(config["WindowSettings"]["PlayfieldMonitor"].empty() ? "1" : config["WindowSettings"]["PlayfieldMonitor"]);
     settings_.playfieldWindowWidth = std::stoi(config["WindowSettings"]["PlayfieldWidth"].empty() ? "1080" : config["WindowSettings"]["PlayfieldWidth"]);
     settings_.playfieldWindowHeight = std::stoi(config["WindowSettings"]["PlayfieldHeight"].empty() ? "1920" : config["WindowSettings"]["PlayfieldHeight"]);
-    settings_.wheelImageSize = std::stoi(config["MediaDimensions"]["WheelImageSize"].empty() ? "300" : config["MediaDimensions"]["WheelImageSize"]);
-    settings_.wheelImageMargin = std::stoi(config["MediaDimensions"]["WheelImageMargin"].empty() ? "24" : config["MediaDimensions"]["WheelImageMargin"]);
     settings_.backglassWindowMonitor = std::stoi(config["WindowSettings"]["BackglassMonitor"].empty() ? "0" : config["WindowSettings"]["BackglassMonitor"]);
     settings_.backglassWindowWidth = std::stoi(config["WindowSettings"]["BackglassWidth"].empty() ? "1024" : config["WindowSettings"]["BackglassWidth"]);
-    settings_.backglassWindowHeight = std::stoi(config["WindowSettings"]["BackglassHeight"].empty() ? "1024" : config["WindowSettings"]["BackglassHeight"]);
-    settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassWidth"]);
-    settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassHeight"]);
-    settings_.dmdMediaWidth = std::stoi(config["MediaDimensions"]["DmdWidth"].empty() ? "1024" : config["MediaDimensions"]["DmdWidth"]);
-    settings_.dmdMediaHeight = std::stoi(config["MediaDimensions"]["DmdHeight"].empty() ? "256" : config["MediaDimensions"]["DmdHeight"]);
+    settings_.backglassWindowHeight = std::stoi(config["WindowSettings"]["BackglassHeight"].empty() ? "768" : config["WindowSettings"]["BackglassHeight"]);
+    settings_.dmdWindowMonitor = std::stoi(config["WindowSettings"]["DMDMonitor"].empty() ? "0" : config["WindowSettings"]["DMDMonitor"]);
+    settings_.dmdWindowWidth = std::stoi(config["WindowSettings"]["DMDWidth"].empty() ? "1024" : config["WindowSettings"]["DMDWidth"]);
+    settings_.dmdWindowHeight = std::stoi(config["WindowSettings"]["DMDHeight"].empty() ? "256" : config["WindowSettings"]["DMDHeight"]);
+    // title and media
+    settings_.wheelImageSize = std::stoi(config["MediaDimensions"]["WheelMediaSize"].empty() ? "300" : config["MediaDimensions"]["WheelMediaSize"]);
+    settings_.wheelImageMargin = std::stoi(config["MediaDimensions"]["WheelMediaMargin"].empty() ? "24" : config["MediaDimensions"]["WheelMediaMargin"]);
+    settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassMediaWidth"]);
+    settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassMediaHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassMediaHeight"]);
+    settings_.dmdMediaWidth = std::stoi(config["MediaDimensions"]["DMDMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["DMDMediaWidth"]);
+    settings_.dmdMediaHeight = std::stoi(config["MediaDimensions"]["DMDMediaHeight"].empty() ? "256" : config["MediaDimensions"]["DMDMediaHeight"]);
     settings_.fontPath = config["TitleDisplay"]["FontPath"].empty() ? settings_.fontPath : config["TitleDisplay"]["FontPath"];
     std::string fontColorStr = config["TitleDisplay"]["FontColor"].empty() ? "255,255,255,255" : config["TitleDisplay"]["FontColor"];
     sscanf(fontColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings_.fontColor.r, &settings_.fontColor.g, &settings_.fontColor.b, &settings_.fontColor.a);
     std::string fontBgColorStr = config["TitleDisplay"]["FontBgColor"].empty() ? "0,0,0,128" : config["TitleDisplay"]["FontBgColor"];
     sscanf(fontBgColorStr.c_str(), "%hhu,%hhu,%hhu,%hhu", &settings_.fontBgColor.r, &settings_.fontBgColor.g, &settings_.fontBgColor.b, &settings_.fontBgColor.a);
     settings_.fontSize = std::stoi(config["TitleDisplay"]["FontSize"].empty() ? "28" : config["TitleDisplay"]["FontSize"]);
-    
     // Parse show/hide settings
     settings_.showWheel = config["TitleDisplay"]["ShowWheel"].empty() ? true : 
         (config["TitleDisplay"]["ShowWheel"] == "true");
@@ -182,6 +198,7 @@ void ConfigService::parseIniFile() {
     if (settings_.enableDpiScaling) {
         settings_.fontSize = static_cast<int>(settings_.fontSize * settings_.dpiScale);
     }
+    // sounds
     settings_.configToggleSound = config["UISounds"]["ConfigToggleSound"].empty() ? settings_.configToggleSound : config["UISounds"]["ConfigToggleSound"];
     settings_.scrollPrevSound = config["UISounds"]["ScrollPrevSound"].empty() ? settings_.scrollPrevSound : config["UISounds"]["ScrollPrevSound"];
     settings_.scrollNextSound = config["UISounds"]["ScrollNextSound"].empty() ? settings_.scrollNextSound : config["UISounds"]["ScrollNextSound"];
@@ -197,6 +214,7 @@ void ConfigService::parseIniFile() {
     settings_.quitSound = config["UISounds"]["QuitSound"].empty() ? settings_.quitSound : config["UISounds"]["QuitSound"];
     settings_.screenshotTakeSound = config["UISounds"]["ScreenshotTakeSound"].empty() ? settings_.screenshotTakeSound : config["UISounds"]["ScreenshotTakeSound"];
     settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty()? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
+
     settings_.enableDpiScaling = config["DPISettings"]["EnableDpiScaling"].empty() ? true : 
         (config["DPISettings"]["EnableDpiScaling"] == "true");
     settings_.dpiScale = std::stof(config["DPISettings"]["DpiScale"].empty() ? "1.0" : config["DPISettings"]["DpiScale"]);

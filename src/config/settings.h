@@ -38,8 +38,14 @@ struct Settings {
     int playfieldWindowMonitor;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
-    int wheelImageSize;
-    int wheelImageMargin;
+
+    int backglassWindowMonitor;
+    int backglassWindowWidth;
+    int backglassWindowHeight;
+
+    int dmdWindowMonitor;
+    int dmdWindowWidth;
+    int dmdWindowHeight;
 
     // Title display
     std::string fontPath;
@@ -49,11 +55,13 @@ struct Settings {
     bool showWheel;
     bool showTitle;
 
-    int backglassWindowMonitor;
-    int backglassWindowWidth;
-    int backglassWindowHeight;
+    // media sizes
+    int wheelImageSize;
+    int wheelImageMargin;
+    
     int backglassMediaWidth;
     int backglassMediaHeight;
+    
     int dmdMediaWidth;
     int dmdMediaHeight;
 
