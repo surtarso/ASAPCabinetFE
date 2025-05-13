@@ -23,7 +23,7 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
     SDL_GetRendererOutputSize(playfieldRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect playfieldRect = {settings.playfieldMediaX, settings.playfieldMediaY, settings.playfieldMediaWidth, settings.playfieldMediaHeight};
-    SDL_Rect wheelRect = {0, 0, settings.wheelMediaSize, settings.wheelMediaSize};
+    SDL_Rect wheelRect = {settings.wheelMediaX, settings.wheelMediaY, settings.wheelMediaWidth, settings.wheelMediaHeight};
     SDL_Rect titleRect = assets.titleRect;
 
     // Render Playfield texture/video
@@ -49,8 +49,6 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
     
     // Render wheel if enabled
     if (settings.showWheel && assets.wheelTexture) {
-        wheelRect.x = windowWidth - wheelRect.w - settings.wheelMediaMargin;
-        wheelRect.y = windowHeight - wheelRect.h - settings.wheelMediaMargin;
         SDL_RenderCopyEx(
             playfieldRenderer_,
             assets.wheelTexture.get(),
@@ -60,6 +58,7 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
             nullptr,
             SDL_FLIP_NONE);
     }
+    
     // Render title if enabled
     if (settings.showTitle && assets.titleTexture) {
         titleRect.x = 10;
@@ -69,8 +68,8 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
                                settings.fontBgColor.g,
                                settings.fontBgColor.b,
                                settings.fontBgColor.a);
-        SDL_Rect bgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
-        SDL_RenderFillRect(playfieldRenderer_, &bgRect);
+        SDL_Rect titleBgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
+        SDL_RenderFillRect(playfieldRenderer_, &titleBgRect);
         SDL_RenderCopyEx(
             playfieldRenderer_,
             assets.titleTexture.get(),

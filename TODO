@@ -1,10 +1,11 @@
 TODO
 
-- use json instead of memory for file info
+- fix title positionin on rotation
+- free title positions to config
+
 - configurable window positions (auto get positions from vpx.ini?)
-- configurable title margin
-- free title/wheel positions to config
 - live update of window size/monitor index
+- use json instead of memory for file info
 
 UI:
 - add table info from vpx file (vpxtool?)

@@ -63,8 +63,10 @@ void ConfigService::setDefaultSettings() {
     settings_.dmdWindowWidth = 1024;
     settings_.dmdWindowHeight = 256;
 
-    settings_.wheelMediaSize = 300;
-    settings_.wheelMediaMargin = 24;
+    settings_.wheelMediaHeight = 350;
+    settings_.wheelMediaWidth = 350;
+    settings_.wheelMediaX = 720;
+    settings_.wheelMediaY = 1570;
 
     settings_.playfieldMediaWidth = 1080;
     settings_.playfieldMediaHeight = 1920;
@@ -191,8 +193,10 @@ void ConfigService::parseIniFile() {
     settings_.dmdWindowWidth = std::stoi(config["WindowSettings"]["DMDWidth"].empty() ? "1024" : config["WindowSettings"]["DMDWidth"]);
     settings_.dmdWindowHeight = std::stoi(config["WindowSettings"]["DMDHeight"].empty() ? "256" : config["WindowSettings"]["DMDHeight"]);
     // media size/pos
-    settings_.wheelMediaSize = std::stoi(config["MediaDimensions"]["WheelMediaSize"].empty() ? "300" : config["MediaDimensions"]["WheelMediaSize"]);
-    settings_.wheelMediaMargin = std::stoi(config["MediaDimensions"]["WheelMediaMargin"].empty() ? "24" : config["MediaDimensions"]["WheelMediaMargin"]);
+    settings_.wheelMediaHeight = std::stoi(config["MediaDimensions"]["WheelMediaHeight"].empty() ? "350" : config["MediaDimensions"]["WheelMediaHeight"]);
+    settings_.wheelMediaWidth = std::stoi(config["MediaDimensions"]["WheelMediaWidth"].empty() ? "350" : config["MediaDimensions"]["WheelMediaWidth"]);
+    settings_.wheelMediaX = std::stoi(config["MediaDimensions"]["WheelMediaX"].empty() ? "720" : config["MediaDimensions"]["WheelMediaX"]);
+    settings_.wheelMediaY = std::stoi(config["MediaDimensions"]["WheelMediaY"].empty() ? "1570" : config["MediaDimensions"]["WheelMediaY"]);
     
     settings_.playfieldMediaWidth = std::stoi(config["MediaDimensions"]["PlayfieldMediaWidth"].empty() ? "1080" : config["MediaDimensions"]["PlayfieldMediaWidth"]);
     settings_.playfieldMediaHeight = std::stoi(config["MediaDimensions"]["PlayfieldMediaHeight"].empty() ? "1920" : config["MediaDimensions"]["PlayfieldMediaHeight"]);
