@@ -21,35 +21,35 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(playfieldRenderer_, &windowWidth, &windowHeight);
 
-    SDL_Rect tableRect = {0, 0, windowWidth, windowHeight}; // Full window
-    SDL_Rect wheelRect = {0, 0, settings.wheelImageSize, settings.wheelImageSize};
-    SDL_Rect nameRect = assets.tableNameRect;
+    SDL_Rect playfieldRect = {0, 0, windowWidth, windowHeight}; // Full window
+    SDL_Rect wheelRect = {0, 0, settings.wheelMediaSize, settings.wheelMediaSize};
+    SDL_Rect titleRect = assets.tableNameRect;
 
     if (assets.tableVideoPlayer && assets.tableVideoPlayer->texture) {
         updateVideoTexture(assets.tableVideoPlayer);
-        SDL_RenderCopy(playfieldRenderer_, assets.tableVideoPlayer->texture, nullptr, &tableRect);
+        SDL_RenderCopy(playfieldRenderer_, assets.tableVideoPlayer->texture, nullptr, &playfieldRect);
     } else if (assets.tableTexture) {
-        SDL_RenderCopy(playfieldRenderer_, assets.tableTexture.get(), nullptr, &tableRect);
+        SDL_RenderCopy(playfieldRenderer_, assets.tableTexture.get(), nullptr, &playfieldRect);
     }
     
     // Only render wheel if enabled
     if (settings.showWheel && assets.wheelTexture) {
-        wheelRect.x = windowWidth - wheelRect.w - settings.wheelImageMargin;
-        wheelRect.y = windowHeight - wheelRect.h - settings.wheelImageMargin;
+        wheelRect.x = windowWidth - wheelRect.w - settings.wheelMediaMargin;
+        wheelRect.y = windowHeight - wheelRect.h - settings.wheelMediaMargin;
         SDL_RenderCopy(playfieldRenderer_, assets.wheelTexture.get(), nullptr, &wheelRect);
     }
     // Only render title if enabled
     if (settings.showTitle && assets.tableNameTexture) {
-        nameRect.x = 10;
-        nameRect.y = windowHeight - nameRect.h - 10;
+        titleRect.x = 10;
+        titleRect.y = windowHeight - titleRect.h - 10;
         SDL_SetRenderDrawColor(playfieldRenderer_,
                                settings.fontBgColor.r,
                                settings.fontBgColor.g,
                                settings.fontBgColor.b,
                                settings.fontBgColor.a);
-        SDL_Rect bgRect = {nameRect.x - 5, nameRect.y - 5, nameRect.w + 10, nameRect.h + 10};
+        SDL_Rect bgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
         SDL_RenderFillRect(playfieldRenderer_, &bgRect);
-        SDL_RenderCopy(playfieldRenderer_, assets.tableNameTexture.get(), nullptr, &nameRect);
+        SDL_RenderCopy(playfieldRenderer_, assets.tableNameTexture.get(), nullptr, &titleRect);
     }
 }
 
@@ -58,7 +58,7 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(backglassRenderer_, &windowWidth, &windowHeight);
 
-    SDL_Rect backglassRect = {0, 0, settings.backglassMediaWidth, settings.backglassMediaHeight};
+    SDL_Rect backglassRect = {settings.backglassMediaX, settings.backglassMediaY, settings.backglassMediaWidth, settings.backglassMediaHeight};
 
     if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture) {
         updateVideoTexture(assets.backglassVideoPlayer);
@@ -73,7 +73,7 @@ void Renderer::renderDMDWindow(AssetManager &assets) {
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(dmdRenderer_, &windowWidth, &windowHeight);
 
-    SDL_Rect dmdRect = {0, 0, settings.dmdMediaWidth, settings.dmdMediaHeight};
+    SDL_Rect dmdRect = {settings.dmdMediaX, settings.dmdMediaY, settings.dmdMediaWidth, settings.dmdMediaHeight};
 
     if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture) {
         updateVideoTexture(assets.dmdVideoPlayer);
