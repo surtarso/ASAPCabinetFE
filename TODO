@@ -1,22 +1,22 @@
 TODO
 
-- add pup windows to screenshot capture
-- incorporate generate_media.sh?
 - use json instead of memory for file info
-- create an optional third window (for separate dmd)
 - configurable window positions
+- configurable media aligment within windows (center, left etc)
+- configurable title margin
+- free title/wheel positions to config
 
 UI:
 - add table info from vpx file (vpxtool?)
 - add blinking arrows on sides to indicate table flow/keys
-- configurable title margin
-- free title/wheel positions to config
 - some sort of table count/display scrollbar thingymabob
 - (optional) really quit? dialog
 
 On hold:
 - create default videos
 - create a make install target
+- add pup windows to screenshot capture
+- incorporate generate_media.sh?
 
 Later:
 - adapt to be crossplatform
