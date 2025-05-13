@@ -23,13 +23,13 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
 
     SDL_Rect playfieldRect = {0, 0, windowWidth, windowHeight}; // Full window
     SDL_Rect wheelRect = {0, 0, settings.wheelMediaSize, settings.wheelMediaSize};
-    SDL_Rect titleRect = assets.tableNameRect;
+    SDL_Rect titleRect = assets.titleRect;
 
-    if (assets.tableVideoPlayer && assets.tableVideoPlayer->texture) {
-        updateVideoTexture(assets.tableVideoPlayer);
-        SDL_RenderCopy(playfieldRenderer_, assets.tableVideoPlayer->texture, nullptr, &playfieldRect);
-    } else if (assets.tableTexture) {
-        SDL_RenderCopy(playfieldRenderer_, assets.tableTexture.get(), nullptr, &playfieldRect);
+    if (assets.playfieldVideoPlayer && assets.playfieldVideoPlayer->texture) {
+        updateVideoTexture(assets.playfieldVideoPlayer);
+        SDL_RenderCopy(playfieldRenderer_, assets.playfieldVideoPlayer->texture, nullptr, &playfieldRect);
+    } else if (assets.playfieldTexture) {
+        SDL_RenderCopy(playfieldRenderer_, assets.playfieldTexture.get(), nullptr, &playfieldRect);
     }
     
     // Only render wheel if enabled
@@ -39,7 +39,7 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
         SDL_RenderCopy(playfieldRenderer_, assets.wheelTexture.get(), nullptr, &wheelRect);
     }
     // Only render title if enabled
-    if (settings.showTitle && assets.tableNameTexture) {
+    if (settings.showTitle && assets.titleTexture) {
         titleRect.x = 10;
         titleRect.y = windowHeight - titleRect.h - 10;
         SDL_SetRenderDrawColor(playfieldRenderer_,
@@ -49,7 +49,7 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
                                settings.fontBgColor.a);
         SDL_Rect bgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
         SDL_RenderFillRect(playfieldRenderer_, &bgRect);
-        SDL_RenderCopy(playfieldRenderer_, assets.tableNameTexture.get(), nullptr, &titleRect);
+        SDL_RenderCopy(playfieldRenderer_, assets.titleTexture.get(), nullptr, &titleRect);
     }
 }
 

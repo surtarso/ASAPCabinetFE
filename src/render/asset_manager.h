@@ -31,17 +31,17 @@ public:
     SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
 
     // Smart pointers for textures (auto-destroyed via SDL_DestroyTexture)
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tableTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> wheelTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tableNameTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> titleTexture;
     
     // Rect for positioning table name text
-    SDL_Rect tableNameRect;
+    SDL_Rect titleRect;
     
     // Raw pointers to video players (managed manually via setup/cleanup)
-    VideoContext* tableVideoPlayer;
+    VideoContext* playfieldVideoPlayer;
     VideoContext* backglassVideoPlayer;
     VideoContext* dmdVideoPlayer;
 
@@ -49,7 +49,7 @@ public:
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     SDL_Renderer* getDMDRenderer() { return dmdRenderer; }
-    VideoContext* getTableVideoPlayer() { return tableVideoPlayer; }
+    VideoContext* getPlayfieldVideoPlayer() { return playfieldVideoPlayer; }
     VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
     VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
 

@@ -7,13 +7,13 @@
 
 // Constructor: Initializes renderers, font, and nulls out pointers
 AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f)
-    : tableTexture(nullptr, SDL_DestroyTexture),
+    : playfieldTexture(nullptr, SDL_DestroyTexture),
       wheelTexture(nullptr, SDL_DestroyTexture),
       backglassTexture(nullptr, SDL_DestroyTexture),
       dmdTexture(nullptr, SDL_DestroyTexture),
-      tableNameTexture(nullptr, SDL_DestroyTexture),
-      tableNameRect{0, 0, 0, 0},
-      tableVideoPlayer(nullptr),
+      titleTexture(nullptr, SDL_DestroyTexture),
+      titleRect{0, 0, 0, 0},
+      playfieldVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
       dmdVideoPlayer(nullptr),
       playfieldRenderer(playfield),
@@ -28,14 +28,14 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     const Settings& settings = configManager_->getSettings();
 
     // Load static textures
-    tableTexture.reset(loadTexture(playfieldRenderer, table.tableImage));
+    playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
     wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
     backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
     dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
 
     // Render table name text if font is available
     if (font) {
-        tableNameTexture.reset(renderText(playfieldRenderer, font, table.tableName, settings.fontColor, tableNameRect));
+        titleTexture.reset(renderText(playfieldRenderer, font, table.title, settings.fontColor, titleRect));
     }
 
     // Helper lambda to stop and queue old video players
@@ -51,19 +51,19 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     };
 
     // Stop and move existing video players
-    stopAndMove(tableVideoPlayer);
+    stopAndMove(playfieldVideoPlayer);
     stopAndMove(backglassVideoPlayer);
     stopAndMove(dmdVideoPlayer);
 
     // Load new video players if paths and dimensions are valid
-    LOG_DEBUG("Loading table video: " << table.tableVideo);
-    if (!table.tableVideo.empty() && settings.playfieldWindowWidth > 0 && settings.playfieldWindowHeight > 0) {
-        tableVideoPlayer = setupVideoPlayer(playfieldRenderer, table.tableVideo, settings.playfieldWindowWidth, settings.playfieldWindowHeight);
-        if (tableVideoPlayer && libvlc_media_player_play(tableVideoPlayer->player) != 0) {
-            LOG_DEBUG("Failed to play table video: " << table.tableVideo);
+    LOG_DEBUG("Loading table video: " << table.playfieldVideo);
+    if (!table.playfieldVideo.empty() && settings.playfieldWindowWidth > 0 && settings.playfieldWindowHeight > 0) {
+        playfieldVideoPlayer = setupVideoPlayer(playfieldRenderer, table.playfieldVideo, settings.playfieldWindowWidth, settings.playfieldWindowHeight);
+        if (playfieldVideoPlayer && libvlc_media_player_play(playfieldVideoPlayer->player) != 0) {
+            LOG_DEBUG("Failed to play table video: " << table.playfieldVideo);
         }
     } else {
-        tableVideoPlayer = nullptr;
+        playfieldVideoPlayer = nullptr;
     }
 
     LOG_DEBUG("Loading backglass video: " << table.backglassVideo);
@@ -92,10 +92,10 @@ void AssetManager::cleanupVideoPlayers() {
     LOG_DEBUG("Cleaning up video players in AssetManager");
     
     // Clean up table video player
-    if (tableVideoPlayer && tableVideoPlayer->player) {
-        libvlc_media_player_stop(tableVideoPlayer->player);
-        cleanupVideoContext(tableVideoPlayer);
-        tableVideoPlayer = nullptr;
+    if (playfieldVideoPlayer && playfieldVideoPlayer->player) {
+        libvlc_media_player_stop(playfieldVideoPlayer->player);
+        cleanupVideoContext(playfieldVideoPlayer);
+        playfieldVideoPlayer = nullptr;
     }
     
     // Clean up backglass video player

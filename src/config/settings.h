@@ -17,20 +17,20 @@ struct Settings {
     bool enableDpiScaling = true;
 
     // Default media paths
-    std::string defaultTableImage;
+    std::string defaultPlayfieldImage;
     std::string defaultBackglassImage;
     std::string defaultDmdImage;
     std::string defaultWheelImage;
-    std::string defaultTableVideo;
+    std::string defaultPlayfieldVideo;
     std::string defaultBackglassVideo;
     std::string defaultDmdVideo;
 
     // Custom media paths
-    std::string customTableImage;
+    std::string customPlayfieldImage;
     std::string customBackglassImage;
     std::string customDmdImage;
     std::string customWheelImage;
-    std::string customTableVideo;
+    std::string customPlayfieldVideo;
     std::string customBackglassVideo;
     std::string customDmdVideo;
 

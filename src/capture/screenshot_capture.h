@@ -8,7 +8,7 @@
 class ScreenshotCapture {
 public:
     ScreenshotCapture(const std::string& exeDir);
-    void captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage,
+    void captureAllScreenshots(const std::string& playfieldImage, const std::string& backglassImage,
                                const std::string& dmdImage, SDL_Window* window);
     bool isWindowVisible(const std::string& title);  // Moved to public
 
