@@ -56,8 +56,12 @@ struct Settings {
     bool showTitle;
 
     // media sizes/positions
-    int wheelMediaSize;
-    int wheelMediaMargin;
+    // int wheelMediaSize;
+    // int wheelMediaMargin;
+    int wheelMediaHeight;
+    int wheelMediaWidth;
+    int wheelMediaX;
+    int wheelMediaY;
     
     int playfieldMediaWidth;
     int playfieldMediaHeight;
