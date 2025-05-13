@@ -1,8 +1,5 @@
 TODO
 
-- fix title positionin on rotation
-- free title positions to config
-
 - configurable window positions (auto get positions from vpx.ini?)
 - live update of window size/monitor index
 - use json instead of memory for file info

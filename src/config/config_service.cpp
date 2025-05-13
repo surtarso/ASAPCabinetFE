@@ -92,6 +92,8 @@ void ConfigService::setDefaultSettings() {
     settings_.fontSize = 28;
     settings_.showWheel = true;
     settings_.showTitle = true;
+    settings_.titleX = 30;
+    settings_.titleY = 1850;
 
     settings_.configToggleSound = "snd/config_toggle.mp3";
     settings_.scrollPrevSound = "snd/scroll_prev.mp3";
@@ -232,6 +234,8 @@ void ConfigService::parseIniFile() {
     if (settings_.enableDpiScaling) {
         settings_.fontSize = static_cast<int>(settings_.fontSize * settings_.dpiScale);
     }
+    settings_.titleX = std::stoi(config["TitleDisplay"]["TitleX"].empty() ? "30" : config["TitleDisplay"]["TitleX"]);
+    settings_.titleY = std::stoi(config["TitleDisplay"]["TitleY"].empty() ? "1850" : config["TitleDisplay"]["TitleY"]);
     // sounds
     settings_.configToggleSound = config["UISounds"]["ConfigToggleSound"].empty() ? settings_.configToggleSound : config["UISounds"]["ConfigToggleSound"];
     settings_.scrollPrevSound = config["UISounds"]["ScrollPrevSound"].empty() ? settings_.scrollPrevSound : config["UISounds"]["ScrollPrevSound"];

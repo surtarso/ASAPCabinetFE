@@ -54,6 +54,8 @@ struct Settings {
     int fontSize;
     bool showWheel;
     bool showTitle;
+    int titleX;
+    int titleY;
 
     // media sizes/positions
     int wheelMediaHeight;
