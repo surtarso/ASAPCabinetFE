@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <string>
-#include "core/window_manager.h"
+#include "core/iwindow_manager.h"
 #include "core/gui_manager.h"
 #include "render/asset_manager.h"
 #include "render/renderer.h"
@@ -17,7 +17,7 @@ class App;
 
 class DependencyFactory {
 public:
-    static std::unique_ptr<WindowManager> createWindowManager(const Settings& settings);
+    static std::unique_ptr<IWindowManager> createWindowManager(const Settings& settings);
     static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager, IConfigService* configService);
     static std::unique_ptr<AssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font);
     static std::unique_ptr<Renderer> createRenderer(IWindowManager* windowManager);

@@ -1,10 +1,11 @@
 #include "core/dependency_factory.h"
 #include "core/app.h"
 #include "config/config_service.h"
+#include "core/window_manager.h"
 #include "sound/sound_manager.h"
 #include "utils/logging.h"
 
-std::unique_ptr<WindowManager> DependencyFactory::createWindowManager(const Settings& settings) {
+std::unique_ptr<IWindowManager> DependencyFactory::createWindowManager(const Settings& settings) {
     return std::make_unique<WindowManager>(settings);
 }
 

@@ -2,6 +2,7 @@
 #define IWINDOW_MANAGER_H
 
 #include <SDL2/SDL.h>
+#include "config/settings.h"
 
 class IWindowManager {
 public:
@@ -12,6 +13,7 @@ public:
     virtual SDL_Renderer* getPlayfieldRenderer() = 0;
     virtual SDL_Renderer* getBackglassRenderer() = 0;
     virtual SDL_Renderer* getDMDRenderer() = 0;
+    virtual void updateWindows(const Settings& settings) = 0;
 };
 
 #endif // IWINDOW_MANAGER_H

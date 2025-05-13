@@ -1,7 +1,6 @@
 TODO
 
 - configurable window positions (auto get positions from vpx.ini?)
-- live update of window size/monitor index
 - use json instead of memory for file info
 
 UI:

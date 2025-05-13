@@ -24,6 +24,9 @@ public:
     // Adds a video player to the cleanup queue
     void addOldVideoPlayer(VideoContext* player);
     
+    void reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
+                      TTF_Font* f, size_t index, const std::vector<TableLoader>& tables);
+                      
     // Loads a texture from a file path, returns raw pointer (managed by smart pointers elsewhere)
     SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
     

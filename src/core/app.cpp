@@ -61,12 +61,22 @@ void App::run() {
 }
 
 void App::onConfigSaved(bool isStandalone) {
-    LOG_DEBUG("Config saved detected, forcing font reload");
+    LOG_DEBUG("Config saved detected, updating windows and assets");
     if (!isStandalone) {
+        // Reload font
         reloadFont();
-        LOG_DEBUG("Font reload completed in onConfigSaved");
+        // Update windows
+        windowManager_->updateWindows(configManager_->getSettings());
+        // Reload assets
+        assets_->reloadAssets(windowManager_->getPlayfieldRenderer(),
+                             windowManager_->getBackglassRenderer(),
+                             windowManager_->getDMDRenderer(),
+                             font_.get(),
+                             currentIndex_,
+                             tables_);
+        LOG_DEBUG("Windows and assets updated after config save");
     } else {
-        LOG_DEBUG("Skipping font reload in standalone mode");
+        LOG_DEBUG("Skipping window and asset reload in standalone mode");
     }
 }
 
