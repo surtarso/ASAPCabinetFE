@@ -63,16 +63,19 @@ struct Settings {
     int playfieldMediaHeight;
     int playfieldMediaX;
     int playfieldMediaY;
+    int playfieldRotation;
 
     int backglassMediaWidth;
     int backglassMediaHeight;
     int backglassMediaX;
     int backglassMediaY;
+    int backglassRotation;
     
     int dmdMediaWidth;
     int dmdMediaHeight;
     int dmdMediaX;
     int dmdMediaY;
+    int dmdRotation;
 
     // sound settings
     std::string configToggleSound;
