@@ -122,6 +122,7 @@ namespace Tooltips {
             {"PlayfieldHeight",
                 "Height of the main window in pixels.\n"
                 "This should be relative to your Playfield media height."},
+
             {"BackglassMonitor",
                 "Index of the monitor for the Backglass window.\n"
                 "You can use 'xrandr' to get yours."},
@@ -131,6 +132,7 @@ namespace Tooltips {
             {"BackglassHeight",
                 "Height of the Backglass window in pixels.\n"
                 "This should be relative to your Backglass media height."},
+
             {"DMDMonitor",
                 "Index of the monitor for the DMD window.\n"
                 "You can use 'xrandr' to get yours."},
@@ -163,6 +165,16 @@ namespace Tooltips {
                 "This considers a square image."},
             {"WheelMediaMargin",
                 "Margin around the wheel image in pixels."},
+
+            {"PlayfieldMediaWidth",
+                "Width of the playfield media in pixels."},
+            {"PlayfieldMediaHeight",
+                "Height of the playfield media in pixels."},
+            {"PlayfieldMediaX",
+                "X position of the playfield media."},
+            {"PlayfieldMediaY",
+                "Y position of the playfield media."},
+            
             {"BackglassMediaWidth",
                 "Width of the backglass media in pixels."},
             {"BackglassMediaHeight",
@@ -171,6 +183,7 @@ namespace Tooltips {
                 "X position of the backglass media."},
             {"BackglassMediaY",
                 "Y position of the backglass media."},
+
             {"DMDMediaWidth",
                 "Width of the DMD media in pixels."},
             {"DMDMediaHeight",
@@ -194,6 +207,7 @@ namespace Tooltips {
             {"DefaultWheelImage",
                 "Relative path to the default wheel image.\n"
                 "Used when a table has no custom wheel art."},
+                
             {"DefaultPlayfieldVideo",
                 "Relative path to the default table preview video.\n"
                 "Used when a table has no custom video."},

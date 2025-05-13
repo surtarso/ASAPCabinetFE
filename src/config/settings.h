@@ -59,6 +59,11 @@ struct Settings {
     int wheelMediaSize;
     int wheelMediaMargin;
     
+    int playfieldMediaWidth;
+    int playfieldMediaHeight;
+    int playfieldMediaX;
+    int playfieldMediaY;
+
     int backglassMediaWidth;
     int backglassMediaHeight;
     int backglassMediaX;

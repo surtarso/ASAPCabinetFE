@@ -21,7 +21,7 @@ void Renderer::renderPlayfieldWindow(AssetManager &assets) {
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(playfieldRenderer_, &windowWidth, &windowHeight);
 
-    SDL_Rect playfieldRect = {0, 0, windowWidth, windowHeight}; // Full window
+    SDL_Rect playfieldRect = {settings.playfieldMediaX, settings.playfieldMediaY, settings.playfieldMediaWidth, settings.playfieldMediaHeight};
     SDL_Rect wheelRect = {0, 0, settings.wheelMediaSize, settings.wheelMediaSize};
     SDL_Rect titleRect = assets.titleRect;
 
