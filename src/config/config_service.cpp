@@ -37,19 +37,19 @@ void ConfigService::setDefaultSettings() {
     settings_.vpxSubCmd = "-Play";
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
 
-    settings_.defaultTableImage = exeDir + "img/default_table.png";
+    settings_.defaultPlayfieldImage = exeDir + "img/default_table.png";
     settings_.defaultBackglassImage = exeDir + "img/default_backglass.png";
     settings_.defaultDmdImage = exeDir + "img/default_dmd.png";
     settings_.defaultWheelImage = exeDir + "img/default_wheel.png";
-    settings_.defaultTableVideo = exeDir + "img/default_table.mp4";
+    settings_.defaultPlayfieldVideo = exeDir + "img/default_table.mp4";
     settings_.defaultBackglassVideo = exeDir + "img/default_backglass.mp4";
     settings_.defaultDmdVideo = exeDir + "img/default_dmd.mp4";
 
-    settings_.customTableImage = "images/table.png";
+    settings_.customPlayfieldImage = "images/table.png";
     settings_.customBackglassImage = "images/backglass.png";
     settings_.customDmdImage = "images/marquee.png";
     settings_.customWheelImage = "images/wheel.png";
-    settings_.customTableVideo = "video/table.mp4";
+    settings_.customPlayfieldVideo = "video/table.mp4";
     settings_.customBackglassVideo = "video/backglass.mp4";
     settings_.customDmdVideo = "video/dmd.mp4";
 
@@ -157,19 +157,19 @@ void ConfigService::parseIniFile() {
     settings_.vpxStartArgs = config["VPX"]["StartArgs"];
     settings_.vpxEndArgs = config["VPX"]["EndArgs"];
     // default media
-    settings_.defaultTableImage = exeDir + (config["DefaultMedia"]["DefaultTableImage"].empty() ? "img/default_table.png" : config["DefaultMedia"]["DefaultTableImage"]);
+    settings_.defaultPlayfieldImage = exeDir + (config["DefaultMedia"]["DefaultPlayfieldImage"].empty() ? "img/default_table.png" : config["DefaultMedia"]["DefaultPlayfieldImage"]);
     settings_.defaultBackglassImage = exeDir + (config["DefaultMedia"]["DefaultBackglassImage"].empty() ? "img/default_backglass.png" : config["DefaultMedia"]["DefaultBackglassImage"]);
     settings_.defaultDmdImage = exeDir + (config["DefaultMedia"]["DefaultDmdImage"].empty() ? "img/default_dmd.png" : config["DefaultMedia"]["DefaultDmdImage"]);
     settings_.defaultWheelImage = exeDir + (config["DefaultMedia"]["DefaultWheelImage"].empty() ? "img/default_wheel.png" : config["DefaultMedia"]["DefaultWheelImage"]);
-    settings_.defaultTableVideo = exeDir + (config["DefaultMedia"]["DefaultTableVideo"].empty() ? "img/default_table.mp4" : config["DefaultMedia"]["DefaultTableVideo"]);
+    settings_.defaultPlayfieldVideo = exeDir + (config["DefaultMedia"]["DefaultPlayfieldVideo"].empty() ? "img/default_table.mp4" : config["DefaultMedia"]["DefaultPlayfieldVideo"]);
     settings_.defaultBackglassVideo = exeDir + (config["DefaultMedia"]["DefaultBackglassVideo"].empty() ? "img/default_backglass.mp4" : config["DefaultMedia"]["DefaultBackglassVideo"]);
     settings_.defaultDmdVideo = exeDir + (config["DefaultMedia"]["DefaultDmdVideo"].empty() ? "img/default_dmd.mp4" : config["DefaultMedia"]["DefaultDmdVideo"]);
     // custom media
-    settings_.customTableImage = config["CustomMedia"]["TableImage"].empty() ? settings_.customTableImage : config["CustomMedia"]["TableImage"];
+    settings_.customPlayfieldImage = config["CustomMedia"]["PlayfieldImage"].empty() ? settings_.customPlayfieldImage : config["CustomMedia"]["PlayfieldImage"];
     settings_.customBackglassImage = config["CustomMedia"]["BackglassImage"].empty() ? settings_.customBackglassImage : config["CustomMedia"]["BackglassImage"];
     settings_.customDmdImage = config["CustomMedia"]["DmdImage"].empty() ? settings_.customDmdImage : config["CustomMedia"]["DmdImage"];
     settings_.customWheelImage = config["CustomMedia"]["WheelImage"].empty() ? settings_.customWheelImage : config["CustomMedia"]["WheelImage"];
-    settings_.customTableVideo = config["CustomMedia"]["TableVideo"].empty() ? settings_.customTableVideo : config["CustomMedia"]["TableVideo"];
+    settings_.customPlayfieldVideo = config["CustomMedia"]["PlayfieldVideo"].empty() ? settings_.customPlayfieldVideo : config["CustomMedia"]["PlayfieldVideo"];
     settings_.customBackglassVideo = config["CustomMedia"]["BackglassVideo"].empty() ? settings_.customBackglassVideo : config["CustomMedia"]["BackglassVideo"];
     settings_.customDmdVideo = config["CustomMedia"]["DmdVideo"].empty() ? settings_.customDmdVideo : config["CustomMedia"]["DmdVideo"];
     // windows

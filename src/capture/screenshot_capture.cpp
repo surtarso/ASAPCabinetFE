@@ -8,11 +8,11 @@
 
 ScreenshotCapture::ScreenshotCapture(const std::string& exeDir) : exeDir_(exeDir) {}
 
-void ScreenshotCapture::captureAllScreenshots(const std::string& tableImage, const std::string& backglassImage,
+void ScreenshotCapture::captureAllScreenshots(const std::string& playfieldImage, const std::string& backglassImage,
                                               const std::string& dmdImage, SDL_Window* window) {
     std::vector<std::thread> threads;
-    threads.emplace_back([this, tableImage]() {
-        captureScreenshot("Visual Pinball Player", tableImage);
+    threads.emplace_back([this, playfieldImage]() {
+        captureScreenshot("Visual Pinball Player", playfieldImage);
     });
 
     if (isWindowVisible("B2SBackglass")) {

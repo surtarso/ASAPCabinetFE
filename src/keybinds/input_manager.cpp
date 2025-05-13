@@ -22,8 +22,8 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, I
     screenshotManager_ = screenshotManager;
 
     for (size_t i = 0; i < tables_->size(); ++i) {
-        if (!tables_->at(i).tableName.empty()) {
-            char firstChar = tables_->at(i).tableName[0];
+        if (!tables_->at(i).title.empty()) {
+            char firstChar = tables_->at(i).title[0];
             char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
             if (letterIndex_.find(key) == letterIndex_.end()) {
                 letterIndex_[key] = i;
@@ -75,7 +75,7 @@ void InputManager::registerActions() {
 
     actionHandlers_["JumpPrevLetter"] = [this]() {
         LOG_DEBUG("Jump previous letter triggered");
-        char currentChar = tables_->at(*currentIndex_).tableName[0];
+        char currentChar = tables_->at(*currentIndex_).title[0];
         char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
         auto it = letterIndex_.find(key);
         if (it != letterIndex_.begin()) {
@@ -99,7 +99,7 @@ void InputManager::registerActions() {
 
     actionHandlers_["JumpNextLetter"] = [this]() {
         LOG_DEBUG("Jump next letter triggered");
-        char currentChar = tables_->at(*currentIndex_).tableName[0];
+        char currentChar = tables_->at(*currentIndex_).title[0];
         char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
         auto it = letterIndex_.find(key);
         if (it != letterIndex_.end() && std::next(it) != letterIndex_.end()) {

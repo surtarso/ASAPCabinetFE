@@ -41,23 +41,23 @@ std::vector<TableLoader> loadTableList(const Settings& settings) {
             TableLoader table;
             table.vpxFile = entry.path().string();
             table.folder = entry.path().parent_path().string();
-            table.tableName = entry.path().stem().string();
-            table.tableImage = getImagePath(table.folder, settings.customTableImage, settings.defaultTableImage);
+            table.title = entry.path().stem().string();
+            table.playfieldImage = getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
             table.wheelImage = getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
             table.backglassImage = getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
             table.dmdImage = getImagePath(table.folder, settings.customDmdImage, settings.defaultDmdImage);
-            table.tableVideo = getVideoPath(table.folder, settings.customTableVideo, settings.defaultTableVideo);
+            table.playfieldVideo = getVideoPath(table.folder, settings.customPlayfieldVideo, settings.defaultPlayfieldVideo);
             table.backglassVideo = getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
             table.dmdVideo = getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
             tables.push_back(table);
         }
     }
     std::sort(tables.begin(), tables.end(), [](const TableLoader& a, const TableLoader& b) {
-        return a.tableName < b.tableName;
+        return a.title < b.title;
     });
     letterIndex.clear();
     for (size_t i = 0; i < tables.size(); ++i) {
-        char firstChar = tables[i].tableName[0]; // Raw first char, no toupper yet
+        char firstChar = tables[i].title[0]; // Raw first char, no toupper yet
         if (std::isdigit(firstChar) || std::isalpha(firstChar)) {
             char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
             if (letterIndex.find(key) == letterIndex.end()) {

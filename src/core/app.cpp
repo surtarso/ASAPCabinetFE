@@ -78,12 +78,12 @@ void App::reloadFont() {
     } else {
         assets_->setFont(font_.get());
         const TableLoader& table = tables_[currentIndex_];
-        assets_->tableNameTexture.reset(assets_->renderText(
-            assets_->getPlayfieldRenderer(), font_.get(), table.tableName,
-            settings.fontColor, assets_->tableNameRect));
+        assets_->titleTexture.reset(assets_->renderText(
+            assets_->getPlayfieldRenderer(), font_.get(), table.title,
+            settings.fontColor, assets_->titleRect));
         int texWidth = 0;
-        if (assets_->tableNameTexture) {
-            SDL_QueryTexture(assets_->tableNameTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+        if (assets_->titleTexture) {
+            SDL_QueryTexture(assets_->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
         }
         LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
     }

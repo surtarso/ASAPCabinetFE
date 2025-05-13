@@ -16,7 +16,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
     LOG_DEBUG("Starting launchScreenshotMode for: " << vpxFile << " with exeDir: " << exeDir_);
     const Settings& settings = configManager_->getSettings();
     std::string tableFolder = vpxFile.substr(0, vpxFile.find_last_of('/'));
-    std::string tableImage = tableFolder + "/" + settings.customTableImage;
+    std::string playfieldImage = tableFolder + "/" + settings.customPlayfieldImage;
     std::string backglassImage = tableFolder + "/" + settings.customBackglassImage;
     std::string dmdImage = tableFolder + "/" + settings.customDmdImage;
 
@@ -56,7 +56,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 if (keybindProvider_->isAction(keyEvent, "ScreenshotKey")) {
                     LOG_INFO("Capture key pressed");
                     soundManager_->playSound("screenshot_take");
-                    capture_.captureAllScreenshots(tableImage, backglassImage, dmdImage, window_.getWindow());
+                    capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 } else if (keybindProvider_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_INFO("Quit key pressed");
                     soundManager_->playSound("screenshot_quit");
@@ -68,7 +68,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_INFO("Capturing screenshots with mouse click...");
                     soundManager_->playSound("screenshot_take");
-                    capture_.captureAllScreenshots(tableImage, backglassImage, dmdImage, window_.getWindow());
+                    capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 }
             }
         }

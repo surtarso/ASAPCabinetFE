@@ -41,11 +41,11 @@ namespace Tooltips {
                 "Relative path to the PuP topper image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"TableImage",
+            {"PlayfieldImage",
                 "Relative path to the table's preview image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPTableImage",
+            {"PuPPlayfieldImage",
                 "Relative path to the PuP table image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
@@ -73,11 +73,11 @@ namespace Tooltips {
                 "Relative path to the PuP topper video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"TableVideo",
+            {"PlayfieldVideo",
                 "Relative path to the table preview video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPTableVideo",
+            {"PuPPlayfieldVideo",
                 "Relative path to the PuP table video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
@@ -182,7 +182,7 @@ namespace Tooltips {
                 "Y position of the DMD media."},
 
             // Default Media
-            {"DefaultTableImage",
+            {"DefaultPlayfieldImage",
                 "Relative path to the default table preview image.\n"
                 "Used when a table has no custom image."},
             {"DefaultBackglassImage",
@@ -194,7 +194,7 @@ namespace Tooltips {
             {"DefaultWheelImage",
                 "Relative path to the default wheel image.\n"
                 "Used when a table has no custom wheel art."},
-            {"DefaultTableVideo",
+            {"DefaultPlayfieldVideo",
                 "Relative path to the default table preview video.\n"
                 "Used when a table has no custom video."},
             {"DefaultBackglassVideo",
