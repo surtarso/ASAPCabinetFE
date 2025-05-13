@@ -1,7 +1,7 @@
 TODO
 
 - use json instead of memory for file info
-- configurable window positions
+- configurable window positions (auto get positions from vpx.ini?)
 - configurable title margin
 - free title/wheel positions to config
 - live update of window size/monitor index
