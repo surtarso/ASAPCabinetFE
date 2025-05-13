@@ -5,7 +5,6 @@ TODO
 - configurable title margin
 - free title/wheel positions to config
 - live update of window size/monitor index
-- add window rotations
 
 UI:
 - add table info from vpx file (vpxtool?)

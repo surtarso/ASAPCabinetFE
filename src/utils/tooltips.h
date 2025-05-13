@@ -174,6 +174,10 @@ namespace Tooltips {
                 "X position of the playfield media."},
             {"PlayfieldMediaY",
                 "Y position of the playfield media."},
+            {"PlayfieldRotation",
+                "Rotation of the Playfield media.\n"
+                "0 = no rotation\n"
+                "90, 180, 270, -90, etc"},
             
             {"BackglassMediaWidth",
                 "Width of the backglass media in pixels."},
@@ -183,6 +187,10 @@ namespace Tooltips {
                 "X position of the backglass media."},
             {"BackglassMediaY",
                 "Y position of the backglass media."},
+            {"BackglassRotation",
+                "Rotation of the Backglass media.\n"
+                "0 = no rotation\n"
+                "90, 180, 270, -90, etc"},
 
             {"DMDMediaWidth",
                 "Width of the DMD media in pixels."},
@@ -193,6 +201,10 @@ namespace Tooltips {
                 "X position of the DMD media."},
             {"DMDMediaY",
                 "Y position of the DMD media."},
+            {"DMDRotation",
+                "Rotation of the DMD media.\n"
+                "0 = no rotation\n"
+                "90, 180, 270, -90, etc"},
 
             // Default Media
             {"DefaultPlayfieldImage",
@@ -207,7 +219,7 @@ namespace Tooltips {
             {"DefaultWheelImage",
                 "Relative path to the default wheel image.\n"
                 "Used when a table has no custom wheel art."},
-                
+
             {"DefaultPlayfieldVideo",
                 "Relative path to the default table preview video.\n"
                 "Used when a table has no custom video."},

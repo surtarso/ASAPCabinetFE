@@ -70,16 +70,19 @@ void ConfigService::setDefaultSettings() {
     settings_.playfieldMediaHeight = 1920;
     settings_.playfieldMediaX = 0;
     settings_.playfieldMediaY = 0;
+    settings_.playfieldRotation = 0;
 
     settings_.backglassMediaWidth = 1024;
     settings_.backglassMediaHeight = 768;
     settings_.backglassMediaX = 0;
     settings_.backglassMediaY = 0;
+    settings_.backglassRotation = 0;
 
     settings_.dmdMediaWidth = 1024;
     settings_.dmdMediaHeight = 256;
     settings_.dmdMediaX = 0;
     settings_.dmdMediaY = 0;
+    settings_.dmdRotation = 0;
 
     settings_.fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     settings_.fontColor = {255, 255, 255, 255};
@@ -195,16 +198,19 @@ void ConfigService::parseIniFile() {
     settings_.playfieldMediaHeight = std::stoi(config["MediaDimensions"]["PlayfieldMediaHeight"].empty() ? "1920" : config["MediaDimensions"]["PlayfieldMediaHeight"]);
     settings_.playfieldMediaX = std::stoi(config["MediaDimensions"]["PlayfieldMediaX"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaX"]);
     settings_.playfieldMediaY = std::stoi(config["MediaDimensions"]["PlayfieldMediaY"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaY"]);
+    settings_.playfieldRotation = std::stoi(config["MediaDimensions"]["PlayfieldRotation"].empty() ? "0" : config["MediaDimensions"]["PlayfieldRotation"]);
 
     settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassMediaWidth"]);
     settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassMediaHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassMediaHeight"]);
     settings_.backglassMediaX = std::stoi(config["MediaDimensions"]["BackglassMediaX"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaX"]);
     settings_.backglassMediaY = std::stoi(config["MediaDimensions"]["BackglassMediaY"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaY"]);
+    settings_.backglassRotation = std::stoi(config["MediaDimensions"]["BackglassRotation"].empty() ? "0" : config["MediaDimensions"]["BackglassRotation"]);
 
     settings_.dmdMediaWidth = std::stoi(config["MediaDimensions"]["DMDMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["DMDMediaWidth"]);
     settings_.dmdMediaHeight = std::stoi(config["MediaDimensions"]["DMDMediaHeight"].empty() ? "256" : config["MediaDimensions"]["DMDMediaHeight"]);
     settings_.dmdMediaX = std::stoi(config["MediaDimensions"]["DMDMediaX"].empty() ? "0" : config["MediaDimensions"]["DMDMediaX"]);
     settings_.dmdMediaY = std::stoi(config["MediaDimensions"]["DMDMediaY"].empty() ? "0" : config["MediaDimensions"]["DMDMediaY"]);
+    settings_.dmdRotation = std::stoi(config["MediaDimensions"]["DMDRotation"].empty() ? "0" : config["MediaDimensions"]["DMDRotation"]);
 
     // font
     settings_.fontPath = config["TitleDisplay"]["FontPath"].empty() ? settings_.fontPath : config["TitleDisplay"]["FontPath"];
