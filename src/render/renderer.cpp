@@ -5,12 +5,15 @@
 #include "backends/imgui_impl_sdlrenderer2.h"
 #include "config/config_service.h"
 
-Renderer::Renderer(SDL_Renderer *playfieldRenderer, SDL_Renderer *backglassRenderer)
-    : playfieldRenderer_(playfieldRenderer), backglassRenderer_(backglassRenderer) {}
+Renderer::Renderer(SDL_Renderer *playfieldRenderer, SDL_Renderer *backglassRenderer, SDL_Renderer *dmdRenderer)
+    : playfieldRenderer_(playfieldRenderer),
+    backglassRenderer_(backglassRenderer),
+    dmdRenderer_(dmdRenderer) {}
 
 void Renderer::render(AssetManager &assets) {
     renderPlayfieldWindow(assets);
     renderBackglassWindow(assets);
+    renderDMDWindow(assets);
 }
 
 void Renderer::renderPlayfieldWindow(AssetManager &assets) {
@@ -55,8 +58,7 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(backglassRenderer_, &windowWidth, &windowHeight);
 
-    SDL_Rect backglassRect = {0, 0, windowWidth, settings.backglassMediaHeight};
-    SDL_Rect dmdRect = {0, backglassRect.h, windowWidth, settings.dmdMediaHeight};
+    SDL_Rect backglassRect = {0, 0, settings.backglassMediaWidth, settings.backglassMediaHeight};
 
     if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture) {
         updateVideoTexture(assets.backglassVideoPlayer);
@@ -64,10 +66,19 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
     } else if (assets.backglassTexture) {
         SDL_RenderCopy(backglassRenderer_, assets.backglassTexture.get(), nullptr, &backglassRect);
     }
+}
+
+void Renderer::renderDMDWindow(AssetManager &assets) {
+    const Settings &settings = assets.getSettingsManager()->getSettings();
+    int windowWidth, windowHeight;
+    SDL_GetRendererOutputSize(dmdRenderer_, &windowWidth, &windowHeight);
+
+    SDL_Rect dmdRect = {0, 0, settings.dmdMediaWidth, settings.dmdMediaHeight};
+
     if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture) {
         updateVideoTexture(assets.dmdVideoPlayer);
-        SDL_RenderCopy(backglassRenderer_, assets.dmdVideoPlayer->texture, nullptr, &dmdRect);
+        SDL_RenderCopy(dmdRenderer_, assets.dmdVideoPlayer->texture, nullptr, &dmdRect);
     } else if (assets.dmdTexture) {
-        SDL_RenderCopy(backglassRenderer_, assets.dmdTexture.get(), nullptr, &dmdRect);
+        SDL_RenderCopy(dmdRenderer_, assets.dmdTexture.get(), nullptr, &dmdRect);
     }
 }

@@ -188,6 +188,8 @@ void App::render() {
         SDL_RenderClear(windowManager_->getPlayfieldRenderer());
         SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(windowManager_->getBackglassRenderer());
+        SDL_SetRenderDrawColor(windowManager_->getDMDRenderer(), 0, 0, 0, 255);
+        SDL_RenderClear(windowManager_->getDMDRenderer());
 
         guiManager_->newFrame();
         renderer_->render(*assets_);
@@ -198,6 +200,7 @@ void App::render() {
 
         SDL_RenderPresent(windowManager_->getPlayfieldRenderer());
         SDL_RenderPresent(windowManager_->getBackglassRenderer());
+        SDL_RenderPresent(windowManager_->getDMDRenderer());
     }
 }
 
