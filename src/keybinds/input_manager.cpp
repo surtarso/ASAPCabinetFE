@@ -6,15 +6,17 @@
 
 InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
-      settingsManager_(nullptr), currentIndex_(nullptr), tables_(nullptr), showConfig_(nullptr),
-      exeDir_(""), screenshotManager_(nullptr) {}
+      settingsManager_(nullptr), windowManager_(nullptr), currentIndex_(nullptr),
+      tables_(nullptr), showConfig_(nullptr), exeDir_(""), screenshotManager_(nullptr) {}
 
 void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableLoader>& tables,
-                                   bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager) {
+                                   bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
+                                   IWindowManager* windowManager) {
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
+    windowManager_ = windowManager;
     currentIndex_ = &currentIndex;
     tables_ = &tables;
     showConfig_ = &showConfig;
@@ -31,7 +33,6 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, I
         }
     }
 }
-
 void InputManager::registerActions() {
     actionHandlers_["PreviousTable"] = [this]() {
         LOG_DEBUG("Previous table triggered");
@@ -200,6 +201,7 @@ void InputManager::registerActions() {
 }
 
 void InputManager::handleEvent(const SDL_Event& event) {
+    static const Uint32 DOUBLE_CLICK_TIME = 500;
     if (event.type == SDL_QUIT) {
         quit_ = true;
         LOG_DEBUG("SDL_QUIT received");
@@ -217,6 +219,23 @@ void InputManager::handleEvent(const SDL_Event& event) {
     if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
         actionHandlers_["ToggleConfig"]();
         return;
+    }
+
+    if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && !*showConfig_) {
+        Uint32 windowID = event.button.windowID;
+        Uint32 currentTime = SDL_GetTicks();
+        auto it = lastClickTimes_.find(windowID);
+        if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
+            // Double-click detected
+            LOG_DEBUG("Double-click detected on window ID: " << windowID);
+            int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
+            windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+            settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+            soundManager_->playSound("config_save");
+            lastClickTimes_.erase(it); // Clear to reset double-click detection
+        } else {
+            lastClickTimes_[windowID] = currentTime;
+        }
     }
 
     if (*showConfig_) {

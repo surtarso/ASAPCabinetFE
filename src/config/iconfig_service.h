@@ -19,6 +19,7 @@ public:
     virtual const std::map<std::string, SettingsSection>& getIniData() const = 0;
     virtual void setIniData(const std::map<std::string, SettingsSection>& iniData) = 0;
     virtual KeybindManager& getKeybindManager() = 0;
+    virtual void updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) = 0;
 };
 
 #endif // ICONFIG_SERVICE_H

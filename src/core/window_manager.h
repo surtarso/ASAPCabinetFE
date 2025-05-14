@@ -18,12 +18,13 @@ public:
     SDL_Renderer* getBackglassRenderer() override { return backglassRenderer_.get(); }
     SDL_Renderer* getDMDRenderer() override { return dmdRenderer_.get(); }
     void updateWindows(const Settings& settings) override;
+    void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, int& dmdX, int& dmdY) override;
 
 private:
     void createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>& window,
                              std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>& renderer,
                              const char* title, int monitor, int width, int height,
-                             float dpiScale, bool enableDpiScaling);
+                             int posX, int posY, float dpiScale, bool enableDpiScaling);
 
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> playfieldWindow_;
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> backglassWindow_;

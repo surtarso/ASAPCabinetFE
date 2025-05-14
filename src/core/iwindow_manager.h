@@ -14,6 +14,8 @@ public:
     virtual SDL_Renderer* getBackglassRenderer() = 0;
     virtual SDL_Renderer* getDMDRenderer() = 0;
     virtual void updateWindows(const Settings& settings) = 0;
+    virtual void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
+                                    int& dmdX, int& dmdY) = 0;
 };
 
 #endif // IWINDOW_MANAGER_H

@@ -48,9 +48,11 @@ std::unique_ptr<ScreenshotManager> DependencyFactory::createScreenshotManager(co
 std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, 
                                                                    ScreenshotManager* screenshotManager) {
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
-    size_t dummyIndex = 0;  // Already added for size_t&
-    bool dummyShowConfig = false;  // Added: Temporary bool variable
-    input->setDependencies(nullptr, nullptr, configService, dummyIndex, {}, dummyShowConfig, "", screenshotManager);  // Use dummies
+    size_t dummyIndex = 0;
+    bool dummyShowConfig = false;
+    std::vector<TableLoader> dummyTables; // Added declaration
+    input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
+                           dummyShowConfig, "", screenshotManager, nullptr);
     input->registerActions();
     return input;
 }
