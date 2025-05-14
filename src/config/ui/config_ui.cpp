@@ -20,7 +20,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       showConfig_(showConfig),
       standaloneMode_(standaloneMode),
       sectionRenderer_(configService, currentSection_, inputHandler_),
-      buttonHandler_(configService, app, showConfig_, hasChanges_, saveMessageTimer_, inputHandler_, standaloneMode),
+      buttonHandler_(showConfig_, saveMessageTimer_, inputHandler_),
       inputHandler_(keybindProvider) {
 
     // "Use" fields to silence warnings

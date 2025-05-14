@@ -10,19 +10,15 @@ class App;
 
 class ButtonHandler {
 public:
-    ButtonHandler(IConfigService* configService, App* app, bool& showConfig, bool& hasChanges, float& saveMessageTimer, const InputHandler& inputHandler, bool standaloneMode);
+    ButtonHandler(bool& showConfig, float& saveMessageTimer, const InputHandler& inputHandler);
     void renderButtonPane();
     void setOnSave(std::function<void()> onSave) { onSave_ = onSave; }
     void setOnClose(std::function<void()> onClose) { onClose_ = onClose; }
 
 private:
-    IConfigService* configService_;
-    App* app_;
     bool& showConfig_;
-    bool& hasChanges_;
     float& saveMessageTimer_;
     const InputHandler& inputHandler_;
-    bool standaloneMode_; // Added to store standalone mode
     std::function<void()> onSave_;
     std::function<void()> onClose_;
 };
