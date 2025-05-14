@@ -160,6 +160,49 @@ void renderSliderInt(const std::string& key, std::string& value, bool& hasChange
     }
 }
 
+// Helper function to snap rotation to valid values (0, ±90, ±180, ±270, ±360)
+static int snapRotation(int value) {
+    // Valid rotation values
+    static const std::vector<int> validRotations = {-360, -270, -180, -90, 0, 90, 180, 270, 360};
+    
+    // Find the closest valid rotation
+    int closest = 0;
+    int minDiff = std::abs(value - closest);
+    for (int rot : validRotations) {
+        int diff = std::abs(value - rot);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = rot;
+        }
+    }
+    return closest;
+}
+
+void renderRotationSlider(const std::string& key, std::string& value, bool& hasChanges, 
+                         const std::string& section, int min, int max) {
+    int intValue = 0;
+    try {
+        intValue = std::stoi(value);
+        // Ensure initial value is a valid rotation
+        intValue = snapRotation(intValue);
+    } catch (...) {
+        LOG_ERROR("Invalid rotation value: " << value << ", defaulting to 0");
+        intValue = 0; // Default to 0 for invalid inputs
+    }
+    
+    ImGui::SetNextItemWidth(-1);
+    int tempValue = intValue; // Use a temporary value for the slider
+    if (ImGui::SliderInt(("##rotationSlider_" + key).c_str(), &tempValue, min, max, "%d°")) {
+        // Snap the value when the slider is released or changed
+        int snappedValue = snapRotation(tempValue);
+        if (snappedValue != intValue) {
+            value = std::to_string(snappedValue);
+            hasChanges = true;
+            LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        }
+    }
+}
+
 void renderMonitorCombo(const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
     int monitorIndex = 0;
     try {
@@ -168,7 +211,7 @@ void renderMonitorCombo(const std::string& key, std::string& value, bool& hasCha
         LOG_ERROR("Invalid monitor index: " << value << ", defaulting to 0");
     }
     const char* monitors[] = {"0", "1", "2"};
-    ImGui::SetNextItemWidth(-1);
+    ImGui::SetNextItemWidth(100);
     if (ImGui::Combo("##monitor", &monitorIndex, monitors, IM_ARRAYSIZE(monitors))) {
         value = std::to_string(monitorIndex);
         hasChanges = true;
@@ -210,6 +253,18 @@ void renderGenericText(const std::string& key, std::string& value, bool& hasChan
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
     ImGui::SetNextItemWidth(-1);
+    if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
+        value = std::string(buffer);
+        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        hasChanges = true;
+    }
+}
+
+void renderGenericTextShort(const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+    char buffer[16];
+    strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
+    ImGui::SetNextItemWidth(100);
     if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
         value = std::string(buffer);
         LOG_DEBUG("Updated: " << section << "." << key << " = " << value);

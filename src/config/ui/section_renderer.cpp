@@ -40,29 +40,56 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["PlayfieldMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderMonitorCombo(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["BackglassMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderMonitorCombo(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderMonitorCombo(key, value, hasChanges_, currentSection_);
-    };
     keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["PlayfieldHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["PlayfieldMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["PlayfieldMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["PlayfieldRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["BackglassMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderMonitorCombo(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["BackglassHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["BackglassMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["BackglassMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["BackglassRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["DMDMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderMonitorCombo(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["DMDWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["DMDHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["DMDMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["DMDMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
 }
 
@@ -74,6 +101,9 @@ void SectionRenderer::renderKeyValue(const std::string& key, std::string& value,
         keyRenderers_[key](key, value, section); // Check dispatcher first
     } else if (key.find("Path") != std::string::npos || key.find("ExecutableCmd") != std::string::npos) {
         renderPathOrExecutable(key, value, hasChanges_, currentSection_); // Only for non-FontPath "Path" keys
+    } else if (key.back() == 'X' || key.back() == 'Y' ||
+                key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {
+        renderGenericTextShort(key, value, hasChanges_, currentSection_);
     } else {
         renderGenericText(key, value, hasChanges_, currentSection_);
     }
