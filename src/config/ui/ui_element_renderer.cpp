@@ -19,7 +19,7 @@ void renderKeybind(const std::string& key, std::string& value, InputHandler& inp
     }
 }
 
-void renderColorPicker([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderColorPicker([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     std::vector<int> rgba(4, 0);
     std::stringstream ss(value);
     std::string token;
@@ -44,7 +44,7 @@ void renderColorPicker([[maybe_unused]] const std::string& key, std::string& val
     ImGui::PopStyleVar();
 }
 
-void renderFontPath([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, const std::vector<std::string>& availableFonts) {
+void renderFontPath([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, const std::vector<std::string>& availableFonts) {
     ImGui::SetNextItemWidth(-1); // Full width
     std::string displayValue = value.empty() ? "None" : std::filesystem::path(value).filename().string();
     static std::string preview = displayValue; // Retain preview across frames
@@ -64,7 +64,7 @@ void renderFontPath([[maybe_unused]] const std::string& key, std::string& value,
     }
 }
 
-void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[1024];
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
@@ -107,7 +107,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
     }
 }
 
-void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     bool boolValue = (value == "true");
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
@@ -116,7 +116,7 @@ void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value,
     }
 }
 
-void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, SettingsSection& sectionData) {
+void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, SettingsSection& sectionData) {
     float dpiScale = 1.0f;
     try {
         dpiScale = std::stof(value);
@@ -144,7 +144,7 @@ void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value,
     }
 }
 
-void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min, int max) {
+void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, int min, int max) {
     int intValue = 0;
     try {
         intValue = std::stoi(value);
@@ -178,7 +178,7 @@ static int snapRotation(int value) {
     return closest;
 }
 
-void renderRotationSlider(const std::string& key, std::string& value, bool& hasChanges, 
+void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, 
                          [[maybe_unused]] const std::string& section, int min, int max) {
     int intValue = 0;
     try {
@@ -203,7 +203,7 @@ void renderRotationSlider(const std::string& key, std::string& value, bool& hasC
     }
 }
 
-void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     int monitorIndex = 0;
     try {
         monitorIndex = std::stoi(value);
@@ -219,7 +219,7 @@ void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& va
     }
 }
 
-void renderResolution([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderResolution([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[16];
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
@@ -248,7 +248,7 @@ void renderResolution([[maybe_unused]] const std::string& key, std::string& valu
     }
 }
 
-void renderGenericText([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderGenericText([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[1024];
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
@@ -260,7 +260,7 @@ void renderGenericText([[maybe_unused]] const std::string& key, std::string& val
     }
 }
 
-void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
+void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[16];
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
