@@ -13,7 +13,7 @@ class SectionRenderer {
 public:
     SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler);
     void renderSectionsPane(const std::vector<std::string>& sectionOrder);
-    void renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData);
+    void renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData, bool& hasChanges);
 
 private:
     IConfigService* configService_;
