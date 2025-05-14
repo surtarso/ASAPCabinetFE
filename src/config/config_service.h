@@ -25,6 +25,7 @@ public:
     const std::map<std::string, SettingsSection>& getIniData() const override { return iniData_; }
     void setIniData(const std::map<std::string, SettingsSection>& iniData) override;
     KeybindManager& getKeybindManager() override { return keybindManager_; }
+    void updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) override;
 
 private:
     std::string configPath_;

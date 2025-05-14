@@ -135,7 +135,6 @@ void App::loadTables() {
 
 void App::initializeDependencies() {
     configManager_ = DependencyFactory::createConfigService(configPath_);
-    // Logger already initialized in constructor, no need to re-initialize here
     if (!isConfigValid()) {
         LOG_INFO("Config invalid, running initial config");
         if (!runInitialConfig(configManager_.get(), configPath_)) {
@@ -160,7 +159,8 @@ void App::initializeDependencies() {
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get());
+                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
+                                   windowManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 

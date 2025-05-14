@@ -38,14 +38,20 @@ struct Settings {
     int playfieldWindowMonitor;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
+    int playfieldX;
+    int playfieldY;
 
     int backglassWindowMonitor;
     int backglassWindowWidth;
     int backglassWindowHeight;
+    int backglassX;
+    int backglassY;
 
     int dmdWindowMonitor;
     int dmdWindowWidth;
     int dmdWindowHeight;
+    int dmdX;
+    int dmdY;
 
     // Title display
     std::string fontPath;

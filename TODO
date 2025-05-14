@@ -1,6 +1,5 @@
 TODO
 
-- configurable window positions (auto get positions from vpx.ini?)
 - use json instead of memory for file info
 
 UI:

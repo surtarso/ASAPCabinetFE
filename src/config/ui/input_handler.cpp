@@ -2,7 +2,9 @@
 #include "utils/logging.h"
 
 InputHandler::InputHandler(IKeybindProvider* keybindProvider)
-    : keybindProvider_(keybindProvider) {}
+    : keybindProvider_(keybindProvider) {
+        LOG_DEBUG("InputHandler initialized with keybindProvider: " << keybindProvider_);
+    }
 
 void InputHandler::startCapturing(const std::string& keyName) {
     isCapturingKey_ = true;

@@ -22,6 +22,13 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       sectionRenderer_(configService, currentSection_, inputHandler_),
       buttonHandler_(configService, app, showConfig_, hasChanges_, saveMessageTimer_, inputHandler_, standaloneMode),
       inputHandler_(keybindProvider) {
+
+    // "Use" fields to silence warnings
+    LOG_DEBUG("ConfigUI initialized with keybindProvider: " << keybindProvider_);
+    LOG_DEBUG("Assets: " << assets_); // maybe use for a preview
+    LOG_DEBUG("Current index: " << (currentIndex_ ? *currentIndex_ : 0)); // table slider idea later
+    LOG_DEBUG("Tables size: " << (tables_ ? tables_->size() : 0)); 
+
     // Initialize currentSection_ to the first visible section in sectionOrder_
     for (const auto& section : sectionOrder_) {
         if (standaloneMode_ && section != "VPX") {

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <algorithm>
 
 ConfigService::ConfigService(const std::string& configPath) 
     : configPath_(configPath), keybindManager_() {
@@ -31,6 +32,34 @@ void ConfigService::setIniData(const std::map<std::string, SettingsSection>& ini
     parseIniFile(); // Sync settings_ and keybindManager_
 }
 
+void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) {
+    auto& windowSettings = iniData_["WindowSettings"];
+    
+    // Helper function to update or add a key-value pair
+    auto updateKeyValue = [&](const std::string& key, const std::string& value) {
+        auto& kv = windowSettings.keyValues;
+        auto it = std::find_if(kv.begin(), kv.end(),
+                               [&key](const auto& pair) { return pair.first == key; });
+        if (it != kv.end()) {
+            it->second = value;
+        } else {
+            kv.emplace_back(key, value);
+            windowSettings.keyToLineIndex[key] = originalLines_.size();
+        }
+    };
+
+    updateKeyValue("PlayfieldX", std::to_string(playfieldX));
+    updateKeyValue("PlayfieldY", std::to_string(playfieldY));
+    updateKeyValue("BackglassX", std::to_string(backglassX));
+    updateKeyValue("BackglassY", std::to_string(backglassY));
+    updateKeyValue("DMDX", std::to_string(dmdX));
+    updateKeyValue("DMDY", std::to_string(dmdY));
+
+    saveConfig(iniData_);
+    LOG_INFO("Window positions saved: P(" << playfieldX << "," << playfieldY << "), B("
+                 << backglassX << "," << backglassY << "), D(" << dmdX << "," << dmdY << ")");
+}
+
 void ConfigService::setDefaultSettings() {
     settings_.vpxTablesPath = "/home/tarso/Games/vpinball/build/tables/";
     settings_.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
@@ -56,13 +85,21 @@ void ConfigService::setDefaultSettings() {
     settings_.playfieldWindowMonitor = 1;
     settings_.playfieldWindowWidth = 1080;
     settings_.playfieldWindowHeight = 1920;
+    settings_.playfieldX = -1;
+    settings_.playfieldY = -1;
+
     settings_.backglassWindowMonitor = 0;
     settings_.backglassWindowWidth = 1024;
     settings_.backglassWindowHeight = 768;
+    settings_.backglassX = -1;
+    settings_.backglassY = -1;
+
     settings_.dmdWindowMonitor = 0;
     settings_.dmdWindowWidth = 1024;
     settings_.dmdWindowHeight = 256;
-
+    settings_.dmdX = -1;
+    settings_.dmdY = -1;
+    
     settings_.wheelMediaHeight = 350;
     settings_.wheelMediaWidth = 350;
     settings_.wheelMediaX = 720;
@@ -188,12 +225,21 @@ void ConfigService::parseIniFile() {
     settings_.playfieldWindowMonitor = std::stoi(config["WindowSettings"]["PlayfieldMonitor"].empty() ? "1" : config["WindowSettings"]["PlayfieldMonitor"]);
     settings_.playfieldWindowWidth = std::stoi(config["WindowSettings"]["PlayfieldWidth"].empty() ? "1080" : config["WindowSettings"]["PlayfieldWidth"]);
     settings_.playfieldWindowHeight = std::stoi(config["WindowSettings"]["PlayfieldHeight"].empty() ? "1920" : config["WindowSettings"]["PlayfieldHeight"]);
+    settings_.playfieldX = std::stoi(config["WindowSettings"]["PlayfieldX"].empty() ? "-1" : config["WindowSettings"]["PlayfieldX"]);
+    settings_.playfieldY = std::stoi(config["WindowSettings"]["PlayfieldY"].empty() ? "-1" : config["WindowSettings"]["PlayfieldY"]);
+    
     settings_.backglassWindowMonitor = std::stoi(config["WindowSettings"]["BackglassMonitor"].empty() ? "0" : config["WindowSettings"]["BackglassMonitor"]);
     settings_.backglassWindowWidth = std::stoi(config["WindowSettings"]["BackglassWidth"].empty() ? "1024" : config["WindowSettings"]["BackglassWidth"]);
     settings_.backglassWindowHeight = std::stoi(config["WindowSettings"]["BackglassHeight"].empty() ? "768" : config["WindowSettings"]["BackglassHeight"]);
+    settings_.backglassX = std::stoi(config["WindowSettings"]["BackglassX"].empty() ? "-1" : config["WindowSettings"]["BackglassX"]);
+    settings_.backglassY = std::stoi(config["WindowSettings"]["BackglassY"].empty() ? "-1" : config["WindowSettings"]["BackglassY"]);
+    
     settings_.dmdWindowMonitor = std::stoi(config["WindowSettings"]["DMDMonitor"].empty() ? "0" : config["WindowSettings"]["DMDMonitor"]);
     settings_.dmdWindowWidth = std::stoi(config["WindowSettings"]["DMDWidth"].empty() ? "1024" : config["WindowSettings"]["DMDWidth"]);
     settings_.dmdWindowHeight = std::stoi(config["WindowSettings"]["DMDHeight"].empty() ? "256" : config["WindowSettings"]["DMDHeight"]);
+    settings_.dmdX = std::stoi(config["WindowSettings"]["DMDX"].empty() ? "-1" : config["WindowSettings"]["DMDX"]);
+    settings_.dmdY = std::stoi(config["WindowSettings"]["DMDY"].empty() ? "-1" : config["WindowSettings"]["DMDY"]);
+    
     // media size/pos
     settings_.wheelMediaHeight = std::stoi(config["MediaDimensions"]["WheelMediaHeight"].empty() ? "350" : config["MediaDimensions"]["WheelMediaHeight"]);
     settings_.wheelMediaWidth = std::stoi(config["MediaDimensions"]["WheelMediaWidth"].empty() ? "350" : config["MediaDimensions"]["WheelMediaWidth"]);

@@ -9,8 +9,10 @@
 #include "render/table_loader.h"
 #include "capture/screenshot_manager.h"
 #include "config/ui/config_ui.h"
+#include "core/iwindow_manager.h"
 #include <map>
 #include <vector>
+#include <unordered_map>
 
 class InputManager : public IInputManager {
 public:
@@ -19,7 +21,8 @@ public:
     void registerActions() override;
     void setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableLoader>& tables,
-                         bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager) override;  // Added ScreenshotManager*
+                         bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
+                         IWindowManager* windowManager) override;
     bool isConfigActive() const override { return *showConfig_; }
     bool shouldQuit() const override { return quit_; }
     void setRuntimeEditor(ConfigUI* editor) override { runtimeEditor_ = editor; }
@@ -34,6 +37,7 @@ private:
     AssetManager* assets_;
     ISoundManager* soundManager_;
     IConfigService* settingsManager_;
+    IWindowManager* windowManager_; // Added
     size_t* currentIndex_;
     const std::vector<TableLoader>* tables_;
     bool* showConfig_;
@@ -43,7 +47,8 @@ private:
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
     bool inScreenshotMode_ = false;
-    ScreenshotManager* screenshotManager_;  // Changed to raw pointer, injected
+    ScreenshotManager* screenshotManager_;
+    std::unordered_map<Uint32, Uint32> lastClickTimes_; // Double-click detection
 };
 
 #endif // INPUT_MANAGER_H
