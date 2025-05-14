@@ -3,8 +3,8 @@
 #include "imgui.h"
 #include "utils/logging.h"
 
-ButtonHandler::ButtonHandler(IConfigService* configService, App* app, bool& showConfig, bool& hasChanges, float& saveMessageTimer, const InputHandler& inputHandler, bool standaloneMode)
-    : configService_(configService), app_(app), showConfig_(showConfig), hasChanges_(hasChanges), saveMessageTimer_(saveMessageTimer), inputHandler_(inputHandler), standaloneMode_(standaloneMode) {}
+ButtonHandler::ButtonHandler(bool& showConfig, float& saveMessageTimer, const InputHandler& inputHandler)
+    : showConfig_(showConfig), saveMessageTimer_(saveMessageTimer), inputHandler_(inputHandler) {}
 
 void ButtonHandler::renderButtonPane() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
