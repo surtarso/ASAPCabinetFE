@@ -9,19 +9,19 @@ ButtonHandler::ButtonHandler(IConfigService* configService, App* app, bool& show
 void ButtonHandler::renderButtonPane() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
     if (ImGui::Button("Save", ImVec2(100, 0))) {
-        if (onSave_) onSave_();
-        configService_->saveConfig(configService_->getIniData());
-        if (app_) app_->reloadFont(standaloneMode_);
-        hasChanges_ = false;
-        saveMessageTimer_ = 1.5f;
-        LOG_DEBUG("Config saved");
+        if (onSave_) {
+            onSave_(); // Calls ConfigUI::saveConfig
+            LOG_DEBUG("Save button pressed, onSave_ called");
+        }
     }
     ImGui::SameLine();
     if (ImGui::Button("Close", ImVec2(100, 0))) {
-        if (onClose_) onClose_();
+        if (onClose_) {
+            onClose_(); // Calls ConfigUI::discardChanges
+            LOG_DEBUG("Config closed");
+        }
         saveMessageTimer_ = 0.0f;
         showConfig_ = false;
-        LOG_DEBUG("Config closed");
     }
     ImGui::SameLine();
     if (saveMessageTimer_ > 0.0f) {

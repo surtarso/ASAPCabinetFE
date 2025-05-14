@@ -108,7 +108,7 @@ void SectionRenderer::renderKeyValue(const std::string& key, std::string& value,
     } else if (key.find("Path") != std::string::npos || key.find("VPinballXPath") != std::string::npos) {
         renderPathOrExecutable(key, value, hasChanges_, currentSection_); // Only for non-FontPath "Path" keys
     } else if (key.back() == 'X' || key.back() == 'Y' ||
-                key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {
+               key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {
         renderGenericTextShort(key, value, hasChanges_, currentSection_);
     } else {
         renderGenericText(key, value, hasChanges_, currentSection_);
@@ -150,7 +150,7 @@ void SectionRenderer::renderSectionsPane(const std::vector<std::string>& section
     ImGui::EndChild();
 }
 
-void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData) {
+void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData, bool& hasChanges) {
     ImGui::BeginChild("KeyValuesPane", ImVec2(0, 0), false);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
     ImGui::TextColored(ImVec4(0.9f, 0.9f, 1.0f, 1.0f), "Settings - %s", currentSection_.c_str());
@@ -159,9 +159,10 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
     if (!currentSection_.empty() && iniData.count(currentSection_)) {
         auto& section = iniData[currentSection_];
         float maxKeyWidth = 150.0f;
+        hasChanges_ = false; 
 
-        std::vector<std::pair<std::string, std::string>> keyValuesCopy = section.keyValues;
-        for (auto& [key, value] : keyValuesCopy) {
+        // Update keyValues directly instead of using a copy
+        for (auto& [key, value] : section.keyValues) {
             ImGui::PushID(key.c_str());
             ImGui::AlignTextToFramePadding();
             ImGui::Text("%s:", key.c_str());
@@ -177,10 +178,14 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             renderTooltip(key);
             ImGui::SameLine();
 
+            bool oldHasChanges = hasChanges;
             renderKeyValue(key, value, section);
+            if (hasChanges_ && !oldHasChanges) {
+                hasChanges = true; // Propagate to ConfigUI
+                LOG_DEBUG("Change detected in " << currentSection_ << "." << key << " = " << value);
+            }
             ImGui::PopID();
         }
-        section.keyValues = keyValuesCopy;
     }
     ImGui::PopStyleVar();
     ImGui::EndChild();

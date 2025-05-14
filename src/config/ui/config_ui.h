@@ -47,6 +47,7 @@ private:
 
     static const std::vector<std::string> sectionOrder_;
     void discardChanges(); // To discard changes
+    bool hasWindowSettingsChanged() const;
 };
 
 #endif // CONFIG_UI_H

@@ -60,22 +60,10 @@ void App::run() {
     }
 }
 
-void App::onConfigSaved(bool isStandalone) {
-    LOG_DEBUG("Config saved detected, updating windows and assets");
-    if (!isStandalone) {
-        // Update windows
-        // windowManager_->updateWindows(configManager_->getSettings());
-        // // Reload assets
-        // assets_->reloadAssets(windowManager_->getPlayfieldRenderer(),
-        //                      windowManager_->getBackglassRenderer(),
-        //                      windowManager_->getDMDRenderer(),
-        //                      font_.get(),
-        //                      currentIndex_,
-        //                      tables_);
-        LOG_DEBUG("Windows and assets updated after config save");
-    } else {
-        LOG_DEBUG("Skipping window and asset reload in standalone mode");
-    }
+void App::reloadWindows() {
+    LOG_DEBUG("Config saved detected, updating windows");
+    windowManager_->updateWindows(configManager_->getSettings());
+    LOG_DEBUG("Windows updated after config save");
 }
 
 void App::reloadFont(bool isStandalone) {

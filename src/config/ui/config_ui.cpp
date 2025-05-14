@@ -107,7 +107,7 @@ void ConfigUI::drawGUI() {
     ImGui::SameLine();
     ImGui::BeginChild("RightPane", ImVec2(0, paneHeight), false);
     auto& iniData = const_cast<std::map<std::string, SettingsSection>&>(configService_->getIniData());
-    sectionRenderer_.renderKeyValuesPane(iniData);
+    sectionRenderer_.renderKeyValuesPane(iniData, hasChanges_);
     ImGui::EndChild();
 
     ImGui::BeginChild("ButtonPane", ImVec2(0, buttonHeight), false);
@@ -125,13 +125,68 @@ void ConfigUI::drawGUI() {
     ImGui::End();
 }
 
+bool ConfigUI::hasWindowSettingsChanged() const {
+    const auto& currentIniData = configService_->getIniData();
+    auto currentIt = currentIniData.find("WindowSettings");
+    auto lastIt = lastSavedIniData_.find("WindowSettings");
+
+    if (currentIt == currentIniData.end() && lastIt != lastSavedIniData_.end()) {
+        LOG_DEBUG("WindowSettings section removed");
+        return true;
+    }
+    if (currentIt != currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("WindowSettings section added");
+        return true;
+    }
+    if (currentIt == currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("No WindowSettings section in either state");
+        return false;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    if (currentSection.keyValues.size() != lastSection.keyValues.size()) {
+        LOG_DEBUG("WindowSettings key count changed: " << currentSection.keyValues.size() << " vs " << lastSection.keyValues.size());
+        return true;
+    }
+
+    for (const auto& [key, value] : currentSection.keyValues) {
+        const std::string currentKey = key;
+        auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                       [currentKey](const auto& pair) { return pair.first == currentKey; });
+        if (lastPairIt == lastSection.keyValues.end()) {
+            LOG_DEBUG("WindowSettings new key: " << currentKey << "=" << value);
+            return true;
+        }
+        if (lastPairIt->second != value) {
+            LOG_DEBUG("WindowSettings changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
+            return true;
+        }
+    }
+
+    LOG_DEBUG("No changes detected in WindowSettings");
+    return false;
+}
+
 void ConfigUI::saveConfig() {
+    if (!hasChanges_) {
+        LOG_DEBUG("ConfigUI::saveConfig called, but no changes detected, skipping save");
+        return;
+    }
+
     LOG_DEBUG("ConfigUI::saveConfig called");
     configService_->saveConfig(configService_->getIniData());
-    lastSavedIniData_ = configService_->getIniData(); // Update last saved state
-    if (app_) app_->reloadFont(standaloneMode_);
+    bool windowSettingsChanged = hasWindowSettingsChanged();
+    lastSavedIniData_ = configService_->getIniData();
+    if (app_ && !standaloneMode_) {
+        app_->reloadFont(standaloneMode_);
+        if (windowSettingsChanged) {
+            LOG_DEBUG("WindowSettings changed, triggering window reload");
+            app_->reloadWindows();
+        }
+    }
     hasChanges_ = false;
-    saveMessageTimer_ = 1.5f; // Reduced from 3.0f to 1.5f
+    saveMessageTimer_ = 1.5f;
 }
 
 void ConfigUI::discardChanges() {
