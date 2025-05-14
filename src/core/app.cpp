@@ -127,7 +127,7 @@ void App::loadFont() {
 void App::loadTables() {
     tables_ = loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
-        LOG_ERROR("Edit config.ini, no .vpx files found in " << configManager_->getSettings().vpxTablesPath);
+        LOG_ERROR("Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
         exit(1);
     }
     LOG_DEBUG("Loaded " << tables_.size() << " tables");

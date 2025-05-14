@@ -1,9 +1,12 @@
 TODO
 
-- use json instead of memory for file info
+- remove keys for config save/close and leave only toggle.
+- make windows naturally draggable with mouse hold
+- make windows resizeable with mouse and pass to config
+- make additional windows optional (toggle checkbox)
 
 UI:
-- add table info from vpx file (vpxtool?)
+- add table info from vpx file (vpxtool?vpxguitools?)
 - add blinking arrows on sides to indicate table flow/keys
 - some sort of table count/display scrollbar thingymabob
 - (optional) really quit? dialog
@@ -16,3 +19,5 @@ On hold:
 
 Later:
 - adapt to be crossplatform
+- integrate vpxguitools and vice versa thru process launchers
+- use json instead of memory for file info
