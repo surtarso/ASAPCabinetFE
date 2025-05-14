@@ -12,17 +12,17 @@ class SectionRenderer; // Forward declaration
 
 namespace UIElementRenderer {
     void renderKeybind(const std::string& key, std::string& value, InputHandler& inputHandler);
-    void renderColorPicker(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderFontPath(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, const std::vector<std::string>& availableFonts);
-    void renderPathOrExecutable(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderCheckbox(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderDpiScale(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, SettingsSection& sectionData);
-    void renderSliderInt(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min, int max);
-    void renderRotationSlider(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min = -360, int max = 360);
-    void renderMonitorCombo(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderResolution(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderGenericText(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
-    void renderGenericTextShort(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderColorPicker([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderFontPath([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, const std::vector<std::string>& availableFonts);
+    void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, SettingsSection& sectionData);
+    void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min, int max);
+    void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min = -360, int max = 360);
+    void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderResolution([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderGenericText([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
 }
 
 #endif // UI_ELEMENT_RENDERER_H
