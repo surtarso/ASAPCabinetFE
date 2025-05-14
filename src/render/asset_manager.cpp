@@ -46,16 +46,30 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     const TableLoader& table = tables[index];
     const Settings& settings = configManager_->getSettings();
 
-    // Load static textures
-    playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
-    wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
-    backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
-    dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
+    // Load static textures only for valid renderers
+    if (playfieldRenderer) {
+        playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
+        wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
+        if (font) {
+            titleRect = {settings.titleX, settings.titleY, 0, 0};
+            titleTexture.reset(renderText(playfieldRenderer, font, table.title, settings.fontColor, titleRect));
+        }
+    } else {
+        playfieldTexture.reset();
+        wheelTexture.reset();
+        titleTexture.reset();
+    }
 
-    // Render table name text if font is available
-    if (font) {
-        titleRect = {settings.titleX, settings.titleY, 0, 0};
-        titleTexture.reset(renderText(playfieldRenderer, font, table.title, settings.fontColor, titleRect));
+    if (backglassRenderer) {
+        backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
+    } else {
+        backglassTexture.reset();
+    }
+
+    if (dmdRenderer) {
+        dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
+    } else {
+        dmdTexture.reset();
     }
 
     // Helper lambda to stop and queue old video players
@@ -75,39 +89,50 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     stopAndMove(backglassVideoPlayer);
     stopAndMove(dmdVideoPlayer);
 
-    // Load new video players if paths and dimensions are valid
-    LOG_DEBUG("Loading table video: " << table.playfieldVideo);
-    if (!table.playfieldVideo.empty() && settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
+    // Load new video players only for valid renderers
+    if (playfieldRenderer && !table.playfieldVideo.empty() && 
+        settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
+        LOG_DEBUG("Rendering Playfield");
         playfieldVideoPlayer = setupVideoPlayer(playfieldRenderer, table.playfieldVideo,
-                                              settings.playfieldMediaWidth, settings.playfieldMediaHeight);
+                                               settings.playfieldMediaWidth, settings.playfieldMediaHeight);
         if (playfieldVideoPlayer && libvlc_media_player_play(playfieldVideoPlayer->player) != 0) {
-            LOG_DEBUG("Failed to play table video: " << table.playfieldVideo);
+            LOG_ERROR("Failed to play table video: " << table.playfieldVideo);
+            cleanupVideoContext(playfieldVideoPlayer);
+            playfieldVideoPlayer = nullptr;
         }
     } else {
         playfieldVideoPlayer = nullptr;
     }
 
-    LOG_DEBUG("Loading backglass video: " << table.backglassVideo);
-    if (!table.backglassVideo.empty() && settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0) {
+    if (backglassRenderer && !table.backglassVideo.empty() && 
+        settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0) {
+        LOG_DEBUG("Rendering Backglass");
         backglassVideoPlayer = setupVideoPlayer(backglassRenderer, table.backglassVideo,
                                                settings.backglassMediaWidth, settings.backglassMediaHeight);
         if (backglassVideoPlayer && libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
-            LOG_DEBUG("Failed to play backglass video: " << table.backglassVideo);
+            LOG_ERROR("Failed to play backglass video: " << table.backglassVideo);
+            cleanupVideoContext(backglassVideoPlayer);
+            backglassVideoPlayer = nullptr;
         }
     } else {
         backglassVideoPlayer = nullptr;
     }
 
-    LOG_DEBUG("Loading DMD video: " << table.dmdVideo);
-    if (!table.dmdVideo.empty() && settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
+    if (dmdRenderer && !table.dmdVideo.empty() && 
+        settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
+        LOG_DEBUG("Rendering DMD");
         dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo,
                                          settings.dmdMediaWidth, settings.dmdMediaHeight);
         if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
-            LOG_DEBUG("Failed to play DMD video: " << table.dmdVideo);
+            LOG_ERROR("Failed to play DMD video: " << table.dmdVideo);
+            cleanupVideoContext(dmdVideoPlayer);
+            dmdVideoPlayer = nullptr;
         }
     } else {
         dmdVideoPlayer = nullptr;
     }
+
+    LOG_DEBUG("Loaded assets for table: " << table.title);
 }
 
 void AssetManager::cleanupVideoPlayers() {
