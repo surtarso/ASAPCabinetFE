@@ -11,7 +11,7 @@ void ButtonHandler::renderButtonPane() {
     if (ImGui::Button("Save", ImVec2(100, 0))) {
         if (onSave_) onSave_();
         configService_->saveConfig(configService_->getIniData());
-        if (app_) app_->onConfigSaved(standaloneMode_);
+        if (app_) app_->reloadFont(standaloneMode_);
         hasChanges_ = false;
         saveMessageTimer_ = 1.5f;
         LOG_DEBUG("Config saved");

@@ -63,39 +63,43 @@ void App::run() {
 void App::onConfigSaved(bool isStandalone) {
     LOG_DEBUG("Config saved detected, updating windows and assets");
     if (!isStandalone) {
-        // Reload font
-        reloadFont();
         // Update windows
-        windowManager_->updateWindows(configManager_->getSettings());
-        // Reload assets
-        assets_->reloadAssets(windowManager_->getPlayfieldRenderer(),
-                             windowManager_->getBackglassRenderer(),
-                             windowManager_->getDMDRenderer(),
-                             font_.get(),
-                             currentIndex_,
-                             tables_);
+        // windowManager_->updateWindows(configManager_->getSettings());
+        // // Reload assets
+        // assets_->reloadAssets(windowManager_->getPlayfieldRenderer(),
+        //                      windowManager_->getBackglassRenderer(),
+        //                      windowManager_->getDMDRenderer(),
+        //                      font_.get(),
+        //                      currentIndex_,
+        //                      tables_);
         LOG_DEBUG("Windows and assets updated after config save");
     } else {
         LOG_DEBUG("Skipping window and asset reload in standalone mode");
     }
 }
 
-void App::reloadFont() {
-    const Settings& settings = configManager_->getSettings();
-    font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
-    if (!font_) {
-        LOG_ERROR("Failed to reload font: " << TTF_GetError());
-    } else {
-        assets_->setFont(font_.get());
-        const TableLoader& table = tables_[currentIndex_];
-        assets_->titleTexture.reset(assets_->renderText(
-            assets_->getPlayfieldRenderer(), font_.get(), table.title,
-            settings.fontColor, assets_->titleRect));
-        int texWidth = 0;
-        if (assets_->titleTexture) {
-            SDL_QueryTexture(assets_->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+void App::reloadFont(bool isStandalone) {
+    LOG_DEBUG("Config saved detected, updating font");
+    if (!isStandalone) {
+        const Settings& settings = configManager_->getSettings();
+        font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
+        if (!font_) {
+            LOG_ERROR("Failed to reload font: " << TTF_GetError());
+        } else {
+            assets_->setFont(font_.get());
+            const TableLoader& table = tables_[currentIndex_];
+            assets_->titleTexture.reset(assets_->renderText(
+                assets_->getPlayfieldRenderer(), font_.get(), table.title,
+                settings.fontColor, assets_->titleRect));
+            int texWidth = 0;
+            if (assets_->titleTexture) {
+                SDL_QueryTexture(assets_->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+            }
+            LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
         }
-        LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
+        LOG_DEBUG("Font updated after config save");
+    } else {
+        LOG_DEBUG("Skipping font reload in standalone mode");
     }
 }
 
