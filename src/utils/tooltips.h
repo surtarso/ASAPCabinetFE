@@ -115,33 +115,60 @@ namespace Tooltips {
             // WindowSettings
             {"PlayfieldMonitor",
                 "Index of the monitor for the table Playfield window.\n"
-                "You can use 'xrandr' to get yours."},
+                "You can use 'xrandr' to get yours.\n"
+                "You can also drag and double-click a window to save it's position"},
             {"PlayfieldWidth",
-                "Width of the main window in pixels.\n"
+                "Width of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media width."},
             {"PlayfieldHeight",
-                "Height of the main window in pixels.\n"
+                "Height of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media height."},
+            {"PlayfieldX",
+                "X position of the Playfield window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
+            {"PlayfieldY",
+                "Y position of the Playfield window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
 
             {"BackglassMonitor",
                 "Index of the monitor for the Backglass window.\n"
-                "You can use 'xrandr' to get yours."},
+                "You can use 'xrandr' to get yours.\n"
+                "You can also drag and double-click a window to save it's position"},
             {"BackglassWidth",
                 "Width of the Backglass window in pixels.\n"
                 "This should be relative to your Backglass media width."},
             {"BackglassHeight",
                 "Height of the Backglass window in pixels.\n"
                 "This should be relative to your Backglass media height."},
+            {"BackglassX",
+                "X position of the Backglass window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
+            {"BackglassY",
+                "Y position of the Backglass window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
 
             {"DMDMonitor",
                 "Index of the monitor for the DMD window.\n"
-                "You can use 'xrandr' to get yours."},
+                "You can use 'xrandr' to get yours.\n"
+                "You can also drag and double-click a window to save it's position"},
             {"DMDWidth",
                 "Width of the DMD window in pixels.\n"
                 "This should be relative to your DMD media width."},
             {"DMDHeight",
                 "Height of the DMD window in pixels.\n"
                 "This should be relative to your DMD media height."},
+            {"DMDX",
+                "X position of the DMD window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
+            {"DMDY",
+                "Y position of the DMD window.\n"
+                "Default: -1 (centered)\n"
+                "You can also drag and double-click a window to save it's position"},
 
             // TitleDisplay
             {"FontPath",
@@ -158,6 +185,10 @@ namespace Tooltips {
             {"ShowTitle",
                 "Toggle visibility of table titles in the main window.\n"
                 "Set to true to show titles, false to hide them."},
+            {"TitleX",
+                "X position of the table title"},
+            {"TitleY",
+                "Y position of the table title"},
 
             // MediaDimensions
             {"WheelMediaHeight",
@@ -174,9 +205,11 @@ namespace Tooltips {
             {"PlayfieldMediaHeight",
                 "Height of the playfield media in pixels."},
             {"PlayfieldMediaX",
-                "X position of the playfield media."},
+                "X position of the playfield media.\n"
+                "This position is relative to the playfield window."},
             {"PlayfieldMediaY",
-                "Y position of the playfield media."},
+                "Y position of the playfield media.\n"
+                "This position is relative to the playfield window."},
             {"PlayfieldRotation",
                 "Rotation of the Playfield media.\n"
                 "0 = no rotation\n"
@@ -187,9 +220,11 @@ namespace Tooltips {
             {"BackglassMediaHeight",
                 "Height of the backglass media in pixels."},
             {"BackglassMediaX",
-                "X position of the backglass media."},
+                "X position of the backglass media.\n"
+                "This position is relative to the backglass window."},
             {"BackglassMediaY",
-                "Y position of the backglass media."},
+                "Y position of the backglass media.\n"
+                "This position is relative to the backglass window."},
             {"BackglassRotation",
                 "Rotation of the Backglass media.\n"
                 "0 = no rotation\n"
@@ -201,9 +236,11 @@ namespace Tooltips {
                 "Height of the DMD media in pixels.\n"
                 "This should match your DMD window height."},
             {"DMDMediaX",
-                "X position of the DMD media."},
+                "X position of the DMD media.\n"
+                "This position is relative to the DMD window."},
             {"DMDMediaY",
-                "Y position of the DMD media."},
+                "Y position of the DMD media.\n"
+                "This position is relative to the DMD window."},
             {"DMDRotation",
                 "Rotation of the DMD media.\n"
                 "0 = no rotation\n"
