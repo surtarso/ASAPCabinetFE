@@ -17,6 +17,8 @@ compile.sh
 screenshot_daemon.cpp
 logs/
 .codebuddy
+create_codebase.sh
+codebase.txt
 
 # Prerequisites
 *.d
