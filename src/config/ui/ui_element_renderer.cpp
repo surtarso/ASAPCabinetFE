@@ -265,7 +265,7 @@ void renderGenericTextShort(const std::string& key, std::string& value, bool& ha
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
     buffer[sizeof(buffer) - 1] = '\0';
     ImGui::SetNextItemWidth(100);
-    if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
+    if (ImGui::InputText("##value", buffer, sizeof(buffer), ImGuiInputTextFlags_CharsDecimal)) {
         value = std::string(buffer);
         LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
         hasChanges = true;
