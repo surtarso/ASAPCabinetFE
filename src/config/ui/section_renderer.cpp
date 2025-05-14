@@ -34,6 +34,12 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ShowTitle"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["ShowBackglass"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ShowDMD"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["FontSize"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
     };

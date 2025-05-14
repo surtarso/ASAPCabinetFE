@@ -41,12 +41,14 @@ struct Settings {
     int playfieldX;
     int playfieldY;
 
+    bool showBackglass;
     int backglassWindowMonitor;
     int backglassWindowWidth;
     int backglassWindowHeight;
     int backglassX;
     int backglassY;
 
+    bool showDMD;
     int dmdWindowMonitor;
     int dmdWindowWidth;
     int dmdWindowHeight;
