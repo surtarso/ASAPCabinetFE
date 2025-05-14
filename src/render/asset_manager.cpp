@@ -148,30 +148,18 @@ void AssetManager::clearOldVideoPlayers() {
 
 SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string& path) {
     FILE* redirected;
-#ifdef _WIN32
-    redirected = freopen("nul", "w", stderr);
-    if (!redirected) {
-        LOG_DEBUG("Failed to redirect stderr to nul for texture load: " << path);
-    }
-#else
     redirected = freopen("/dev/null", "w", stderr);
     if (!redirected) {
         LOG_ERROR("Failed to redirect stderr to /dev/null for texture load: " << path);
     }
-#endif
+
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     FILE* restored;
-#ifdef _WIN32
-    restored = freopen("CON", "w", stderr);
-    if (!restored) {
-        LOG_DEBUG("Failed to restore stderr from nul after loading texture: " << path);
-    }
-#else
     restored = freopen("/dev/tty", "w", stderr);
     if (!restored) {
         LOG_ERROR("Failed to restore stderr from /dev/null after loading texture: " << path);
     }
-#endif
+
     if (!tex) {
         LOG_ERROR("Failed to load texture " << path << ": " << IMG_GetError());
     } else {
