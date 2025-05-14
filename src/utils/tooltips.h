@@ -8,29 +8,29 @@ namespace Tooltips {
     inline std::unordered_map<std::string, std::string> getTooltips() {
         return {
             // VPX
-            {"TablesPath",
+            {"VPXTablesPath",
                 "Specifies the absolute path to the folder containing VPX table files.\n"
                 "\n"
                 "It must be a full path.\n"
                 "(e.g., /home/user/tables/).\n"
                 "\n"
                 "Final command:\n"
-                "StartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs"},
-            {"ExecutableCmd",
+                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"},
+            {"VPinballXPath",
                 "Defines the absolute path to the VPinballX executable.\n"
                 "\n"
                 "Final command:\n"
-                "StartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs"},
+                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"},
             {"StartArgs",
                 "Optional command-line arguments to prepend to the executable.\n"
                 "\n"
                 "Final command:\n"
-                "StartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs"},
+                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"},
             {"EndArgs",
                 "Optional arguments to append after the table file in the command.\n"
                 "\n"
                 "Final command:\n"
-                "StartArgs ExecutableCmd -play TablesPath/<selectedtable>.vpx EndArgs"},
+                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"},
 
             // Custom Media
             {"WheelImage",

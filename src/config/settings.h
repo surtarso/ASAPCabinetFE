@@ -6,8 +6,8 @@
 
 struct Settings {
     // VPX settings
-    std::string vpxTablesPath;
-    std::string vpxExecutableCmd;
+    std::string VPXTablesPath;
+    std::string VPinballXPath;
     std::string vpxSubCmd;
     std::string vpxStartArgs;
     std::string vpxEndArgs;

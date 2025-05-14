@@ -96,7 +96,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         }
         ImGuiFileDialog::Instance()->Close();
     }
-    if (key.find("ExecutableCmd") != std::string::npos &&
+    if (key.find("VPinballXPath") != std::string::npos &&
         ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             value = ImGuiFileDialog::Instance()->GetFilePathName();

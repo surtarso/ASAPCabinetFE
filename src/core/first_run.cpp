@@ -45,7 +45,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
 
         if (!showConfig && configService->isConfigValid()) break;
         else if (!showConfig) {
-            LOG_ERROR("Configuration invalid. Please fix VPX.ExecutableCmd and VPX.TablesPath.");
+            LOG_ERROR("Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
             showConfig = true;
         }
     }

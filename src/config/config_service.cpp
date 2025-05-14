@@ -11,8 +11,8 @@ ConfigService::ConfigService(const std::string& configPath)
 }
 
 bool ConfigService::isConfigValid() const {
-    return std::filesystem::exists(settings_.vpxTablesPath) && 
-           std::filesystem::exists(settings_.vpxExecutableCmd);
+    return std::filesystem::exists(settings_.VPXTablesPath) && 
+           std::filesystem::exists(settings_.VPinballXPath);
 }
 
 void ConfigService::loadConfig() {
@@ -61,8 +61,8 @@ void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int ba
 }
 
 void ConfigService::setDefaultSettings() {
-    settings_.vpxTablesPath = "/home/tarso/Games/vpinball/build/tables/";
-    settings_.vpxExecutableCmd = "/home/tarso/Games/vpinball/build/VPinballX_GL";
+    settings_.VPXTablesPath = "/home/tarso/Games/vpinball/build/tables/";
+    settings_.VPinballXPath = "/home/tarso/Games/vpinball/build/VPinballX_GL";
     settings_.vpxSubCmd = "-Play";
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
 
@@ -200,8 +200,8 @@ void ConfigService::parseIniFile() {
 
     setDefaultSettings();
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
-    settings_.vpxTablesPath = config["VPX"]["TablesPath"].empty() ? settings_.vpxTablesPath : config["VPX"]["TablesPath"];
-    settings_.vpxExecutableCmd = config["VPX"]["ExecutableCmd"].empty() ? settings_.vpxExecutableCmd : config["VPX"]["ExecutableCmd"];
+    settings_.VPXTablesPath = config["VPX"]["VPXTablesPath"].empty() ? settings_.VPXTablesPath : config["VPX"]["VPXTablesPath"];
+    settings_.VPinballXPath = config["VPX"]["VPinballXPath"].empty() ? settings_.VPinballXPath : config["VPX"]["VPinballXPath"];
     settings_.vpxSubCmd = config["Internal"]["SubCmd"].empty() ? settings_.vpxSubCmd : config["Internal"]["SubCmd"];
     settings_.vpxStartArgs = config["VPX"]["StartArgs"];
     settings_.vpxEndArgs = config["VPX"]["EndArgs"];

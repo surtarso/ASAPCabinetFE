@@ -32,11 +32,11 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
 
 std::vector<TableLoader> loadTableList(const Settings& settings) {
     std::vector<TableLoader> tables;
-    if (settings.vpxTablesPath.empty() || !fs::exists(settings.vpxTablesPath)) {
-        LOG_ERROR("Invalid or empty VPX tables path: " << settings.vpxTablesPath);
+    if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
+        LOG_ERROR("Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
     }
-    for (const auto& entry : fs::recursive_directory_iterator(settings.vpxTablesPath)) {
+    for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             TableLoader table;
             table.vpxFile = entry.path().string();

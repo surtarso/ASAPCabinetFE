@@ -139,7 +139,7 @@ void InputManager::registerActions() {
         LOG_DEBUG("Launch table triggered");
         soundManager_->playSound("launch_table");
         const Settings& settings = settingsManager_->getSettings();
-        std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
+        std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
                               settings.vpxSubCmd + " \"" + tables_->at(*currentIndex_).vpxFile + "\" " +
                               settings.vpxEndArgs;
         LOG_DEBUG("Launching: " << command);

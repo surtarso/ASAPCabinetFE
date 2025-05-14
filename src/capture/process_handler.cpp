@@ -17,7 +17,7 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
         LOG_ERROR("Warning: Failed to prepare log directory: " << logDir);
     }
 
-    std::string command = settings.vpxStartArgs + " " + settings.vpxExecutableCmd + " " +
+    std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
                           settings.vpxSubCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs +
                           " > " + vpxLogFile + " 2>&1 & echo $!";
     LOG_DEBUG("Executing VPX Launch command: " << command);
