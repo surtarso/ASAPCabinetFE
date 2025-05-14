@@ -129,7 +129,7 @@ void ConfigUI::saveConfig() {
     LOG_DEBUG("ConfigUI::saveConfig called");
     configService_->saveConfig(configService_->getIniData());
     lastSavedIniData_ = configService_->getIniData(); // Update last saved state
-    if (app_) app_->onConfigSaved(standaloneMode_);
+    if (app_) app_->reloadFont(standaloneMode_);
     hasChanges_ = false;
     saveMessageTimer_ = 1.5f; // Reduced from 3.0f to 1.5f
 }

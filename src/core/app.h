@@ -24,7 +24,7 @@ public:
     App(const std::string& configPath);
     ~App();
     void run();
-    void reloadFont();
+    void reloadFont(bool isStandalone = false);
     void onConfigSaved(bool isStandalone = false);
 
 private:
