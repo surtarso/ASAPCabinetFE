@@ -18,9 +18,11 @@ namespace UIElementRenderer {
     void renderCheckbox(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
     void renderDpiScale(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, SettingsSection& sectionData);
     void renderSliderInt(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min, int max);
+    void renderRotationSlider(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, int min = -360, int max = 360);
     void renderMonitorCombo(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
     void renderResolution(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
     void renderGenericText(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
+    void renderGenericTextShort(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
 }
 
 #endif // UI_ELEMENT_RENDERER_H
