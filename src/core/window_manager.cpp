@@ -72,7 +72,7 @@ void WindowManager::updateWindows(const Settings& settings) {
 
     // Update only the necessary windows
     if (updatePlayfield) {
-        LOG_DEBUG("Updating Playfield window");
+        LOG_DEBUG("WindowsManager: Updating Playfield window");
         createOrUpdateWindow(playfieldWindow_, playfieldRenderer_, "Playfield",
                              settings.playfieldWindowMonitor,
                              settings.playfieldWindowWidth,
@@ -84,7 +84,7 @@ void WindowManager::updateWindows(const Settings& settings) {
     }
 
     if (updateBackglass) {
-        LOG_DEBUG("Updating Backglass window");
+        LOG_DEBUG("WindowsManager: Updating Backglass window");
         if (settings.showBackglass) {
             createOrUpdateWindow(backglassWindow_, backglassRenderer_, "Backglass",
                                  settings.backglassWindowMonitor,
@@ -101,7 +101,7 @@ void WindowManager::updateWindows(const Settings& settings) {
     }
 
     if (updateDMD) {
-        LOG_DEBUG("Updating DMD window");
+        LOG_DEBUG("WindowsManager: Updating DMD window");
         if (settings.showDMD) {
             createOrUpdateWindow(dmdWindow_, dmdRenderer_, "DMD",
                                  settings.dmdWindowMonitor,
@@ -157,14 +157,14 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
         window.reset(SDL_CreateWindow(title, windowX, windowY, scaledWidth, scaledHeight,
                                       SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
         if (!window) {
-            LOG_ERROR("Failed to create " << title << " window: " << SDL_GetError());
+            LOG_ERROR("WindowsManager: Failed to create " << title << " window: " << SDL_GetError());
             exit(1);
         }
 
         renderer.reset(SDL_CreateRenderer(window.get(), -1,
                                          SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
         if (!renderer) {
-            LOG_ERROR("Failed to create " << title << " renderer: " << SDL_GetError());
+            LOG_ERROR("WindowsManager: Failed to create " << title << " renderer: " << SDL_GetError());
             exit(1);
         }
         SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);

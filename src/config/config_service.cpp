@@ -17,14 +17,14 @@ bool ConfigService::isConfigValid() const {
 
 void ConfigService::loadConfig() {
     parseIniFile();
-    LOG_DEBUG("Config loaded from " << configPath_);
+    LOG_DEBUG("ConfigService: Config loaded from " << configPath_);
 }
 
 void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& iniData) {
     writeIniFile(iniData);
     iniData_ = iniData; // Update in-memory iniData_
     parseIniFile(); // Reload to sync settings_ and keybindManager_
-    LOG_DEBUG("Config saved to " << configPath_);
+    LOG_DEBUG("ConfigService: Config saved to " << configPath_);
 }
 
 void ConfigService::setIniData(const std::map<std::string, SettingsSection>& iniData) {
@@ -56,7 +56,7 @@ void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int ba
     updateKeyValue("DMDY", std::to_string(dmdY));
 
     saveConfig(iniData_);
-    LOG_INFO("Window positions saved: P(" << playfieldX << "," << playfieldY << "), B("
+    LOG_INFO("ConfigService: Window positions saved: P(" << playfieldX << "," << playfieldY << "), B("
                  << backglassX << "," << backglassY << "), D(" << dmdX << "," << dmdY << ")");
 }
 
@@ -158,7 +158,7 @@ void ConfigService::setDefaultSettings() {
 void ConfigService::parseIniFile() {
     std::ifstream file(configPath_);
     if (!file.is_open()) {
-        LOG_INFO("Could not open " << configPath_ << ". Using defaults.");
+        LOG_INFO("ConfigService: Could not open " << configPath_ << ". Using defaults.");
         setDefaultSettings();
         return;
     }
@@ -315,7 +315,7 @@ void ConfigService::parseIniFile() {
 void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& iniData) {
     std::ofstream file(configPath_);
     if (!file.is_open()) {
-        LOG_ERROR("Could not write " << configPath_);
+        LOG_ERROR("ConfigService: Could not write " << configPath_);
         return;
     }
 

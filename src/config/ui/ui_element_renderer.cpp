@@ -6,7 +6,7 @@
 
 namespace UIElementRenderer {
 
-void renderKeybind(const std::string& key, std::string& value, InputHandler& inputHandler) {
+void renderKeybind(const std::string& key, std::string& value, InputHandler& inputHandler, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     std::string label = value.empty() ? "None" : value;
     ImGui::Text("%s", label.c_str());
     
@@ -16,6 +16,7 @@ void renderKeybind(const std::string& key, std::string& value, InputHandler& inp
     
     if (ImGui::Button("Set", ImVec2(60, 0))) {
         inputHandler.startCapturing(key);
+        hasChanges = true;
     }
 }
 
@@ -38,7 +39,7 @@ void renderColorPicker([[maybe_unused]] const std::string& key, std::string& val
                 std::to_string(int(color[2] * 255)) + "," +
                 std::to_string(int(color[3] * 255));
         hasChanges = true;
-        LOG_INFO("Color updated: " << section << "." << key << " = " << value);
+        LOG_INFO("UiElementRenderer: Color updated: " << section << "." << key << " = " << value);
         ImGui::EndPopup();
     }
     ImGui::PopStyleVar();
@@ -55,7 +56,7 @@ void renderFontPath([[maybe_unused]] const std::string& key, std::string& value,
             if (ImGui::Selectable(fontName.c_str(), isSelected)) {
                 value = availableFonts[i]; // Set full path as value
                 preview = fontName; // Update preview to filename
-                LOG_INFO("Font selected: " << section << "." << key << " = " << value);
+                LOG_INFO("UiElementRenderer: Font selected: " << section << "." << key << " = " << value);
                 hasChanges = true;
             }
             if (isSelected) ImGui::SetItemDefaultFocus();
@@ -71,7 +72,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
     ImGui::SetNextItemWidth(-60);
     if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
         value = std::string(buffer);
-        LOG_DEBUG("Text updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Text updated: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
     ImGui::SameLine();
@@ -91,7 +92,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         ImGuiFileDialog::Instance()->Display("FolderDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             value = ImGuiFileDialog::Instance()->GetCurrentPath();
-            LOG_INFO("Folder picked: " << section << "." << key << " = " << value);
+            LOG_INFO("UiElementRenderer: Folder picked: " << section << "." << key << " = " << value);
             hasChanges = true;
         }
         ImGuiFileDialog::Instance()->Close();
@@ -100,7 +101,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             value = ImGuiFileDialog::Instance()->GetFilePathName();
-            LOG_INFO("Executable picked: " << section << "." << key << " = " << value);
+            LOG_INFO("UiElementRenderer: Executable picked: " << section << "." << key << " = " << value);
             hasChanges = true;
         }
         ImGuiFileDialog::Instance()->Close();
@@ -112,7 +113,7 @@ void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value,
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
         hasChanges = true;
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
     }
 }
 
@@ -121,7 +122,7 @@ void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value,
     try {
         dpiScale = std::stof(value);
     } catch (...) {
-        LOG_ERROR("Invalid DpiScale value: " << value << ", defaulting to 1.0");
+        LOG_ERROR("UiElementRenderer: Invalid DpiScale value: " << value << ", defaulting to 1.0");
     }
     bool isEnabled = false;
     for (const auto& kv : sectionData.keyValues) {
@@ -137,7 +138,7 @@ void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value,
     if (ImGui::SliderFloat("##dpiScale", &dpiScale, 0.5f, 3.0f, "%.1f")) {
         value = std::to_string(dpiScale);
         hasChanges = true;
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
     }
     if (!isEnabled) {
         ImGui::PopStyleVar();
@@ -149,14 +150,14 @@ void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value
     try {
         intValue = std::stoi(value);
     } catch (...) {
-        LOG_ERROR("Invalid int value: " << value << ", defaulting to " << (min + (max - min) / 2));
+        LOG_ERROR("UiElementRenderer: Invalid int value: " << value << ", defaulting to " << (min + (max - min) / 2));
         intValue = min + (max - min) / 2;
     }
     ImGui::SetNextItemWidth(-1);
     if (ImGui::SliderInt("##sliderInt", &intValue, min, max, "%d")) {
         value = std::to_string(intValue);
         hasChanges = true;
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
     }
 }
 
@@ -186,7 +187,7 @@ void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& 
         // Ensure initial value is a valid rotation
         intValue = snapRotation(intValue);
     } catch (...) {
-        LOG_ERROR("Invalid rotation value: " << value << ", defaulting to 0");
+        LOG_ERROR("UiElementRenderer: Invalid rotation value: " << value << ", defaulting to 0");
         intValue = 0; // Default to 0 for invalid inputs
     }
     
@@ -198,7 +199,7 @@ void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& 
         if (snappedValue != intValue) {
             value = std::to_string(snappedValue);
             hasChanges = true;
-            LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+            LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
         }
     }
 }
@@ -208,14 +209,14 @@ void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& va
     try {
         monitorIndex = std::stoi(value);
     } catch (...) {
-        LOG_ERROR("Invalid monitor index: " << value << ", defaulting to 0");
+        LOG_ERROR("UiElementRenderer: Invalid monitor index: " << value << ", defaulting to 0");
     }
     const char* monitors[] = {"0", "1", "2"};
     ImGui::SetNextItemWidth(100);
     if (ImGui::Combo("##monitor", &monitorIndex, monitors, IM_ARRAYSIZE(monitors))) {
         value = std::to_string(monitorIndex);
         hasChanges = true;
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
     }
 }
 
@@ -227,7 +228,7 @@ void renderResolution([[maybe_unused]] const std::string& key, std::string& valu
     if (ImGui::InputText("##res", buffer, sizeof(buffer), ImGuiInputTextFlags_CharsDecimal)) {
         value = std::string(buffer);
         hasChanges = true;
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
     }
     ImGui::SameLine();
     const char* commonRes[] = {"128", "256", "512", "600", "720", "768", "800", "900", "1024", "1080", "1200", "1280", "1366", "1440", "1600", "1920", "2160", "2560", "3840"};
@@ -243,7 +244,7 @@ void renderResolution([[maybe_unused]] const std::string& key, std::string& valu
         if (currentIndex >= 0) {
             value = commonRes[currentIndex];
             hasChanges = true;
-            LOG_DEBUG("Selected resolution: " << section << "." << key << " = " << value);
+            LOG_DEBUG("UiElementRenderer: Selected resolution: " << section << "." << key << " = " << value);
         }
     }
 }
@@ -255,7 +256,7 @@ void renderGenericText([[maybe_unused]] const std::string& key, std::string& val
     ImGui::SetNextItemWidth(-1);
     if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
         value = std::string(buffer);
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
 }
@@ -267,7 +268,7 @@ void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string
     ImGui::SetNextItemWidth(100);
     if (ImGui::InputText("##value", buffer, sizeof(buffer), ImGuiInputTextFlags_CharsDecimal)) {
         value = std::string(buffer);
-        LOG_DEBUG("Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
 }

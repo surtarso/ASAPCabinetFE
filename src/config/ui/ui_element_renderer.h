@@ -11,7 +11,7 @@
 class SectionRenderer; // Forward declaration
 
 namespace UIElementRenderer {
-    void renderKeybind(const std::string& key, std::string& value, InputHandler& inputHandler);
+    void renderKeybind(const std::string& key, std::string& value, InputHandler& inputHandler, bool& hasChanges, const std::string& section);
     void renderColorPicker([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section);
     void renderFontPath([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, const std::vector<std::string>& availableFonts);
     void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section);

@@ -11,14 +11,14 @@ void ButtonHandler::renderButtonPane() {
     if (ImGui::Button("Save", ImVec2(100, 0))) {
         if (onSave_) {
             onSave_(); // Calls ConfigUI::saveConfig
-            LOG_DEBUG("Save button pressed, onSave_ called");
+            LOG_DEBUG("ButtonHandler: Save button pressed, onSave_ called");
         }
     }
     ImGui::SameLine();
     if (ImGui::Button("Close", ImVec2(100, 0))) {
         if (onClose_) {
             onClose_(); // Calls ConfigUI::discardChanges
-            LOG_DEBUG("Config closed");
+            LOG_DEBUG("ButtonHandler: Config closed");
         }
         saveMessageTimer_ = 0.0f;
         showConfig_ = false;

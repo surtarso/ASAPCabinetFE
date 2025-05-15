@@ -24,10 +24,10 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       inputHandler_(keybindProvider) {
 
     // "Use" fields to silence warnings
-    LOG_DEBUG("ConfigUI initialized with keybindProvider: " << keybindProvider_);
-    LOG_DEBUG("Assets: " << assets_); // maybe use for a preview
-    LOG_DEBUG("Current index: " << (currentIndex_ ? *currentIndex_ : 0)); // table slider idea later
-    LOG_DEBUG("Tables size: " << (tables_ ? tables_->size() : 0)); 
+    LOG_DEBUG("ConfigUI: Initialized with keybindProvider: " << keybindProvider_);
+    LOG_DEBUG("ConfigUI: Assets: " << assets_); // maybe use for a preview
+    LOG_DEBUG("ConfigUI: Current index: " << (currentIndex_ ? *currentIndex_ : 0)); // table slider idea later
+    LOG_DEBUG("ConfigUI: Tables size: " << (tables_ ? tables_->size() : 0)); 
 
     // Initialize currentSection_ to the first visible section in sectionOrder_
     for (const auto& section : sectionOrder_) {
@@ -131,22 +131,22 @@ bool ConfigUI::hasWindowSettingsChanged() const {
     auto lastIt = lastSavedIniData_.find("WindowSettings");
 
     if (currentIt == currentIniData.end() && lastIt != lastSavedIniData_.end()) {
-        LOG_DEBUG("WindowSettings section removed");
+        LOG_DEBUG("ConfigUI: WindowSettings section removed");
         return true;
     }
     if (currentIt != currentIniData.end() && lastIt == lastSavedIniData_.end()) {
-        LOG_DEBUG("WindowSettings section added");
+        LOG_DEBUG("ConfigUI: WindowSettings section added");
         return true;
     }
     if (currentIt == currentIniData.end() && lastIt == lastSavedIniData_.end()) {
-        LOG_DEBUG("No WindowSettings section in either state");
+        LOG_DEBUG("ConfigUI: No WindowSettings section in either state");
         return false;
     }
 
     const auto& currentSection = currentIt->second;
     const auto& lastSection = lastIt->second;
     if (currentSection.keyValues.size() != lastSection.keyValues.size()) {
-        LOG_DEBUG("WindowSettings key count changed: " << currentSection.keyValues.size() << " vs " << lastSection.keyValues.size());
+        LOG_DEBUG("ConfigUI: WindowSettings key count changed: " << currentSection.keyValues.size() << " vs " << lastSection.keyValues.size());
         return true;
     }
 
@@ -155,33 +155,33 @@ bool ConfigUI::hasWindowSettingsChanged() const {
         auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
                                        [currentKey](const auto& pair) { return pair.first == currentKey; });
         if (lastPairIt == lastSection.keyValues.end()) {
-            LOG_DEBUG("WindowSettings new key: " << currentKey << "=" << value);
+            LOG_DEBUG("ConfigUI: WindowSettings new key: " << currentKey << "=" << value);
             return true;
         }
         if (lastPairIt->second != value) {
-            LOG_DEBUG("WindowSettings changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
+            LOG_DEBUG("ConfigUI: WindowSettings changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
             return true;
         }
     }
 
-    LOG_DEBUG("No changes detected in WindowSettings");
+    LOG_DEBUG("ConfigUI: No changes detected in WindowSettings");
     return false;
 }
 
 void ConfigUI::saveConfig() {
     if (!hasChanges_) {
-        LOG_DEBUG("ConfigUI::saveConfig called, but no changes detected, skipping save");
+        LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called, but no changes detected, skipping save");
         return;
     }
 
-    LOG_DEBUG("ConfigUI::saveConfig called");
+    LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called");
     configService_->saveConfig(configService_->getIniData());
     bool windowSettingsChanged = hasWindowSettingsChanged();
     lastSavedIniData_ = configService_->getIniData();
     if (app_ && !standaloneMode_) {
         app_->reloadFont(standaloneMode_);
         if (windowSettingsChanged) {
-            LOG_DEBUG("WindowSettings changed, triggering window reload");
+            LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
             app_->reloadWindows();
         }
     }
@@ -190,7 +190,7 @@ void ConfigUI::saveConfig() {
 }
 
 void ConfigUI::discardChanges() {
-    LOG_DEBUG("ConfigUI::discardChanges called");
+    LOG_DEBUG("ConfigUI: 'ConfigUI::discardChanges' called");
     configService_->setIniData(lastSavedIniData_);
     saveMessageTimer_ = 0.0f; // Reset timer when discarding changes
     hasChanges_ = false;

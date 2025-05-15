@@ -17,7 +17,7 @@ GuiManager::~GuiManager() {
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext(context_);
-        LOG_INFO("GuiManager destroyed");
+        LOG_INFO("GuiManager: GuiManager destroyed");
     }
 }
 
@@ -30,7 +30,7 @@ void GuiManager::initialize() {
     ImGuiIO& io = ImGui::GetIO();
     const Settings& settings = configService_->getSettings();
     if (settings.enableDpiScaling) {
-        LOG_DEBUG("Applying DPI scale: " << settings.dpiScale);
+        LOG_DEBUG("GuiManager: Applying DPI scale: " << settings.dpiScale);
         io.FontGlobalScale = settings.dpiScale;
         // Scale all ImGui style sizes
         ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
@@ -43,7 +43,7 @@ void GuiManager::initialize() {
         ImGui_ImplSDL2_InitForSDLRenderer(configWindow_, configRenderer_);
         ImGui_ImplSDLRenderer2_Init(configRenderer_);
     }
-    LOG_DEBUG("GuiManager initialized");
+    LOG_INFO("GuiManager: GuiManager initialized");
 }
 
 void GuiManager::newFrame() {

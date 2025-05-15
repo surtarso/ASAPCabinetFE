@@ -102,7 +102,7 @@ void SectionRenderer::initializeKeyRenderers() {
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {
     using namespace UIElementRenderer;
     if (currentSection_ == "Keybinds") {
-        renderKeybind(key, value, inputHandler_);
+        renderKeybind(key, value, inputHandler_, hasChanges_, currentSection_);
     } else if (keyRenderers_.count(key)) {
         keyRenderers_[key](key, value, section); // Check dispatcher first
     } else if (key.find("Path") != std::string::npos || key.find("VPinballXPath") != std::string::npos) {
@@ -124,9 +124,9 @@ void SectionRenderer::initializeFontList() {
             }
         }
         std::sort(availableFonts_.begin(), availableFonts_.end());
-        LOG_DEBUG("Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
+        LOG_DEBUG("SectionRenderer: Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
     } else {
-        LOG_ERROR("Font directory " << fontDir << " not found! Font selection will be limited.");
+        LOG_ERROR("SectionRenderer: Font directory " << fontDir << " not found! Font selection will be limited.");
     }
 }
 
@@ -141,7 +141,7 @@ void SectionRenderer::renderSectionsPane(const std::vector<std::string>& section
             bool selected = (currentSection_ == section);
             if (ImGui::Selectable(section.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
                 currentSection_ = section;
-                LOG_DEBUG("Selected section: " << section);
+                LOG_DEBUG("SectionRenderer: Selected section: " << section);
             }
             if (selected) ImGui::SetItemDefaultFocus();
         }
@@ -182,7 +182,7 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
             renderKeyValue(key, value, section);
             if (hasChanges_ && !oldHasChanges) {
                 hasChanges = true; // Propagate to ConfigUI
-                LOG_DEBUG("Change detected in " << currentSection_ << "." << key << " = " << value);
+                LOG_DEBUG("SectionRenderer: Change detected in " << currentSection_ << "." << key << " = " << value);
             }
             ImGui::PopID();
         }

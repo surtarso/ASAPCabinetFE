@@ -35,7 +35,7 @@ SDL_Keycode KeybindManager::getKey(const std::string& action) const {
     if (it != keybinds_.end() && std::holds_alternative<SDL_Keycode>(it->second.input)) {
         return std::get<SDL_Keycode>(it->second.input);
     }
-    LOG_DEBUG("Keybind not found or not a keyboard input for action: " << action);
+    LOG_DEBUG("KeybindManager: Keybind not found or not a keyboard input for action: " << action);
     return SDLK_UNKNOWN;
 }
 
@@ -43,9 +43,9 @@ void KeybindManager::setKey(const std::string& action, SDL_Keycode key) {
     auto it = keybinds_.find(action);
     if (it != keybinds_.end()) {
         it->second.input = key;
-        LOG_DEBUG("Set key for " << action << " to " << SDL_GetKeyName(key));
+        LOG_DEBUG("KeybindManager: Set key for " << action << " to " << SDL_GetKeyName(key));
     } else {
-        LOG_ERROR("Cannot set key: Action not found: " << action);
+        LOG_ERROR("KeybindManager: Cannot set key: Action not found: " << action);
     }
 }
 
@@ -54,9 +54,9 @@ void KeybindManager::setJoystickButton(const std::string& action, int joystickId
     auto it = keybinds_.find(action);
     if (it != keybinds_.end()) {
         it->second.input = JoystickInput{joystickId, button};
-        LOG_DEBUG("Set joystick button for " << action << " to JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button));
+        LOG_DEBUG("KeybindManager: Set joystick button for " << action << " to JOY_" << joystickId << "_BUTTON_" << static_cast<int>(button));
     } else {
-        LOG_ERROR("Cannot set joystick button: Action not found: " << action);
+        LOG_ERROR("KeybindManager: Cannot set joystick button: Action not found: " << action);
     }
 }
 
@@ -72,9 +72,9 @@ void KeybindManager::setJoystickHat(const std::string& action, int joystickId, u
             case SDL_HAT_RIGHT: directionStr = "RIGHT"; break;
             default: directionStr = "UNKNOWN"; break;
         }
-        LOG_DEBUG("Set joystick hat for " << action << " to JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_" << directionStr);
+        LOG_DEBUG("KeybindManager: Set joystick hat for " << action << " to JOY_" << joystickId << "_HAT_" << static_cast<int>(hat) << "_" << directionStr);
     } else {
-        LOG_ERROR("Cannot set joystick hat: Action not found: " << action);
+        LOG_ERROR("KeybindManager: Cannot set joystick hat: Action not found: " << action);
     }
 }
 
@@ -82,9 +82,9 @@ void KeybindManager::setJoystickAxis(const std::string& action, int joystickId, 
     auto it = keybinds_.find(action);
     if (it != keybinds_.end()) {
         it->second.input = JoystickAxisInput{joystickId, axis, positiveDirection};
-        LOG_DEBUG("Set joystick axis for " << action << " to JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_" << (positiveDirection ? "POSITIVE" : "NEGATIVE"));
+        LOG_DEBUG("KeybindManager: Set joystick axis for " << action << " to JOY_" << joystickId << "_AXIS_" << static_cast<int>(axis) << "_" << (positiveDirection ? "POSITIVE" : "NEGATIVE"));
     } else {
-        LOG_ERROR("Cannot set joystick axis: Action not found: " << action);
+        LOG_ERROR("KeybindManager: Cannot set joystick axis: Action not found: " << action);
     }
 }
 
@@ -118,9 +118,9 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                         int joystickId = std::stoi(joyIdStr);
                         uint8_t button = static_cast<uint8_t>(std::stoi(buttonStr));
                         it->second.input = JoystickInput{joystickId, button};
-                        LOG_DEBUG("Loaded joystick keybind " << key << " = " << value);
+                        LOG_DEBUG("KeybindManager: Loaded joystick keybind " << key << " = " << value);
                     } catch (...) {
-                        LOG_ERROR("Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
+                        LOG_ERROR("KeybindManager: Invalid joystick keybind format for " << key << ": " << value << ", keeping default");
                     }
                 }
                 // Check if the value is a joystick hat (e.g., "JOY_0_HAT_0_LEFT")
@@ -140,9 +140,9 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                             else if (directionStr == "LEFT") direction = SDL_HAT_LEFT;
                             else if (directionStr == "RIGHT") direction = SDL_HAT_RIGHT;
                             it->second.input = JoystickHatInput{joystickId, hat, direction};
-                            LOG_DEBUG("Loaded joystick hat keybind " << key << " = " << value);
+                            LOG_DEBUG("KeybindManager: Loaded joystick hat keybind " << key << " = " << value);
                         } catch (...) {
-                            LOG_ERROR("Invalid joystick hat keybind format for " << key << ": " << value << ", keeping default");
+                            LOG_ERROR("KeybindManager: Invalid joystick hat keybind format for " << key << ": " << value << ", keeping default");
                         }
                     }
                 }
@@ -159,9 +159,9 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                             uint8_t axis = static_cast<uint8_t>(std::stoi(axisStr));
                             bool positiveDirection = (directionStr == "POSITIVE");
                             it->second.input = JoystickAxisInput{joystickId, axis, positiveDirection};
-                            LOG_DEBUG("Loaded joystick axis keybind " << key << " = " << value);
+                            LOG_DEBUG("KeybindManager: Loaded joystick axis keybind " << key << " = " << value);
                         } catch (...) {
-                            LOG_ERROR("Invalid joystick axis keybind format for " << key << ": " << value << ", keeping default");
+                            LOG_ERROR("KeybindManager: Invalid joystick axis keybind format for " << key << ": " << value << ", keeping default");
                         }
                     }
                 }
@@ -170,9 +170,9 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
                 SDL_Keycode keyCode = SDL_GetKeyFromName(value.c_str());
                 if (keyCode != SDLK_UNKNOWN) {
                     it->second.input = keyCode;
-                    LOG_DEBUG("Loaded keybind " << key << " = " << value << " (keycode: " << keyCode << ")");
+                    //LOG_DEBUG("KeybindManager: Loaded keybind " << key << " = " << value << " (keycode: " << keyCode << ")");
                 } else {
-                    LOG_ERROR("Invalid key name for " << key << ": " << value << ", keeping default");
+                    LOG_ERROR("KeybindManager: Invalid key name for " << key << ": " << value << ", keeping default");
                 }
             }
         }
@@ -181,7 +181,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
 
 void KeybindManager::saveKeybinds(std::ofstream& file) const {
     if (!file.is_open()) {
-        LOG_DEBUG("Cannot save keybinds: File stream is not open");
+        LOG_DEBUG("KeybindManager: Cannot save keybinds: File stream is not open");
         return;
     }
     file << "[Keybinds]\n";
@@ -191,13 +191,13 @@ void KeybindManager::saveKeybinds(std::ofstream& file) const {
             SDL_Keycode key = std::get<SDL_Keycode>(keybind.input);
             const char* keyName = SDL_GetKeyName(key);
             file << action << "=" << (keyName ? keyName : "Unknown") << "\n";
-            LOG_DEBUG("Saved keybind " << action << " = " << (keyName ? keyName : "Unknown"));
+            LOG_DEBUG("KeybindManager: Saved keybind " << action << " = " << (keyName ? keyName : "Unknown"));
         } else if (std::holds_alternative<JoystickInput>(keybind.input)) {
             const auto& joyInput = std::get<JoystickInput>(keybind.input);
             std::stringstream ss;
             ss << "JOY_" << joyInput.joystickId << "_BUTTON_" << static_cast<int>(joyInput.button);
             file << action << "=" << ss.str() << "\n";
-            LOG_DEBUG("Saved joystick keybind " << action << " = " << ss.str());
+            LOG_DEBUG("KeybindManager: Saved joystick keybind " << action << " = " << ss.str());
         } else if (std::holds_alternative<JoystickHatInput>(keybind.input)) {
             const auto& hatInput = std::get<JoystickHatInput>(keybind.input);
             std::stringstream ss;
@@ -210,14 +210,14 @@ void KeybindManager::saveKeybinds(std::ofstream& file) const {
                 default: ss << "UNKNOWN"; break;
             }
             file << action << "=" << ss.str() << "\n";
-            LOG_DEBUG("Saved joystick hat keybind " << action << " = " << ss.str());
+            LOG_DEBUG("KeybindManager: Saved joystick hat keybind " << action << " = " << ss.str());
         } else if (std::holds_alternative<JoystickAxisInput>(keybind.input)) {
             const auto& axisInput = std::get<JoystickAxisInput>(keybind.input);
             std::stringstream ss;
             ss << "JOY_" << axisInput.joystickId << "_AXIS_" << static_cast<int>(axisInput.axis) << "_"
                << (axisInput.positiveDirection ? "POSITIVE" : "NEGATIVE");
             file << action << "=" << ss.str() << "\n";
-            LOG_DEBUG("Saved joystick axis keybind " << action << " = " << ss.str());
+            LOG_DEBUG("KeybindManager: Saved joystick axis keybind " << action << " = " << ss.str());
         }
     }
 }

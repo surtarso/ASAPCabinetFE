@@ -14,26 +14,26 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
     std::string vpxLogFile = logDir + "vpx_launch.log";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
     if (std::system(mkdirCmd.c_str()) != 0) {
-        LOG_ERROR("Warning: Failed to prepare log directory: " << logDir);
+        LOG_ERROR("ProcessHandler: Warning: Failed to prepare log directory: " << logDir);
     }
 
     std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
                           settings.vpxSubCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs +
                           " > " + vpxLogFile + " 2>&1 & echo $!";
-    LOG_DEBUG("Executing VPX Launch command: " << command);
+    LOG_DEBUG("ProcessHandler: Executing VPX Launch command: " << command);
 
     FILE* pipe = popen(command.c_str(), "r");
     if (!pipe) {
-        LOG_ERROR("Error: Failed to launch VPX process.");
+        LOG_ERROR("ProcessHandler: Error: Failed to launch VPX process.");
         return false;
     }
 
     char buffer[128];
     if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
         vpxPid_ = std::stoi(buffer);
-        LOG_INFO("VPX process launched with PID: " << vpxPid_);
+        LOG_INFO("ProcessHandler: VPX process launched with PID: " << vpxPid_);
     } else {
-        LOG_ERROR("Error: Failed to retrieve VPX PID.");
+        LOG_ERROR("ProcessHandler: Error: Failed to retrieve VPX PID.");
         pclose(pipe);
         return false;
     }
@@ -43,16 +43,16 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
 
 void ProcessHandler::terminateVPX() {
     if (vpxPid_ > 0) {
-        LOG_DEBUG("Terminating VPX process with PID: " << vpxPid_);
+        LOG_DEBUG("ProcessHandler: Terminating VPX process with PID: " << vpxPid_);
         if (kill(vpxPid_, SIGTERM) == 0) {
-            LOG_DEBUG("SIGTERM sent to VPX process.");
+            LOG_DEBUG("ProcessHandler: SIGTERM sent to VPX process.");
             sleep(1);
             if (kill(vpxPid_, 0) == 0) {
-                LOG_DEBUG("VPX still running, sending SIGKILL.");
+                LOG_DEBUG("ProcessHandler: VPX still running, sending SIGKILL.");
                 kill(vpxPid_, SIGKILL);
             }
         } else {
-            LOG_ERROR("Warning: Failed to terminate VPX process with PID: " << vpxPid_);
+            LOG_ERROR("ProcessHandler: Warning: Failed to terminate VPX process with PID: " << vpxPid_);
         }
         vpxPid_ = -1;
     }

@@ -20,8 +20,8 @@ App::App(const std::string& configPath)
       joystickManager_(std::make_unique<JoystickManager>()) {
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + configPath_;  // Make configPath absolute
-    LOG_DEBUG("Config path: " << configPath_);
-    LOG_DEBUG("Exe dir set to: " << exeDir_);
+    LOG_DEBUG("App: Config path: " << configPath_);
+    LOG_DEBUG("App: Exec dir set to: " << exeDir_);
 
     // Load config early to get logFile setting
     configManager_ = DependencyFactory::createConfigService(configPath_);
@@ -46,7 +46,7 @@ App::App(const std::string& configPath)
 
 App::~App() {
     cleanup();
-    LOG_INFO("App destructor completed");
+    LOG_INFO("App: App destructor completed");
 }
 
 void App::run() {
@@ -61,18 +61,18 @@ void App::run() {
 }
 
 void App::reloadWindows() {
-    LOG_DEBUG("Config saved detected, updating windows");
+    LOG_DEBUG("App: Config saved detected, updating windows");
     windowManager_->updateWindows(configManager_->getSettings());
-    LOG_DEBUG("Windows updated after config save");
+    LOG_DEBUG("App: Windows updated after config save");
 }
 
 void App::reloadFont(bool isStandalone) {
-    LOG_DEBUG("Config saved detected, updating font");
+    LOG_DEBUG("App: Config saved detected, updating font");
     if (!isStandalone) {
         const Settings& settings = configManager_->getSettings();
         font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
         if (!font_) {
-            LOG_ERROR("Failed to reload font: " << TTF_GetError());
+            LOG_ERROR("App: Failed to reload font: " << TTF_GetError());
         } else {
             assets_->setFont(font_.get());
             const TableLoader& table = tables_[currentIndex_];
@@ -83,11 +83,11 @@ void App::reloadFont(bool isStandalone) {
             if (assets_->titleTexture) {
                 SDL_QueryTexture(assets_->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
             }
-            LOG_DEBUG("Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
+            LOG_DEBUG("App: Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
         }
-        LOG_DEBUG("Font updated after config save");
+        LOG_DEBUG("App: Font updated after config save");
     } else {
-        LOG_DEBUG("Skipping font reload in standalone mode");
+        LOG_DEBUG("App: Skipping font reload in standalone mode");
     }
 }
 
@@ -95,7 +95,7 @@ std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1) {
-        LOG_ERROR("Warning: Couldn't determine executable path, using './'");
+        LOG_ERROR("App: Warning: Couldn't determine executable path, using './'");
         return "./";
     }
     path[count] = '\0';
@@ -112,25 +112,25 @@ void App::loadFont() {
     const Settings& settings = configManager_->getSettings();
     font_.reset(TTF_OpenFont(settings.fontPath.c_str(), settings.fontSize));
     if (!font_) {
-        LOG_ERROR("Failed to load font: " << TTF_GetError());
+        LOG_ERROR("App: Failed to load font: " << TTF_GetError());
     }
 }
 
 void App::loadTables() {
     tables_ = loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
-        LOG_ERROR("Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
+        LOG_ERROR("App: Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
         exit(1);
     }
-    LOG_DEBUG("Loaded " << tables_.size() << " tables");
+    LOG_INFO("App: Loaded " << tables_.size() << " tables");
 }
 
 void App::initializeDependencies() {
     configManager_ = DependencyFactory::createConfigService(configPath_);
     if (!isConfigValid()) {
-        LOG_INFO("Config invalid, running initial config");
+        LOG_INFO("App: Config invalid, running initial config");
         if (!runInitialConfig(configManager_.get(), configPath_)) {
-            LOG_ERROR("Initial config failed or was aborted. Exiting...");
+            LOG_ERROR("App: Initial config failed or was aborted. Exiting...");
             exit(1);
         }
         configManager_->loadConfig();
@@ -158,7 +158,7 @@ void App::initializeDependencies() {
 
     assets_->loadTableAssets(currentIndex_, tables_);
 
-    LOG_INFO("Initialization complete");
+    LOG_INFO("App: Initialization complete");
 }
 
 void App::handleEvents() {
@@ -207,10 +207,10 @@ void App::render() {
 }
 
 void App::cleanup() {
-    LOG_DEBUG("Cleaning up");
+    LOG_DEBUG("App: Cleaning up");
     if (assets_) {
         assets_->cleanupVideoPlayers();
         assets_.reset();
     }
-    LOG_INFO("Cleanup complete");
+    LOG_INFO("App: Cleanup complete");
 }

@@ -35,7 +35,7 @@ std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::
 
 std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
     auto config = std::make_unique<ConfigService>(configPath);
-    config->loadConfig();
+    //config->loadConfig();
     return config;
 }
 
