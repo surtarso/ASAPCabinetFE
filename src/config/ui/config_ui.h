@@ -49,6 +49,7 @@ private:
     void discardChanges(); // To discard changes
     bool hasWindowSettingsChanged() const;
     bool hasVisibilitySettingsChanged() const;
+    bool hasFontSettingsChanged() const;
 };
 
 #endif // CONFIG_UI_H

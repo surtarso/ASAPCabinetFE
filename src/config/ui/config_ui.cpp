@@ -235,6 +235,51 @@ bool ConfigUI::hasVisibilitySettingsChanged() const {
     return false;
 }
 
+bool ConfigUI::hasFontSettingsChanged() const {
+    const auto& currentIniData = configService_->getIniData();
+    auto currentIt = currentIniData.find("TitleDisplay");
+    auto lastIt = lastSavedIniData_.find("TitleDisplay");
+
+    if (currentIt == currentIniData.end() && lastIt != lastSavedIniData_.end()) {
+        LOG_DEBUG("ConfigUI: TitleDisplay section removed");
+        return true;
+    }
+    if (currentIt != currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("ConfigUI: TitleDisplay section added");
+        return true;
+    }
+    if (currentIt == currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("ConfigUI: No TitleDisplay section in either state");
+        return false;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    if (currentSection.keyValues.size() != lastSection.keyValues.size()) {
+        LOG_DEBUG("ConfigUI: TitleDisplay key count changed: " << currentSection.keyValues.size() << " vs " << lastSection.keyValues.size());
+        return true;
+    }
+
+    for (const auto& [key, value] : currentSection.keyValues) {
+        if (key == "FontSize" || key == "FontPath" || key == "FontColor") {
+            const std::string currentKey = key;
+            auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                           [currentKey](const auto& pair) { return pair.first == currentKey; });
+            if (lastPairIt == lastSection.keyValues.end()) {
+                LOG_DEBUG("ConfigUI: Font setting added: " << currentKey << "=" << value);
+                return true;
+            }
+            if (lastPairIt->second != value) {
+                LOG_DEBUG("ConfigUI: Font setting changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
+                return true;
+            }
+        }
+    }
+
+    LOG_DEBUG("ConfigUI: No font settings changed");
+    return false;
+}
+
 void ConfigUI::saveConfig() {
     if (!hasChanges_) {
         LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called, but no changes detected, skipping save");
@@ -245,18 +290,20 @@ void ConfigUI::saveConfig() {
     configService_->saveConfig(configService_->getIniData());
     bool windowSettingsChanged = hasWindowSettingsChanged();
     bool visibilitySettingsChanged = hasVisibilitySettingsChanged();
+    bool fontSettingsChanged = hasFontSettingsChanged();
     lastSavedIniData_ = configService_->getIniData();
 
     if (app_ && !standaloneMode_) {
-        LOG_DEBUG("ConfigUI: Reloading font due to config save");
-        app_->reloadFont(standaloneMode_);
+        if (fontSettingsChanged) {
+            LOG_DEBUG("ConfigUI: Font settings changed, reloading font");
+            app_->reloadFont(standaloneMode_);
+        }
         if (windowSettingsChanged) {
             LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
             app_->reloadWindows();
         }
         if (visibilitySettingsChanged) {
-            LOG_DEBUG("ConfigUI: showDMD or showBackglass changed, triggering asset reload");
-            // app_->reloadWindows();
+            LOG_DEBUG("ConfigUI: ShowDMD or ShowBackglass changed, triggering asset reload");
             app_->onConfigSaved();
         }
     }
