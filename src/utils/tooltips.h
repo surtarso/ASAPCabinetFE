@@ -116,7 +116,7 @@ namespace Tooltips {
             {"PlayfieldMonitor",
                 "Index of the monitor for the table Playfield window.\n"
                 "You can use 'xrandr' to get yours.\n"
-                "You can also drag and double-click a window to save it's position"},
+                "You should drag and double-click a window to save it's position"},
             {"PlayfieldWidth",
                 "Width of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media width."},
@@ -125,17 +125,24 @@ namespace Tooltips {
                 "This should be relative to your Playfield media height."},
             {"PlayfieldX",
                 "X position of the Playfield window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
+                "You should drag and double-click a window to save it's position"},
             {"PlayfieldY",
                 "Y position of the Playfield window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
-
+                "You should drag and double-click a window to save it's position"},
+            
+            {"ShowBackglass",
+                "Show/hide the backglass window.\n"
+                "BackglassX and BackglassY should have real values to use this.\n"
+                "Drag windows and double-click them to save real positions."},
             {"BackglassMonitor",
                 "Index of the monitor for the Backglass window.\n"
                 "You can use 'xrandr' to get yours.\n"
-                "You can also drag and double-click a window to save it's position"},
+                "BackglassX and BackglassY should be -1 (centered) to use this.\n"
+                "You should drag and double-click a window to save it's position instead."},
             {"BackglassWidth",
                 "Width of the Backglass window in pixels.\n"
                 "This should be relative to your Backglass media width."},
@@ -144,17 +151,24 @@ namespace Tooltips {
                 "This should be relative to your Backglass media height."},
             {"BackglassX",
                 "X position of the Backglass window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
+                "You should drag and double-click a window to save it's position"},
             {"BackglassY",
                 "Y position of the Backglass window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
-
+                "You should drag and double-click a window to save it's position"},
+            
+            {"ShowDMD",
+                "Show/hide the DMD window.\n"
+                "DMDX and DMDY should have real values to use this.\n"
+                "Drag windows and double-click them to save real positions."},
             {"DMDMonitor",
                 "Index of the monitor for the DMD window.\n"
                 "You can use 'xrandr' to get yours.\n"
-                "You can also drag and double-click a window to save it's position"},
+                "DMDX and DMDY should be -1 (centered) to use this.\n"
+                "You should drag and double-click a window to save it's position instead."},
             {"DMDWidth",
                 "Width of the DMD window in pixels.\n"
                 "This should be relative to your DMD media width."},
@@ -163,12 +177,14 @@ namespace Tooltips {
                 "This should be relative to your DMD media height."},
             {"DMDX",
                 "X position of the DMD window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
+                "You should drag and double-click a window to save it's position"},
             {"DMDY",
                 "Y position of the DMD window.\n"
+                "This value must be -1 for monitor index to work.\n"
                 "Default: -1 (centered)\n"
-                "You can also drag and double-click a window to save it's position"},
+                "You should drag and double-click a window to save it's position"},
 
             // TitleDisplay
             {"FontPath",
