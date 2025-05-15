@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 #include <filesystem>
+#include <variant>
 
 struct SettingsSection {
     std::vector<std::pair<std::string, std::string>> keyValues;
@@ -37,6 +38,7 @@ private:
     void parseIniFile();
     void writeIniFile(const std::map<std::string, SettingsSection>& iniData);
     void setDefaultSettings();
+    void initializeIniData();
 };
 
 #endif // CONFIG_SERVICE_H

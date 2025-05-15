@@ -22,20 +22,18 @@ void ConfigService::loadConfig() {
 
 void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& iniData) {
     writeIniFile(iniData);
-    iniData_ = iniData; // Update in-memory iniData_
-    parseIniFile(); // Reload to sync settings_ and keybindManager_
+    iniData_ = iniData;
+    parseIniFile();
     LOG_DEBUG("ConfigService: Config saved to " << configPath_);
 }
 
 void ConfigService::setIniData(const std::map<std::string, SettingsSection>& iniData) {
     iniData_ = iniData;
-    parseIniFile(); // Sync settings_ and keybindManager_
+    parseIniFile();
 }
 
 void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) {
     auto& windowSettings = iniData_["WindowSettings"];
-    
-    // Helper function to update or add a key-value pair
     auto updateKeyValue = [&](const std::string& key, const std::string& value) {
         auto& kv = windowSettings.keyValues;
         auto it = std::find_if(kv.begin(), kv.end(),
@@ -64,15 +62,17 @@ void ConfigService::setDefaultSettings() {
     settings_.VPXTablesPath = "/home/$USER/VPX_Tables/";
     settings_.VPinballXPath = "/home/$USER/VPinballX_GL";
     settings_.vpxSubCmd = "-Play";
-    std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
+    settings_.vpxStartArgs = "";
+    settings_.vpxEndArgs = "";
 
-    settings_.defaultPlayfieldImage = exeDir + "img/default_table.png";
-    settings_.defaultBackglassImage = exeDir + "img/default_backglass.png";
-    settings_.defaultDmdImage = exeDir + "img/default_dmd.png";
-    settings_.defaultWheelImage = exeDir + "img/default_wheel.png";
-    settings_.defaultPlayfieldVideo = exeDir + "img/default_table.mp4";
-    settings_.defaultBackglassVideo = exeDir + "img/default_backglass.mp4";
-    settings_.defaultDmdVideo = exeDir + "img/default_dmd.mp4";
+    // Use relative paths, exeDir will be prepended at runtime
+    settings_.defaultPlayfieldImage = "img/default_table.png";
+    settings_.defaultBackglassImage = "img/default_backglass.png";
+    settings_.defaultDmdImage = "img/default_dmd.png";
+    settings_.defaultWheelImage = "img/default_wheel.png";
+    settings_.defaultPlayfieldVideo = "img/default_table.mp4";
+    settings_.defaultBackglassVideo = "img/default_backglass.mp4";
+    settings_.defaultDmdVideo = "img/default_dmd.mp4";
 
     settings_.customPlayfieldImage = "images/table.png";
     settings_.customBackglassImage = "images/backglass.png";
@@ -101,7 +101,7 @@ void ConfigService::setDefaultSettings() {
     settings_.dmdWindowHeight = 256;
     settings_.dmdX = -1;
     settings_.dmdY = -1;
-    
+
     settings_.wheelMediaHeight = 350;
     settings_.wheelMediaWidth = 350;
     settings_.wheelMediaX = 720;
@@ -152,14 +152,215 @@ void ConfigService::setDefaultSettings() {
 
     settings_.enableDpiScaling = true;
     settings_.dpiScale = 1.0f;
-    settings_.logFile = "logs/debug.log"; // Set default log file path
+    settings_.logFile = "logs/debug.log";
+}
+
+void ConfigService::initializeIniData() {
+    iniData_.clear();
+
+    // VPX
+    auto& vpx = iniData_["VPX"];
+    vpx.keyValues = {
+        {"VPXTablesPath", "/home/$USER/VPX_Tables/"},
+        {"VPinballXPath", "/home/$USER/VPinballX_GL"},
+        {"StartArgs", ""},
+        {"EndArgs", ""}
+    };
+    for (size_t i = 0; i < vpx.keyValues.size(); ++i) {
+        vpx.keyToLineIndex[vpx.keyValues[i].first] = i;
+    }
+
+    // Internal
+    auto& internal = iniData_["Internal"];
+    internal.keyValues = {
+        {"SubCmd", "-Play"},
+        {"LogFile", "logs/debug.log"}
+    };
+    for (size_t i = 0; i < internal.keyValues.size(); ++i) {
+        internal.keyToLineIndex[internal.keyValues[i].first] = i;
+    }
+
+    // DefaultMedia
+    auto& defaultMedia = iniData_["DefaultMedia"];
+    defaultMedia.keyValues = {
+        {"DefaultPlayfieldImage", "img/default_table.png"},
+        {"DefaultPuPPlayfieldImage", "NYI"},
+        {"DefaultBackglassImage", "img/default_backglass.png"},
+        {"DefaultPuPBackglassImage", "NYI"},
+        {"DefaultDmdImage", "img/default_dmd.png"},
+        {"DefaultPuPDmdImage", "NYI"},
+        {"DefaultPuPFullDmdImage", "NYI"},
+        {"DefaultPupTopperImage", "NYI"},
+        {"DefaultWheelImage", "img/default_wheel.png"},
+        {"DefaultPlayfieldVideo", "img/default_table.mp4"},
+        {"DefaultPuPPlayfieldVideo", "NYI"},
+        {"DefaultBackglassVideo", "img/default_backglass.mp4"},
+        {"DefaultPuPBackglassVideo", "NYI"},
+        {"DefaultDmdVideo", "img/default_dmd.mp4"},
+        {"DefaultPuPDmdVideo", "NYI"},
+        {"DefaultPuPFullDmdVideo", "NYI"},
+        {"DefaultPuPTopperVideo", "NYI"}
+    };
+    for (size_t i = 0; i < defaultMedia.keyValues.size(); ++i) {
+        defaultMedia.keyToLineIndex[defaultMedia.keyValues[i].first] = i;
+    }
+
+    // CustomMedia
+    auto& customMedia = iniData_["CustomMedia"];
+    customMedia.keyValues = {
+        {"WheelImage", "images/wheel.png"},
+        {"PuPTopperImage", "NYI"},
+        {"PlayfieldImage", "images/table.png"},
+        {"PuPPlayfieldImage", "NYI"},
+        {"BackglassImage", "images/backglass.png"},
+        {"PuPBackglassImage", "NYI"},
+        {"DmdImage", "images/marquee.png"},
+        {"PuPDmdImage", "NYI"},
+        {"PuPFullDmdImage", "NYI"},
+        {"PuPTopperVideo", "NYI"},
+        {"PlayfieldVideo", "video/table.mp4"},
+        {"PuPPlayfieldVideo", "NYI"},
+        {"BackglassVideo", "video/backglass.mp4"},
+        {"PuPBackglassVideo", "NYI"},
+        {"DmdVideo", "video/dmd.mp4"},
+        {"PuPDmdVideo", "NYI"},
+        {"PuPFullDmdVideo", "NYI"}
+    };
+    for (size_t i = 0; i < customMedia.keyValues.size(); ++i) {
+        customMedia.keyToLineIndex[customMedia.keyValues[i].first] = i;
+    }
+
+    // DPISettings
+    auto& dpiSettings = iniData_["DPISettings"];
+    dpiSettings.keyValues = {
+        {"EnableDpiScaling", "true"},
+        {"DpiScale", "1.0"}
+    };
+    for (size_t i = 0; i < dpiSettings.keyValues.size(); ++i) {
+        dpiSettings.keyToLineIndex[dpiSettings.keyValues[i].first] = i;
+    }
+
+    // WindowSettings
+    auto& windowSettings = iniData_["WindowSettings"];
+    windowSettings.keyValues = {
+        {"PlayfieldMonitor", "1"},
+        {"PlayfieldWidth", "1080"},
+        {"PlayfieldHeight", "1920"},
+        {"PlayfieldX", "-1"},
+        {"PlayfieldY", "-1"},
+        {"ShowBackglass", "true"},
+        {"BackglassMonitor", "0"},
+        {"BackglassWidth", "1024"},
+        {"BackglassHeight", "768"},
+        {"BackglassX", "-1"},
+        {"BackglassY", "-1"},
+        {"ShowDMD", "true"},
+        {"DMDMonitor", "0"},
+        {"DMDWidth", "1024"},
+        {"DMDHeight", "256"},
+        {"DMDX", "-1"},
+        {"DMDY", "-1"}
+    };
+    for (size_t i = 0; i < windowSettings.keyValues.size(); ++i) {
+        windowSettings.keyToLineIndex[windowSettings.keyValues[i].first] = i;
+    }
+
+    // MediaDimensions
+    auto& mediaDimensions = iniData_["MediaDimensions"];
+    mediaDimensions.keyValues = {
+        {"WheelMediaHeight", "350"},
+        {"WheelMediaWidth", "350"},
+        {"WheelMediaX", "720"},
+        {"WheelMediaY", "1570"},
+        {"PlayfieldMediaWidth", "1080"},
+        {"PlayfieldMediaHeight", "1920"},
+        {"PlayfieldMediaX", "0"},
+        {"PlayfieldMediaY", "0"},
+        {"PlayfieldRotation", "0"},
+        {"BackglassMediaWidth", "1024"},
+        {"BackglassMediaHeight", "768"},
+        {"BackglassMediaX", "0"},
+        {"BackglassMediaY", "0"},
+        {"BackglassRotation", "0"},
+        {"DMDMediaWidth", "1024"},
+        {"DMDMediaHeight", "256"},
+        {"DMDMediaX", "0"},
+        {"DMDMediaY", "0"},
+        {"DMDRotation", "0"}
+    };
+    for (size_t i = 0; i < mediaDimensions.keyValues.size(); ++i) {
+        mediaDimensions.keyToLineIndex[mediaDimensions.keyValues[i].first] = i;
+    }
+
+    // TitleDisplay
+    auto& titleDisplay = iniData_["TitleDisplay"];
+    titleDisplay.keyValues = {
+        {"ShowWheel", "true"},
+        {"ShowTitle", "true"},
+        {"FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"},
+        {"FontColor", "255,255,255,255"},
+        {"FontBgColor", "0,0,0,128"},
+        {"FontSize", "28"},
+        {"TitleX", "30"},
+        {"TitleY", "1850"}
+    };
+    for (size_t i = 0; i < titleDisplay.keyValues.size(); ++i) {
+        titleDisplay.keyToLineIndex[titleDisplay.keyValues[i].first] = i;
+    }
+
+    // Keybinds
+    auto& keybinds = iniData_["Keybinds"];
+    keybinds.keyValues = {
+        {"PreviousTable", "Left Shift"},
+        {"NextTable", "Right Shift"},
+        {"FastPrevTable", "Left Ctrl"},
+        {"FastNextTable", "Right Ctrl"},
+        {"JumpNextLetter", "Slash"},
+        {"JumpPrevLetter", "Z"},
+        {"RandomTable", "R"},
+        {"LaunchTable", "Return"},
+        {"ToggleConfig", "C"},
+        {"Quit", "Q"},
+        {"ConfigSave", "Space"},
+        {"ConfigClose", "Q"},
+        {"ScreenshotMode", "S"},
+        {"ScreenshotKey", "S"},
+        {"ScreenshotQuit", "Q"}
+    };
+    for (size_t i = 0; i < keybinds.keyValues.size(); ++i) {
+        keybinds.keyToLineIndex[keybinds.keyValues[i].first] = i;
+    }
+
+    // UISounds
+    auto& uiSounds = iniData_["UISounds"];
+    uiSounds.keyValues = {
+        {"ScrollPrevSound", "snd/scroll_prev.mp3"},
+        {"ScrollNextSound", "snd/scroll_next.mp3"},
+        {"ScrollFastPrevSound", "snd/scroll_fast_prev.mp3"},
+        {"ScrollFastNextSound", "snd/scroll_fast_next.mp3"},
+        {"ScrollJumpPrevSound", "snd/scroll_jump_prev.mp3"},
+        {"ScrollJumpNextSound", "snd/scroll_jump_next.mp3"},
+        {"ScrollRandomSound", "snd/scroll_random.mp3"},
+        {"LaunchTableSound", "snd/launch_table.mp3"},
+        {"LaunchScreenshotSound", "snd/launch_screenshot.mp3"},
+        {"ConfigSaveSound", "snd/config_save.mp3"},
+        {"ConfigCloseSound", "snd/config_close.mp3"},
+        {"QuitSound", "snd/quit.mp3"},
+        {"ScreenshotTakeSound", "snd/screenshot_take.mp3"},
+        {"ScreenshotQuitSound", "snd/screenshot_quit.mp3"}
+    };
+    for (size_t i = 0; i < uiSounds.keyValues.size(); ++i) {
+        uiSounds.keyToLineIndex[uiSounds.keyValues[i].first] = i;
+    }
 }
 
 void ConfigService::parseIniFile() {
     std::ifstream file(configPath_);
     if (!file.is_open()) {
-        LOG_INFO("ConfigService: Could not open " << configPath_ << ". Using defaults.");
+        LOG_INFO("ConfigService: Could not open " << configPath_ << ". Using defaults and creating config.ini.");
         setDefaultSettings();
+        initializeIniData();
+        writeIniFile(iniData_);
         return;
     }
 
@@ -201,24 +402,29 @@ void ConfigService::parseIniFile() {
     }
 
     setDefaultSettings();
-    // vpx conf
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
+    auto resolvePath = [&](const std::string& value, const std::string& defaultPath) {
+        if (value.empty()) return exeDir + defaultPath;
+        // If path is absolute (starts with '/' or '\'), use as-is
+        if (value.find('/') == 0 || value.find('\\') == 0) return value;
+        // Otherwise, prepend exeDir for relative paths
+        return exeDir + value;
+    };
+
     settings_.VPXTablesPath = config["VPX"]["VPXTablesPath"].empty() ? settings_.VPXTablesPath : config["VPX"]["VPXTablesPath"];
     settings_.VPinballXPath = config["VPX"]["VPinballXPath"].empty() ? settings_.VPinballXPath : config["VPX"]["VPinballXPath"];
     settings_.vpxSubCmd = config["Internal"]["SubCmd"].empty() ? settings_.vpxSubCmd : config["Internal"]["SubCmd"];
     settings_.vpxStartArgs = config["VPX"]["StartArgs"];
     settings_.vpxEndArgs = config["VPX"]["EndArgs"];
     
-    // default media
-    settings_.defaultPlayfieldImage = exeDir + (config["DefaultMedia"]["DefaultPlayfieldImage"].empty() ? "img/default_table.png" : config["DefaultMedia"]["DefaultPlayfieldImage"]);
-    settings_.defaultBackglassImage = exeDir + (config["DefaultMedia"]["DefaultBackglassImage"].empty() ? "img/default_backglass.png" : config["DefaultMedia"]["DefaultBackglassImage"]);
-    settings_.defaultDmdImage = exeDir + (config["DefaultMedia"]["DefaultDmdImage"].empty() ? "img/default_dmd.png" : config["DefaultMedia"]["DefaultDmdImage"]);
-    settings_.defaultWheelImage = exeDir + (config["DefaultMedia"]["DefaultWheelImage"].empty() ? "img/default_wheel.png" : config["DefaultMedia"]["DefaultWheelImage"]);
-    settings_.defaultPlayfieldVideo = exeDir + (config["DefaultMedia"]["DefaultPlayfieldVideo"].empty() ? "img/default_table.mp4" : config["DefaultMedia"]["DefaultPlayfieldVideo"]);
-    settings_.defaultBackglassVideo = exeDir + (config["DefaultMedia"]["DefaultBackglassVideo"].empty() ? "img/default_backglass.mp4" : config["DefaultMedia"]["DefaultBackglassVideo"]);
-    settings_.defaultDmdVideo = exeDir + (config["DefaultMedia"]["DefaultDmdVideo"].empty() ? "img/default_dmd.mp4" : config["DefaultMedia"]["DefaultDmdVideo"]);
+    settings_.defaultPlayfieldImage = resolvePath(config["DefaultMedia"]["DefaultPlayfieldImage"], "img/default_table.png");
+    settings_.defaultBackglassImage = resolvePath(config["DefaultMedia"]["DefaultBackglassImage"], "img/default_backglass.png");
+    settings_.defaultDmdImage = resolvePath(config["DefaultMedia"]["DefaultDmdImage"], "img/default_dmd.png");
+    settings_.defaultWheelImage = resolvePath(config["DefaultMedia"]["DefaultWheelImage"], "img/default_wheel.png");
+    settings_.defaultPlayfieldVideo = resolvePath(config["DefaultMedia"]["DefaultPlayfieldVideo"], "img/default_table.mp4");
+    settings_.defaultBackglassVideo = resolvePath(config["DefaultMedia"]["DefaultBackglassVideo"], "img/default_backglass.mp4");
+    settings_.defaultDmdVideo = resolvePath(config["DefaultMedia"]["DefaultDmdVideo"], "img/default_dmd.mp4");
     
-    // custom media
     settings_.customPlayfieldImage = config["CustomMedia"]["PlayfieldImage"].empty() ? settings_.customPlayfieldImage : config["CustomMedia"]["PlayfieldImage"];
     settings_.customBackglassImage = config["CustomMedia"]["BackglassImage"].empty() ? settings_.customBackglassImage : config["CustomMedia"]["BackglassImage"];
     settings_.customDmdImage = config["CustomMedia"]["DmdImage"].empty() ? settings_.customDmdImage : config["CustomMedia"]["DmdImage"];
@@ -227,11 +433,9 @@ void ConfigService::parseIniFile() {
     settings_.customBackglassVideo = config["CustomMedia"]["BackglassVideo"].empty() ? settings_.customBackglassVideo : config["CustomMedia"]["BackglassVideo"];
     settings_.customDmdVideo = config["CustomMedia"]["DmdVideo"].empty() ? settings_.customDmdVideo : config["CustomMedia"]["DmdVideo"];
     
-    // dpi settings
     settings_.enableDpiScaling = config["DPISettings"]["EnableDpiScaling"].empty() ? true : (config["DPISettings"]["EnableDpiScaling"] == "true");
     settings_.dpiScale = std::stof(config["DPISettings"]["DpiScale"].empty() ? "1.0" : config["DPISettings"]["DpiScale"]);
     
-    // windows
     settings_.playfieldWindowMonitor = std::stoi(config["WindowSettings"]["PlayfieldMonitor"].empty() ? "1" : config["WindowSettings"]["PlayfieldMonitor"]);
     settings_.playfieldWindowWidth = std::stoi(config["WindowSettings"]["PlayfieldWidth"].empty() ? "1080" : config["WindowSettings"]["PlayfieldWidth"]);
     settings_.playfieldWindowHeight = std::stoi(config["WindowSettings"]["PlayfieldHeight"].empty() ? "1920" : config["WindowSettings"]["PlayfieldHeight"]);
@@ -252,7 +456,6 @@ void ConfigService::parseIniFile() {
     settings_.dmdX = std::stoi(config["WindowSettings"]["DMDX"].empty() ? "-1" : config["WindowSettings"]["DMDX"]);
     settings_.dmdY = std::stoi(config["WindowSettings"]["DMDY"].empty() ? "-1" : config["WindowSettings"]["DMDY"]);
     
-    // media size/pos
     settings_.wheelMediaHeight = std::stoi(config["MediaDimensions"]["WheelMediaHeight"].empty() ? "350" : config["MediaDimensions"]["WheelMediaHeight"]);
     settings_.wheelMediaWidth = std::stoi(config["MediaDimensions"]["WheelMediaWidth"].empty() ? "350" : config["MediaDimensions"]["WheelMediaWidth"]);
     settings_.wheelMediaX = std::stoi(config["MediaDimensions"]["WheelMediaX"].empty() ? "720" : config["MediaDimensions"]["WheelMediaX"]);
@@ -263,20 +466,19 @@ void ConfigService::parseIniFile() {
     settings_.playfieldMediaX = std::stoi(config["MediaDimensions"]["PlayfieldMediaX"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaX"]);
     settings_.playfieldMediaY = std::stoi(config["MediaDimensions"]["PlayfieldMediaY"].empty() ? "0" : config["MediaDimensions"]["PlayfieldMediaY"]);
     settings_.playfieldRotation = std::stoi(config["MediaDimensions"]["PlayfieldRotation"].empty() ? "0" : config["MediaDimensions"]["PlayfieldRotation"]);
-
+    
     settings_.backglassMediaWidth = std::stoi(config["MediaDimensions"]["BackglassMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["BackglassMediaWidth"]);
     settings_.backglassMediaHeight = std::stoi(config["MediaDimensions"]["BackglassMediaHeight"].empty() ? "768" : config["MediaDimensions"]["BackglassMediaHeight"]);
     settings_.backglassMediaX = std::stoi(config["MediaDimensions"]["BackglassMediaX"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaX"]);
     settings_.backglassMediaY = std::stoi(config["MediaDimensions"]["BackglassMediaY"].empty() ? "0" : config["MediaDimensions"]["BackglassMediaY"]);
     settings_.backglassRotation = std::stoi(config["MediaDimensions"]["BackglassRotation"].empty() ? "0" : config["MediaDimensions"]["BackglassRotation"]);
-
+    
     settings_.dmdMediaWidth = std::stoi(config["MediaDimensions"]["DMDMediaWidth"].empty() ? "1024" : config["MediaDimensions"]["DMDMediaWidth"]);
     settings_.dmdMediaHeight = std::stoi(config["MediaDimensions"]["DMDMediaHeight"].empty() ? "256" : config["MediaDimensions"]["DMDMediaHeight"]);
     settings_.dmdMediaX = std::stoi(config["MediaDimensions"]["DMDMediaX"].empty() ? "0" : config["MediaDimensions"]["DMDMediaX"]);
     settings_.dmdMediaY = std::stoi(config["MediaDimensions"]["DMDMediaY"].empty() ? "0" : config["MediaDimensions"]["DMDMediaY"]);
     settings_.dmdRotation = std::stoi(config["MediaDimensions"]["DMDRotation"].empty() ? "0" : config["MediaDimensions"]["DMDRotation"]);
-
-    // font/title
+    
     settings_.showWheel = config["TitleDisplay"]["ShowWheel"].empty() ? true : (config["TitleDisplay"]["ShowWheel"] == "true");
     settings_.showTitle = config["TitleDisplay"]["ShowTitle"].empty() ? true : (config["TitleDisplay"]["ShowTitle"] == "true");
     settings_.fontPath = config["TitleDisplay"]["FontPath"].empty() ? settings_.fontPath : config["TitleDisplay"]["FontPath"];
@@ -291,7 +493,6 @@ void ConfigService::parseIniFile() {
     settings_.titleX = std::stoi(config["TitleDisplay"]["TitleX"].empty() ? "30" : config["TitleDisplay"]["TitleX"]);
     settings_.titleY = std::stoi(config["TitleDisplay"]["TitleY"].empty() ? "1850" : config["TitleDisplay"]["TitleY"]);
     
-    // sounds
     settings_.configToggleSound = config["UISounds"]["ConfigToggleSound"].empty() ? settings_.configToggleSound : config["UISounds"]["ConfigToggleSound"];
     settings_.scrollPrevSound = config["UISounds"]["ScrollPrevSound"].empty() ? settings_.scrollPrevSound : config["UISounds"]["ScrollPrevSound"];
     settings_.scrollNextSound = config["UISounds"]["ScrollNextSound"].empty() ? settings_.scrollNextSound : config["UISounds"]["ScrollNextSound"];
@@ -306,16 +507,27 @@ void ConfigService::parseIniFile() {
     settings_.configCloseSound = config["UISounds"]["ConfigCloseSound"].empty() ? settings_.configCloseSound : config["UISounds"]["ConfigCloseSound"];
     settings_.quitSound = config["UISounds"]["QuitSound"].empty() ? settings_.quitSound : config["UISounds"]["QuitSound"];
     settings_.screenshotTakeSound = config["UISounds"]["ScreenshotTakeSound"].empty() ? settings_.screenshotTakeSound : config["UISounds"]["ScreenshotTakeSound"];
-    settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty()? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
-
+    settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty() ? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
+    
     keybindManager_.loadKeybinds(config["Keybinds"]);
     settings_.logFile = config["Internal"]["LogFile"].empty() ? "logs/debug.log" : config["Internal"]["LogFile"];
 }
 
 void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& iniData) {
+    std::filesystem::path configDir = std::filesystem::path(configPath_).parent_path();
+    if (!configDir.empty() && !std::filesystem::exists(configDir)) {
+        try {
+            std::filesystem::create_directories(configDir);
+            LOG_DEBUG("ConfigService: Created directory " << configDir);
+        } catch (const std::exception& e) {
+            LOG_ERROR("ConfigService: Failed to create directory " << configDir << ": " << e.what());
+            return;
+        }
+    }
+
     std::ofstream file(configPath_);
     if (!file.is_open()) {
-        LOG_ERROR("ConfigService: Could not write " << configPath_);
+        LOG_ERROR("ConfigService: Could not write " << configPath_ << ": Permission denied or invalid path");
         return;
     }
 
@@ -327,4 +539,5 @@ void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& i
         file << "\n";
     }
     file.close();
+    LOG_DEBUG("ConfigService: Successfully wrote config to " << configPath_);
 }
