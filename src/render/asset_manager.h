@@ -64,6 +64,7 @@ public:
 
     // Cleanup method for all video players (moved from App)
     void cleanupVideoPlayers();
+    void clearVideoCache();
     void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer = renderer; }
     void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer = renderer; }
     void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer = renderer; }
@@ -72,6 +73,9 @@ private:
     SDL_Renderer* playfieldRenderer;    // Playfield renderer
     SDL_Renderer* backglassRenderer;    // Backglass renderer
     SDL_Renderer* dmdRenderer;          // DMD renderer
+    std::string currentPlayfieldVideoPath_;
+    std::string currentBackglassVideoPath_;
+    std::string currentDmdVideoPath_;
     TTF_Font* font;                     // Font for text rendering
     IConfigService* configManager_;     // Pointer to config service for settings
     std::vector<VideoContext*> oldVideoPlayers_;  // Queue of old video players to clean
