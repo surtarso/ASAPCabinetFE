@@ -218,12 +218,23 @@ void App::update() {
 
 void App::render() {
     if (renderer_ && assets_) {
+        const Settings& settings = configManager_->getSettings();
+        
+        // Clear playfield renderer
         SDL_SetRenderDrawColor(windowManager_->getPlayfieldRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(windowManager_->getPlayfieldRenderer());
-        SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(windowManager_->getBackglassRenderer());
-        SDL_SetRenderDrawColor(windowManager_->getDMDRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(windowManager_->getDMDRenderer());
+        
+        // Clear backglass renderer only if enabled
+        if (settings.showBackglass) {
+            SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
+            SDL_RenderClear(windowManager_->getBackglassRenderer());
+        }
+        
+        // Clear DMD renderer only if enabled
+        if (settings.showDMD) {
+            SDL_SetRenderDrawColor(windowManager_->getDMDRenderer(), 0, 0, 0, 255);
+            SDL_RenderClear(windowManager_->getDMDRenderer());
+        }
 
         guiManager_->newFrame();
         renderer_->render(*assets_);
@@ -233,8 +244,12 @@ void App::render() {
         guiManager_->render(windowManager_->getPlayfieldRenderer());
 
         SDL_RenderPresent(windowManager_->getPlayfieldRenderer());
-        SDL_RenderPresent(windowManager_->getBackglassRenderer());
-        SDL_RenderPresent(windowManager_->getDMDRenderer());
+        if (settings.showBackglass) {
+            SDL_RenderPresent(windowManager_->getBackglassRenderer());
+        }
+        if (settings.showDMD) {
+            SDL_RenderPresent(windowManager_->getDMDRenderer());
+        }
     }
 }
 
