@@ -64,6 +64,9 @@ public:
 
     // Cleanup method for all video players (moved from App)
     void cleanupVideoPlayers();
+    void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer = renderer; }
+    void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer = renderer; }
+    void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer = renderer; }
 
 private:
     SDL_Renderer* playfieldRenderer;    // Playfield renderer

@@ -183,6 +183,7 @@ void ConfigUI::saveConfig() {
         if (windowSettingsChanged) {
             LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
             app_->reloadWindows();
+            app_->onConfigSaved();
         }
     }
     hasChanges_ = false;

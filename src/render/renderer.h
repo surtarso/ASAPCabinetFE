@@ -11,6 +11,11 @@ public:
                     SDL_Renderer* dmdRenderer);
     void render(AssetManager& assets) override; // Simplified signature
 
+    // Public setter methods for renderers
+    void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer_ = renderer; }
+    void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer_ = renderer; }
+    void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer_ = renderer; }
+
 private:
     SDL_Renderer* playfieldRenderer_;
     SDL_Renderer* backglassRenderer_;
