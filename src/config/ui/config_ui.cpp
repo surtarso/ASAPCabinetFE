@@ -173,33 +173,32 @@ bool ConfigUI::hasVisibilitySettingsChanged() const {
     auto currentIt = currentIniData.find("WindowSettings");
     auto lastIt = lastSavedIniData_.find("WindowSettings");
 
+    // Case 1: Section removed, no need to reload assets
     if (currentIt == currentIniData.end() && lastIt != lastSavedIniData_.end()) {
-        // Section removed, check if showDMD/showBackglass existed
-        const auto& lastSection = lastIt->second;
-        for (const auto& [key, value] : lastSection.keyValues) {
-            if (key == "ShowDMD" || key == "ShowBackglass") {
-                LOG_DEBUG("ConfigUI: Visibility setting removed: " << key);
-                return true;
-            }
-        }
+        LOG_DEBUG("ConfigUI: WindowSettings section removed, no visibility settings to enable");
         return false;
     }
+
+    // Case 2: Section added, check if ShowDMD/ShowBackglass is true
     if (currentIt != currentIniData.end() && lastIt == lastSavedIniData_.end()) {
-        // Section added, check if showDMD/showBackglass exists
         const auto& currentSection = currentIt->second;
         for (const auto& [key, value] : currentSection.keyValues) {
-            if (key == "ShowDMD" || key == "ShowBackglass") {
-                LOG_DEBUG("ConfigUI: Visibility setting added: " << key << "=" << value);
+            if ((key == "ShowDMD" || key == "ShowBackglass") && value == "true") {
+                LOG_DEBUG("ConfigUI: Visibility setting added: " << key << "=true");
                 return true;
             }
         }
+        LOG_DEBUG("ConfigUI: WindowSettings section added, no visibility settings enabled");
         return false;
     }
+
+    // Case 3: No WindowSettings section in either state
     if (currentIt == currentIniData.end() && lastIt == lastSavedIniData_.end()) {
         LOG_DEBUG("ConfigUI: No WindowSettings section in either state");
         return false;
     }
 
+    // Case 4: Section exists in both, check for changes to true
     const auto& currentSection = currentIt->second;
     const auto& lastSection = lastIt->second;
 
@@ -209,29 +208,18 @@ bool ConfigUI::hasVisibilitySettingsChanged() const {
             auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
                                            [currentKey](const auto& pair) { return pair.first == currentKey; });
             if (lastPairIt == lastSection.keyValues.end()) {
-                LOG_DEBUG("ConfigUI: Visibility setting added: " << currentKey << "=" << value);
-                return true;
-            }
-            if (lastPairIt->second != value) {
-                LOG_DEBUG("ConfigUI: Visibility setting changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
-                return true;
-            }
-        }
-    }
-
-    for (const auto& [key, value] : lastSection.keyValues) {
-        if (key == "ShowDMD" || key == "ShowBackglass") {
-            const std::string currentKey = key;
-            auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
-                                              [currentKey](const auto& pair) { return pair.first == currentKey; });
-            if (currentPairIt == currentSection.keyValues.end()) {
-                LOG_DEBUG("ConfigUI: Visibility setting removed: " << currentKey);
+                if (value == "true") {
+                    LOG_DEBUG("ConfigUI: Visibility setting added: " << currentKey << "=true");
+                    return true;
+                }
+            } else if (lastPairIt->second != value && value == "true") {
+                LOG_DEBUG("ConfigUI: Visibility setting changed: " << currentKey << " from " << lastPairIt->second << " to true");
                 return true;
             }
         }
     }
 
-    LOG_DEBUG("ConfigUI: No visibility settings changed");
+    LOG_DEBUG("ConfigUI: No visibility settings changed to true");
     return false;
 }
 
