@@ -17,8 +17,18 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       playfieldRenderer(playfield),
       backglassRenderer(backglass),
       dmdRenderer(dmd),
+      currentPlayfieldVideoPath_(),
+      currentBackglassVideoPath_(),
+      currentDmdVideoPath_(),
       font(f),
       configManager_(nullptr) {}
+
+void AssetManager::clearVideoCache() {
+    LOG_DEBUG("AssetManager: Clearing video path cache");
+    currentPlayfieldVideoPath_.clear();
+    currentBackglassVideoPath_.clear();
+    currentDmdVideoPath_.clear();
+}
 
 void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
                                 TTF_Font* f, size_t index, const std::vector<TableLoader>& tables) {
@@ -28,10 +38,6 @@ void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass
     backglassRenderer = backglass;
     dmdRenderer = dmd;
     font = f;
-
-    // Cleanup existing video players
-    LOG_DEBUG("AssetManager: reloadAssets -> Cleaning up video players");
-    cleanupVideoPlayers();
 
     // Clear textures
     LOG_DEBUG("AssetManager: reloadAssets -> Resetting textures");
@@ -49,8 +55,32 @@ void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
     LOG_DEBUG("AssetManager: loadTableAssets -> called with index: " << index);
+    if (index >= tables.size()) {
+        LOG_ERROR("AssetManager: Invalid table index: " << index << ", table count: " << tables.size());
+        return;
+    }
     const TableLoader& table = tables[index];
-    const Settings& settings = configManager_->getSettings();
+    const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
+    static bool lastShowBackglass = settings.showBackglass;
+    static bool lastShowDMD = settings.showDMD;
+    static size_t lastIndex = -1;
+
+    // Clear cache when table index changes
+    if (index != lastIndex) {
+        LOG_DEBUG("AssetManager: Table index changed from " << lastIndex << " to " << index << ", clearing cache");
+        clearVideoCache();
+        lastIndex = index;
+    }
+
+    // Log table data for debugging
+    LOG_DEBUG("AssetManager: Loading table: " << table.title
+              << ", playfieldVideo: " << table.playfieldVideo
+              << ", backglassVideo: " << table.backglassVideo
+              << ", dmdVideo: " << table.dmdVideo
+              << ", playfieldImage: " << table.playfieldImage
+              << ", backglassImage: " << table.backglassImage
+              << ", dmdImage: " << table.dmdImage
+              << ", wheelImage: " << table.wheelImage);
 
     // Load static textures only for valid renderers
     if (playfieldRenderer) {
@@ -67,32 +97,22 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
         titleTexture.reset();
     }
 
-    if (backglassRenderer) {
-        if (settings.showBackglass) {
-            backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
-        } else {
-            LOG_DEBUG("AssetManager: loadTableAssets -> showBackglass is false, skipping backglass texture");
-            backglassTexture.reset();
-        }
+    if (backglassRenderer && settings.showBackglass) {
+        backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
     } else {
-        LOG_DEBUG("AssetManager: loadTableAssets -> Backglass renderer is null, skipping backglass texture");
+        LOG_DEBUG("AssetManager: loadTableAssets -> Backglass renderer null or showBackglass false, skipping");
         backglassTexture.reset();
     }
 
-    if (dmdRenderer) {
-        if (settings.showDMD) {
-            dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
-        } else {
-            LOG_DEBUG("AssetManager: loadTableAssets -> showDMD is false, skipping DMD texture");
-            dmdTexture.reset();
-        }
+    if (dmdRenderer && settings.showDMD) {
+        dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
     } else {
-        LOG_DEBUG("AssetManager: loadTableAssets -> DMD renderer is null, skipping DMD texture");
+        LOG_DEBUG("AssetManager: loadTableAssets -> DMD renderer null or showDMD false, skipping");
         dmdTexture.reset();
     }
 
     // Helper lambda to stop and queue old video players
-    auto stopAndMove = [this](VideoContext*& current) {
+    auto stopAndMove = [this](VideoContext*& current, std::string& currentPath) {
         if (current && current->player) {
             LOG_DEBUG("AssetManager: loadTableAssets -> Stopping and queuing old video player");
             libvlc_media_player_stop(current->player);
@@ -101,56 +121,95 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
             }
             addOldVideoPlayer(current);
             current = nullptr;
+            currentPath.clear();
         }
     };
 
-    // Stop and move existing video players
-    stopAndMove(playfieldVideoPlayer);
-    stopAndMove(backglassVideoPlayer);
-    stopAndMove(dmdVideoPlayer);
-
-    // Load new video players only for valid renderers
-    if (playfieldRenderer && !table.playfieldVideo.empty() && 
-        settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering Playfield");
+    // Load playfield video
+    if (playfieldRenderer && !table.playfieldVideo.empty() &&
+        settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0 &&
+        table.playfieldVideo != currentPlayfieldVideoPath_) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Playfield video path changed, reloading");
+        stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
         playfieldVideoPlayer = setupVideoPlayer(playfieldRenderer, table.playfieldVideo,
                                                settings.playfieldMediaWidth, settings.playfieldMediaHeight);
         if (playfieldVideoPlayer && libvlc_media_player_play(playfieldVideoPlayer->player) != 0) {
             LOG_ERROR("AssetManager: loadTableAssets -> Failed to play table video: " << table.playfieldVideo);
             cleanupVideoContext(playfieldVideoPlayer);
             playfieldVideoPlayer = nullptr;
+        } else {
+            currentPlayfieldVideoPath_ = table.playfieldVideo;
         }
-    } else {
-        playfieldVideoPlayer = nullptr;
+    } else if (playfieldVideoPlayer && !table.playfieldVideo.empty() &&
+               !libvlc_media_player_is_playing(playfieldVideoPlayer->player)) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Resuming playfield video");
+        libvlc_media_player_play(playfieldVideoPlayer->player);
+    } else if (table.playfieldVideo.empty()) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Playfield video empty, clearing");
+        stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
     }
 
-    if (backglassRenderer && !table.backglassVideo.empty() && 
-        settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering Backglass");
-        backglassVideoPlayer = setupVideoPlayer(backglassRenderer, table.backglassVideo,
-                                               settings.backglassMediaWidth, settings.backglassMediaHeight);
-        if (backglassVideoPlayer && libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
-            LOG_ERROR("AssetManager: loadTableAssets -> Failed to play backglass video: " << table.backglassVideo);
-            cleanupVideoContext(backglassVideoPlayer);
-            backglassVideoPlayer = nullptr;
+    // Load backglass video
+    if (backglassRenderer && !table.backglassVideo.empty() &&
+        settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0 &&
+        (table.backglassVideo != currentBackglassVideoPath_ || settings.showBackglass != lastShowBackglass)) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Backglass video path or showBackglass changed, reloading");
+        stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
+        if (settings.showBackglass) {
+            backglassVideoPlayer = setupVideoPlayer(backglassRenderer, table.backglassVideo,
+                                                   settings.backglassMediaWidth, settings.backglassMediaHeight);
+            if (backglassVideoPlayer && libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
+                LOG_ERROR("AssetManager: loadTableAssets -> Failed to play backglass video: " << table.backglassVideo);
+                cleanupVideoContext(backglassVideoPlayer);
+                backglassVideoPlayer = nullptr;
+            } else {
+                currentBackglassVideoPath_ = table.backglassVideo;
+            }
         }
-    } else {
-        backglassVideoPlayer = nullptr;
+    } else if (backglassVideoPlayer && settings.showBackglass && !table.backglassVideo.empty() &&
+               !libvlc_media_player_is_playing(backglassVideoPlayer->player)) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Resuming backglass video");
+        libvlc_media_player_play(backglassVideoPlayer->player);
+    } else if (backglassVideoPlayer && !settings.showBackglass) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Pausing backglass video due to showBackglass false");
+        libvlc_media_player_pause(backglassVideoPlayer->player);
+    } else if (table.backglassVideo.empty()) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Backglass video empty, clearing");
+        stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
     }
 
-    if (dmdRenderer && !table.dmdVideo.empty() && 
-        settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering DMD");
-        dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo,
-                                         settings.dmdMediaWidth, settings.dmdMediaHeight);
-        if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
-            LOG_ERROR("AssetManager: loadTableAssets -> Failed to play DMD video: " << table.dmdVideo);
-            cleanupVideoContext(dmdVideoPlayer);
-            dmdVideoPlayer = nullptr;
+    // Load DMD video
+    if (dmdRenderer && !table.dmdVideo.empty() &&
+        settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0 &&
+        (table.dmdVideo != currentDmdVideoPath_ || settings.showDMD != lastShowDMD)) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> DMD video path or showDMD changed, reloading");
+        stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
+        if (settings.showDMD) {
+            dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo,
+                                             settings.dmdMediaWidth, settings.dmdMediaHeight);
+            if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
+                LOG_ERROR("AssetManager: loadTableAssets -> Failed to play DMD video: " << table.dmdVideo);
+                cleanupVideoContext(dmdVideoPlayer);
+                dmdVideoPlayer = nullptr;
+            } else {
+                currentDmdVideoPath_ = table.dmdVideo;
+            }
         }
-    } else {
-        dmdVideoPlayer = nullptr;
+    } else if (dmdVideoPlayer && settings.showDMD && !table.dmdVideo.empty() &&
+               !libvlc_media_player_is_playing(dmdVideoPlayer->player)) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Resuming DMD video");
+        libvlc_media_player_play(dmdVideoPlayer->player);
+    } else if (dmdVideoPlayer && !settings.showDMD) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Pausing DMD video due to showDMD false");
+        libvlc_media_player_pause(dmdVideoPlayer->player);
+    } else if (table.dmdVideo.empty()) {
+        LOG_DEBUG("AssetManager: loadTableAssets -> DMD video empty, clearing");
+        stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
     }
+
+    // Update last known settings
+    lastShowBackglass = settings.showBackglass;
+    lastShowDMD = settings.showDMD;
 
     LOG_INFO("AssetManager: Loaded assets for table: " << table.title);
 }
@@ -161,16 +220,19 @@ void AssetManager::cleanupVideoPlayers() {
         libvlc_media_player_stop(playfieldVideoPlayer->player);
         cleanupVideoContext(playfieldVideoPlayer);
         playfieldVideoPlayer = nullptr;
+        currentPlayfieldVideoPath_.clear();
     }
     if (backglassVideoPlayer && backglassVideoPlayer->player) {
         libvlc_media_player_stop(backglassVideoPlayer->player);
         cleanupVideoContext(backglassVideoPlayer);
         backglassVideoPlayer = nullptr;
+        currentBackglassVideoPath_.clear();
     }
     if (dmdVideoPlayer && dmdVideoPlayer->player) {
         libvlc_media_player_stop(dmdVideoPlayer->player);
         cleanupVideoContext(dmdVideoPlayer);
         dmdVideoPlayer = nullptr;
+        currentDmdVideoPath_.clear();
     }
     clearOldVideoPlayers();
 }
@@ -182,9 +244,9 @@ void AssetManager::addOldVideoPlayer(VideoContext* player) {
 }
 
 void AssetManager::clearOldVideoPlayers() {
+    //LOG_DEBUG("AssetManager: Clearing old video players, count: " << oldVideoPlayers_.size());
     for (VideoContext* player : oldVideoPlayers_) {
-        if (player && player->player) {
-            libvlc_media_player_stop(player->player);
+        if (player) {
             cleanupVideoContext(player);
         }
     }
@@ -192,18 +254,25 @@ void AssetManager::clearOldVideoPlayers() {
 }
 
 SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string& path) {
-    FILE* redirected;
-    redirected = freopen("/dev/null", "w", stderr);
-    if (!redirected) {
-        LOG_ERROR("AssetManager: Failed to redirect stderr to /dev/null for texture load: " << path);
+    if (!renderer || path.empty()) {
+        LOG_ERROR("AssetManager: Invalid renderer or empty path for texture: " << path);
+        return nullptr;
     }
 
-    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
-    FILE* restored;
-    restored = freopen("/dev/tty", "w", stderr);
-    if (!restored) {
-        LOG_ERROR("AssetManager: Failed to restore stderr from /dev/null after loading texture: " << path);
+    // Temporarily redirect stderr to suppress SDL_image logs
+    std::FILE* originalStderr = stderr;
+    std::FILE* nullFile = fopen("/dev/null", "w");
+    if (!nullFile) {
+        LOG_ERROR("AssetManager: Failed to open /dev/null for texture load: " << path);
+        return nullptr;
     }
+    stderr = nullFile;
+
+    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
+
+    // Restore stderr
+    stderr = originalStderr;
+    fclose(nullFile);
 
     if (!tex) {
         LOG_ERROR("AssetManager: Failed to load texture " << path << ": " << IMG_GetError());
