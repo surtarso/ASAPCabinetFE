@@ -17,7 +17,7 @@ bool ConfigService::isConfigValid() const {
 
 void ConfigService::loadConfig() {
     parseIniFile();
-    LOG_DEBUG("ConfigService: Config loaded from " << configPath_);
+    LOG_INFO("ConfigService: Config loaded from " << configPath_);
 }
 
 void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& iniData) {
