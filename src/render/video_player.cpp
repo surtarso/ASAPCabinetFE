@@ -5,7 +5,7 @@
 void* lock(void* data, void** pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
     if (SDL_LockMutex(ctx->mutex) != 0) {
-        LOG_DEBUG("Lock mutex failed: " << SDL_GetError());
+        LOG_DEBUG("VideoPlayer: Lock mutex failed: " << SDL_GetError());
         return nullptr;
     }
     *pixels = ctx->pixels;
@@ -34,7 +34,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     ctx->isPlaying = false; // Initially not playing
     ctx->mutex = SDL_CreateMutex();
     if (!ctx->mutex) {
-        LOG_ERROR("Failed to create mutex: " << SDL_GetError());
+        LOG_ERROR("VideoPlayer: Failed to create mutex: " << SDL_GetError());
         delete ctx;
         return nullptr;
     }
@@ -42,7 +42,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     const char* args[] = {"--quiet", "--loop"};
     ctx->instance = libvlc_new(2, args);
     if (!ctx->instance) {
-        LOG_ERROR("Failed to create VLC instance");
+        LOG_ERROR("VideoPlayer: Failed to create VLC instance");
         SDL_DestroyMutex(ctx->mutex);
         delete ctx;
         return nullptr;
@@ -50,7 +50,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
 
     libvlc_media_t* media = libvlc_media_new_path(ctx->instance, path.c_str());
     if (!media) {
-        LOG_ERROR("Failed to create VLC media for path: " << path);
+        LOG_ERROR("VideoPlayer: Failed to create VLC media for path: " << path);
         libvlc_release(ctx->instance);
         SDL_DestroyMutex(ctx->mutex);
         delete ctx;
@@ -62,7 +62,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     ctx->player = libvlc_media_player_new_from_media(media);
     libvlc_media_release(media);
     if (!ctx->player) {
-        LOG_ERROR("Failed to create VLC media player");
+        LOG_ERROR("VideoPlayer: Failed to create VLC media player");
         libvlc_release(ctx->instance);
         SDL_DestroyMutex(ctx->mutex);
         delete ctx;
@@ -72,7 +72,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     ctx->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                                      SDL_TEXTUREACCESS_STREAMING, width, height);
     if (!ctx->texture) {
-        LOG_ERROR("Failed to create video texture: " << SDL_GetError());
+        LOG_ERROR("VideoPlayer: Failed to create video texture: " << SDL_GetError());
         libvlc_media_player_release(ctx->player);
         libvlc_release(ctx->instance);
         SDL_DestroyMutex(ctx->mutex);
@@ -83,7 +83,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     ctx->pitch = width * 4; // 4 bytes per pixel for ARGB8888
     ctx->pixels = malloc(ctx->pitch * height);
     if (!ctx->pixels) {
-        LOG_ERROR("Failed to allocate pixel buffer");
+        LOG_ERROR("VideoPlayer: Failed to allocate pixel buffer");
         SDL_DestroyTexture(ctx->texture);
         libvlc_media_player_release(ctx->player);
         libvlc_release(ctx->instance);
@@ -95,7 +95,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
     libvlc_video_set_callbacks(ctx->player, lock, unlock, display, ctx);
     libvlc_video_set_format(ctx->player, "RV32", width, height, ctx->pitch);
     if (libvlc_media_player_play(ctx->player) != 0) {
-        LOG_ERROR("Failed to start VLC playback");
+        LOG_ERROR("VideoPlayer: Failed to start VLC playback");
         SDL_DestroyTexture(ctx->texture);
         libvlc_media_player_release(ctx->player);
         libvlc_release(ctx->instance);
@@ -105,7 +105,7 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
         return nullptr;
     }
 
-    LOG_DEBUG("Video player setup: player=" << ctx->player << ", texture=" << ctx->texture
+    LOG_DEBUG("VideoPlayer: Setup-> player=" << ctx->player << ", texture=" << ctx->texture
               << ", pixels=" << ctx->pixels << ", mutex=" << ctx->mutex);
     return ctx;
 }
@@ -125,7 +125,7 @@ void cleanupVideoContext(VideoContext* ctx) {
 
 void updateVideoTexture(VideoContext* video) {
     if (!video || !video->texture || !video->pixels || !video->mutex || !video->player) {
-        LOG_ERROR("Invalid video context in updateVideoTexture");
+        LOG_ERROR("VideoPlayer: Invalid video context in updateVideoTexture");
         return;
     }
     if (!video->isPlaying) {
@@ -134,10 +134,10 @@ void updateVideoTexture(VideoContext* video) {
     }
     if (SDL_LockMutex(video->mutex) == 0) {
         if (SDL_UpdateTexture(video->texture, nullptr, video->pixels, video->pitch) != 0) {
-            LOG_ERROR("SDL_UpdateTexture failed: " << SDL_GetError());
+            LOG_ERROR("VideoPlayer: SDL_UpdateTexture failed: " << SDL_GetError());
         }
         SDL_UnlockMutex(video->mutex);
     } else {
-        LOG_ERROR("SDL_LockMutex failed: " << SDL_GetError());
+        LOG_ERROR("VideoPlayer: SDL_LockMutex failed: " << SDL_GetError());
     }
 }

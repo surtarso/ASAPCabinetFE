@@ -4,24 +4,24 @@
 
 JoystickManager::JoystickManager() {
     initializeJoysticks();
-    LOG_INFO("JoystickManager constructed");
+    LOG_INFO("JoystickManager: JoystickManager constructed");
 }
 
 JoystickManager::~JoystickManager() {
     cleanupJoysticks();
-    LOG_INFO("JoystickManager destroyed");
+    LOG_INFO("JoystickManager: JoystickManager destroyed");
 }
 
 void JoystickManager::initializeJoysticks() {
     int numJoysticks = SDL_NumJoysticks();
-    LOG_INFO("Found " << numJoysticks << " joysticks");
+    LOG_INFO("JoystickManager: Found " << numJoysticks << " joysticks");
     for (int i = 0; i < numJoysticks; ++i) {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
         if (joystick) {
             joysticks_.push_back(joystick);
-            LOG_DEBUG("Opened joystick " << i << ": " << SDL_JoystickName(joystick));
+            LOG_DEBUG("JoystickManager: Opened joystick " << i << ": " << SDL_JoystickName(joystick));
         } else {
-            LOG_ERROR("Failed to open joystick " << i << ": " << SDL_GetError());
+            LOG_ERROR("JoystickManager: Failed to open joystick " << i << ": " << SDL_GetError());
         }
     }
 }
@@ -37,7 +37,7 @@ void JoystickManager::addJoystick(int index) {
     SDL_Joystick* joystick = SDL_JoystickOpen(index);
     if (joystick) {
         joysticks_.push_back(joystick);
-        LOG_DEBUG("Added joystick: " << SDL_JoystickName(joystick));
+        LOG_DEBUG("JoystickManager: Added joystick: " << SDL_JoystickName(joystick));
     }
 }
 
@@ -46,7 +46,7 @@ void JoystickManager::removeJoystick(SDL_JoystickID id) {
         if (SDL_JoystickInstanceID(*it) == id) {
             SDL_JoystickClose(*it);
             joysticks_.erase(it);
-            LOG_DEBUG("Removed joystick ID: " << id);
+            LOG_DEBUG("JoystickManager: Removed joystick ID: " << id);
             break;
         }
     }

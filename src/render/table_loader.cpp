@@ -9,13 +9,13 @@ std::map<char, int> letterIndex;
 
 std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
     fs::path imageFile = fs::path(root) / imagePath;
-    LOG_DEBUG("Checking custom path: " << imageFile.string());
+    //LOG_DEBUG("TableLoader: Checking custom path: " << imageFile.string());
     if (fs::exists(imageFile)) {
         return imageFile.string();
     }
-    LOG_DEBUG("Falling back to default: " << defaultImagePath);
+    //LOG_DEBUG("TableLoader: Falling back to default: " << defaultImagePath);
     if (!fs::exists(defaultImagePath)) {
-        LOG_ERROR("Default image not found: " << defaultImagePath);
+        LOG_ERROR("TableLoader: Default image not found: " << defaultImagePath);
     }
     return defaultImagePath;
 }
@@ -33,7 +33,7 @@ std::string getVideoPath(const std::string& root, const std::string& videoPath, 
 std::vector<TableLoader> loadTableList(const Settings& settings) {
     std::vector<TableLoader> tables;
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
-        LOG_ERROR("Invalid or empty VPX tables path: " << settings.VPXTablesPath);
+        LOG_ERROR("TableLoader: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
     }
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {

@@ -19,7 +19,7 @@ public:
         if (SDL_Init(flags) == 0) {
             success = true;
         } else {
-            LOG_DEBUG("SDL_Init Error: " << SDL_GetError());
+            LOG_DEBUG("SDLGuards: SDL_Init Error: " << SDL_GetError());
         }
     }
     ~SDLInitGuard() {
@@ -36,7 +36,7 @@ public:
     int flags;
     IMGInitGuard(int flags) : flags(flags) {
         if (!(IMG_Init(flags) & flags)) {
-            LOG_DEBUG("IMG_Init Error: " << IMG_GetError());
+            LOG_DEBUG("SDLGuards: IMG_Init Error: " << IMG_GetError());
             this->flags = 0;
         }
     }
@@ -56,7 +56,7 @@ public:
         if (TTF_Init() == 0) {
             success = true;
         } else {
-            LOG_DEBUG("TTF_Init Error: " << TTF_GetError());
+            LOG_DEBUG("SDLGuards: TTF_Init Error: " << TTF_GetError());
         }
     }
     ~TTFInitGuard() {
@@ -75,7 +75,7 @@ public:
         if (Mix_OpenAudio(frequency, format, channels, chunksize) == 0) {
             success = true;
         } else {
-            LOG_DEBUG("SDL_mixer Error: " << Mix_GetError());
+            LOG_DEBUG("SDLGuards: SDL_mixer Error: " << Mix_GetError());
         }
     }
     ~MixerGuard() {

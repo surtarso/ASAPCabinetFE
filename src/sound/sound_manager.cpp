@@ -7,15 +7,15 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     : exeDir_(exeDir), settings_(settings) {
     // Initialize SDL_mixer
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        LOG_ERROR("Mix_OpenAudio failed: " << Mix_GetError());
+        LOG_ERROR("SoundManager: Mix_OpenAudio failed: " << Mix_GetError());
         throw std::runtime_error("Failed to initialize audio");
     }
     if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3) {
-        LOG_ERROR("Mix_Init failed: " << Mix_GetError());
+        LOG_ERROR("SoundManager: Mix_Init failed: " << Mix_GetError());
         Mix_CloseAudio();
-        throw std::runtime_error("Failed to initialize MP3 support");
+        throw std::runtime_error("SoundManager: Failed to initialize MP3 support");
     }
-    LOG_INFO("SDL_mixer initialized in SoundManager");
+    LOG_INFO("SoundManager: SDL_mixer initialized");
 
     // Prepopulate sounds map
     sounds_.emplace("config_toggle", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
@@ -39,19 +39,19 @@ SoundManager::~SoundManager() {
     sounds_.clear();  // unique_ptr handles Mix_FreeMusic
     Mix_CloseAudio();
     Mix_Quit();
-    LOG_INFO("SoundManager destroyed");
+    LOG_INFO("SoundManager: SoundManager destroyed");
 }
 
 void SoundManager::loadSounds() {
     auto loadSound = [&](const std::string& key, const std::string& path) {
         std::string fullPath = exeDir_ + trim(path);
-        LOG_DEBUG("Loading sound '" << key << "' from: " << fullPath);
+        //LOG_DEBUG("SoundManager: Loading sound '" << key << "' from: " << fullPath);
         if (sounds_.find(key) != sounds_.end()) {
             sounds_.at(key).reset(Mix_LoadMUS(fullPath.c_str()));
             if (!sounds_.at(key)) {
-                LOG_ERROR("Mix_LoadMUS Error for " << key << " at " << fullPath << ": " << Mix_GetError());
+                LOG_ERROR("SoundManager: Mix_LoadMUS Error for " << key << " at " << fullPath << ": " << Mix_GetError());
             } else {
-                LOG_DEBUG("Sound '" << key << "' loaded successfully");
+                //LOG_DEBUG("SoundManager: Sound '" << key << "' loaded successfully");
             }
         }
     };
@@ -75,10 +75,10 @@ void SoundManager::loadSounds() {
 
 void SoundManager::playSound(const std::string& key) {
     if (sounds_.count(key) && sounds_.at(key)) {
-        LOG_DEBUG("Playing sound: " << key);
+        LOG_DEBUG("SoundManager: Playing sound: " << key);
         Mix_PlayMusic(sounds_.at(key).get(), 1);  // Play once
     } else {
-        LOG_ERROR("Sound '" << key << "' not found or not loaded");
+        LOG_ERROR("SoundManager: Sound '" << key << "' not found or not loaded");
     }
 }
 

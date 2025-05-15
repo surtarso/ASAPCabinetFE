@@ -86,7 +86,10 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
     SDL_GetRendererOutputSize(backglassRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect backglassRect = {settings.backglassMediaX, settings.backglassMediaY, settings.backglassMediaWidth, settings.backglassMediaHeight};
-
+    if (!assets.backglassTexture) {
+        //LOG_DEBUG ("Renderer: No backglass texture to load");
+        return;
+    }
     if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture) {
         updateVideoTexture(assets.backglassVideoPlayer);
         SDL_RenderCopyEx(
@@ -117,7 +120,10 @@ void Renderer::renderDMDWindow(AssetManager &assets) {
     SDL_GetRendererOutputSize(dmdRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect dmdRect = {settings.dmdMediaX, settings.dmdMediaY, settings.dmdMediaWidth, settings.dmdMediaHeight};
-
+    if (!assets.dmdTexture) {
+        //LOG_DEBUG ("Renderer: No DMD texture to load");
+        return;
+    }
     if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture) {
         updateVideoTexture(assets.dmdVideoPlayer);
         SDL_RenderCopyEx(

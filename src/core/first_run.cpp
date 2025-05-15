@@ -8,15 +8,15 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                 800, 500, SDL_WINDOW_SHOWN);
     
-        LOG_DEBUG("Running initial config with path: " << configPath);
+        LOG_DEBUG("FirstRun: Running initial config with path: " << configPath);
         if (!configWindow) {
-            LOG_ERROR("Failed to create config window: " << SDL_GetError());
+            LOG_ERROR("FirstRun: Failed to create config window: " << SDL_GetError());
         return false;
     }
 
     SDL_Renderer* configRenderer = SDL_CreateRenderer(configWindow, -1, SDL_RENDERER_ACCELERATED);
     if (!configRenderer) {
-        LOG_ERROR("Failed to create config renderer: " << SDL_GetError());
+        LOG_ERROR("FirstRun: Failed to create config renderer: " << SDL_GetError());
         SDL_DestroyWindow(configWindow);
         return false;
     }
@@ -34,7 +34,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
             guiManager->processEvent(event);
             configEditor.handleEvent(event);
             if (event.type == SDL_QUIT) {
-                LOG_ERROR("Config window closed without saving. Exiting...");
+                LOG_ERROR("FirstRun: Config window closed without saving. Exiting...");
                 return false;
             }
         }
@@ -45,7 +45,7 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
 
         if (!showConfig && configService->isConfigValid()) break;
         else if (!showConfig) {
-            LOG_ERROR("Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
+            LOG_ERROR("FirstRun: Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
             showConfig = true;
         }
     }
@@ -53,6 +53,6 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
     guiManager.reset();
     SDL_DestroyRenderer(configRenderer);
     SDL_DestroyWindow(configWindow);
-    LOG_INFO("Initial config completed");
+    LOG_INFO("FirstRun: Initial config completed");
     return true;
 }

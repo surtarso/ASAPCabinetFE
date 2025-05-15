@@ -92,11 +92,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     // Load new video players only for valid renderers
     if (playfieldRenderer && !table.playfieldVideo.empty() && 
         settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
-        LOG_DEBUG("Rendering Playfield");
+        LOG_DEBUG("AssetManager: Rendering Playfield");
         playfieldVideoPlayer = setupVideoPlayer(playfieldRenderer, table.playfieldVideo,
                                                settings.playfieldMediaWidth, settings.playfieldMediaHeight);
         if (playfieldVideoPlayer && libvlc_media_player_play(playfieldVideoPlayer->player) != 0) {
-            LOG_ERROR("Failed to play table video: " << table.playfieldVideo);
+            LOG_ERROR("AssetManager: Failed to play table video: " << table.playfieldVideo);
             cleanupVideoContext(playfieldVideoPlayer);
             playfieldVideoPlayer = nullptr;
         }
@@ -106,11 +106,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
 
     if (backglassRenderer && !table.backglassVideo.empty() && 
         settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0) {
-        LOG_DEBUG("Rendering Backglass");
+        LOG_DEBUG("AssetManager: Rendering Backglass");
         backglassVideoPlayer = setupVideoPlayer(backglassRenderer, table.backglassVideo,
                                                settings.backglassMediaWidth, settings.backglassMediaHeight);
         if (backglassVideoPlayer && libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
-            LOG_ERROR("Failed to play backglass video: " << table.backglassVideo);
+            LOG_ERROR("AssetManager: Failed to play backglass video: " << table.backglassVideo);
             cleanupVideoContext(backglassVideoPlayer);
             backglassVideoPlayer = nullptr;
         }
@@ -120,11 +120,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
 
     if (dmdRenderer && !table.dmdVideo.empty() && 
         settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
-        LOG_DEBUG("Rendering DMD");
+        LOG_DEBUG("AssetManager: Rendering DMD");
         dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo,
                                          settings.dmdMediaWidth, settings.dmdMediaHeight);
         if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
-            LOG_ERROR("Failed to play DMD video: " << table.dmdVideo);
+            LOG_ERROR("AssetManager: Failed to play DMD video: " << table.dmdVideo);
             cleanupVideoContext(dmdVideoPlayer);
             dmdVideoPlayer = nullptr;
         }
@@ -132,11 +132,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
         dmdVideoPlayer = nullptr;
     }
 
-    LOG_DEBUG("Loaded assets for table: " << table.title);
+    LOG_DEBUG("AssetManager: Loaded assets for table: " << table.title);
 }
 
 void AssetManager::cleanupVideoPlayers() {
-    LOG_DEBUG("Cleaning up video players in AssetManager");
+    LOG_INFO("AssetManager: Cleaning up video players");
     if (playfieldVideoPlayer && playfieldVideoPlayer->player) {
         libvlc_media_player_stop(playfieldVideoPlayer->player);
         cleanupVideoContext(playfieldVideoPlayer);
@@ -175,20 +175,20 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
     FILE* redirected;
     redirected = freopen("/dev/null", "w", stderr);
     if (!redirected) {
-        LOG_ERROR("Failed to redirect stderr to /dev/null for texture load: " << path);
+        LOG_ERROR("AssetManager: Failed to redirect stderr to /dev/null for texture load: " << path);
     }
 
     SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
     FILE* restored;
     restored = freopen("/dev/tty", "w", stderr);
     if (!restored) {
-        LOG_ERROR("Failed to restore stderr from /dev/null after loading texture: " << path);
+        LOG_ERROR("AssetManager: Failed to restore stderr from /dev/null after loading texture: " << path);
     }
 
     if (!tex) {
-        LOG_ERROR("Failed to load texture " << path << ": " << IMG_GetError());
+        LOG_ERROR("AssetManager: Failed to load texture " << path << ": " << IMG_GetError());
     } else {
-        LOG_DEBUG("Successfully loaded texture: " << path);
+        LOG_DEBUG("AssetManager: Successfully loaded texture: " << path);
     }
     return tex;
 }
@@ -197,12 +197,12 @@ SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, co
                                      SDL_Color color, SDL_Rect& textRect) {
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     if (!surf) {
-        LOG_ERROR("TTF_RenderUTF8_Blended error: " << TTF_GetError());
+        LOG_ERROR("AssetManager: TTF_RenderUTF8_Blended error: " << TTF_GetError());
         return nullptr;
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
     if (!texture) {
-        LOG_ERROR("SDL_CreateTextureFromSurface error: " << SDL_GetError());
+        LOG_ERROR("AssetManager: SDL_CreateTextureFromSurface error: " << SDL_GetError());
     } else {
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         textRect.w = surf->w;
