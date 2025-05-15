@@ -90,7 +90,7 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
         //LOG_DEBUG ("Renderer: No backglass texture to load");
         return;
     }
-    if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture) {
+    if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture && settings.showBackglass) {
         updateVideoTexture(assets.backglassVideoPlayer);
         SDL_RenderCopyEx(
             backglassRenderer_,
@@ -101,7 +101,7 @@ void Renderer::renderBackglassWindow(AssetManager &assets) {
             nullptr,
             SDL_FLIP_NONE);
 
-    } else if (assets.backglassTexture) {
+    } else if (assets.backglassTexture && settings.showBackglass) {
         SDL_RenderCopyEx(
             backglassRenderer_,
             assets.backglassTexture.get(),
@@ -124,7 +124,7 @@ void Renderer::renderDMDWindow(AssetManager &assets) {
         //LOG_DEBUG ("Renderer: No DMD texture to load");
         return;
     }
-    if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture) {
+    if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture && settings.showDMD) {
         updateVideoTexture(assets.dmdVideoPlayer);
         SDL_RenderCopyEx(
             dmdRenderer_,
@@ -135,7 +135,7 @@ void Renderer::renderDMDWindow(AssetManager &assets) {
             nullptr,
             SDL_FLIP_NONE);
 
-    } else if (assets.dmdTexture) {
+    } else if (assets.dmdTexture && settings.showDMD) {
         SDL_RenderCopyEx(
             dmdRenderer_,
             assets.dmdTexture.get(),

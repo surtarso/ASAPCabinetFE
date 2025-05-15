@@ -23,7 +23,7 @@ void display(void* data, void* id) {
     (void)id;    // Silence warning
     VideoContext* ctx = static_cast<VideoContext*>(data);
     ctx->isPlaying = true; // Mark as playing once frames are being delivered
-    //LOG_DEBUG("Display callback triggered for video context: " << ctx);
+    //LOG_DEBUG("VideoPlayer: Display callback triggered for video context: " << ctx);
 }
 
 VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, int width, int height) {
@@ -129,12 +129,12 @@ void updateVideoTexture(VideoContext* video) {
         return;
     }
     if (!video->isPlaying) {
-        //LOG_DEBUG("Video not yet playing, skipping update");
+        //LOG_DEBUG("VideoPlayer: Video not yet playing, skipping update");
         return;
     }
     if (SDL_LockMutex(video->mutex) == 0) {
         if (SDL_UpdateTexture(video->texture, nullptr, video->pixels, video->pitch) != 0) {
-            LOG_ERROR("VideoPlayer: SDL_UpdateTexture failed: " << SDL_GetError());
+            LOG_ERROR("VideoPlayer: SDL_UpdateVideoTexture failed: " << SDL_GetError());
         }
         SDL_UnlockMutex(video->mutex);
     } else {
