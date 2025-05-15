@@ -1,8 +1,5 @@
 TODO
 
-- fix unnecessary reload of assets when windowssettings are changed
-(only reload assets on show/hide optional windows)
-
 - remove keys for config save/close and leave only toggle.
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
