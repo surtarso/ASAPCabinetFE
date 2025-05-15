@@ -61,8 +61,8 @@ void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int ba
 }
 
 void ConfigService::setDefaultSettings() {
-    settings_.VPXTablesPath = "/home/tarso/Games/vpinball/build/tables/";
-    settings_.VPinballXPath = "/home/tarso/Games/vpinball/build/VPinballX_GL";
+    settings_.VPXTablesPath = "/home/$USER/VPX_Tables/";
+    settings_.VPinballXPath = "/home/$USER/VPinballX_GL";
     settings_.vpxSubCmd = "-Play";
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
 
