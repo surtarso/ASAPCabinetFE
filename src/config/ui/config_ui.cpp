@@ -168,6 +168,73 @@ bool ConfigUI::hasWindowSettingsChanged() const {
     return false;
 }
 
+bool ConfigUI::hasVisibilitySettingsChanged() const {
+    const auto& currentIniData = configService_->getIniData();
+    auto currentIt = currentIniData.find("WindowSettings");
+    auto lastIt = lastSavedIniData_.find("WindowSettings");
+
+    if (currentIt == currentIniData.end() && lastIt != lastSavedIniData_.end()) {
+        // Section removed, check if showDMD/showBackglass existed
+        const auto& lastSection = lastIt->second;
+        for (const auto& [key, value] : lastSection.keyValues) {
+            if (key == "ShowDMD" || key == "ShowBackglass") {
+                LOG_DEBUG("ConfigUI: Visibility setting removed: " << key);
+                return true;
+            }
+        }
+        return false;
+    }
+    if (currentIt != currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        // Section added, check if showDMD/showBackglass exists
+        const auto& currentSection = currentIt->second;
+        for (const auto& [key, value] : currentSection.keyValues) {
+            if (key == "ShowDMD" || key == "ShowBackglass") {
+                LOG_DEBUG("ConfigUI: Visibility setting added: " << key << "=" << value);
+                return true;
+            }
+        }
+        return false;
+    }
+    if (currentIt == currentIniData.end() && lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("ConfigUI: No WindowSettings section in either state");
+        return false;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+
+    for (const auto& [key, value] : currentSection.keyValues) {
+        if (key == "ShowDMD" || key == "ShowBackglass") {
+            const std::string currentKey = key;
+            auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                           [currentKey](const auto& pair) { return pair.first == currentKey; });
+            if (lastPairIt == lastSection.keyValues.end()) {
+                LOG_DEBUG("ConfigUI: Visibility setting added: " << currentKey << "=" << value);
+                return true;
+            }
+            if (lastPairIt->second != value) {
+                LOG_DEBUG("ConfigUI: Visibility setting changed: " << currentKey << " from " << lastPairIt->second << " to " << value);
+                return true;
+            }
+        }
+    }
+
+    for (const auto& [key, value] : lastSection.keyValues) {
+        if (key == "ShowDMD" || key == "ShowBackglass") {
+            const std::string currentKey = key;
+            auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                              [currentKey](const auto& pair) { return pair.first == currentKey; });
+            if (currentPairIt == currentSection.keyValues.end()) {
+                LOG_DEBUG("ConfigUI: Visibility setting removed: " << currentKey);
+                return true;
+            }
+        }
+    }
+
+    LOG_DEBUG("ConfigUI: No visibility settings changed");
+    return false;
+}
+
 void ConfigUI::saveConfig() {
     if (!hasChanges_) {
         LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called, but no changes detected, skipping save");
@@ -177,15 +244,23 @@ void ConfigUI::saveConfig() {
     LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called");
     configService_->saveConfig(configService_->getIniData());
     bool windowSettingsChanged = hasWindowSettingsChanged();
+    bool visibilitySettingsChanged = hasVisibilitySettingsChanged();
     lastSavedIniData_ = configService_->getIniData();
+
     if (app_ && !standaloneMode_) {
+        LOG_DEBUG("ConfigUI: Reloading font due to config save");
         app_->reloadFont(standaloneMode_);
         if (windowSettingsChanged) {
             LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
             app_->reloadWindows();
+        }
+        if (visibilitySettingsChanged) {
+            LOG_DEBUG("ConfigUI: showDMD or showBackglass changed, triggering asset reload");
+            // app_->reloadWindows();
             app_->onConfigSaved();
         }
     }
+
     hasChanges_ = false;
     saveMessageTimer_ = 1.5f;
 }
