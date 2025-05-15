@@ -91,6 +91,38 @@ void App::reloadFont(bool isStandalone) {
     }
 }
 
+void App::onConfigSaved() {
+    // Reload settings
+    configManager_->loadConfig();
+    const Settings& settings = configManager_->getSettings();
+
+    // Update windows
+    windowManager_->updateWindows(settings);
+
+    // Clean up old video players
+    assets_->cleanupVideoPlayers();
+
+    // Update renderers in AssetManager
+    assets_->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
+    assets_->setBackglassRenderer(windowManager_->getBackglassRenderer());
+    assets_->setDMDRenderer(windowManager_->getDMDRenderer());
+
+    // Update renderers in Renderer
+    Renderer* concreteRenderer = dynamic_cast<Renderer*>(renderer_.get());
+    if (concreteRenderer) {
+        concreteRenderer->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
+        concreteRenderer->setBackglassRenderer(windowManager_->getBackglassRenderer());
+        concreteRenderer->setDMDRenderer(windowManager_->getDMDRenderer());
+    } else {
+        LOG_ERROR("App: Failed to cast IRenderer to Renderer");
+    }
+
+    // Reload assets
+    assets_->loadTableAssets(currentIndex_, tables_);
+
+    LOG_INFO("App: Configuration saved and assets reloaded");
+}
+
 std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);

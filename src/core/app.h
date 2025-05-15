@@ -26,6 +26,7 @@ public:
     void run();
     void reloadFont(bool isStandalone = false);
     void reloadWindows();
+    void onConfigSaved();
 
 private:
     std::string exeDir_;

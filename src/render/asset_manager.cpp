@@ -22,6 +22,7 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
 
 void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
                                 TTF_Font* f, size_t index, const std::vector<TableLoader>& tables) {
+    LOG_DEBUG("AssetManager: reloadAssets called");
     // Update renderers and font
     playfieldRenderer = playfield;
     backglassRenderer = backglass;
@@ -29,9 +30,11 @@ void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass
     font = f;
 
     // Cleanup existing video players
+    LOG_DEBUG("AssetManager: reloadAssets -> Cleaning up video players");
     cleanupVideoPlayers();
 
     // Clear textures
+    LOG_DEBUG("AssetManager: reloadAssets -> Resetting textures");
     playfieldTexture.reset();
     wheelTexture.reset();
     backglassTexture.reset();
@@ -39,10 +42,13 @@ void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass
     titleTexture.reset();
 
     // Reload table assets
+    LOG_DEBUG("AssetManager: reloadAssets -> Loading table assets");
     loadTableAssets(index, tables);
+    LOG_INFO("AssetManager: Finished reloading assets");
 }
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
+    LOG_DEBUG("AssetManager: loadTableAssets -> called with index: " << index);
     const TableLoader& table = tables[index];
     const Settings& settings = configManager_->getSettings();
 
@@ -55,26 +61,40 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
             titleTexture.reset(renderText(playfieldRenderer, font, table.title, settings.fontColor, titleRect));
         }
     } else {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Playfield renderer is null, skipping playfield textures");
         playfieldTexture.reset();
         wheelTexture.reset();
         titleTexture.reset();
     }
 
     if (backglassRenderer) {
-        backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
+        if (settings.showBackglass) {
+            backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
+        } else {
+            LOG_DEBUG("AssetManager: loadTableAssets -> showBackglass is false, skipping backglass texture");
+            backglassTexture.reset();
+        }
     } else {
+        LOG_DEBUG("AssetManager: loadTableAssets -> Backglass renderer is null, skipping backglass texture");
         backglassTexture.reset();
     }
 
     if (dmdRenderer) {
-        dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
+        if (settings.showDMD) {
+            dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
+        } else {
+            LOG_DEBUG("AssetManager: loadTableAssets -> showDMD is false, skipping DMD texture");
+            dmdTexture.reset();
+        }
     } else {
+        LOG_DEBUG("AssetManager: loadTableAssets -> DMD renderer is null, skipping DMD texture");
         dmdTexture.reset();
     }
 
     // Helper lambda to stop and queue old video players
     auto stopAndMove = [this](VideoContext*& current) {
         if (current && current->player) {
+            LOG_DEBUG("AssetManager: loadTableAssets -> Stopping and queuing old video player");
             libvlc_media_player_stop(current->player);
             while (libvlc_media_player_is_playing(current->player)) {
                 SDL_Delay(10);
@@ -92,11 +112,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     // Load new video players only for valid renderers
     if (playfieldRenderer && !table.playfieldVideo.empty() && 
         settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: Rendering Playfield");
+        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering Playfield");
         playfieldVideoPlayer = setupVideoPlayer(playfieldRenderer, table.playfieldVideo,
                                                settings.playfieldMediaWidth, settings.playfieldMediaHeight);
         if (playfieldVideoPlayer && libvlc_media_player_play(playfieldVideoPlayer->player) != 0) {
-            LOG_ERROR("AssetManager: Failed to play table video: " << table.playfieldVideo);
+            LOG_ERROR("AssetManager: loadTableAssets -> Failed to play table video: " << table.playfieldVideo);
             cleanupVideoContext(playfieldVideoPlayer);
             playfieldVideoPlayer = nullptr;
         }
@@ -106,11 +126,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
 
     if (backglassRenderer && !table.backglassVideo.empty() && 
         settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: Rendering Backglass");
+        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering Backglass");
         backglassVideoPlayer = setupVideoPlayer(backglassRenderer, table.backglassVideo,
                                                settings.backglassMediaWidth, settings.backglassMediaHeight);
         if (backglassVideoPlayer && libvlc_media_player_play(backglassVideoPlayer->player) != 0) {
-            LOG_ERROR("AssetManager: Failed to play backglass video: " << table.backglassVideo);
+            LOG_ERROR("AssetManager: loadTableAssets -> Failed to play backglass video: " << table.backglassVideo);
             cleanupVideoContext(backglassVideoPlayer);
             backglassVideoPlayer = nullptr;
         }
@@ -120,11 +140,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
 
     if (dmdRenderer && !table.dmdVideo.empty() && 
         settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0) {
-        LOG_DEBUG("AssetManager: Rendering DMD");
+        LOG_DEBUG("AssetManager: loadTableAssets -> Rendering DMD");
         dmdVideoPlayer = setupVideoPlayer(dmdRenderer, table.dmdVideo,
                                          settings.dmdMediaWidth, settings.dmdMediaHeight);
         if (dmdVideoPlayer && libvlc_media_player_play(dmdVideoPlayer->player) != 0) {
-            LOG_ERROR("AssetManager: Failed to play DMD video: " << table.dmdVideo);
+            LOG_ERROR("AssetManager: loadTableAssets -> Failed to play DMD video: " << table.dmdVideo);
             cleanupVideoContext(dmdVideoPlayer);
             dmdVideoPlayer = nullptr;
         }
@@ -132,7 +152,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
         dmdVideoPlayer = nullptr;
     }
 
-    LOG_DEBUG("AssetManager: Loaded assets for table: " << table.title);
+    LOG_INFO("AssetManager: Loaded assets for table: " << table.title);
 }
 
 void AssetManager::cleanupVideoPlayers() {
