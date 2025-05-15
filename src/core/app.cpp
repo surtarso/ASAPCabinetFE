@@ -94,10 +94,6 @@ void App::reloadFont(bool isStandalone) {
 void App::onConfigSaved() {
     // Reload settings
     configManager_->loadConfig();
-    const Settings& settings = configManager_->getSettings();
-
-    // Update windows
-    windowManager_->updateWindows(settings);
 
     // Clean up old video players
     assets_->cleanupVideoPlayers();
