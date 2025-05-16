@@ -29,7 +29,7 @@ make -j$(nproc)
 ## How it works
 - Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
 - Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
-- Creates two windows: primary (Playfield + Wheel) and secondary (B2SBackglass + DMD).
+- Creates up to three windows for Playfield, Backglass and DMD.
 
 ### Dependencies
 > [!IMPORTANT]
