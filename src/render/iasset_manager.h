@@ -39,6 +39,10 @@ public:
     
     // Asset management
     virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) = 0;
+    virtual void setSettingsManager(IConfigService* cm) = 0;
+    virtual void loadTableAssets(size_t index, const std::vector<TableLoader>& tables) = 0;
+    virtual void clearOldVideoPlayers() = 0;
+    virtual void cleanupVideoPlayers() = 0;
 };
 
 #endif // IASSET_MANAGER_H

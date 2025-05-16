@@ -19,7 +19,9 @@ class DependencyFactory {
 public:
     static std::unique_ptr<IWindowManager> createWindowManager(const Settings& settings);
     static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager, IConfigService* configService);
-    static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font);
+    static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
+                                                            IConfigService* configService, size_t index, 
+                                                            const std::vector<TableLoader>& tables);
     static std::unique_ptr<Renderer> createRenderer(IWindowManager* windowManager);
     static std::unique_ptr<ISoundManager> createSoundManager(const std::string& exeDir, const Settings& settings);
     static std::unique_ptr<ConfigService> createConfigService(const std::string& configPath);

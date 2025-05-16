@@ -16,10 +16,15 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
     return gui;
 }
 
-std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font) {
-    return std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
-                                          windowManager->getBackglassRenderer(),
-                                          windowManager->getDMDRenderer(), font);
+std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
+                                                                    IConfigService* configService, size_t index, 
+                                                                    const std::vector<TableLoader>& tables) {
+    auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
+                                                 windowManager->getBackglassRenderer(),
+                                                 windowManager->getDMDRenderer(), font);
+    assets->setSettingsManager(configService);
+    assets->loadTableAssets(index, tables);
+    return assets;
 }
 
 std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {

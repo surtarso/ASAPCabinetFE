@@ -39,14 +39,14 @@ private:
     bool hasChanges_ = false;
     float saveMessageTimer_ = 0.0f;
     std::map<std::string, bool> showPicker_;
-    std::map<std::string, SettingsSection> lastSavedIniData_; // Store last saved state
+    std::map<std::string, SettingsSection> lastSavedIniData_;
 
     SectionRenderer sectionRenderer_;
     ButtonHandler buttonHandler_;
     InputHandler inputHandler_;
 
     static const std::vector<std::string> sectionOrder_;
-    void discardChanges(); // To discard changes
+    void discardChanges();
     bool hasWindowSettingsChanged() const;
     bool hasVisibilitySettingsChanged() const;
     bool hasFontSettingsChanged() const;

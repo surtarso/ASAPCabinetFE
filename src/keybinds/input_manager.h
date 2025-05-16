@@ -3,7 +3,7 @@
 
 #include "keybinds/iinput_manager.h"
 #include "keybinds/ikeybind_provider.h"
-#include "render/asset_manager.h"
+#include "render/iasset_manager.h"
 #include "sound/isound_manager.h"
 #include "config/iconfig_service.h"
 #include "render/table_loader.h"
@@ -19,7 +19,7 @@ public:
     InputManager(IKeybindProvider* keybindProvider);
     void handleEvent(const SDL_Event& event) override;
     void registerActions() override;
-    void setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
+    void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableLoader>& tables,
                          bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
                          IWindowManager* windowManager) override;
@@ -34,10 +34,10 @@ private:
     void handleRegularEvents(const SDL_Event& event);
 
     IKeybindProvider* keybindProvider_;
-    AssetManager* assets_;
+    IAssetManager* assets_;
     ISoundManager* soundManager_;
     IConfigService* settingsManager_;
-    IWindowManager* windowManager_; // Added
+    IWindowManager* windowManager_;
     size_t* currentIndex_;
     const std::vector<TableLoader>* tables_;
     bool* showConfig_;

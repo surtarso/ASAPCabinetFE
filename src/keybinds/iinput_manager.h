@@ -6,20 +6,20 @@
 #include <functional>
 #include <vector>
 
-class AssetManager;
+class IAssetManager; // Forward declaration
 class ISoundManager;
 class IConfigService;
 struct TableLoader;
 class ConfigUI;
 class ScreenshotManager;
-class IWindowManager; // Forward declaration
+class IWindowManager;
 
 class IInputManager {
 public:
     virtual ~IInputManager() = default;
     virtual void handleEvent(const SDL_Event& event) = 0;
     virtual void registerActions() = 0;
-    virtual void setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
+    virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                  size_t& currentIndex, const std::vector<TableLoader>& tables,
                                  bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
                                  IWindowManager* windowManager) = 0;

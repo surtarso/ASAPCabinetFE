@@ -9,7 +9,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
       settingsManager_(nullptr), windowManager_(nullptr), currentIndex_(nullptr),
       tables_(nullptr), showConfig_(nullptr), exeDir_(""), screenshotManager_(nullptr) {}
 
-void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, IConfigService* settings,
+void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableLoader>& tables,
                                    bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
                                    IWindowManager* windowManager) {
@@ -33,6 +33,7 @@ void InputManager::setDependencies(AssetManager* assets, ISoundManager* sound, I
         }
     }
 }
+
 void InputManager::registerActions() {
     actionHandlers_["PreviousTable"] = [this]() {
         LOG_DEBUG("InputManager: Previous table triggered");
@@ -169,7 +170,6 @@ void InputManager::registerActions() {
 
     actionHandlers_["Quit"] = [this]() {
         LOG_DEBUG("InputManager: Quit triggered");
-        //soundManager_->playSound("quit");
         if (inScreenshotMode_) {
             inScreenshotMode_ = false;
             LOG_DEBUG("InputManager: Exited screenshot mode (quit skipped)");
@@ -182,21 +182,9 @@ void InputManager::registerActions() {
         }
     };
 
-    // actionHandlers_["ConfigSave"] = [this]() {
-    //     LOG_DEBUG("InputManager: ConfigSave triggered");
-    //     if (runtimeEditor_) {
-    //         runtimeEditor_->saveConfig();
-    //         soundManager_->playSound("config_save");
-    //         LOG_DEBUG("InputManager: Config saved via ConfigUI");
-    //     } else {
-    //         LOG_DEBUG("InputManager: Error: ConfigUI not set");
-    //     }
-    // };
-
     actionHandlers_["ConfigClose"] = [this]() {
         LOG_DEBUG("InputManager: ConfigClose triggered");
         *showConfig_ = false;
-        //soundManager_->playSound("config_close");
     };
 }
 
@@ -226,7 +214,6 @@ void InputManager::handleEvent(const SDL_Event& event) {
         Uint32 currentTime = SDL_GetTicks();
         auto it = lastClickTimes_.find(windowID);
         if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
-            // Double-click detected
             LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
             int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
             windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
@@ -247,10 +234,8 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
 void InputManager::handleConfigEvents(const SDL_Event& event) {
     if (event.type == SDL_KEYDOWN) {
-        if (keybindProvider_->isAction(event.key, "ConfigSave")) {
-            actionHandlers_["ConfigSave"]();
-        } else if (keybindProvider_->isAction(event.key, "ConfigClose") || 
-                   keybindProvider_->isAction(event.key, "Quit")) {
+        if (keybindProvider_->isAction(event.key, "ConfigClose") || 
+            keybindProvider_->isAction(event.key, "Quit")) {
             actionHandlers_["Quit"]();
         }
     }
@@ -258,8 +243,7 @@ void InputManager::handleConfigEvents(const SDL_Event& event) {
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
     for (const auto& action : keybindProvider_->getActions()) {
-        if (action == "ConfigSave" || action == "ConfigClose" || 
-            action == "ScreenshotKey" || action == "ScreenshotQuit") {
+        if (action == "ConfigClose" || action == "ScreenshotKey" || action == "ScreenshotQuit") {
             continue; // Skip config and screenshot-specific actions
         }
         if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, action)) {
