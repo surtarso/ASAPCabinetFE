@@ -204,21 +204,21 @@ void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& 
     }
 }
 
-void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
-    int monitorIndex = 0;
-    try {
-        monitorIndex = std::stoi(value);
-    } catch (...) {
-        LOG_ERROR("UiElementRenderer: Invalid monitor index: " << value << ", defaulting to 0");
-    }
-    const char* monitors[] = {"0", "1", "2"};
-    ImGui::SetNextItemWidth(100);
-    if (ImGui::Combo("##monitor", &monitorIndex, monitors, IM_ARRAYSIZE(monitors))) {
-        value = std::to_string(monitorIndex);
-        hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
-    }
-}
+// void renderMonitorCombo([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
+//     int monitorIndex = 0;
+//     try {
+//         monitorIndex = std::stoi(value);
+//     } catch (...) {
+//         LOG_ERROR("UiElementRenderer: Invalid monitor index: " << value << ", defaulting to 0");
+//     }
+//     const char* monitors[] = {"0", "1", "2"};
+//     ImGui::SetNextItemWidth(100);
+//     if (ImGui::Combo("##monitor", &monitorIndex, monitors, IM_ARRAYSIZE(monitors))) {
+//         value = std::to_string(monitorIndex);
+//         hasChanges = true;
+//         LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+//     }
+// }
 
 void renderResolution([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[16];

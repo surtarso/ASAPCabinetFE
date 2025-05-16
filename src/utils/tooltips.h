@@ -138,11 +138,11 @@ namespace Tooltips {
                 "Show/hide the backglass window.\n"
                 "BackglassX and BackglassY should have real values to use this.\n"
                 "Drag windows and double-click them to save real positions."},
-            {"BackglassMonitor",
-                "Index of the monitor for the Backglass window.\n"
-                "You can use 'xrandr' to get yours.\n"
-                "BackglassX and BackglassY should be -1 (centered) to use this.\n"
-                "You should drag and double-click a window to save it's position instead."},
+            // {"BackglassMonitor",
+            //     "Index of the monitor for the Backglass window.\n"
+            //     "You can use 'xrandr' to get yours.\n"
+            //     "BackglassX and BackglassY should be -1 (centered) to use this.\n"
+            //     "You should drag and double-click a window to save it's position instead."},
             {"BackglassWidth",
                 "Width of the Backglass window in pixels.\n"
                 "This should be relative to your Backglass media width."},
@@ -164,11 +164,11 @@ namespace Tooltips {
                 "Show/hide the DMD window.\n"
                 "DMDX and DMDY should have real values to use this.\n"
                 "Drag windows and double-click them to save real positions."},
-            {"DMDMonitor",
-                "Index of the monitor for the DMD window.\n"
-                "You can use 'xrandr' to get yours.\n"
-                "DMDX and DMDY should be -1 (centered) to use this.\n"
-                "You should drag and double-click a window to save it's position instead."},
+            // {"DMDMonitor",
+            //     "Index of the monitor for the DMD window.\n"
+            //     "You can use 'xrandr' to get yours.\n"
+            //     "DMDX and DMDY should be -1 (centered) to use this.\n"
+            //     "You should drag and double-click a window to save it's position instead."},
             {"DMDWidth",
                 "Width of the DMD window in pixels.\n"
                 "This should be relative to your DMD media width."},
@@ -307,8 +307,8 @@ namespace Tooltips {
                 "Key to open or close the configuration menu."},
             {"Quit",
                 "Key to exit menus and application."},
-            {"ConfigSave",
-                "Key to save changes in the configuration menu."},
+            // {"ConfigSave",
+            //     "Key to save changes in the configuration menu."},
             {"ConfigClose",
                 "Key to close the configuration menu without saving."},
             {"ScreenshotMode",
@@ -335,8 +335,9 @@ namespace Tooltips {
             {"LaunchTableSound", "Sound played when launching a table."},
             {"LaunchScreenshotSound", "Sound played when entering screenshot mode."},
             {"ConfigSaveSound", "Sound played when saving configuration."},
-            {"ConfigCloseSound", "Sound played when closing configuration."},
-            {"QuitSound", "Sound played when quitting the application."},
+            {"ConfigToggleSound", "Sound played when opening or closing configuration."},
+            //{"ConfigCloseSound", "Sound played when closing configuration."},
+            //{"QuitSound", "Sound played when quitting the application."},
             {"ScreenshotTakeSound", "Sound played when taking a screenshot."},
             {"ScreenshotQuitSound", "Sound played when exiting screenshot mode."}
         };

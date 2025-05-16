@@ -29,8 +29,9 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     sounds_.emplace("launch_table", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
     sounds_.emplace("launch_screenshot", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
     sounds_.emplace("config_save", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
-    sounds_.emplace("config_close", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
-    sounds_.emplace("quit", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
+    sounds_.emplace("config_toggle", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
+    //sounds_.emplace("config_close", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
+    //sounds_.emplace("quit", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
     sounds_.emplace("screenshot_take", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
     sounds_.emplace("screenshot_quit", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
 }
@@ -67,8 +68,8 @@ void SoundManager::loadSounds() {
     loadSound("launch_table", settings_.launchTableSound);
     loadSound("launch_screenshot", settings_.launchScreenshotSound);
     loadSound("config_save", settings_.configSaveSound);
-    loadSound("config_close", settings_.configCloseSound);
-    loadSound("quit", settings_.quitSound);
+    //loadSound("config_close", settings_.configCloseSound);
+    //loadSound("quit", settings_.quitSound);
     loadSound("screenshot_take", settings_.screenshotTakeSound);
     loadSound("screenshot_quit", settings_.screenshotQuitSound);
 }

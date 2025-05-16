@@ -35,21 +35,21 @@ struct Settings {
     std::string customDmdVideo;
 
     // Window settings
-    int playfieldWindowMonitor;
+    //int playfieldWindowMonitor;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
     int playfieldX;
     int playfieldY;
 
     bool showBackglass;
-    int backglassWindowMonitor;
+    //int backglassWindowMonitor;
     int backglassWindowWidth;
     int backglassWindowHeight;
     int backglassX;
     int backglassY;
 
     bool showDMD;
-    int dmdWindowMonitor;
+    //int dmdWindowMonitor;
     int dmdWindowWidth;
     int dmdWindowHeight;
     int dmdX;
@@ -90,7 +90,6 @@ struct Settings {
     int dmdRotation;
 
     // sound settings
-    std::string configToggleSound;
     std::string scrollPrevSound;
     std::string scrollNextSound;
     std::string scrollFastPrevSound;
@@ -100,9 +99,10 @@ struct Settings {
     std::string scrollRandomSound;
     std::string launchTableSound;
     std::string launchScreenshotSound;
+    std::string configToggleSound;
     std::string configSaveSound;
-    std::string configCloseSound;
-    std::string quitSound;
+    //std::string configCloseSound;
+    //std::string quitSound;
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
 

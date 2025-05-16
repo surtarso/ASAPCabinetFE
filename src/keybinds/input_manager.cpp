@@ -169,7 +169,7 @@ void InputManager::registerActions() {
 
     actionHandlers_["Quit"] = [this]() {
         LOG_DEBUG("InputManager: Quit triggered");
-        soundManager_->playSound("quit");
+        //soundManager_->playSound("quit");
         if (inScreenshotMode_) {
             inScreenshotMode_ = false;
             LOG_DEBUG("InputManager: Exited screenshot mode (quit skipped)");
@@ -182,21 +182,21 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["ConfigSave"] = [this]() {
-        LOG_DEBUG("InputManager: ConfigSave triggered");
-        if (runtimeEditor_) {
-            runtimeEditor_->saveConfig();
-            soundManager_->playSound("config_save");
-            LOG_DEBUG("InputManager: Config saved via ConfigUI");
-        } else {
-            LOG_DEBUG("InputManager: Error: ConfigUI not set");
-        }
-    };
+    // actionHandlers_["ConfigSave"] = [this]() {
+    //     LOG_DEBUG("InputManager: ConfigSave triggered");
+    //     if (runtimeEditor_) {
+    //         runtimeEditor_->saveConfig();
+    //         soundManager_->playSound("config_save");
+    //         LOG_DEBUG("InputManager: Config saved via ConfigUI");
+    //     } else {
+    //         LOG_DEBUG("InputManager: Error: ConfigUI not set");
+    //     }
+    // };
 
     actionHandlers_["ConfigClose"] = [this]() {
         LOG_DEBUG("InputManager: ConfigClose triggered");
         *showConfig_ = false;
-        soundManager_->playSound("config_close");
+        //soundManager_->playSound("config_close");
     };
 }
 
