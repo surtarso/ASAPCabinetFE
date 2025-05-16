@@ -23,6 +23,11 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       font(f),
       configManager_(nullptr) {}
 
+void AssetManager::setSettingsManager(IConfigService* configService) {
+    configManager_ = configService;
+    LOG_DEBUG("AssetManager: Settings manager set to " << configService);
+}
+
 void AssetManager::setTitlePosition(int x, int y) {
     if (titleTexture) {
         titleRect.x = x;
@@ -38,15 +43,29 @@ void AssetManager::setFont(TTF_Font* font) {
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
     if (playfieldRenderer && font) {
-        titleTexture.reset(renderText(playfieldRenderer, font, title, color, titleRect));
-        int texWidth = 0;
+        // Reset titleTexture to force recreation
+        titleTexture.reset();
+        // Use input position, but reset dimensions
+        this->titleRect.x = titleRect.x;
+        this->titleRect.y = titleRect.y;
+        this->titleRect.w = 0;
+        this->titleRect.h = 0;
+        titleTexture.reset(renderText(playfieldRenderer, font, title, color, this->titleRect));
+        int texWidth = 0, texHeight = 0;
         if (titleTexture) {
-            SDL_QueryTexture(titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+            SDL_QueryTexture(titleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
+            // Update caller's rect for consistency
+            titleRect = this->titleRect;
         }
-        LOG_DEBUG("AssetManager: Title texture reloaded, width: " << texWidth);
+        LOG_DEBUG("AssetManager: Title texture reloaded, font=" << font << ", font_height=" 
+                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
     } else {
         LOG_DEBUG("AssetManager: Skipping title texture reload: no renderer or font");
         titleTexture.reset();
+        this->titleRect.w = 0;
+        this->titleRect.h = 0;
+        titleRect.w = 0;
+        titleRect.h = 0;
     }
 }
 
@@ -309,11 +328,17 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 
 SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message,
                                      SDL_Color color, SDL_Rect& textRect) {
+    if (!font || !renderer || message.empty()) {
+        LOG_ERROR("AssetManager: Invalid font, renderer, or empty message for renderText");
+        return nullptr;
+    }
+
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     if (!surf) {
         LOG_ERROR("AssetManager: TTF_RenderUTF8_Blended error: " << TTF_GetError());
         return nullptr;
     }
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
     if (!texture) {
         LOG_ERROR("AssetManager: SDL_CreateTextureFromSurface error: " << SDL_GetError());
@@ -321,7 +346,9 @@ SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, co
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         textRect.w = surf->w;
         textRect.h = surf->h;
+        LOG_DEBUG("AssetManager: Rendered text, width=" << surf->w << ", height=" << surf->h);
     }
+
     SDL_FreeSurface(surf);
     return texture;
 }

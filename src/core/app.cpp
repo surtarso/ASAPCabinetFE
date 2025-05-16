@@ -74,6 +74,8 @@ void App::reloadFont(bool isStandalone) {
             assets_->setFont(font_.get());
             const TableLoader& table = tables_[currentIndex_];
             SDL_Rect titleRect = assets_->getTitleRect();
+            titleRect.w = 0; // Reset dimensions to allow recalculation
+            titleRect.h = 0;
             assets_->reloadTitleTexture(table.title, settings.fontColor, titleRect);
         }
         LOG_DEBUG("App: Font updated after config save");
@@ -88,31 +90,6 @@ void App::onConfigSaved() {
     renderer_->setRenderers(windowManager_.get());
     LOG_DEBUG("App: Assets and renderers reloaded after config saved");
 }
-
-// void App::onConfigSaved() {
-//     configManager_->loadConfig();
-//     auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
-//     if (concreteAssets) {
-//         concreteAssets->cleanupVideoPlayers();
-//         concreteAssets->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
-//         concreteAssets->setBackglassRenderer(windowManager_->getBackglassRenderer());
-//         concreteAssets->setDMDRenderer(windowManager_->getDMDRenderer());
-//         concreteAssets->loadTableAssets(currentIndex_, tables_);
-//     } else {
-//         LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
-//     }
-
-//     Renderer* concreteRenderer = dynamic_cast<Renderer*>(renderer_.get());
-//     if (concreteRenderer) {
-//         concreteRenderer->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
-//         concreteRenderer->setBackglassRenderer(windowManager_->getBackglassRenderer());
-//         concreteRenderer->setDMDRenderer(windowManager_->getDMDRenderer());
-//     } else {
-//         LOG_ERROR("App: Failed to cast IRenderer to Renderer");
-//     }
-
-//     LOG_INFO("App: Configuration saved and assets reloaded");
-// }
 
 std::string App::getExecutableDir() {
     char path[PATH_MAX];
@@ -166,20 +143,13 @@ void App::initializeDependencies() {
     loadFont();
     loadTables();
 
-    assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get());
-    if (auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get())) {
-        concreteAssets->setSettingsManager(configManager_.get());
-        concreteAssets->loadTableAssets(currentIndex_, tables_);
-    } else {
-        LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
-        exit(1);
-    }
+    assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_);
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
-    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), dynamic_cast<AssetManager*>(assets_.get()), &currentIndex_, &tables_, this, showConfig_);
+    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
-    inputManager_->setDependencies(dynamic_cast<AssetManager*>(assets_.get()), soundManager_.get(), configManager_.get(), 
+    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
                                    currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
                                    windowManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
@@ -207,10 +177,7 @@ void App::handleEvents() {
 }
 
 void App::update() {
-    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
-    if (concreteAssets) {
-        concreteAssets->clearOldVideoPlayers();
-    }
+    assets_->clearOldVideoPlayers();
     prevShowConfig_ = inputManager_->isConfigActive();
 }
 
@@ -250,10 +217,7 @@ void App::render() {
 
 void App::cleanup() {
     LOG_DEBUG("App: Cleaning up");
-    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
-    if (concreteAssets) {
-        concreteAssets->cleanupVideoPlayers();
-    }
+    assets_->cleanupVideoPlayers();
     assets_.reset();
     LOG_INFO("App: Cleanup complete");
 }
