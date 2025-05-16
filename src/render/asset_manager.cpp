@@ -23,6 +23,14 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       font(f),
       configManager_(nullptr) {}
 
+void AssetManager::setTitlePosition(int x, int y) {
+    if (titleTexture) {
+        titleRect.x = x;
+        titleRect.y = y;
+        LOG_DEBUG("AssetManager: Updated title position to x=" << x << ", y=" << y);
+    }
+}
+
 void AssetManager::clearVideoCache() {
     LOG_DEBUG("AssetManager: Clearing video path cache");
     currentPlayfieldVideoPath_.clear();

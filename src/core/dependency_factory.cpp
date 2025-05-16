@@ -60,6 +60,6 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
 std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IAssetManager* assets, 
                                                             size_t* currentIndex, std::vector<TableLoader>* tables, 
                                                             App* app, bool& showConfig) {
-    return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), dynamic_cast<AssetManager*>(assets), 
+    return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), assets, 
                                       currentIndex, tables, app, showConfig, false);
 }

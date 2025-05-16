@@ -34,6 +34,7 @@ public:
     VideoContext* getDmdVideoPlayer() override { return dmdVideoPlayer; }
     IConfigService* getSettingsManager() override { return configManager_; }
     SDL_Rect getTitleRect() override { return titleRect; }
+    void setTitlePosition(int x, int y) override; 
 
     // Existing getters and setters
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
