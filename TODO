@@ -3,7 +3,6 @@ TODO
 FIX:
 
 QOL:
-- double click pos saving should work w/ config ui open
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 

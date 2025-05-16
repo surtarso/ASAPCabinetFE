@@ -189,7 +189,6 @@ void InputManager::registerActions() {
 }
 
 void InputManager::handleEvent(const SDL_Event& event) {
-    static const Uint32 DOUBLE_CLICK_TIME = 500;
     if (event.type == SDL_QUIT) {
         quit_ = true;
         LOG_DEBUG("InputManager: SDL_QUIT received");
@@ -209,20 +208,23 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return;
     }
 
-    if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && !*showConfig_) {
-        Uint32 windowID = event.button.windowID;
-        Uint32 currentTime = SDL_GetTicks();
-        auto it = lastClickTimes_.find(windowID);
-        if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
-            LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
-            int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
-            windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
-            settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
-            soundManager_->playSound("config_save");
-            lastClickTimes_.erase(it); // Clear to reset double-click detection
-        } else {
-            lastClickTimes_[windowID] = currentTime;
-        }
+    // if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && !*showConfig_) {
+    //     Uint32 windowID = event.button.windowID;
+    //     Uint32 currentTime = SDL_GetTicks();
+    //     auto it = lastClickTimes_.find(windowID);
+    //     if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
+    //         LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
+    //         int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
+    //         windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+    //         settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+    //         soundManager_->playSound("config_save");
+    //         lastClickTimes_.erase(it); // Clear to reset double-click detection
+    //     } else {
+    //         lastClickTimes_[windowID] = currentTime;
+    //     }
+    // }
+    if (!*showConfig_) {
+        handleDoubleClick(event);
     }
 
     if (*showConfig_) {
@@ -233,6 +235,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
 }
 
 void InputManager::handleConfigEvents(const SDL_Event& event) {
+    handleDoubleClick(event);
     if (event.type == SDL_KEYDOWN) {
         if (keybindProvider_->isAction(event.key, "ConfigClose") || 
             keybindProvider_->isAction(event.key, "Quit")) {
@@ -258,6 +261,25 @@ void InputManager::handleRegularEvents(const SDL_Event& event) {
         } else if (event.type == SDL_JOYAXISMOTION && keybindProvider_->isJoystickAxisAction(event.jaxis, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) it->second();
+        }
+    }
+}
+
+void InputManager::handleDoubleClick(const SDL_Event& event) {
+    static const Uint32 DOUBLE_CLICK_TIME = 500;
+    if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+        Uint32 windowID = event.button.windowID;
+        Uint32 currentTime = SDL_GetTicks();
+        auto it = lastClickTimes_.find(windowID);
+        if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
+            LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
+            int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
+            windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+            settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
+            soundManager_->playSound("config_save");
+            lastClickTimes_.erase(it); // Clear to reset double-click detection
+        } else {
+            lastClickTimes_[windowID] = currentTime;
         }
     }
 }
