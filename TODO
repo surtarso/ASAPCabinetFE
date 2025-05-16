@@ -1,6 +1,9 @@
 TODO
 
-- remove keys for config save/close and leave only toggle.
+FIX:
+
+QOL:
+- double click pos saving should work w/ config ui open
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
@@ -8,15 +11,15 @@ UI:
 - add table info from vpx file (vpxtool?vpxguitools?)
 - add blinking arrows on sides to indicate table flow/keys
 - some sort of table count/display scrollbar thingymabob
-- (optional) really quit? dialog
+- show a couple of prev/next table wheels?
 
 On hold:
-- create default videos
+- use json instead of memory for file info
 - create a make install target
-- add pup windows to screenshot capture
-- incorporate generate_media.sh?
+- create default videos?
 
 Later:
-- adapt to be crossplatform
-- integrate vpxguitools and vice versa thru process launchers
-- use json instead of memory for file info
+- add pup windows to screenshot capture
+- incorporate generate_media.sh?
+- integrate vpxguitools and vice versa thru process launchers?
+- adapt to be crossplatform?
