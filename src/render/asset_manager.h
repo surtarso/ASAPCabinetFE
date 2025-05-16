@@ -3,82 +3,73 @@
 
 #include "render/table_loader.h"
 #include "render/video_player.h"
+#include "render/iasset_manager.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <memory>
 #include <vector>
 
-class IConfigService;  // Forward declare to avoid including full header
+class IConfigService;
 
-class AssetManager {
+class AssetManager : public IAssetManager {
 public:
-    // Constructor: Takes renderers and font, initializes smart pointers
     AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f);
     
-    // Loads all assets (textures, videos) for a given table index
     void loadTableAssets(size_t index, const std::vector<TableLoader>& tables);
-    
-    // Cleans up old video players stored in the queue
     void clearOldVideoPlayers();
-    
-    // Adds a video player to the cleanup queue
     void addOldVideoPlayer(VideoContext* player);
-    
     void reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
                       TTF_Font* f, size_t index, const std::vector<TableLoader>& tables);
-                      
-    // Loads a texture from a file path, returns raw pointer (managed by smart pointers elsewhere)
     SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
-    
-    // Renders text to a texture, updates rect with dimensions
     SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
 
-    // Smart pointers for textures (auto-destroyed via SDL_DestroyTexture)
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> wheelTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> titleTexture;
-    
-    // Rect for positioning table name text
-    SDL_Rect titleRect;
-    
-    // Raw pointers to video players (managed manually via setup/cleanup)
-    VideoContext* playfieldVideoPlayer;
-    VideoContext* backglassVideoPlayer;
-    VideoContext* dmdVideoPlayer;
+    // IAssetManager interface implementation
+    SDL_Texture* getPlayfieldTexture() override { return playfieldTexture.get(); }
+    SDL_Texture* getWheelTexture() override { return wheelTexture.get(); }
+    SDL_Texture* getBackglassTexture() override { return backglassTexture.get(); }
+    SDL_Texture* getDmdTexture() override { return dmdTexture.get(); }
+    SDL_Texture* getTitleTexture() override { return titleTexture.get(); }
+    VideoContext* getPlayfieldVideoPlayer() override { return playfieldVideoPlayer; }
+    VideoContext* getBackglassVideoPlayer() override { return backglassVideoPlayer; }
+    VideoContext* getDmdVideoPlayer() override { return dmdVideoPlayer; }
+    IConfigService* getSettingsManager() override { return configManager_; }
+    SDL_Rect getTitleRect() override { return titleRect; }
 
-    // Getters for renderers and video players
+    // Existing getters and setters
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     SDL_Renderer* getDMDRenderer() { return dmdRenderer; }
-    VideoContext* getPlayfieldVideoPlayer() { return playfieldVideoPlayer; }
-    VideoContext* getBackglassVideoPlayer() { return backglassVideoPlayer; }
-    VideoContext* getDmdVideoPlayer() { return dmdVideoPlayer; }
-
-    // Config and font management
-    void setSettingsManager(IConfigService* cm) { configManager_ = cm; }
-    IConfigService* getSettingsManager() { return configManager_; }
     TTF_Font* getFont() { return font; }
     void setFont(TTF_Font* f) { font = f; }
-
-    // Cleanup method for all video players (moved from App)
+    void setSettingsManager(IConfigService* cm) { configManager_ = cm; }
     void cleanupVideoPlayers();
     void clearVideoCache();
     void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer = renderer; }
     void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer = renderer; }
     void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer = renderer; }
 
+    // Smart pointers for textures
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> wheelTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> titleTexture;
+    
+    SDL_Rect titleRect;
+    VideoContext* playfieldVideoPlayer;
+    VideoContext* backglassVideoPlayer;
+    VideoContext* dmdVideoPlayer;
+
 private:
-    SDL_Renderer* playfieldRenderer;    // Playfield renderer
-    SDL_Renderer* backglassRenderer;    // Backglass renderer
-    SDL_Renderer* dmdRenderer;          // DMD renderer
+    SDL_Renderer* playfieldRenderer;
+    SDL_Renderer* backglassRenderer;
+    SDL_Renderer* dmdRenderer;
     std::string currentPlayfieldVideoPath_;
     std::string currentBackglassVideoPath_;
     std::string currentDmdVideoPath_;
-    TTF_Font* font;                     // Font for text rendering
-    IConfigService* configManager_;     // Pointer to config service for settings
-    std::vector<VideoContext*> oldVideoPlayers_;  // Queue of old video players to clean
+    TTF_Font* font;
+    IConfigService* configManager_;
+    std::vector<VideoContext*> oldVideoPlayers_;
 };
 
 #endif // ASSET_MANAGER_H

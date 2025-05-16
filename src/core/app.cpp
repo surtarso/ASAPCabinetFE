@@ -19,22 +19,19 @@ App::App(const std::string& configPath)
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()) {
     exeDir_ = getExecutableDir();
-    configPath_ = exeDir_ + configPath_;  // Make configPath absolute
+    configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("App: Config path: " << configPath_);
     LOG_DEBUG("App: Exec dir set to: " << exeDir_);
 
-    // Load config early to get logFile setting
     configManager_ = DependencyFactory::createConfigService(configPath_);
-    // Ensure logFile is absolute by prepending exeDir_
     std::string logFile = configManager_->getSettings().logFile;
     if (!logFile.empty() && 
-        logFile.find('/') != 0 &&  // Check if not already absolute
-        logFile.find('\\') != 0) {  // Windows compatibility
+        logFile.find('/') != 0 && 
+        logFile.find('\\') != 0) {
         logFile = exeDir_ + logFile;
     } else if (logFile.empty()) {
-        logFile = exeDir_ + "logs/debug.log";  // Fallback to default absolute path
+        logFile = exeDir_ + "logs/debug.log";
     }
-    // Initialize logger with absolute path
     Logger::getInstance().initialize(logFile,
     #ifdef DEBUG_LOGGING
             true
@@ -74,16 +71,21 @@ void App::reloadFont(bool isStandalone) {
         if (!font_) {
             LOG_ERROR("App: Failed to reload font: " << TTF_GetError());
         } else {
-            assets_->setFont(font_.get());
-            const TableLoader& table = tables_[currentIndex_];
-            assets_->titleTexture.reset(assets_->renderText(
-                assets_->getPlayfieldRenderer(), font_.get(), table.title,
-                settings.fontColor, assets_->titleRect));
-            int texWidth = 0;
-            if (assets_->titleTexture) {
-                SDL_QueryTexture(assets_->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+            auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
+            if (concreteAssets) {
+                concreteAssets->setFont(font_.get());
+                const TableLoader& table = tables_[currentIndex_];
+                concreteAssets->titleTexture.reset(concreteAssets->renderText(
+                    concreteAssets->getPlayfieldRenderer(), font_.get(), table.title,
+                    settings.fontColor, concreteAssets->titleRect));
+                int texWidth = 0;
+                if (concreteAssets->titleTexture) {
+                    SDL_QueryTexture(concreteAssets->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+                }
+                LOG_DEBUG("App: Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
+            } else {
+                LOG_ERROR("App: Failed to cast IAssetManager to AssetManager for font reload");
             }
-            LOG_DEBUG("App: Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
         }
         LOG_DEBUG("App: Font updated after config save");
     } else {
@@ -92,18 +94,18 @@ void App::reloadFont(bool isStandalone) {
 }
 
 void App::onConfigSaved() {
-    // Reload settings
     configManager_->loadConfig();
+    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
+    if (concreteAssets) {
+        concreteAssets->cleanupVideoPlayers();
+        concreteAssets->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
+        concreteAssets->setBackglassRenderer(windowManager_->getBackglassRenderer());
+        concreteAssets->setDMDRenderer(windowManager_->getDMDRenderer());
+        concreteAssets->loadTableAssets(currentIndex_, tables_);
+    } else {
+        LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
+    }
 
-    // Clean up old video players
-    assets_->cleanupVideoPlayers();
-
-    // Update renderers in AssetManager
-    assets_->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
-    assets_->setBackglassRenderer(windowManager_->getBackglassRenderer());
-    assets_->setDMDRenderer(windowManager_->getDMDRenderer());
-
-    // Update renderers in Renderer
     Renderer* concreteRenderer = dynamic_cast<Renderer*>(renderer_.get());
     if (concreteRenderer) {
         concreteRenderer->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
@@ -112,9 +114,6 @@ void App::onConfigSaved() {
     } else {
         LOG_ERROR("App: Failed to cast IRenderer to Renderer");
     }
-
-    // Reload assets
-    assets_->loadTableAssets(currentIndex_, tables_);
 
     LOG_INFO("App: Configuration saved and assets reloaded");
 }
@@ -172,19 +171,23 @@ void App::initializeDependencies() {
     loadTables();
 
     assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get());
-    assets_->setSettingsManager(configManager_.get());
+    if (auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get())) {
+        concreteAssets->setSettingsManager(configManager_.get());
+        concreteAssets->loadTableAssets(currentIndex_, tables_);
+    } else {
+        LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
+        exit(1);
+    }
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
-    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
+    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), dynamic_cast<AssetManager*>(assets_.get()), &currentIndex_, &tables_, this, showConfig_);
 
-    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
+    inputManager_->setDependencies(dynamic_cast<AssetManager*>(assets_.get()), soundManager_.get(), configManager_.get(), 
                                    currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
                                    windowManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
-
-    assets_->loadTableAssets(currentIndex_, tables_);
 
     LOG_INFO("App: Initialization complete");
 }
@@ -208,7 +211,10 @@ void App::handleEvents() {
 }
 
 void App::update() {
-    assets_->clearOldVideoPlayers();
+    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
+    if (concreteAssets) {
+        concreteAssets->clearOldVideoPlayers();
+    }
     prevShowConfig_ = inputManager_->isConfigActive();
 }
 
@@ -216,17 +222,14 @@ void App::render() {
     if (renderer_ && assets_) {
         const Settings& settings = configManager_->getSettings();
         
-        // Clear playfield renderer
         SDL_SetRenderDrawColor(windowManager_->getPlayfieldRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(windowManager_->getPlayfieldRenderer());
         
-        // Clear backglass renderer only if enabled
         if (settings.showBackglass) {
             SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
             SDL_RenderClear(windowManager_->getBackglassRenderer());
         }
         
-        // Clear DMD renderer only if enabled
         if (settings.showDMD) {
             SDL_SetRenderDrawColor(windowManager_->getDMDRenderer(), 0, 0, 0, 255);
             SDL_RenderClear(windowManager_->getDMDRenderer());
@@ -251,9 +254,10 @@ void App::render() {
 
 void App::cleanup() {
     LOG_DEBUG("App: Cleaning up");
-    if (assets_) {
-        assets_->cleanupVideoPlayers();
-        assets_.reset();
+    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
+    if (concreteAssets) {
+        concreteAssets->cleanupVideoPlayers();
     }
+    assets_.reset();
     LOG_INFO("App: Cleanup complete");
 }
