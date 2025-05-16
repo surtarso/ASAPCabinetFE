@@ -77,12 +77,11 @@ make -j$(nproc)
 | Scroll by Letter   | z and /          | Scroll tables alphabetically (prev/next). |
 | Scroll Random      | r                | Move to a random table.                   |
 | Launch Table       | Enter            | Launch the selected table with VPinballX  |
-| Quit               | ESC or q         | Exit the table config/application.        |
 | Config             | c                | Toggle config panel.                      |
-| Save config        | Spacebar         | Saves configuration to config.ini.        |
 | Launch SShot mode  | s                | Open the table in screenshot mode.        |
 | Take Screenshot    | s                | Takes a shot while in Screenshot mode.    |
 | Quit SShot mode    | q                | Quit SShot mode and return to launcher.   |
+| Quit               | q                | Exit the application.                     |
 
 ## Generator Tools
 > [!WARNING]
