@@ -3,7 +3,7 @@
 
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
-#include "render/asset_manager.h"
+#include "render/iasset_manager.h"
 #include "render/table_loader.h"
 #include "config/ui/section_renderer.h"
 #include "config/ui/button_handler.h"
@@ -17,7 +17,7 @@ class App;
 class ConfigUI {
 public:
     ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-             AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
+             IAssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
              App* app, bool& showConfig, bool standaloneMode = false);
     void drawGUI();
     void handleEvent(const SDL_Event& event);
@@ -29,7 +29,7 @@ public:
 private:
     IConfigService* configService_;
     IKeybindProvider* keybindProvider_;
-    AssetManager* assets_;
+    IAssetManager* assets_;
     size_t* currentIndex_;
     std::vector<TableLoader>* tables_;
     App* app_;

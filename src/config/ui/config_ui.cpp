@@ -9,7 +9,7 @@ const std::vector<std::string> ConfigUI::sectionOrder_ = {
 };
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-                   AssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
+                   IAssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
                    App* app, bool& showConfig, bool standaloneMode)
     : configService_(configService), 
       keybindProvider_(keybindProvider), 
@@ -284,8 +284,9 @@ void ConfigUI::saveConfig() {
     // Update title position if title texture exists
     if (assets_ && assets_->getTitleTexture()) {
         const Settings& settings = configService_->getSettings();
-        assets_->titleRect.x = settings.titleX;
-        assets_->titleRect.y = settings.titleY;
+        // assets_->titleRect.x = settings.titleX;
+        // assets_->titleRect.y = settings.titleY;
+        assets_->setTitlePosition(settings.titleX, settings.titleY);
         LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
 

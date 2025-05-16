@@ -26,6 +26,7 @@ public:
     // Settings and positioning
     virtual IConfigService* getSettingsManager() = 0;
     virtual SDL_Rect getTitleRect() = 0;
+    virtual void setTitlePosition(int x, int y) = 0;
 };
 
 #endif // IASSET_MANAGER_H
