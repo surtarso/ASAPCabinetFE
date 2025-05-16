@@ -127,17 +127,15 @@ namespace Tooltips {
                 "X position of the Playfield window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
             {"PlayfieldY",
                 "Y position of the Playfield window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
             
             {"ShowBackglass",
-                "Show/hide the backglass window.\n"
-                "BackglassX and BackglassY should have real values to use this.\n"
-                "Drag windows and double-click them to save real positions."},
+                "Show/hide the backglass window."},
             // {"BackglassMonitor",
             //     "Index of the monitor for the Backglass window.\n"
             //     "You can use 'xrandr' to get yours.\n"
@@ -153,17 +151,15 @@ namespace Tooltips {
                 "X position of the Backglass window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
             {"BackglassY",
                 "Y position of the Backglass window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
             
             {"ShowDMD",
-                "Show/hide the DMD window.\n"
-                "DMDX and DMDY should have real values to use this.\n"
-                "Drag windows and double-click them to save real positions."},
+                "Show/hide the DMD window."},
             // {"DMDMonitor",
             //     "Index of the monitor for the DMD window.\n"
             //     "You can use 'xrandr' to get yours.\n"
@@ -179,12 +175,12 @@ namespace Tooltips {
                 "X position of the DMD window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
             {"DMDY",
                 "Y position of the DMD window.\n"
                 //"This value must be -1 for monitor index to work.\n"
                 //"Default: -1 (centered)\n"
-                "You can and double-click a window to save it's position"},
+                "You can drag and double-click a window to save it's position"},
 
             // TitleDisplay
             {"FontPath",

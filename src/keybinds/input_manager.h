@@ -32,6 +32,7 @@ private:
 
     void handleConfigEvents(const SDL_Event& event);
     void handleRegularEvents(const SDL_Event& event);
+    void handleDoubleClick(const SDL_Event& event);
 
     IKeybindProvider* keybindProvider_;
     IAssetManager* assets_;
