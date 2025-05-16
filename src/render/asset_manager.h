@@ -15,14 +15,6 @@ class AssetManager : public IAssetManager {
 public:
     AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f);
     
-    void loadTableAssets(size_t index, const std::vector<TableLoader>& tables);
-    void clearOldVideoPlayers();
-    void addOldVideoPlayer(VideoContext* player);
-    void reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
-                      TTF_Font* f, size_t index, const std::vector<TableLoader>& tables);
-    SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
-    SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
-
     // IAssetManager interface implementation
     SDL_Texture* getPlayfieldTexture() override { return playfieldTexture.get(); }
     SDL_Texture* getWheelTexture() override { return wheelTexture.get(); }
@@ -34,17 +26,25 @@ public:
     VideoContext* getDmdVideoPlayer() override { return dmdVideoPlayer; }
     IConfigService* getSettingsManager() override { return configManager_; }
     SDL_Rect getTitleRect() override { return titleRect; }
-    void setTitlePosition(int x, int y) override; 
+    void setTitlePosition(int x, int y) override;
+    void setFont(TTF_Font* font) override;
+    void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) override;
+    void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) override;
 
-    // Existing getters and setters
+    // Non-interface methods
+    void loadTableAssets(size_t index, const std::vector<TableLoader>& tables);
+    void clearOldVideoPlayers();
+    void addOldVideoPlayer(VideoContext* player);
+    void reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
+                      TTF_Font* f, size_t index, const std::vector<TableLoader>& tables);
+    SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
+    SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
+    void cleanupVideoPlayers();
+    void clearVideoCache();
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     SDL_Renderer* getDMDRenderer() { return dmdRenderer; }
-    TTF_Font* getFont() { return font; }
-    void setFont(TTF_Font* f) { font = f; }
     void setSettingsManager(IConfigService* cm) { configManager_ = cm; }
-    void cleanupVideoPlayers();
-    void clearVideoCache();
     void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer = renderer; }
     void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer = renderer; }
     void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer = renderer; }
