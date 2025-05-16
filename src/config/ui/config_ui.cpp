@@ -281,6 +281,14 @@ void ConfigUI::saveConfig() {
     bool fontSettingsChanged = hasFontSettingsChanged();
     lastSavedIniData_ = configService_->getIniData();
 
+    // Update title position if title texture exists
+    if (assets_ && assets_->getTitleTexture()) {
+        const Settings& settings = configService_->getSettings();
+        assets_->titleRect.x = settings.titleX;
+        assets_->titleRect.y = settings.titleY;
+        LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
+    }
+
     if (app_ && !standaloneMode_) {
         if (fontSettingsChanged) {
             LOG_DEBUG("ConfigUI: Font settings changed, reloading font");
