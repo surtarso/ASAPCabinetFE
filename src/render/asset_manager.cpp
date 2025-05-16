@@ -2,6 +2,7 @@
 #include "config/iconfig_service.h"
 #include "utils/logging.h"
 #include <SDL_image.h>
+#include <chrono>
 
 // Constructor: Initializes renderers, font, and nulls out pointers
 AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f)
@@ -99,6 +100,7 @@ void AssetManager::clearVideoCache() {
 }
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
+    auto start = std::chrono::high_resolution_clock::now();
     LOG_DEBUG("AssetManager: loadTableAssets -> called with index: " << index);
     if (index >= tables.size()) {
         LOG_ERROR("AssetManager: Invalid table index: " << index << ", table count: " << tables.size());
@@ -161,9 +163,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
         if (current && current->player) {
             LOG_DEBUG("AssetManager: loadTableAssets -> Stopping and queuing old video player");
             libvlc_media_player_stop(current->player);
-            while (libvlc_media_player_is_playing(current->player)) {
-                SDL_Delay(10);
-            }
+            // while (libvlc_media_player_is_playing(current->player)) {
+            //     SDL_Delay(10);
+            // }
             addOldVideoPlayer(current);
             current = nullptr;
             currentPath.clear();
@@ -256,7 +258,12 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>&
     lastShowBackglass = settings.showBackglass;
     lastShowDMD = settings.showDMD;
 
-    LOG_INFO("AssetManager: Loaded assets for table: " << table.title);
+    // Clean up old video players immediately to free resources
+    clearOldVideoPlayers();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    LOG_INFO("AssetManager: Loaded assets for table: " << table.title << ", took " << duration << "ms");
 }
 
 void AssetManager::cleanupVideoPlayers() {
@@ -285,6 +292,12 @@ void AssetManager::cleanupVideoPlayers() {
 void AssetManager::addOldVideoPlayer(VideoContext* player) {
     if (player) {
         oldVideoPlayers_.push_back(player);
+        // Limit queue size to prevent resource buildup
+        if (oldVideoPlayers_.size() > 10) {
+            cleanupVideoContext(oldVideoPlayers_.front());
+            oldVideoPlayers_.erase(oldVideoPlayers_.begin());
+            LOG_DEBUG("AssetManager: Removed oldest video player from queue");
+        }
     }
 }
 

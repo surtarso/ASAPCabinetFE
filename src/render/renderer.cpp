@@ -49,7 +49,7 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            LOG_DEBUG("Renderer: Rendered playfield video");
+            //LOG_DEBUG("Renderer: Rendered playfield video");
         } else {
             LOG_DEBUG("Renderer: Playfield video player has no texture");
         }
@@ -61,7 +61,7 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                          settings.playfieldRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        LOG_DEBUG("Renderer: Rendered playfield texture");
+        //LOG_DEBUG("Renderer: Rendered playfield texture");
     } else {
         LOG_DEBUG("Renderer: No playfield video or texture available");
     }
@@ -76,7 +76,7 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            LOG_DEBUG("Renderer: Rendered wheel texture");
+            //LOG_DEBUG("Renderer: Rendered wheel texture");
         } else {
             LOG_DEBUG("Renderer: No wheel texture available");
         }
@@ -99,7 +99,7 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            LOG_DEBUG("Renderer: Rendered title texture at x=" << titleRect.x << ", y=" << titleRect.y);
+            //LOG_DEBUG("Renderer: Rendered title texture at x=" << titleRect.x << ", y=" << titleRect.y);
         } else {
             LOG_DEBUG("Renderer: No title texture available");
         }
@@ -113,7 +113,7 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
     if (!settings.showBackglass) {
-        LOG_DEBUG("Renderer: Backglass rendering skipped (showBackglass=false)");
+        //LOG_DEBUG("Renderer: Backglass rendering skipped (showBackglass=false)");
         return;
     }
     int windowWidth, windowHeight;
@@ -130,7 +130,7 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
                              settings.backglassRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            LOG_DEBUG("Renderer: Rendered backglass video");
+            //LOG_DEBUG("Renderer: Rendered backglass video");
         } else {
             LOG_DEBUG("Renderer: Backglass video player has no texture");
         }
@@ -142,7 +142,7 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
                          settings.backglassRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        LOG_DEBUG("Renderer: Rendered backglass texture");
+        //LOG_DEBUG("Renderer: Rendered backglass texture");
     } else {
         LOG_DEBUG("Renderer: No backglass video or texture available");
     }
@@ -155,7 +155,7 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
     if (!settings.showDMD) {
-        LOG_DEBUG("Renderer: DMD rendering skipped (showDMD=false)");
+        //LOG_DEBUG("Renderer: DMD rendering skipped (showDMD=false)");
         return;
     }
     int windowWidth, windowHeight;
@@ -172,7 +172,7 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
                              settings.dmdRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            LOG_DEBUG("Renderer: Rendered DMD video");
+            //LOG_DEBUG("Renderer: Rendered DMD video");
         } else {
             LOG_DEBUG("Renderer: DMD video player has no texture");
         }
@@ -184,7 +184,7 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
                          settings.dmdRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        LOG_DEBUG("Renderer: Rendered DMD texture");
+        //LOG_DEBUG("Renderer: Rendered DMD texture");
     } else {
         LOG_DEBUG("Renderer: No DMD video or texture available");
     }
