@@ -71,21 +71,10 @@ void App::reloadFont(bool isStandalone) {
         if (!font_) {
             LOG_ERROR("App: Failed to reload font: " << TTF_GetError());
         } else {
-            auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
-            if (concreteAssets) {
-                concreteAssets->setFont(font_.get());
-                const TableLoader& table = tables_[currentIndex_];
-                concreteAssets->titleTexture.reset(concreteAssets->renderText(
-                    concreteAssets->getPlayfieldRenderer(), font_.get(), table.title,
-                    settings.fontColor, concreteAssets->titleRect));
-                int texWidth = 0;
-                if (concreteAssets->titleTexture) {
-                    SDL_QueryTexture(concreteAssets->titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
-                }
-                LOG_DEBUG("App: Font reloaded with size " << settings.fontSize << ", texture width: " << texWidth);
-            } else {
-                LOG_ERROR("App: Failed to cast IAssetManager to AssetManager for font reload");
-            }
+            assets_->setFont(font_.get());
+            const TableLoader& table = tables_[currentIndex_];
+            SDL_Rect titleRect = assets_->getTitleRect();
+            assets_->reloadTitleTexture(table.title, settings.fontColor, titleRect);
         }
         LOG_DEBUG("App: Font updated after config save");
     } else {
@@ -94,29 +83,36 @@ void App::reloadFont(bool isStandalone) {
 }
 
 void App::onConfigSaved() {
-    configManager_->loadConfig();
-    auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
-    if (concreteAssets) {
-        concreteAssets->cleanupVideoPlayers();
-        concreteAssets->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
-        concreteAssets->setBackglassRenderer(windowManager_->getBackglassRenderer());
-        concreteAssets->setDMDRenderer(windowManager_->getDMDRenderer());
-        concreteAssets->loadTableAssets(currentIndex_, tables_);
-    } else {
-        LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
-    }
-
-    Renderer* concreteRenderer = dynamic_cast<Renderer*>(renderer_.get());
-    if (concreteRenderer) {
-        concreteRenderer->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
-        concreteRenderer->setBackglassRenderer(windowManager_->getBackglassRenderer());
-        concreteRenderer->setDMDRenderer(windowManager_->getDMDRenderer());
-    } else {
-        LOG_ERROR("App: Failed to cast IRenderer to Renderer");
-    }
-
-    LOG_INFO("App: Configuration saved and assets reloaded");
+    reloadWindows();
+    assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
+    renderer_->setRenderers(windowManager_.get());
+    LOG_DEBUG("App: Assets and renderers reloaded after config saved");
 }
+
+// void App::onConfigSaved() {
+//     configManager_->loadConfig();
+//     auto* concreteAssets = dynamic_cast<AssetManager*>(assets_.get());
+//     if (concreteAssets) {
+//         concreteAssets->cleanupVideoPlayers();
+//         concreteAssets->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
+//         concreteAssets->setBackglassRenderer(windowManager_->getBackglassRenderer());
+//         concreteAssets->setDMDRenderer(windowManager_->getDMDRenderer());
+//         concreteAssets->loadTableAssets(currentIndex_, tables_);
+//     } else {
+//         LOG_ERROR("App: Failed to cast IAssetManager to AssetManager");
+//     }
+
+//     Renderer* concreteRenderer = dynamic_cast<Renderer*>(renderer_.get());
+//     if (concreteRenderer) {
+//         concreteRenderer->setPlayfieldRenderer(windowManager_->getPlayfieldRenderer());
+//         concreteRenderer->setBackglassRenderer(windowManager_->getBackglassRenderer());
+//         concreteRenderer->setDMDRenderer(windowManager_->getDMDRenderer());
+//     } else {
+//         LOG_ERROR("App: Failed to cast IRenderer to Renderer");
+//     }
+
+//     LOG_INFO("App: Configuration saved and assets reloaded");
+// }
 
 std::string App::getExecutableDir() {
     char path[PATH_MAX];

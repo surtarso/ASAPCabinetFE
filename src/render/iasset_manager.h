@@ -2,8 +2,13 @@
 #define IASSET_MANAGER_H
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <memory>
+#include <string>
+#include <vector>
 #include "config/iconfig_service.h"
+#include "render/table_loader.h"
+#include "core/iwindow_manager.h"
 
 struct VideoContext;
 
@@ -27,6 +32,13 @@ public:
     virtual IConfigService* getSettingsManager() = 0;
     virtual SDL_Rect getTitleRect() = 0;
     virtual void setTitlePosition(int x, int y) = 0;
+    
+    // Font management
+    virtual void setFont(TTF_Font* font) = 0;
+    virtual void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) = 0;
+    
+    // Asset management
+    virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) = 0;
 };
 
 #endif // IASSET_MANAGER_H

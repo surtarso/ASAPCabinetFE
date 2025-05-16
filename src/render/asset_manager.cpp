@@ -31,34 +31,52 @@ void AssetManager::setTitlePosition(int x, int y) {
     }
 }
 
+void AssetManager::setFont(TTF_Font* font) {
+    this->font = font;
+    LOG_DEBUG("AssetManager: Font set to " << font);
+}
+
+void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
+    if (playfieldRenderer && font) {
+        titleTexture.reset(renderText(playfieldRenderer, font, title, color, titleRect));
+        int texWidth = 0;
+        if (titleTexture) {
+            SDL_QueryTexture(titleTexture.get(), nullptr, nullptr, &texWidth, nullptr);
+        }
+        LOG_DEBUG("AssetManager: Title texture reloaded, width: " << texWidth);
+    } else {
+        LOG_DEBUG("AssetManager: Skipping title texture reload: no renderer or font");
+        titleTexture.reset();
+    }
+}
+
+void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) {
+    if (index >= tables.size()) {
+        LOG_ERROR("AssetManager: Invalid table index " << index);
+        return;
+    }
+    LOG_DEBUG("AssetManager: Reloading assets for table index " << index);
+    
+    // Update renderers and font
+    playfieldRenderer = windowManager->getPlayfieldRenderer();
+    backglassRenderer = windowManager->getBackglassRenderer();
+    dmdRenderer = windowManager->getDMDRenderer();
+    this->font = font;
+
+    // Clean up existing video players
+    cleanupVideoPlayers();
+
+    // Reload table assets
+    loadTableAssets(index, tables);
+
+    LOG_DEBUG("AssetManager: Completed asset reload");
+}
+
 void AssetManager::clearVideoCache() {
     LOG_DEBUG("AssetManager: Clearing video path cache");
     currentPlayfieldVideoPath_.clear();
     currentBackglassVideoPath_.clear();
     currentDmdVideoPath_.clear();
-}
-
-void AssetManager::reloadAssets(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd,
-                                TTF_Font* f, size_t index, const std::vector<TableLoader>& tables) {
-    LOG_DEBUG("AssetManager: reloadAssets called");
-    // Update renderers and font
-    playfieldRenderer = playfield;
-    backglassRenderer = backglass;
-    dmdRenderer = dmd;
-    font = f;
-
-    // Clear textures
-    LOG_DEBUG("AssetManager: reloadAssets -> Resetting textures");
-    playfieldTexture.reset();
-    wheelTexture.reset();
-    backglassTexture.reset();
-    dmdTexture.reset();
-    titleTexture.reset();
-
-    // Reload table assets
-    LOG_DEBUG("AssetManager: reloadAssets -> Loading table assets");
-    loadTableAssets(index, tables);
-    LOG_INFO("AssetManager: Finished reloading assets");
 }
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
@@ -252,7 +270,6 @@ void AssetManager::addOldVideoPlayer(VideoContext* player) {
 }
 
 void AssetManager::clearOldVideoPlayers() {
-    //LOG_DEBUG("AssetManager: Clearing old video players, count: " << oldVideoPlayers_.size());
     for (VideoContext* player : oldVideoPlayers_) {
         if (player) {
             cleanupVideoContext(player);
