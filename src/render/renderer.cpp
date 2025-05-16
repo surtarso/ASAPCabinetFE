@@ -1,4 +1,5 @@
 #include "render/renderer.h"
+#include "render/video_player.h"
 #include "utils/logging.h"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
@@ -7,142 +8,136 @@
 
 Renderer::Renderer(SDL_Renderer *playfieldRenderer, SDL_Renderer *backglassRenderer, SDL_Renderer *dmdRenderer)
     : playfieldRenderer_(playfieldRenderer),
-    backglassRenderer_(backglassRenderer),
-    dmdRenderer_(dmdRenderer) {}
+      backglassRenderer_(backglassRenderer),
+      dmdRenderer_(dmdRenderer) {}
 
-void Renderer::render(AssetManager &assets) {
+void Renderer::render(IAssetManager &assets) {
     renderPlayfieldWindow(assets);
     renderBackglassWindow(assets);
     renderDMDWindow(assets);
 }
 
-// Render the Playfield window
-void Renderer::renderPlayfieldWindow(AssetManager &assets) {
+void Renderer::renderPlayfieldWindow(IAssetManager &assets) {
     const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(playfieldRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect playfieldRect = {settings.playfieldMediaX, settings.playfieldMediaY, settings.playfieldMediaWidth, settings.playfieldMediaHeight};
     SDL_Rect wheelRect = {settings.wheelMediaX, settings.wheelMediaY, settings.wheelMediaWidth, settings.wheelMediaHeight};
-    SDL_Rect titleRect = {settings.titleX, settings.titleY, assets.titleRect.w, assets.titleRect.h};
+    SDL_Rect titleRect = assets.getTitleRect();
 
     // Render Playfield texture/video
-    if (assets.playfieldVideoPlayer && assets.playfieldVideoPlayer->texture) {
-        updateVideoTexture(assets.playfieldVideoPlayer);
+    if (auto* videoPlayer = assets.getPlayfieldVideoPlayer()) {
+        if (videoPlayer->texture) {
+            updateVideoTexture(videoPlayer);
+            SDL_RenderCopyEx(playfieldRenderer_,
+                             videoPlayer->texture,
+                             nullptr,
+                             &playfieldRect,
+                             settings.playfieldRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
+    } else if (auto* texture = assets.getPlayfieldTexture()) {
         SDL_RenderCopyEx(playfieldRenderer_,
-            assets.playfieldVideoPlayer->texture,
-            nullptr,
-            &playfieldRect,
-            settings.playfieldRotation,
-            nullptr,
-            SDL_FLIP_NONE);
-
-    } else if (assets.playfieldTexture) {
-        SDL_RenderCopyEx(playfieldRenderer_,
-            assets.playfieldTexture.get(),
-            nullptr,
-            &playfieldRect,
-            settings.playfieldRotation,
-            nullptr,
-            SDL_FLIP_NONE);
+                         texture,
+                         nullptr,
+                         &playfieldRect,
+                         settings.playfieldRotation,
+                         nullptr,
+                         SDL_FLIP_NONE);
     }
     
     // Render wheel if enabled
-    if (settings.showWheel && assets.wheelTexture) {
-        SDL_RenderCopyEx(
-            playfieldRenderer_,
-            assets.wheelTexture.get(),
-            nullptr,
-            &wheelRect,
-            settings.playfieldRotation,
-            nullptr,
-            SDL_FLIP_NONE);
+    if (settings.showWheel) {
+        if (auto* texture = assets.getWheelTexture()) {
+            SDL_RenderCopyEx(playfieldRenderer_,
+                             texture,
+                             nullptr,
+                             &wheelRect,
+                             settings.playfieldRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
     }
 
     // Render title if enabled
-    if (settings.showTitle && assets.titleTexture) {
-        SDL_SetRenderDrawColor(playfieldRenderer_,
-                               settings.fontBgColor.r,
-                               settings.fontBgColor.g,
-                               settings.fontBgColor.b,
-                               settings.fontBgColor.a);
-        SDL_Rect titleBgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
-        SDL_RenderFillRect(playfieldRenderer_, &titleBgRect);
-        SDL_RenderCopyEx(
-            playfieldRenderer_,
-            assets.titleTexture.get(),
-            nullptr,
-            &titleRect,
-            settings.playfieldRotation,
-            nullptr,
-            SDL_FLIP_NONE);
+    if (settings.showTitle) {
+        if (auto* texture = assets.getTitleTexture()) {
+            SDL_SetRenderDrawColor(playfieldRenderer_,
+                                   settings.fontBgColor.r,
+                                   settings.fontBgColor.g,
+                                   settings.fontBgColor.b,
+                                   settings.fontBgColor.a);
+            SDL_Rect titleBgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
+            SDL_RenderFillRect(playfieldRenderer_, &titleBgRect);
+            SDL_RenderCopyEx(playfieldRenderer_,
+                             texture,
+                             nullptr,
+                             &titleRect,
+                             settings.playfieldRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
     }
 }
 
-// Render the Backglass window
-void Renderer::renderBackglassWindow(AssetManager &assets) {
+void Renderer::renderBackglassWindow(IAssetManager &assets) {
     const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(backglassRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect backglassRect = {settings.backglassMediaX, settings.backglassMediaY, settings.backglassMediaWidth, settings.backglassMediaHeight};
-    if (!assets.backglassTexture) {
-        //LOG_DEBUG ("Renderer: No backglass texture to load");
-        return;
-    }
-    if (assets.backglassVideoPlayer && assets.backglassVideoPlayer->texture && settings.showBackglass) {
-        updateVideoTexture(assets.backglassVideoPlayer);
-        SDL_RenderCopyEx(
-            backglassRenderer_,
-            assets.backglassVideoPlayer->texture,
-            nullptr,
-            &backglassRect,
-            settings.backglassRotation,
-            nullptr,
-            SDL_FLIP_NONE);
-
-    } else if (assets.backglassTexture && settings.showBackglass) {
-        SDL_RenderCopyEx(
-            backglassRenderer_,
-            assets.backglassTexture.get(),
-            nullptr,
-            &backglassRect,
-            settings.backglassRotation,
-            nullptr,
-            SDL_FLIP_NONE);
+    if (auto* videoPlayer = assets.getBackglassVideoPlayer()) {
+        if (videoPlayer->texture && settings.showBackglass) {
+            updateVideoTexture(videoPlayer);
+            SDL_RenderCopyEx(backglassRenderer_,
+                             videoPlayer->texture,
+                             nullptr,
+                             &backglassRect,
+                             settings.backglassRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
+    } else if (auto* texture = assets.getBackglassTexture()) {
+        if (settings.showBackglass) {
+            SDL_RenderCopyEx(backglassRenderer_,
+                             texture,
+                             nullptr,
+                             &backglassRect,
+                             settings.backglassRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
     }
 }
 
-// Render the DMD window
-void Renderer::renderDMDWindow(AssetManager &assets) {
+void Renderer::renderDMDWindow(IAssetManager &assets) {
     const Settings &settings = assets.getSettingsManager()->getSettings();
     int windowWidth, windowHeight;
     SDL_GetRendererOutputSize(dmdRenderer_, &windowWidth, &windowHeight);
 
     SDL_Rect dmdRect = {settings.dmdMediaX, settings.dmdMediaY, settings.dmdMediaWidth, settings.dmdMediaHeight};
-    if (!assets.dmdTexture) {
-        //LOG_DEBUG ("Renderer: No DMD texture to load");
-        return;
-    }
-    if (assets.dmdVideoPlayer && assets.dmdVideoPlayer->texture && settings.showDMD) {
-        updateVideoTexture(assets.dmdVideoPlayer);
-        SDL_RenderCopyEx(
-            dmdRenderer_,
-            assets.dmdVideoPlayer->texture,
-            nullptr,
-            &dmdRect,
-            settings.dmdRotation,
-            nullptr,
-            SDL_FLIP_NONE);
-
-    } else if (assets.dmdTexture && settings.showDMD) {
-        SDL_RenderCopyEx(
-            dmdRenderer_,
-            assets.dmdTexture.get(),
-            nullptr,
-            &dmdRect,
-            settings.dmdRotation,
-            nullptr,
-            SDL_FLIP_NONE);
+    if (auto* videoPlayer = assets.getDmdVideoPlayer()) {
+        if (videoPlayer->texture && settings.showDMD) {
+            updateVideoTexture(videoPlayer);
+            SDL_RenderCopyEx(dmdRenderer_,
+                             videoPlayer->texture,
+                             nullptr,
+                             &dmdRect,
+                             settings.dmdRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
+    } else if (auto* texture = assets.getDmdTexture()) {
+        if (settings.showDMD) {
+            SDL_RenderCopyEx(dmdRenderer_,
+                             texture,
+                             nullptr,
+                             &dmdRect,
+                             settings.dmdRotation,
+                             nullptr,
+                             SDL_FLIP_NONE);
+        }
     }
 }

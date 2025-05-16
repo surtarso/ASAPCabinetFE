@@ -2,6 +2,7 @@
 #include "core/app.h"
 #include "config/config_service.h"
 #include "core/window_manager.h"
+#include "render/asset_manager.h"
 #include "sound/sound_manager.h"
 #include "utils/logging.h"
 
@@ -15,7 +16,7 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
     return gui;
 }
 
-std::unique_ptr<AssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font) {
+std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font) {
     return std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
                                           windowManager->getBackglassRenderer(),
                                           windowManager->getDMDRenderer(), font);
@@ -35,7 +36,6 @@ std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::
 
 std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
     auto config = std::make_unique<ConfigService>(configPath);
-    //config->loadConfig();
     return config;
 }
 
@@ -50,16 +50,16 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;
-    std::vector<TableLoader> dummyTables; // Added declaration
+    std::vector<TableLoader> dummyTables;
     input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
                            dummyShowConfig, "", screenshotManager, nullptr);
     input->registerActions();
     return input;
 }
 
-std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, AssetManager* assets, 
+std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IAssetManager* assets, 
                                                             size_t* currentIndex, std::vector<TableLoader>* tables, 
                                                             App* app, bool& showConfig) {
-    return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), assets, 
+    return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), dynamic_cast<AssetManager*>(assets), 
                                       currentIndex, tables, app, showConfig, false);
 }

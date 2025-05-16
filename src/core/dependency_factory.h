@@ -5,7 +5,7 @@
 #include <string>
 #include "core/iwindow_manager.h"
 #include "core/gui_manager.h"
-#include "render/asset_manager.h"
+#include "render/iasset_manager.h"
 #include "render/renderer.h"
 #include "keybinds/input_manager.h"
 #include "config/iconfig_service.h"
@@ -19,7 +19,7 @@ class DependencyFactory {
 public:
     static std::unique_ptr<IWindowManager> createWindowManager(const Settings& settings);
     static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager, IConfigService* configService);
-    static std::unique_ptr<AssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font);
+    static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font);
     static std::unique_ptr<Renderer> createRenderer(IWindowManager* windowManager);
     static std::unique_ptr<ISoundManager> createSoundManager(const std::string& exeDir, const Settings& settings);
     static std::unique_ptr<ConfigService> createConfigService(const std::string& configPath);
@@ -28,7 +28,7 @@ public:
                                                                     ISoundManager* soundManager);
     static std::unique_ptr<InputManager> createInputManager(IConfigService* configService, 
                                                            ScreenshotManager* screenshotManager);
-    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, AssetManager* assets, 
+    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IAssetManager* assets, 
                                                     size_t* currentIndex, std::vector<TableLoader>* tables, 
                                                     App* app, bool& showConfig);
 };

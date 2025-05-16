@@ -10,9 +10,9 @@
 #include "config/ui/config_ui.h"
 #include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
-#include "render/asset_manager.h"
+#include "render/iasset_manager.h"
 #include "render/table_loader.h"
-#include "capture/screenshot_manager.h"  // Updated to new header
+#include "capture/screenshot_manager.h"
 #include "core/iwindow_manager.h"
 #include "core/joystick_manager.h"
 #include "sound/isound_manager.h"
@@ -42,7 +42,7 @@ private:
     std::unique_ptr<IConfigService> configManager_;
     std::unique_ptr<ConfigUI> configEditor_;
     std::unique_ptr<IRenderer> renderer_;
-    std::unique_ptr<AssetManager> assets_;
+    std::unique_ptr<IAssetManager> assets_;
     std::unique_ptr<ScreenshotManager> screenshotManager_; // Still unique_ptr, new impl
     std::unique_ptr<IInputManager> inputManager_;
     std::vector<TableLoader> tables_;
