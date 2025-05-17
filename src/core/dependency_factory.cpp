@@ -4,6 +4,7 @@
 #include "core/window_manager.h"
 #include "render/asset_manager.h"
 #include "sound/sound_manager.h"
+#include "capture/screenshot_manager.h"
 #include "utils/logging.h"
 
 std::unique_ptr<IWindowManager> DependencyFactory::createWindowManager(const Settings& settings) {
@@ -44,14 +45,14 @@ std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std:
     return config;
 }
 
-std::unique_ptr<ScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, 
-                                                                             IConfigService* configService, 
-                                                                             ISoundManager* soundManager) {
+std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, 
+                                                                              IConfigService* configService, 
+                                                                              ISoundManager* soundManager) {
     return std::make_unique<ScreenshotManager>(exeDir, configService, &configService->getKeybindManager(), soundManager);
 }
 
 std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, 
-                                                                   ScreenshotManager* screenshotManager) {
+                                                                   IScreenshotManager* screenshotManager) {
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;

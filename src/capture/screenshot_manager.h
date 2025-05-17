@@ -1,6 +1,7 @@
 #ifndef SCREENSHOT_MANAGER_H
 #define SCREENSHOT_MANAGER_H
 
+#include "capture/iscreenshot_manager.h"
 #include "capture/screenshot_window.h"
 #include "capture/screenshot_capture.h"
 #include "capture/process_handler.h"
@@ -10,12 +11,12 @@ class IConfigService;
 class IKeybindProvider;
 class ISoundManager;
 
-class ScreenshotManager {
+class ScreenshotManager : public IScreenshotManager {
 public:
     ScreenshotManager(const std::string& exeDir, IConfigService* configManager,
                       IKeybindProvider* keybindProvider, ISoundManager* soundManager);
-    void launchScreenshotMode(const std::string& vpxFile);
-    bool isActive() const { return isRunning_; }
+    void launchScreenshotMode(const std::string& vpxFile) override;
+    bool isActive() const override { return isRunning_; }
 
 private:
     std::string exeDir_;

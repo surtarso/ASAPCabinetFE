@@ -11,7 +11,7 @@ class ISoundManager;
 class IConfigService;
 struct TableLoader;
 class ConfigUI;
-class ScreenshotManager;
+class IScreenshotManager;
 class IWindowManager;
 
 class IInputManager {
@@ -21,7 +21,7 @@ public:
     virtual void registerActions() = 0;
     virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                  size_t& currentIndex, const std::vector<TableLoader>& tables,
-                                 bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
+                                 bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                  IWindowManager* windowManager) = 0;
     virtual void setRuntimeEditor(ConfigUI* editor) = 0;
     virtual bool isConfigActive() const = 0;

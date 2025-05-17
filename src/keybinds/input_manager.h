@@ -7,7 +7,7 @@
 #include "sound/isound_manager.h"
 #include "config/iconfig_service.h"
 #include "render/table_loader.h"
-#include "capture/screenshot_manager.h"
+#include "capture/iscreenshot_manager.h"
 #include "config/ui/config_ui.h"
 #include "core/iwindow_manager.h"
 #include <map>
@@ -21,7 +21,7 @@ public:
     void registerActions() override;
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableLoader>& tables,
-                         bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
+                         bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                          IWindowManager* windowManager) override;
     bool isConfigActive() const override { return *showConfig_; }
     bool shouldQuit() const override { return quit_; }
@@ -48,7 +48,7 @@ private:
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
     bool inScreenshotMode_ = false;
-    ScreenshotManager* screenshotManager_;
+    IScreenshotManager* screenshotManager_;
     std::unordered_map<Uint32, Uint32> lastClickTimes_; // Double-click detection
 };
 
