@@ -40,9 +40,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                     std::string path = tableJson["path"].get<std::string>();
                     for (auto& table : tables) {
                         if (table.vpxFile == path) {
-                            table.tableName = tableJson["table_info"]["table_name"].is_null() ? table.title : tableJson["table_info"]["table_name"].get<std::string>();
-                            LOG_DEBUG("TableLoader: Set title = " << table.title << " for vpxFile = " << table.vpxFile);
-                            table.title = table.tableName; // Use tableName for title
+                            std::string tableName = tableJson["table_info"]["table_name"].is_null() || tableJson["table_info"]["table_name"].get<std::string>().empty()
+                                ? table.title // Fallback to filename if null
+                                : tableJson["table_info"]["table_name"].get<std::string>();
+                            table.tableName = tableName;
+                            table.title = tableName;
                             table.authorName = tableJson["table_info"]["author_name"].is_null() ? "" : tableJson["table_info"]["author_name"].get<std::string>();
                             table.gameName = tableJson["game_name"].is_null() ? "" : tableJson["game_name"].get<std::string>();
                             table.romPath = tableJson["rom_path"].is_null() ? "" : tableJson["rom_path"].get<std::string>();
