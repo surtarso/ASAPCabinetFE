@@ -73,7 +73,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     # ImGui File Dialog
     ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog
     # nlohmann json
-    ${CMAKE_SOURCE_DIR}/external/json/single_include/nlohmann
+    ${CMAKE_SOURCE_DIR}/external/nlohmann/single_include/nlohmann
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
