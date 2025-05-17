@@ -19,7 +19,7 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
 
 std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
                                                                     IConfigService* configService, size_t index, 
-                                                                    const std::vector<TableLoader>& tables) {
+                                                                    const std::vector<TableData>& tables) {
     auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
                                                  windowManager->getBackglassRenderer(),
                                                  windowManager->getDMDRenderer(), font);
@@ -56,7 +56,7 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;
-    std::vector<TableLoader> dummyTables;
+    std::vector<TableData> dummyTables;
     input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
                            dummyShowConfig, "", screenshotManager, nullptr);
     input->registerActions();
@@ -64,7 +64,7 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
 }
 
 std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IAssetManager* assets, 
-                                                            size_t* currentIndex, std::vector<TableLoader>* tables, 
+                                                            size_t* currentIndex, std::vector<TableData>* tables, 
                                                             App* app, bool& showConfig) {
     return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), assets, 
                                       currentIndex, tables, app, showConfig, false);

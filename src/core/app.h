@@ -11,7 +11,8 @@
 #include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
 #include "render/iasset_manager.h"
-#include "render/table_loader.h"
+#include "render/itable_loader.h"
+#include "render/table_data.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
 #include "core/joystick_manager.h"
@@ -45,7 +46,8 @@ private:
     std::unique_ptr<IAssetManager> assets_;
     std::unique_ptr<IScreenshotManager> screenshotManager_;
     std::unique_ptr<IInputManager> inputManager_;
-    std::vector<TableLoader> tables_;
+    std::unique_ptr<ITableLoader> tableLoader_;
+    std::vector<TableData> tables_;
 
     std::string getExecutableDir();
     bool prevShowConfig_ = false;

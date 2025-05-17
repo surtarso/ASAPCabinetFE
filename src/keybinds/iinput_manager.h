@@ -1,6 +1,7 @@
 #ifndef IINPUT_MANAGER_H
 #define IINPUT_MANAGER_H
 
+#include "render/table_data.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <functional>
@@ -9,7 +10,7 @@
 class IAssetManager; // Forward declaration
 class ISoundManager;
 class IConfigService;
-struct TableLoader;
+class TableLoader;
 class ConfigUI;
 class IScreenshotManager;
 class IWindowManager;
@@ -20,7 +21,7 @@ public:
     virtual void handleEvent(const SDL_Event& event) = 0;
     virtual void registerActions() = 0;
     virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
-                                 size_t& currentIndex, const std::vector<TableLoader>& tables,
+                                 size_t& currentIndex, const std::vector<TableData>& tables,
                                  bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                  IWindowManager* windowManager) = 0;
     virtual void setRuntimeEditor(ConfigUI* editor) = 0;

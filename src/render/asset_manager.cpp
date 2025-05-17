@@ -1,4 +1,5 @@
 #include "render/asset_manager.h"
+#include "render/table_loader.h"
 #include "config/iconfig_service.h"
 #include "utils/logging.h"
 #include <SDL_image.h>
@@ -70,7 +71,7 @@ void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color,
     }
 }
 
-void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) {
+void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) {
     if (index >= tables.size()) {
         LOG_ERROR("AssetManager: Invalid table index " << index);
         return;
@@ -99,14 +100,14 @@ void AssetManager::clearVideoCache() {
     currentDmdVideoPath_.clear();
 }
 
-void AssetManager::loadTableAssets(size_t index, const std::vector<TableLoader>& tables) {
+void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& tables) {
     auto start = std::chrono::high_resolution_clock::now();
     LOG_DEBUG("AssetManager: loadTableAssets -> called with index: " << index);
     if (index >= tables.size()) {
         LOG_ERROR("AssetManager: Invalid table index: " << index << ", table count: " << tables.size());
         return;
     }
-    const TableLoader& table = tables[index];
+    const auto& table = tables[index];
     const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
     static bool lastShowBackglass = settings.showBackglass;
     static bool lastShowDMD = settings.showDMD;

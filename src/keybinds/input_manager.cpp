@@ -10,7 +10,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
       tables_(nullptr), showConfig_(nullptr), exeDir_(""), screenshotManager_(nullptr) {}
 
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
-                                   size_t& currentIndex, const std::vector<TableLoader>& tables,
+                                   size_t& currentIndex, const std::vector<TableData>& tables,
                                    bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                    IWindowManager* windowManager) {
     assets_ = assets;
@@ -207,22 +207,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
         actionHandlers_["ToggleConfig"]();
         return;
     }
-
-    // if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && !*showConfig_) {
-    //     Uint32 windowID = event.button.windowID;
-    //     Uint32 currentTime = SDL_GetTicks();
-    //     auto it = lastClickTimes_.find(windowID);
-    //     if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
-    //         LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
-    //         int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
-    //         windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
-    //         settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
-    //         soundManager_->playSound("config_save");
-    //         lastClickTimes_.erase(it); // Clear to reset double-click detection
-    //     } else {
-    //         lastClickTimes_[windowID] = currentTime;
-    //     }
-    // }
+    
     if (!*showConfig_) {
         handleDoubleClick(event);
     }
