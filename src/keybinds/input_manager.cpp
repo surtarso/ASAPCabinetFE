@@ -11,7 +11,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
 
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableLoader>& tables,
-                                   bool& showConfig, const std::string& exeDir, ScreenshotManager* screenshotManager,
+                                   bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                    IWindowManager* windowManager) {
     assets_ = assets;
     soundManager_ = sound;

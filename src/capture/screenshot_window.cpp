@@ -18,9 +18,29 @@ ScreenshotWindow::~ScreenshotWindow() {
 
 bool ScreenshotWindow::initialize(int width, int height) {
     const Settings& settings = configManager_->getSettings();
+
+    // Log SDL version and video driver for debugging
+    SDL_version compiled;
+    SDL_version linked;
+    SDL_VERSION(&compiled);
+    SDL_GetVersion(&linked);
+    const char* videoDriver = SDL_GetCurrentVideoDriver();
+    LOG_DEBUG("ScreenshotWindow: SDL Compiled Version: " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch);
+    LOG_DEBUG("ScreenshotWindow: SDL Linked Version: " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch);
+    LOG_DEBUG("ScreenshotWindow: Video Driver: " << (videoDriver ? videoDriver : "unknown"));
+
+    // Use SDL_WINDOWPOS_CENTERED for x and y, and proper flags
+    Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS;
+    // Only add SDL_WINDOW_ALWAYS_ON_TOP if not running on Wayland, as it may cause issues
+    if (videoDriver && strcmp(videoDriver, "wayland") != 0) {
+        windowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
+    }
+    LOG_DEBUG("ScreenshotWindow: Creating window with flags: 0x" << std::hex << windowFlags << std::dec
+              << ", position: SDL_WINDOWPOS_CENTERED");
+
     window_ = SDL_CreateWindow("VPX Screenshot",
-        0, 0,
-        width, height, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOWPOS_CENTERED);
+                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                               width, height, windowFlags);
     if (!window_) {
         LOG_ERROR("ScreenshotWindow: SDL_CreateWindow Error: " << SDL_GetError());
         return false;
