@@ -3,6 +3,7 @@ TODO
 FIX:
 
 QOL:
+- add toggle to force images only
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
@@ -21,4 +22,5 @@ Later:
 - add pup windows to screenshot capture
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
+- add opengl renderer as options
 - adapt to be crossplatform?
