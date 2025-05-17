@@ -93,7 +93,7 @@ make -j$(nproc)
 
 **1.** Use the screenshot tool to take planned screenshots
 
-Start the table with 's' instead of 'enter´. Once inside the game, use 's' for screenshot and 'q' to return to the main app.
+Start the table in "Screenshot Mode" (default: s) and follow the on-screen instructions.
 
 **2.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`.
 ```sh
@@ -117,11 +117,11 @@ Start the table with 's' instead of 'enter´. Once inside the game, use 's' for 
 - Music.
 - Dynamic custom window creation for PuP, Toppers etc.
 - Single table overrides for settings.
-- Seamless switch with [VPXGuiTools](https://github.com/surtarso/vpx-gui-tools) for table management.
+- Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
 ## Contribute
 Contributions are very welcome! Check the TODO list, open issues or pull requests to help improve this app.
 
-If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check out [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
+If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check out [VPXGUIools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
 
 _PS: There is a [discontinued version](https://github.com/surtarso/asap-cabinet-fe) of this frontend in Python._
