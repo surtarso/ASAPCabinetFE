@@ -122,6 +122,6 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ## Contribute
 Contributions are very welcome! Check the TODO list, open issues or pull requests to help improve this app.
 
-If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check out [VPXGUIools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
+If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
 
 _PS: There is a [discontinued version](https://github.com/surtarso/asap-cabinet-fe) of this frontend in Python._
