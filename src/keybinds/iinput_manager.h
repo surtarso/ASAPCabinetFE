@@ -10,7 +10,6 @@
 class IAssetManager; // Forward declaration
 class ISoundManager;
 class IConfigService;
-class TableLoader;
 class ConfigUI;
 class IScreenshotManager;
 class IWindowManager;
