@@ -9,7 +9,7 @@ const std::vector<std::string> ConfigUI::sectionOrder_ = {
 };
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-                   IAssetManager* assets, size_t* currentIndex, std::vector<TableLoader>* tables, 
+                   IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                    App* app, bool& showConfig, bool standaloneMode)
     : configService_(configService), 
       keybindProvider_(keybindProvider), 

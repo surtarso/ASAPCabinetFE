@@ -1,44 +1,17 @@
 #include "render/table_loader.h"
 #include "utils/logging.h"
-#include "config/iconfig_service.h"
 #include <algorithm>
-#include <iostream>
 #include <cctype>
 
-std::map<char, int> letterIndex;
-
-std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
-    fs::path imageFile = fs::path(root) / imagePath;
-    //LOG_DEBUG("TableLoader: Checking custom path: " << imageFile.string());
-    if (fs::exists(imageFile)) {
-        return imageFile.string();
-    }
-    //LOG_DEBUG("TableLoader: Falling back to default: " << defaultImagePath);
-    if (!fs::exists(defaultImagePath)) {
-        LOG_ERROR("TableLoader: Default image not found: " << defaultImagePath);
-    }
-    return defaultImagePath;
-}
-
-std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath) {
-    fs::path videoFile = fs::path(root) / videoPath;
-    if (fs::exists(videoFile))
-        return videoFile.string();
-    else if (fs::exists(defaultVideoPath))
-        return defaultVideoPath;
-    else
-        return "";
-}
-
-std::vector<TableLoader> loadTableList(const Settings& settings) {
-    std::vector<TableLoader> tables;
+std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
+    std::vector<TableData> tables;
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
         LOG_ERROR("TableLoader: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
     }
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
-            TableLoader table;
+            TableData table;
             table.vpxFile = entry.path().string();
             table.folder = entry.path().parent_path().string();
             table.title = entry.path().stem().string();
@@ -52,7 +25,7 @@ std::vector<TableLoader> loadTableList(const Settings& settings) {
             tables.push_back(table);
         }
     }
-    std::sort(tables.begin(), tables.end(), [](const TableLoader& a, const TableLoader& b) {
+    std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
         return a.title < b.title;
     });
     letterIndex.clear();
@@ -66,4 +39,27 @@ std::vector<TableLoader> loadTableList(const Settings& settings) {
         }
     }
     return tables;
+}
+
+std::string TableLoader::getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath) {
+    fs::path imageFile = fs::path(root) / imagePath;
+    //LOG_DEBUG("TableLoader: Checking custom path: " << imageFile.string());
+    if (fs::exists(imageFile)) {
+        return imageFile.string();
+    }
+    //LOG_DEBUG("TableLoader: Falling back to default: " << defaultImagePath);
+    if (!fs::exists(defaultImagePath)) {
+        LOG_ERROR("TableLoader: Default image not found: " << defaultImagePath);
+    }
+    return defaultImagePath;
+}
+
+std::string TableLoader::getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath) {
+    fs::path videoFile = fs::path(root) / videoPath;
+    if (fs::exists(videoFile))
+        return videoFile.string();
+    else if (fs::exists(defaultVideoPath))
+        return defaultVideoPath;
+    else
+        return "";
 }

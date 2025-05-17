@@ -38,9 +38,9 @@ public:
     virtual void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) = 0;
     
     // Asset management
-    virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) = 0;
+    virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) = 0;
     virtual void setSettingsManager(IConfigService* cm) = 0;
-    virtual void loadTableAssets(size_t index, const std::vector<TableLoader>& tables) = 0;
+    virtual void loadTableAssets(size_t index, const std::vector<TableData>& tables) = 0;
     virtual void clearOldVideoPlayers() = 0;
     virtual void cleanupVideoPlayers() = 0;
 };

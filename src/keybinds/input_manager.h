@@ -6,7 +6,7 @@
 #include "render/iasset_manager.h"
 #include "sound/isound_manager.h"
 #include "config/iconfig_service.h"
-#include "render/table_loader.h"
+#include "render/table_data.h"
 #include "capture/iscreenshot_manager.h"
 #include "config/ui/config_ui.h"
 #include "core/iwindow_manager.h"
@@ -20,7 +20,7 @@ public:
     void handleEvent(const SDL_Event& event) override;
     void registerActions() override;
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
-                         size_t& currentIndex, const std::vector<TableLoader>& tables,
+                         size_t& currentIndex, const std::vector<TableData>& tables,
                          bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                          IWindowManager* windowManager) override;
     bool isConfigActive() const override { return *showConfig_; }
@@ -40,7 +40,7 @@ private:
     IConfigService* settingsManager_;
     IWindowManager* windowManager_;
     size_t* currentIndex_;
-    const std::vector<TableLoader>* tables_;
+    const std::vector<TableData>* tables_;
     bool* showConfig_;
     std::string exeDir_;
     ConfigUI* runtimeEditor_ = nullptr;

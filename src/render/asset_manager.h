@@ -1,7 +1,8 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
-#include "render/table_loader.h"
+#include "render/itable_loader.h"
+#include "render/table_data.h"
 #include "render/video_player.h"
 #include "render/iasset_manager.h"
 #include <SDL.h>
@@ -29,9 +30,9 @@ public:
     void setTitlePosition(int x, int y) override;
     void setFont(TTF_Font* font) override;
     void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) override;
-    void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableLoader>& tables, size_t index) override;
+    void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) override;
     void setSettingsManager(IConfigService* cm) override;
-    void loadTableAssets(size_t index, const std::vector<TableLoader>& tables) override;
+    void loadTableAssets(size_t index, const std::vector<TableData>& tables) override;
     void clearOldVideoPlayers() override;
     void cleanupVideoPlayers() override;
 
@@ -68,6 +69,7 @@ private:
     std::string currentDmdVideoPath_;
     TTF_Font* font;
     IConfigService* configManager_;
+    std::unique_ptr<ITableLoader> tableLoader_;
     std::vector<VideoContext*> oldVideoPlayers_;
 };
 

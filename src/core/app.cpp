@@ -4,6 +4,7 @@
 #include "core/dependency_factory.h"
 #include "core/joystick_manager.h"
 #include "core/first_run.h"
+#include "render/table_loader.h"
 #include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
@@ -17,7 +18,8 @@ namespace fs = std::filesystem;
 App::App(const std::string& configPath) 
     : configPath_(configPath), 
       font_(nullptr, TTF_CloseFont),
-      joystickManager_(std::make_unique<JoystickManager>()) {
+      joystickManager_(std::make_unique<JoystickManager>()),
+      tableLoader_(std::make_unique<TableLoader>()) {
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + configPath_;
     LOG_DEBUG("App: Config path: " << configPath_);
@@ -72,7 +74,7 @@ void App::reloadFont(bool isStandalone) {
             LOG_ERROR("App: Failed to reload font: " << TTF_GetError());
         } else {
             assets_->setFont(font_.get());
-            const TableLoader& table = tables_[currentIndex_];
+            const TableData& table = tables_[currentIndex_];
             SDL_Rect titleRect = assets_->getTitleRect();
             titleRect.w = 0; // Reset dimensions to allow recalculation
             titleRect.h = 0;
@@ -117,7 +119,7 @@ void App::loadFont() {
 }
 
 void App::loadTables() {
-    tables_ = loadTableList(configManager_->getSettings());
+    tables_ = tableLoader_->loadTableList(configManager_->getSettings());
     if (tables_.empty()) {
         LOG_ERROR("App: Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
         exit(1);
