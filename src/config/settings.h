@@ -60,6 +60,7 @@ struct Settings {
     SDL_Color fontColor;
     SDL_Color fontBgColor;
     int fontSize;
+    std::string titleSource;
     bool showWheel;
     bool showTitle;
     int titleX;

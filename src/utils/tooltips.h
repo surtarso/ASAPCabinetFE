@@ -183,6 +183,10 @@ namespace Tooltips {
                 "You can drag and double-click a window to save it's position"},
 
             // TitleDisplay
+            {"TitleSource",
+                "Select the source of the title info.\n"
+                "- 'filename' to use filename as title.\n"
+                "- 'metadata' to use file metadata as title. (requires vpxtool)\n"},
             {"FontPath",
                 "Select a font for the table title display."},
             {"FontColor",
@@ -303,8 +307,6 @@ namespace Tooltips {
                 "Key to open or close the configuration menu."},
             {"Quit",
                 "Key to exit menus and application."},
-            // {"ConfigSave",
-            //     "Key to save changes in the configuration menu."},
             {"ConfigClose",
                 "Key to close the configuration menu without saving."},
             {"ScreenshotMode",
@@ -332,8 +334,6 @@ namespace Tooltips {
             {"LaunchScreenshotSound", "Sound played when entering screenshot mode."},
             {"ConfigSaveSound", "Sound played when saving configuration."},
             {"ConfigToggleSound", "Sound played when opening or closing configuration."},
-            //{"ConfigCloseSound", "Sound played when closing configuration."},
-            //{"QuitSound", "Sound played when quitting the application."},
             {"ScreenshotTakeSound", "Sound played when taking a screenshot."},
             {"ScreenshotQuitSound", "Sound played when exiting screenshot mode."}
         };

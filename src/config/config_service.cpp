@@ -129,6 +129,7 @@ void ConfigService::setDefaultSettings() {
     settings_.fontColor = {255, 255, 255, 255};
     settings_.fontBgColor = {0, 0, 0, 128};
     settings_.fontSize = 28;
+    settings_.titleSource = "filename";
     settings_.showWheel = true;
     settings_.showTitle = true;
     settings_.titleX = 30;
@@ -145,8 +146,6 @@ void ConfigService::setDefaultSettings() {
     settings_.launchScreenshotSound = "snd/launch_screenshot.mp3";
     settings_.configSaveSound = "snd/config_save.mp3";
     settings_.configToggleSound = "snd/config_toggle.mp3";
-    //settings_.configCloseSound = "snd/config_close.mp3";
-    //settings_.quitSound = "snd/quit.mp3";
     settings_.screenshotTakeSound = "snd/screenshot_take.mp3";
     settings_.screenshotQuitSound = "snd/screenshot_quit.mp3";
 
@@ -295,6 +294,7 @@ void ConfigService::initializeIniData() {
     // TitleDisplay
     auto& titleDisplay = iniData_["TitleDisplay"];
     titleDisplay.keyValues = {
+        {"TitleSource", "filename"},
         {"ShowWheel", "true"},
         {"ShowTitle", "true"},
         {"FontPath", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"},
@@ -345,8 +345,6 @@ void ConfigService::initializeIniData() {
         {"LaunchScreenshotSound", "snd/launch_screenshot.mp3"},
         {"ConfigSaveSound", "snd/config_save.mp3"},
         {"ConfigToggleSound", "snd/config_toggle.mp3"},
-        //{"ConfigCloseSound", "snd/config_close.mp3"},
-        //{"QuitSound", "snd/quit.mp3"},
         {"ScreenshotTakeSound", "snd/screenshot_take.mp3"},
         {"ScreenshotQuitSound", "snd/screenshot_quit.mp3"}
     };
@@ -480,6 +478,7 @@ void ConfigService::parseIniFile() {
     settings_.dmdMediaY = std::stoi(config["MediaDimensions"]["DMDMediaY"].empty() ? "0" : config["MediaDimensions"]["DMDMediaY"]);
     settings_.dmdRotation = std::stoi(config["MediaDimensions"]["DMDRotation"].empty() ? "0" : config["MediaDimensions"]["DMDRotation"]);
     
+    settings_.titleSource = config["TitleDisplay"]["TitleSource"].empty() ? "filename" : config["TitleDisplay"]["TitleSource"];
     settings_.showWheel = config["TitleDisplay"]["ShowWheel"].empty() ? true : (config["TitleDisplay"]["ShowWheel"] == "true");
     settings_.showTitle = config["TitleDisplay"]["ShowTitle"].empty() ? true : (config["TitleDisplay"]["ShowTitle"] == "true");
     settings_.fontPath = config["TitleDisplay"]["FontPath"].empty() ? settings_.fontPath : config["TitleDisplay"]["FontPath"];
@@ -505,8 +504,6 @@ void ConfigService::parseIniFile() {
     settings_.launchTableSound = config["UISounds"]["LaunchTableSound"].empty() ? settings_.launchTableSound : config["UISounds"]["LaunchTableSound"];
     settings_.launchScreenshotSound = config["UISounds"]["LaunchScreenshotSound"].empty() ? settings_.launchScreenshotSound : config["UISounds"]["LaunchScreenshotSound"];
     settings_.configSaveSound = config["UISounds"]["ConfigSaveSound"].empty() ? settings_.configSaveSound : config["UISounds"]["ConfigSaveSound"];
-    //settings_.configCloseSound = config["UISounds"]["ConfigCloseSound"].empty() ? settings_.configCloseSound : config["UISounds"]["ConfigCloseSound"];
-    //settings_.quitSound = config["UISounds"]["QuitSound"].empty() ? settings_.quitSound : config["UISounds"]["QuitSound"];
     settings_.screenshotTakeSound = config["UISounds"]["ScreenshotTakeSound"].empty() ? settings_.screenshotTakeSound : config["UISounds"]["ScreenshotTakeSound"];
     settings_.screenshotQuitSound = config["UISounds"]["ScreenshotQuitSound"].empty() ? settings_.screenshotQuitSound : config["UISounds"]["ScreenshotQuitSound"];
     
