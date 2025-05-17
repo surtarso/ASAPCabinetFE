@@ -19,17 +19,20 @@ make -j$(nproc)
 ```
 
 ## Features
-- Full screen multi monitor display of table playfield, backglass and DMD
-- Navigate tables with titles and wheels
-- Extended settings for many display configurations
-- Extremely lightweight and simple
-- No need to download artpacks, generate your own! (See [tools](#generator-tools))
-- Just what it takes to make a cabinet look good
+- Full screen multi monitor display of table playfield, backglass and DMD.
+- Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
+- Navigate tables with titles and/or wheels.
+- Extended settings for many display configuration arrangements.
+- Keybind friendly and joystick support.
+- Extremely lightweight and customizable.
+- No need to download artpacks, generate your own. (See [tools](#generator-tools))
+- Just what it takes to make your cabinet look good!
 
 ## How it works
-- Scans `VPX_ROOT_FOLDER` recursively for `.vpx` files.
-- Loads images or videos for the playfield, wheel, backglass, and DMD for each table.
-- Creates up to three windows for Playfield, Backglass and DMD.
+- Scans recursively for `.vpx` files.
+- Creates up to three windows for playfield, backglass and DMD.
+- Loads default or custom images and/or videos for the playfield, wheel, backglass, and DMD for each table.
+- Launches tables with desired VPX executable.
 
 ### Dependencies
 > [!IMPORTANT]
@@ -82,6 +85,7 @@ make -j$(nproc)
 | Take Screenshot    | s                | Takes a shot while in Screenshot mode.    |
 | Quit SShot mode    | q                | Quit SShot mode and return to launcher.   |
 | Quit               | q                | Exit the application.                     |
+| Save window pos.   | left doubleclick | Saves current window positions in config. |
 
 ## Generator Tools
 > [!WARNING]
@@ -109,9 +113,15 @@ Start the table with 's' instead of 'enter´. Once inside the game, use 's' for 
   - Check that `config.ini` exists and is readable/writable.
   - Install missing runtime libraries (e.g., `sudo apt-get install libsdl2-2.0-0`).
 
+## Planned Features:
+- Music.
+- Dynamic custom window creation for PuP, Toppers etc.
+- Single table overrides for settings.
+- Seamless switch with [VPXGuiTools](https://github.com/surtarso/vpx-gui-tools) for table management.
+
 ## Contribute
-Contributions are very welcome! Open issues or pull requests to help improve this app.
+Contributions are very welcome! Check the TODO list, open issues or pull requests to help improve this app.
 
-If you need help installing and configuring Visual Pinball X check my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check my [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to ease the process of settings tables up.
+If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux) page, also check out [vpx-gui-tools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
 
-_PS: There is a [discontinued version of this frontend in Python](https://github.com/surtarso/asap-cabinet-fe)._
+_PS: There is a [discontinued version](https://github.com/surtarso/asap-cabinet-fe) of this frontend in Python._
