@@ -1,6 +1,6 @@
 #include "render/table_loader.h"
 #include "utils/logging.h"
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 #include <regex>
 #include <algorithm>
 #include <cctype>
@@ -30,7 +30,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
 
     // Load vpxtool metadata if titleSource=metadata
     if (settings.titleSource == "metadata") {
-        std::string jsonPath = settings.VPXTablesPath + "/vpxtool_index.json";
+        std::string jsonPath = settings.VPXTablesPath + "vpxtool_index.json";
         if (fs::exists(jsonPath)) {
             try {
                 std::ifstream file(jsonPath);
@@ -41,6 +41,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                     for (auto& table : tables) {
                         if (table.vpxFile == path) {
                             table.tableName = tableJson["table_info"]["table_name"].is_null() ? table.title : tableJson["table_info"]["table_name"].get<std::string>();
+                            LOG_DEBUG("TableLoader: Set title = " << table.title << " for vpxFile = " << table.vpxFile);
                             table.title = table.tableName; // Use tableName for title
                             table.authorName = tableJson["table_info"]["author_name"].is_null() ? "" : tableJson["table_info"]["author_name"].get<std::string>();
                             table.gameName = tableJson["game_name"].is_null() ? "" : tableJson["game_name"].get<std::string>();
@@ -62,7 +63,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                                 }
                             }
                             if (table.year.empty()) {
-                                std::regex yearRegex(R"\((\d{4})\)");
+                                std::regex yearRegex(R"regex(\((\d{4})\))regex");
                                 std::smatch match;
                                 if (std::regex_search(table.tableName, match, yearRegex)) {
                                     table.year = match[1].str();
@@ -70,7 +71,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                             }
 
                             // Parse manufacturer
-                            std::regex manufRegex(R"\(([^)]+)\s+\d{4}\)");
+                            std::regex manufRegex(R"regex(\(([^)]+)\s+\d{4}\))regex");
                             std::smatch match;
                             if (std::regex_search(table.tableName, match, manufRegex)) {
                                 table.manufacturer = match[1].str();
