@@ -2,6 +2,8 @@ TODO
 
 FIX:
 - transitions still suck, need to remove the blink/black on table switch
+- finish the layout and text of vpxtool metadata pop-up
+- config save sound not playing on button click (but playing on double click save)
 
 QOL:
 - check for vpinballx.ini and use it's position values if available (get/set values)
@@ -16,7 +18,9 @@ UI:
 - show a couple of prev/next table wheels?
 
 On hold:
-- use json instead of memory for file info
+- use json instead of memory for standart info (besides vpxtool)
+- sound config for UI volume/music
+- attract mode (random table on a timer if idle) (optional)
 - create a make install target
 - create default videos?
 
