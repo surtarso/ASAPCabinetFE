@@ -16,8 +16,8 @@ void renderKeybind(const std::string& key, std::string& value, InputHandler& inp
     ImGui::Text("%s", label.c_str());
     
     // Position the button closer to the key definition
-    const float buttonOffset = 300.0f; // Manual tweak point: adjust this value
-    ImGui::SameLine(buttonOffset); // Position after the label, tweakable
+    const float buttonOffset = 300.0f;
+    ImGui::SameLine(buttonOffset); // Position after the label
     
     if (ImGui::Button("Set", ImVec2(60, 0))) {
         inputHandler.startCapturing(key);

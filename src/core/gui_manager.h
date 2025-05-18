@@ -12,12 +12,13 @@ class GuiManager {
 public:
     // Constructor for main app (uses IWindowManager)
     GuiManager(IWindowManager* windowManager, IConfigService* configService);
-    // Constructor for initial config (uses raw SDL window/renderer)
+
+    // Constructor for standalone initial config (uses raw SDL window/renderer)
     GuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService);
     ~GuiManager();
 
-    void initialize();           // Sets up ImGui context
-    void newFrame();             // Starts a new ImGui frame
+    void initialize();              // Sets up ImGui context
+    void newFrame();                // Starts a new ImGui frame
     void render(SDL_Renderer* renderer); // Renders ImGui draw data
     void processEvent(const SDL_Event& event); // Forwards events to ImGui
 

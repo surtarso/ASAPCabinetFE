@@ -83,12 +83,10 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                     }
                 }
             } catch (const std::exception& e) {
-                LOG_ERROR("TableLoader: Failed to parse vpxtool_index.json: " << e.what());
-                // Fallback to filename-based titles
+                LOG_ERROR("TableLoader: Falling back to filename, failed to parse vpxtool_index.json: " << e.what());
             }
         } else {
-            LOG_ERROR("TableLoader: Falling back to filenames, 'vpxtool_index.json' not found at " << jsonPath);
-            // TODO: Trigger pop-up in ConfigUI
+            LOG_ERROR("TableLoader: Falling back to filename, 'vpxtool_index.json' not found at " << jsonPath);
         }
     }
 

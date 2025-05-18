@@ -24,7 +24,6 @@ private:
     void createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>& window,
                              std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>& renderer,
                              const char* title,
-                             //int monitor,
                              int width, int height,
                              int posX, int posY, float dpiScale, bool enableDpiScaling);
 

@@ -22,8 +22,6 @@ void KeybindManager::initializeDefaults() {
     keybinds_["LaunchTable"] = {SDLK_RETURN};
     keybinds_["ToggleConfig"] = {SDLK_c};
     keybinds_["Quit"] = {SDLK_q};
-    //keybinds_["ConfigSave"] = {SDLK_SPACE};
-    keybinds_["ConfigClose"] = {SDLK_q};
     keybinds_["ScreenshotMode"] = {SDLK_s};
     keybinds_["ScreenshotKey"] = {SDLK_s};
     keybinds_["ScreenshotQuit"] = {SDLK_q};
