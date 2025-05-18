@@ -47,6 +47,7 @@ private:
 
     static const std::vector<std::string> sectionOrder_;
     void discardChanges();
+    bool hasTitleDataSourceChanged() const;
     bool hasWindowSettingsChanged() const;
     bool hasVisibilitySettingsChanged() const;
     bool hasFontSettingsChanged() const;

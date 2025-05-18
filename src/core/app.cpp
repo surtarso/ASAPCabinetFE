@@ -86,11 +86,31 @@ void App::reloadFont(bool isStandalone) {
     }
 }
 
-void App::onConfigSaved() {
+void App::reloadAssetsAndRenderers() {
     reloadWindows();
     assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
     renderer_->setRenderers(windowManager_.get());
     LOG_DEBUG("App: Assets and renderers reloaded after config saved");
+}
+
+void App::reloadTablesAndTitle() {
+    LOG_DEBUG("App: Reloading tables and title texture for TitleSource change");
+    size_t oldIndex = currentIndex_;
+    tables_ = tableLoader_->loadTableList(configManager_->getSettings());
+    if (tables_.empty()) {
+        LOG_ERROR("App: No .vpx files found in " << configManager_->getSettings().VPXTablesPath);
+        exit(1);
+    }
+    // Preserve currentIndex_ if possible
+    if (oldIndex >= tables_.size()) {
+        currentIndex_ = tables_.size() - 1;
+    } else {
+        currentIndex_ = oldIndex;
+    }
+    LOG_INFO("App: Reloaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
+    
+    assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
+    LOG_DEBUG("App: Title texture reloaded for table " << tables_[currentIndex_].title);
 }
 
 std::string App::getExecutableDir() {
