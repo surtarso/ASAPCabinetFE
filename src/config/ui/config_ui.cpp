@@ -268,6 +268,37 @@ bool ConfigUI::hasFontSettingsChanged() const {
     return false;
 }
 
+bool ConfigUI::hasTitleDataSourceChanged() const {
+    const auto& currentIniData = configService_->getIniData();
+    auto currentIt = currentIniData.find("TitleDisplay");
+    auto lastIt = lastSavedIniData_.find("TitleDisplay");
+
+    if (currentIt == currentIniData.end() || lastIt == lastSavedIniData_.end()) {
+        LOG_DEBUG("ConfigUI: TitleDisplay section missing in current or last state");
+        return true;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    const std::string key = "TitleSource";
+    auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                      [key](const auto& pair) { return pair.first == key; });
+    auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                   [key](const auto& pair) { return pair.first == key; });
+
+    if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUI: TitleSource key missing in current or last state");
+        return true;
+    }
+    if (currentPairIt->second != lastPairIt->second) {
+        LOG_DEBUG("ConfigUI: TitleSource changed from " << lastPairIt->second << " to " << currentPairIt->second);
+        return true;
+    }
+
+    LOG_DEBUG("ConfigUI: No TitleSource changes");
+    return false;
+}
+
 void ConfigUI::saveConfig() {
     if (!hasChanges_) {
         LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called, but no changes detected, skipping save");
@@ -279,13 +310,13 @@ void ConfigUI::saveConfig() {
     bool windowSettingsChanged = hasWindowSettingsChanged();
     bool visibilitySettingsChanged = hasVisibilitySettingsChanged();
     bool fontSettingsChanged = hasFontSettingsChanged();
+    bool titleDataSourceChanged = hasTitleDataSourceChanged();
+
     lastSavedIniData_ = configService_->getIniData();
 
     // Update title position if title texture exists
     if (assets_ && assets_->getTitleTexture()) {
         const Settings& settings = configService_->getSettings();
-        // assets_->titleRect.x = settings.titleX;
-        // assets_->titleRect.y = settings.titleY;
         assets_->setTitlePosition(settings.titleX, settings.titleY);
         LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
@@ -301,7 +332,11 @@ void ConfigUI::saveConfig() {
         }
         if (visibilitySettingsChanged) {
             LOG_DEBUG("ConfigUI: ShowDMD or ShowBackglass changed, triggering asset reload");
-            app_->onConfigSaved();
+            app_->reloadAssetsAndRenderers();
+        }
+        if (titleDataSourceChanged) {
+            LOG_DEBUG("ConfigUI: Title data-source changed, triggering table reload");
+            app_->reloadTablesAndTitle();
         }
     }
 

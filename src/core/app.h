@@ -27,7 +27,8 @@ public:
     void run();
     void reloadFont(bool isStandalone = false);
     void reloadWindows();
-    void onConfigSaved();
+    void reloadAssetsAndRenderers();
+    void reloadTablesAndTitle();
 
 private:
     std::string exeDir_;

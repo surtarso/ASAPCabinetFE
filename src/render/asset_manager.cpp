@@ -136,7 +136,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
         if (font) {
             titleRect = {settings.titleX, settings.titleY, 0, 0};
-            //titleTexture.reset(renderText(playfieldRenderer, font, table.title, settings.fontColor, titleRect));
             std::string title = table.title.empty() ? "Unknown Title" : table.title;
             titleTexture.reset(renderText(playfieldRenderer, font, title, settings.fontColor, titleRect));
         }
