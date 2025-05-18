@@ -3,6 +3,11 @@
 #include "utils/logging.h"
 #include <sstream>
 #include <filesystem>
+#include <algorithm>
+
+#ifdef __linux__
+#include <cstdlib>
+#endif
 
 namespace UIElementRenderer {
 
@@ -204,15 +209,86 @@ void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& 
     }
 }
 
-void renderTitleDropdown(const std::string& key, std::string& value, bool& hasChanges, const std::string& section) {
-    const char* options[] = {"filename", "metadata"};
-    int titleSource = (value == "metadata") ? 1 : 0; // Map value to index: filename=0, metadata=1
+static void openUrl(const std::string& url) {
+    #ifdef __linux__
+    std::string command = "xdg-open " + url;
+    if (system(command.c_str()) != 0) {
+        LOG_ERROR("UiElementRenderer: Failed to open URL: " << url);
+    }
+    #else
+    LOG_ERROR("UiElementRenderer: URL opening not implemented for this platform");
+    #endif
+}
 
-    ImGui::SetNextItemWidth(150); // Slightly wider for readability
+void renderTitleDropdown(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, IConfigService* configService) {
+    const char* options[] = {"filename", "metadata"};
+    int titleSource = (value == "metadata") ? 1 : 0;
+
+    ImGui::SetNextItemWidth(150);
     if (ImGui::Combo("##titleSource", &titleSource, options, IM_ARRAYSIZE(options))) {
-        value = options[titleSource]; // Set value to "filename" or "metadata"
+        std::string oldValue = value;
+        value = options[titleSource];
         hasChanges = true;
         LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        
+        if (value == "metadata" && oldValue != "metadata") {
+            LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
+            const auto& iniData = configService->getIniData();
+            auto vpxIt = iniData.find("VPX");
+            if (vpxIt != iniData.end()) {
+                LOG_DEBUG("UiElementRenderer: VPX section found");
+                auto pathIt = std::find_if(vpxIt->second.keyValues.begin(), vpxIt->second.keyValues.end(),
+                                           [](const auto& pair) { return pair.first == "VPXTablesPath"; });
+                if (pathIt != vpxIt->second.keyValues.end()) {
+                    LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
+                    if (!pathIt->second.empty()) {
+                        std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
+                        LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
+                        if (!std::filesystem::exists(jsonPath)) {
+                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
+                            ImGui::OpenPopup("Metadata Error");
+                        } else {
+                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                        }
+                    } else {
+                        LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
+                    }
+                } else {
+                    LOG_DEBUG("UiElementRenderer: VPXTablesPath not found in VPX section");
+                }
+            } else {
+                LOG_DEBUG("UiElementRenderer: VPX section not found in iniData");
+            }
+        }
+    }
+
+    if (ImGui::BeginPopupModal("Metadata Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        //LOG_DEBUG("UiElementRenderer: Rendering Metadata Error");
+        ImGui::Text("Error: 'vpxtool_index.json' not found in the configured tables path.");
+        ImGui::Text("Please ensure 'vpxtool' is installed and rescan the tables path.");
+
+        // Clickable GitHub link
+        const char* url = "https://github.com/francisdb/vpxtool/";
+        ImGui::TextColored(ImVec4(0.0f, 0.5f, 1.0f, 1.0f), "%s", url);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+            ImGui::SetTooltip("Open in browser");
+        }
+        if (ImGui::IsItemClicked()) {
+            LOG_DEBUG("UiElementRenderer: Opening URL: " << url);
+            openUrl(url);
+        }
+
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            LOG_DEBUG("UiElementRenderer: Closing Metadata Error");
+            value = "filename";
+            titleSource = 0; // Update dropdown to reflect filename
+            hasChanges = true;
+            LOG_DEBUG("UiElementRenderer: Reverted: " << section << "." << key << " = " << value);
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 }
 
