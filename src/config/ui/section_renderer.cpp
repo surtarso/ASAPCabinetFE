@@ -44,7 +44,7 @@ void SectionRenderer::initializeKeyRenderers() {
         renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
     };
     keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderTitleDropdown(key, value, hasChanges_, currentSection_);
+        renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);
     };
     keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);

@@ -87,7 +87,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                 // Fallback to filename-based titles
             }
         } else {
-            LOG_ERROR("TableLoader: vpxtool_index.json not found at " << jsonPath);
+            LOG_ERROR("TableLoader: Falling back to filenames, 'vpxtool_index.json' not found at " << jsonPath);
             // TODO: Trigger pop-up in ConfigUI
         }
     }
