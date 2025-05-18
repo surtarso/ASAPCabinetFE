@@ -7,7 +7,8 @@
 #include <functional>
 #include <vector>
 
-class IAssetManager; // Forward declaration
+// Forward declarations
+class IAssetManager; 
 class ISoundManager;
 class IConfigService;
 class ConfigUI;

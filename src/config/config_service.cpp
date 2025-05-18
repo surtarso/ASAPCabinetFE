@@ -82,21 +82,18 @@ void ConfigService::setDefaultSettings() {
     settings_.customBackglassVideo = "video/backglass.mp4";
     settings_.customDmdVideo = "video/dmd.mp4";
 
-    //settings_.playfieldWindowMonitor = 1;
     settings_.playfieldWindowWidth = 1080;
     settings_.playfieldWindowHeight = 1920;
     settings_.playfieldX = -1;
     settings_.playfieldY = -1;
 
     settings_.showBackglass = true;
-    //settings_.backglassWindowMonitor = 0;
     settings_.backglassWindowWidth = 1024;
     settings_.backglassWindowHeight = 768;
     settings_.backglassX = -1;
     settings_.backglassY = -1;
 
     settings_.showDMD = true;
-    //settings_.dmdWindowMonitor = 0;
     settings_.dmdWindowWidth = 1024;
     settings_.dmdWindowHeight = 256;
     settings_.dmdX = -1;
@@ -435,21 +432,18 @@ void ConfigService::parseIniFile() {
     settings_.enableDpiScaling = config["DPISettings"]["EnableDpiScaling"].empty() ? true : (config["DPISettings"]["EnableDpiScaling"] == "true");
     settings_.dpiScale = std::stof(config["DPISettings"]["DpiScale"].empty() ? "1.0" : config["DPISettings"]["DpiScale"]);
     
-    //settings_.playfieldWindowMonitor = std::stoi(config["WindowSettings"]["PlayfieldMonitor"].empty() ? "1" : config["WindowSettings"]["PlayfieldMonitor"]);
     settings_.playfieldWindowWidth = std::stoi(config["WindowSettings"]["PlayfieldWidth"].empty() ? "1080" : config["WindowSettings"]["PlayfieldWidth"]);
     settings_.playfieldWindowHeight = std::stoi(config["WindowSettings"]["PlayfieldHeight"].empty() ? "1920" : config["WindowSettings"]["PlayfieldHeight"]);
     settings_.playfieldX = std::stoi(config["WindowSettings"]["PlayfieldX"].empty() ? "-1" : config["WindowSettings"]["PlayfieldX"]);
     settings_.playfieldY = std::stoi(config["WindowSettings"]["PlayfieldY"].empty() ? "-1" : config["WindowSettings"]["PlayfieldY"]);
     
     settings_.showBackglass = config["WindowSettings"]["ShowBackglass"].empty() ? true : (config["WindowSettings"]["ShowBackglass"] == "true");
-    //settings_.backglassWindowMonitor = std::stoi(config["WindowSettings"]["BackglassMonitor"].empty() ? "0" : config["WindowSettings"]["BackglassMonitor"]);
     settings_.backglassWindowWidth = std::stoi(config["WindowSettings"]["BackglassWidth"].empty() ? "1024" : config["WindowSettings"]["BackglassWidth"]);
     settings_.backglassWindowHeight = std::stoi(config["WindowSettings"]["BackglassHeight"].empty() ? "768" : config["WindowSettings"]["BackglassHeight"]);
     settings_.backglassX = std::stoi(config["WindowSettings"]["BackglassX"].empty() ? "-1" : config["WindowSettings"]["BackglassX"]);
     settings_.backglassY = std::stoi(config["WindowSettings"]["BackglassY"].empty() ? "-1" : config["WindowSettings"]["BackglassY"]);
     
     settings_.showDMD = config["WindowSettings"]["ShowDMD"].empty() ? true : (config["WindowSettings"]["ShowDMD"] == "true");
-    //settings_.dmdWindowMonitor = std::stoi(config["WindowSettings"]["DMDMonitor"].empty() ? "0" : config["WindowSettings"]["DMDMonitor"]);
     settings_.dmdWindowWidth = std::stoi(config["WindowSettings"]["DMDWidth"].empty() ? "1024" : config["WindowSettings"]["DMDWidth"]);
     settings_.dmdWindowHeight = std::stoi(config["WindowSettings"]["DMDHeight"].empty() ? "256" : config["WindowSettings"]["DMDHeight"]);
     settings_.dmdX = std::stoi(config["WindowSettings"]["DMDX"].empty() ? "-1" : config["WindowSettings"]["DMDX"]);

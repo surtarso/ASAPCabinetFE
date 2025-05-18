@@ -35,14 +35,12 @@ struct Settings {
     std::string customDmdVideo;
 
     // Window settings
-    //int playfieldWindowMonitor;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
     int playfieldX;
     int playfieldY;
 
     bool showBackglass;
-    //int backglassWindowMonitor;
     int backglassWindowWidth;
     int backglassWindowHeight;
     int backglassX;
@@ -102,8 +100,6 @@ struct Settings {
     std::string launchScreenshotSound;
     std::string configToggleSound;
     std::string configSaveSound;
-    //std::string configCloseSound;
-    //std::string quitSound;
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
 

@@ -61,9 +61,6 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["PlayfieldRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
-    // keyRenderers_["BackglassMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-    //     renderMonitorCombo(key, value, hasChanges_, currentSection_);
-    // };
     keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
@@ -79,9 +76,6 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["BackglassRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
-    // keyRenderers_["DMDMonitor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-    //     renderMonitorCombo(key, value, hasChanges_, currentSection_);
-    // };
     keyRenderers_["DMDWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
