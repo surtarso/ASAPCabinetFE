@@ -108,7 +108,7 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
 
 void Renderer::renderBackglassWindow(IAssetManager& assets) {
     if (!backglassRenderer_) {
-        LOG_DEBUG("Renderer: Backglass renderer is null");
+        //LOG_DEBUG("Renderer: Backglass renderer is null");
         return;
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
@@ -150,7 +150,7 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
 
 void Renderer::renderDMDWindow(IAssetManager& assets) {
     if (!dmdRenderer_) {
-        LOG_DEBUG("Renderer: DMD renderer is null");
+        //LOG_DEBUG("Renderer: DMD renderer is null");
         return;
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
