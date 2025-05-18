@@ -71,6 +71,20 @@ private:
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
     std::vector<VideoContext*> oldVideoPlayers_;
+
+    // Caching for image textures
+    std::string currentPlayfieldImagePath_;
+    std::string currentWheelImagePath_;
+    std::string currentBackglassImagePath_;
+    std::string currentDmdImagePath_;
+
+    // Track video settings for reuse
+    int currentPlayfieldMediaWidth_ = 0;
+    int currentPlayfieldMediaHeight_ = 0;
+    int currentBackglassMediaWidth_ = 0;
+    int currentBackglassMediaHeight_ = 0;
+    int currentDmdMediaWidth_ = 0;
+    int currentDmdMediaHeight_ = 0;
 };
 
 #endif // ASSET_MANAGER_H
