@@ -10,7 +10,7 @@
 
 ## TL:DR
 ```sh
-sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
+sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotool imagemagick ffmpeg
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -21,6 +21,7 @@ make -j$(nproc)
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
+- Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata. _(optional)_
 - Navigate tables with titles and/or wheels.
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
@@ -49,7 +50,7 @@ make -j$(nproc)
 ### Installing Dependencies (Debian based)
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotools imagemagick ffmpeg
+sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotool imagemagick ffmpeg
 ```
 
 ### Compiling and Running
