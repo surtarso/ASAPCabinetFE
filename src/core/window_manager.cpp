@@ -81,7 +81,7 @@ void WindowManager::updateWindows(const Settings& settings) {
 
     // Update only the necessary windows
     if (updatePlayfield) {
-        LOG_DEBUG("WindowsManager: Updating Playfield window");
+        //LOG_DEBUG("WindowsManager: Updating Playfield window");
         createOrUpdateWindow(playfieldWindow_, playfieldRenderer_, "Playfield",
                              settings.playfieldWindowWidth,
                              settings.playfieldWindowHeight,
@@ -92,7 +92,7 @@ void WindowManager::updateWindows(const Settings& settings) {
     }
 
     if (updateBackglass) {
-        LOG_DEBUG("WindowsManager: Updating Backglass window");
+        //LOG_DEBUG("WindowsManager: Updating Backglass window");
         if (settings.showBackglass) {
             createOrUpdateWindow(backglassWindow_, backglassRenderer_, "Backglass",
                                  settings.backglassWindowWidth,
@@ -108,7 +108,7 @@ void WindowManager::updateWindows(const Settings& settings) {
     }
 
     if (updateDMD) {
-        LOG_DEBUG("WindowsManager: Updating DMD window");
+        //LOG_DEBUG("WindowsManager: Updating DMD window");
         if (settings.showDMD) {
             createOrUpdateWindow(dmdWindow_, dmdRenderer_, "DMD",
                                  settings.dmdWindowWidth,
