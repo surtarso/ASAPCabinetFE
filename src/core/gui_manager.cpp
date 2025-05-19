@@ -26,8 +26,11 @@ void GuiManager::initialize() {
     context_ = ImGui::CreateContext();
     ImGui::StyleColorsDark();
 
-    // Apply DPI scaling to ImGui
+    // Disable ini file loading and saving
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr; // Prevent loading/saving imgui.ini
+
+    // Apply DPI scaling to ImGui
     const Settings& settings = configService_->getSettings();
     if (settings.enableDpiScaling) {
         LOG_DEBUG("GuiManager: Applying DPI scale: " << settings.dpiScale);
