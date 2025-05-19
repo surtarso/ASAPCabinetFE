@@ -8,17 +8,17 @@
 #include "config/ui/section_renderer.h"
 #include "config/ui/button_handler.h"
 #include "config/ui/input_handler.h"
+#include "config/ui/config_state.h"
+#include "config/ui/event_handler.h"
+#include "core/iapp_callbacks.h" 
 #include <string>
 #include <vector>
-#include <map>
-
-class App;
 
 class ConfigUI {
 public:
     ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
              IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
-             App* app, bool& showConfig, bool standaloneMode = false);
+             IAppCallbacks* appCallbacks, bool& showConfig, bool standaloneMode = false);
     void drawGUI();
     void handleEvent(const SDL_Event& event);
     void saveConfig();
@@ -32,25 +32,21 @@ private:
     IAssetManager* assets_;
     size_t* currentIndex_;
     std::vector<TableData>* tables_;
-    App* app_;
+    IAppCallbacks* appCallbacks_;
     bool& showConfig_;
     bool standaloneMode_;
-    std::string currentSection_;
-    bool hasChanges_ = false;
-    float saveMessageTimer_ = 0.0f;
-    std::map<std::string, bool> showPicker_;
-    std::map<std::string, SettingsSection> lastSavedIniData_;
-
+    ConfigUIState state_;
     SectionRenderer sectionRenderer_;
     ButtonHandler buttonHandler_;
     InputHandler inputHandler_;
+    ConfigEventHandler eventHandler_;
 
-    static const std::vector<std::string> sectionOrder_;
     void discardChanges();
-    bool hasTitleDataSourceChanged() const;
-    bool hasWindowSettingsChanged() const;
-    bool hasVisibilitySettingsChanged() const;
-    bool hasFontSettingsChanged() const;
+    void renderSectionsPane();
+    void renderKeyValuesPane();
+    void renderButtonPane();
+    void updateSaveMessageTimer();
+    std::vector<std::string> getVisibleSections() const;
 };
 
 #endif // CONFIG_UI_H

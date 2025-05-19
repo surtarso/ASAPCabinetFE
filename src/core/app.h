@@ -19,16 +19,17 @@
 #include "sound/isound_manager.h"
 #include "core/gui_manager.h"
 #include "core/dependency_factory.h"
+#include "core/iapp_callbacks.h"
 
-class App {
+class App : public IAppCallbacks {  // Inherit from IAppCallbacks
 public:
     App(const std::string& configPath);
     ~App();
     void run();
-    void reloadFont(bool isStandalone = false);
-    void reloadWindows();
-    void reloadAssetsAndRenderers();
-    void reloadTablesAndTitle();
+    void reloadFont(bool isStandalone = false) override;         
+    void reloadWindows() override;                               
+    void reloadAssetsAndRenderers() override;                    
+    void reloadTablesAndTitle() override;                        
 
 private:
     std::string exeDir_;
