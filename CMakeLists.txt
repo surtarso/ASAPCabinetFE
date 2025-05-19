@@ -33,7 +33,7 @@ set(SOURCES
     src/config/settings_parser.cpp
     src/config/ui/button_handler.cpp
     src/config/ui/config_state.cpp
-    src/config/ui/config_ui.cpp
+    src/config/ui/config_gui.cpp
     src/config/ui/event_handler.cpp
     src/config/ui/input_handler.cpp
     src/config/ui/section_renderer.cpp

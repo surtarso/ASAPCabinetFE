@@ -1,4 +1,4 @@
-#include "config/ui/config_ui.h"
+#include "config/ui/config_gui.h"
 #include "utils/logging.h"
 #include "imgui.h"
 

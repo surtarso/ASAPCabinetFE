@@ -10,7 +10,7 @@
 #include "render/renderer.h"
 #include "keybinds/input_manager.h"
 #include "config/iconfig_service.h"
-#include "config/ui/config_ui.h"
+#include "config/ui/config_gui.h"
 #include "capture/iscreenshot_manager.h"
 #include "sound/isound_manager.h"
 
