@@ -27,10 +27,10 @@ public:
 
 private:
     IConfigService* configService_;
-    IKeybindProvider* keybindProvider_;
+    [[maybe_unused]] IKeybindProvider* keybindProvider_;
     IAssetManager* assets_;
-    size_t* currentIndex_;
-    std::vector<TableData>* tables_;
+    [[maybe_unused]] size_t* currentIndex_;
+    [[maybe_unused]] std::vector<TableData>* tables_;
     IAppCallbacks* appCallbacks_;
     bool& showConfig_;
     bool standaloneMode_;

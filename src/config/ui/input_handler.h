@@ -15,7 +15,7 @@ public:
     void startCapturing(const std::string& keyName);
 
 private:
-    IKeybindProvider* keybindProvider_;
+    [[maybe_unused]] IKeybindProvider* keybindProvider_;
     bool isCapturingKey_ = false;
     std::string capturingKeyName_;
     std::string capturedKeyName_;
