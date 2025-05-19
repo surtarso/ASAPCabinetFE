@@ -55,6 +55,7 @@ struct Settings {
     std::string puPFullDmdVideo;
 
     // Window settings
+    bool useVPinballXIni;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
     int playfieldX;

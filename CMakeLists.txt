@@ -44,6 +44,7 @@ set(SOURCES
     src/render/renderer.cpp
     src/render/video_player.cpp
     src/utils/logger.cpp
+    src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui.cpp
     ${CMAKE_SOURCE_DIR}/external/imgui/imgui_draw.cpp

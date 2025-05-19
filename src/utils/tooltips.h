@@ -113,6 +113,8 @@ namespace Tooltips {
                 "1.0 = 100%, 1.5 = 150%, etc."},
 
             // WindowSettings
+            {"UseVPinballXIni",
+                "Uses sizes and positions from ~/.vpinball/VPinballX.ini"},
             {"PlayfieldWidth",
                 "Width of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media width."},

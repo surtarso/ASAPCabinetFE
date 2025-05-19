@@ -46,6 +46,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);
     };
+    keyRenderers_["UseVPinballXIni"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
