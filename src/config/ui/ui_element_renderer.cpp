@@ -220,7 +220,7 @@ static void openUrl(const std::string& url) {
     #endif
 }
 
-void renderTitleDropdown(const std::string& key, std::string& value, bool& hasChanges, const std::string& section, IConfigService* configService) {
+void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section, IConfigService* configService) {
     const char* options[] = {"filename", "metadata"};
     int titleSource = (value == "metadata") ? 1 : 0;
 
