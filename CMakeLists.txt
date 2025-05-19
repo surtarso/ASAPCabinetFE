@@ -34,7 +34,6 @@ set(SOURCES
     src/config/ui/button_handler.cpp
     src/config/ui/config_state.cpp
     src/config/ui/config_gui.cpp
-    src/config/ui/event_handler.cpp
     src/config/ui/input_handler.cpp
     src/config/ui/section_renderer.cpp
     src/config/ui/ui_element_renderer.cpp
