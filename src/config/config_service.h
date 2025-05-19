@@ -6,6 +6,7 @@
 #include "config/config_file_handler.h"
 #include "config/settings_section.h"
 #include "config/settings_parser.h"
+#include "config/default_config_factory.h"
 #include "keybinds/keybind_manager.h"
 #include <map>
 #include <string>
@@ -31,6 +32,7 @@ private:
     std::vector<std::string> originalLines_;
     ConfigFileHandler fileHandler_;
     SettingsParser parser_;
+    DefaultConfigFactory defaultFactory_;
 
     void setDefaultSettings();
     void initializeIniData();

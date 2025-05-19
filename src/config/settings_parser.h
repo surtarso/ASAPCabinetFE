@@ -3,6 +3,8 @@
 
 #include "config/settings.h"
 #include "config/settings_section.h"
+#include "config/default_config_factory.h"
+#include "config/config_schema.h"
 #include "keybinds/keybind_manager.h"
 #include <map>
 #include <string>
@@ -14,8 +16,8 @@ public:
 
 private:
     std::string configPath_;
-
-    void setDefaultSettings(Settings& settings) const;
+    DefaultConfigFactory defaultFactory_;
+    ConfigSchema schema_;
 };
 
 #endif // SETTINGS_PARSER_H
