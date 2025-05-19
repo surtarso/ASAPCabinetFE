@@ -26,6 +26,8 @@ set(SOURCES
     src/capture/screenshot_capture.cpp
     src/capture/screenshot_manager.cpp
     src/capture/screenshot_window.cpp
+    src/config/default_config_factory.cpp
+    src/config/config_schema.cpp
     src/config/config_service.cpp
     src/config/config_file_handler.cpp
     src/config/settings_parser.cpp

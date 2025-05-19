@@ -24,6 +24,16 @@ struct Settings {
     std::string defaultPlayfieldVideo;
     std::string defaultBackglassVideo;
     std::string defaultDmdVideo;
+    std::string defaultPuPPlayfieldImage;
+    std::string defaultPuPBackglassImage;
+    std::string defaultPuPDmdImage;
+    std::string defaultPuPFullDmdImage;
+    std::string defaultPupTopperImage;
+    std::string defaultPuPPlayfieldVideo;
+    std::string defaultPuPBackglassVideo;
+    std::string defaultPuPDmdVideo;
+    std::string defaultPuPFullDmdVideo;
+    std::string defaultPuPTopperVideo;
 
     // Custom media paths
     std::string customPlayfieldImage;
@@ -33,6 +43,16 @@ struct Settings {
     std::string customPlayfieldVideo;
     std::string customBackglassVideo;
     std::string customDmdVideo;
+    std::string puPTopperImage;
+    std::string puPPlayfieldImage;
+    std::string puPBackglassImage;
+    std::string puPDmdImage;
+    std::string puPFullDmdImage;
+    std::string puPTopperVideo;
+    std::string puPPlayfieldVideo;
+    std::string puPBackglassVideo;
+    std::string puPDmdVideo;
+    std::string puPFullDmdVideo;
 
     // Window settings
     int playfieldWindowWidth;
@@ -47,7 +67,6 @@ struct Settings {
     int backglassY;
 
     bool showDMD;
-    //int dmdWindowMonitor;
     int dmdWindowWidth;
     int dmdWindowHeight;
     int dmdX;
