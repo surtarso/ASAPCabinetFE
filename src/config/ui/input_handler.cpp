@@ -3,7 +3,7 @@
 
 InputHandler::InputHandler(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider) {
-        LOG_DEBUG("InputHandler: Initialized with keybindProvider: " << keybindProvider_);
+        //LOG_DEBUG("InputHandler: Initialized with keybindProvider: " << keybindProvider_);
     }
 
 void InputHandler::startCapturing(const std::string& keyName) {

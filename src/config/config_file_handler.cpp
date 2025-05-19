@@ -48,7 +48,7 @@ std::map<std::string, SettingsSection> ConfigFileHandler::readConfig(std::vector
         lineIndex++;
     }
 
-    LOG_DEBUG("ConfigFileHandler: Successfully read config from " << configPath_);
+    //LOG_DEBUG("ConfigFileHandler: Successfully read config from " << configPath_);
     return iniData;
 }
 

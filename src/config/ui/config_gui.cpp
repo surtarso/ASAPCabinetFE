@@ -17,10 +17,10 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       sectionRenderer_(configService, state_.currentSection, inputHandler_),
       buttonHandler_(showConfig_, state_.saveMessageTimer, inputHandler_),
       inputHandler_(keybindProvider) {
-    LOG_DEBUG("ConfigUI: Initialized with keybindProvider: " << keybindProvider_);
-    LOG_DEBUG("ConfigUI: Assets: " << assets_);
-    LOG_DEBUG("ConfigUI: Current index: " << (currentIndex_ ? *currentIndex_ : 0));
-    LOG_DEBUG("ConfigUI: Tables size: " << (tables_ ? tables_->size() : 0));
+    // LOG_DEBUG("ConfigUI: Initialized with keybindProvider: " << keybindProvider_);
+    // LOG_DEBUG("ConfigUI: Assets: " << assets_);
+    // LOG_DEBUG("ConfigUI: Current index: " << (currentIndex_ ? *currentIndex_ : 0));
+    // LOG_DEBUG("ConfigUI: Tables size: " << (tables_ ? tables_->size() : 0));
 
     // Set up event handlers
     buttonHandler_.setOnSave([this]() { saveConfig(); });

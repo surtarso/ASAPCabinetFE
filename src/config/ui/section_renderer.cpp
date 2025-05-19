@@ -118,7 +118,7 @@ void SectionRenderer::initializeFontList() {
             }
         }
         std::sort(availableFonts_.begin(), availableFonts_.end());
-        LOG_DEBUG("SectionRenderer: Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
+        //LOG_DEBUG("SectionRenderer: Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
     } else {
         LOG_ERROR("SectionRenderer: Font directory " << fontDir << " not found! Font selection will be limited.");
     }

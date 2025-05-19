@@ -14,7 +14,6 @@
 #define LOG_DEBUG(x) do { } while (0)
 #endif
 
-// Optional: Add convenience macros for info and error
 #define LOG_INFO(x) do { \
     std::stringstream ss; \
     ss << x; \

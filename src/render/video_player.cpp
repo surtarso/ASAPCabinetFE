@@ -105,8 +105,8 @@ VideoContext* setupVideoPlayer(SDL_Renderer* renderer, const std::string& path, 
         return nullptr;
     }
 
-    LOG_DEBUG("VideoPlayer: Setup-> player=" << ctx->player << ", texture=" << ctx->texture
-              << ", pixels=" << ctx->pixels << ", mutex=" << ctx->mutex);
+    // LOG_DEBUG("VideoPlayer: Setup-> player=" << ctx->player << ", texture=" << ctx->texture
+    //           << ", pixels=" << ctx->pixels << ", mutex=" << ctx->mutex);
     return ctx;
 }
 

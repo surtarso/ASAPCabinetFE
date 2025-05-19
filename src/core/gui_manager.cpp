@@ -33,7 +33,7 @@ void GuiManager::initialize() {
     // Apply DPI scaling to ImGui
     const Settings& settings = configService_->getSettings();
     if (settings.enableDpiScaling) {
-        LOG_DEBUG("GuiManager: Applying DPI scale: " << settings.dpiScale);
+        //LOG_DEBUG("GuiManager: Applying DPI scale: " << settings.dpiScale);
         io.FontGlobalScale = settings.dpiScale;
         // Scale all ImGui style sizes
         ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
