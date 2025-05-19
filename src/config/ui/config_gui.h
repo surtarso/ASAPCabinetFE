@@ -9,7 +9,6 @@
 #include "config/ui/button_handler.h"
 #include "config/ui/input_handler.h"
 #include "config/ui/config_state.h"
-#include "config/ui/event_handler.h"
 #include "core/iapp_callbacks.h" 
 #include <string>
 #include <vector>
@@ -39,7 +38,6 @@ private:
     SectionRenderer sectionRenderer_;
     ButtonHandler buttonHandler_;
     InputHandler inputHandler_;
-    ConfigEventHandler eventHandler_;
 
     void discardChanges();
     void renderSectionsPane();
