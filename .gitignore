@@ -5,18 +5,7 @@ settings.json
 .vscode/*
 .vscode/settings.json
 *.vscode
-main.txt
-videoASAPCabinetFE
-videocompile.sh
-videomain.cpp
 imgui.ini
-screenshot_daemon
-screenshot_daemon.sh
-video_daemon.sh
-compile.sh
-screenshot_daemon.cpp
-logs/
-.codebuddy
 create_codebase.sh
 codebase.txt
 
