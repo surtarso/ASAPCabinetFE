@@ -5,6 +5,7 @@
 #include "config/settings.h"
 #include "config/config_file_handler.h"
 #include "config/settings_section.h"
+#include "config/settings_parser.h"
 #include "keybinds/keybind_manager.h"
 #include <map>
 #include <string>
@@ -29,8 +30,8 @@ private:
     std::map<std::string, SettingsSection> iniData_;
     std::vector<std::string> originalLines_;
     ConfigFileHandler fileHandler_;
+    SettingsParser parser_;
 
-    void parseSettings();
     void setDefaultSettings();
     void initializeIniData();
 };

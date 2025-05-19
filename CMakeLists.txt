@@ -28,6 +28,7 @@ set(SOURCES
     src/capture/screenshot_window.cpp
     src/config/config_service.cpp
     src/config/config_file_handler.cpp
+    src/config/settings_parser.cpp
     src/config/ui/button_handler.cpp
     src/config/ui/config_ui.cpp
     src/config/ui/input_handler.cpp
