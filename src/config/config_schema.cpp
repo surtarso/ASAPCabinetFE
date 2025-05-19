@@ -136,6 +136,9 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultString(s, val, "puPFullDmdVideo"); }},
 
         // Window settings
+        {"useVPinballXIni", "WindowSettings", "UseVPinballXIni", true, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "useVPinballXIni"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "useVPinballXIni"); }},      
         {"playfieldWindowWidth", "WindowSettings", "PlayfieldWidth", 1080, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "playfieldWindowWidth"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "playfieldWindowWidth"); }},
@@ -438,6 +441,7 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "showDMD") s.showDMD = v;
     else if (field == "showWheel") s.showWheel = v;
     else if (field == "showTitle") s.showTitle = v;
+    else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else LOG_ERROR("ConfigSchema: Unknown bool field: " << field);
 }
 
