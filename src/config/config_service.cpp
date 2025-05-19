@@ -1,12 +1,10 @@
-#include "config/config_service.h"
+#include "config_service.h"
 #include "utils/logging.h"
-#include <fstream>
 #include <sstream>
-#include <filesystem>
 #include <algorithm>
 
 ConfigService::ConfigService(const std::string& configPath) 
-    : configPath_(configPath), keybindManager_() {
+    : configPath_(configPath), keybindManager_(), fileHandler_(configPath) {
     loadConfig();
 }
 
@@ -16,20 +14,27 @@ bool ConfigService::isConfigValid() const {
 }
 
 void ConfigService::loadConfig() {
-    parseIniFile();
+    iniData_ = fileHandler_.readConfig(originalLines_);
+    if (iniData_.empty()) {
+        LOG_INFO("ConfigService: Could not open " << configPath_ << ". Using defaults and creating config.ini.");
+        setDefaultSettings();
+        initializeIniData();
+        fileHandler_.writeConfig(iniData_);
+    }
+    parseSettings();
     LOG_INFO("ConfigService: Config loaded from " << configPath_);
 }
 
 void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& iniData) {
-    writeIniFile(iniData);
+    fileHandler_.writeConfig(iniData);
     iniData_ = iniData;
-    parseIniFile();
+    parseSettings();
     LOG_DEBUG("ConfigService: Config saved to " << configPath_);
 }
 
 void ConfigService::setIniData(const std::map<std::string, SettingsSection>& iniData) {
     iniData_ = iniData;
-    parseIniFile();
+    parseSettings();
 }
 
 void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) {
@@ -65,7 +70,6 @@ void ConfigService::setDefaultSettings() {
     settings_.vpxStartArgs = "";
     settings_.vpxEndArgs = "";
 
-    // Use relative paths, exeDir will be prepended at runtime
     settings_.defaultPlayfieldImage = "img/default_table.png";
     settings_.defaultBackglassImage = "img/default_backglass.png";
     settings_.defaultDmdImage = "img/default_dmd.png";
@@ -154,7 +158,6 @@ void ConfigService::setDefaultSettings() {
 void ConfigService::initializeIniData() {
     iniData_.clear();
 
-    // VPX
     auto& vpx = iniData_["VPX"];
     vpx.keyValues = {
         {"VPXTablesPath", "/home/$USER/VPX_Tables/"},
@@ -166,7 +169,6 @@ void ConfigService::initializeIniData() {
         vpx.keyToLineIndex[vpx.keyValues[i].first] = i;
     }
 
-    // Internal
     auto& internal = iniData_["Internal"];
     internal.keyValues = {
         {"SubCmd", "-Play"},
@@ -176,7 +178,6 @@ void ConfigService::initializeIniData() {
         internal.keyToLineIndex[internal.keyValues[i].first] = i;
     }
 
-    // DefaultMedia
     auto& defaultMedia = iniData_["DefaultMedia"];
     defaultMedia.keyValues = {
         {"DefaultPlayfieldImage", "img/default_table.png"},
@@ -201,7 +202,6 @@ void ConfigService::initializeIniData() {
         defaultMedia.keyToLineIndex[defaultMedia.keyValues[i].first] = i;
     }
 
-    // CustomMedia
     auto& customMedia = iniData_["CustomMedia"];
     customMedia.keyValues = {
         {"WheelImage", "images/wheel.png"},
@@ -226,7 +226,6 @@ void ConfigService::initializeIniData() {
         customMedia.keyToLineIndex[customMedia.keyValues[i].first] = i;
     }
 
-    // DPISettings
     auto& dpiSettings = iniData_["DPISettings"];
     dpiSettings.keyValues = {
         {"EnableDpiScaling", "true"},
@@ -236,7 +235,6 @@ void ConfigService::initializeIniData() {
         dpiSettings.keyToLineIndex[dpiSettings.keyValues[i].first] = i;
     }
 
-    // WindowSettings
     auto& windowSettings = iniData_["WindowSettings"];
     windowSettings.keyValues = {
         {"PlayfieldMonitor", "1"},
@@ -261,7 +259,6 @@ void ConfigService::initializeIniData() {
         windowSettings.keyToLineIndex[windowSettings.keyValues[i].first] = i;
     }
 
-    // MediaDimensions
     auto& mediaDimensions = iniData_["MediaDimensions"];
     mediaDimensions.keyValues = {
         {"WheelMediaHeight", "350"},
@@ -288,7 +285,6 @@ void ConfigService::initializeIniData() {
         mediaDimensions.keyToLineIndex[mediaDimensions.keyValues[i].first] = i;
     }
 
-    // TitleDisplay
     auto& titleDisplay = iniData_["TitleDisplay"];
     titleDisplay.keyValues = {
         {"TitleSource", "filename"},
@@ -305,7 +301,6 @@ void ConfigService::initializeIniData() {
         titleDisplay.keyToLineIndex[titleDisplay.keyValues[i].first] = i;
     }
 
-    // Keybinds
     auto& keybinds = iniData_["Keybinds"];
     keybinds.keyValues = {
         {"PreviousTable", "Left Shift"},
@@ -328,7 +323,6 @@ void ConfigService::initializeIniData() {
         keybinds.keyToLineIndex[keybinds.keyValues[i].first] = i;
     }
 
-    // UISounds
     auto& uiSounds = iniData_["UISounds"];
     uiSounds.keyValues = {
         {"ScrollPrevSound", "snd/scroll_prev.mp3"},
@@ -350,60 +344,19 @@ void ConfigService::initializeIniData() {
     }
 }
 
-void ConfigService::parseIniFile() {
-    std::ifstream file(configPath_);
-    if (!file.is_open()) {
-        LOG_INFO("ConfigService: Could not open " << configPath_ << ". Using defaults and creating config.ini.");
-        setDefaultSettings();
-        initializeIniData();
-        writeIniFile(iniData_);
-        return;
-    }
-
-    originalLines_.clear();
-    std::string line;
-    while (std::getline(file, line)) {
-        originalLines_.push_back(line);
-    }
-    file.close();
-
+void ConfigService::parseSettings() {
     std::map<std::string, std::map<std::string, std::string>> config;
-    std::string currentSection;
-    size_t lineIndex = 0;
-    iniData_.clear();
-    for (const auto& line : originalLines_) {
-        size_t start = line.find_first_not_of(" \t");
-        if (start == std::string::npos || line[start] == ';') {
-            lineIndex++;
-            continue;
+    for (const auto& [section, configSection] : iniData_) {
+        for (const auto& kv : configSection.keyValues) {
+            config[section][kv.first] = kv.second;
         }
-        std::string trimmed = line.substr(start);
-        if (trimmed[0] == '[' && trimmed.back() == ']') {
-            currentSection = trimmed.substr(1, trimmed.size() - 2);
-            iniData_[currentSection] = SettingsSection();
-        } else if (!currentSection.empty()) {
-            size_t eq = trimmed.find('=');
-            if (eq != std::string::npos) {
-                std::string key = trimmed.substr(0, eq);
-                std::string value = trimmed.substr(eq + 1);
-                key.erase(key.find_last_not_of(" \t") + 1);
-                value.erase(0, value.find_first_not_of(" \t"));
-                if (key == "JumpNextLetter" && value == "Slash") value = "/";
-                config[currentSection][key] = value;
-                iniData_[currentSection].keyValues.emplace_back(key, value);
-                iniData_[currentSection].keyToLineIndex[key] = lineIndex;
-            }
-        }
-        lineIndex++;
     }
 
     setDefaultSettings();
     std::string exeDir = configPath_.substr(0, configPath_.find_last_of('/') + 1);
     auto resolvePath = [&](const std::string& value, const std::string& defaultPath) {
         if (value.empty()) return exeDir + defaultPath;
-        // If path is absolute (starts with '/' or '\'), use as-is
         if (value.find('/') == 0 || value.find('\\') == 0) return value;
-        // Otherwise, prepend exeDir for relative paths
         return exeDir + value;
     };
 
@@ -503,33 +456,4 @@ void ConfigService::parseIniFile() {
     
     keybindManager_.loadKeybinds(config["Keybinds"]);
     settings_.logFile = config["Internal"]["LogFile"].empty() ? "logs/debug.log" : config["Internal"]["LogFile"];
-}
-
-void ConfigService::writeIniFile(const std::map<std::string, SettingsSection>& iniData) {
-    std::filesystem::path configDir = std::filesystem::path(configPath_).parent_path();
-    if (!configDir.empty() && !std::filesystem::exists(configDir)) {
-        try {
-            std::filesystem::create_directories(configDir);
-            LOG_DEBUG("ConfigService: Created directory " << configDir);
-        } catch (const std::exception& e) {
-            LOG_ERROR("ConfigService: Failed to create directory " << configDir << ": " << e.what());
-            return;
-        }
-    }
-
-    std::ofstream file(configPath_);
-    if (!file.is_open()) {
-        LOG_ERROR("ConfigService: Could not write " << configPath_ << ": Permission denied or invalid path");
-        return;
-    }
-
-    for (const auto& [section, configSection] : iniData) {
-        file << "[" << section << "]\n";
-        for (const auto& kv : configSection.keyValues) {
-            file << kv.first << "=" << kv.second << "\n";
-        }
-        file << "\n";
-    }
-    file.close();
-    LOG_DEBUG("ConfigService: Successfully wrote config to " << configPath_);
 }

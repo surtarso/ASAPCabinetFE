@@ -3,18 +3,12 @@
 
 #include "config/iconfig_service.h"
 #include "config/settings.h"
+#include "config/config_file_handler.h"
+#include "config/settings_section.h"
 #include "keybinds/keybind_manager.h"
-#include <string>
 #include <map>
-#include <unordered_map>
+#include <string>
 #include <vector>
-#include <filesystem>
-#include <variant>
-
-struct SettingsSection {
-    std::vector<std::pair<std::string, std::string>> keyValues;
-    std::unordered_map<std::string, size_t> keyToLineIndex;
-};
 
 class ConfigService : public IConfigService {
 public:
@@ -34,9 +28,9 @@ private:
     KeybindManager keybindManager_;
     std::map<std::string, SettingsSection> iniData_;
     std::vector<std::string> originalLines_;
+    ConfigFileHandler fileHandler_;
 
-    void parseIniFile();
-    void writeIniFile(const std::map<std::string, SettingsSection>& iniData);
+    void parseSettings();
     void setDefaultSettings();
     void initializeIniData();
 };
