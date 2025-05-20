@@ -119,6 +119,7 @@ void ConfigUI::saveConfig() {
     bool fontSettingsChanged = state_.hasFontSettingsChanged(oldIniData);
     bool titleDataSourceChanged = state_.hasTitleDataSourceChanged(oldIniData);
     bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
+    bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
 
     // Update lastSavedIniData after checking changes
     state_.lastSavedIniData = currentIniData;
@@ -142,7 +143,7 @@ void ConfigUI::saveConfig() {
             LOG_DEBUG("ConfigUI: ShowDMD, ShowBackglass, or videoBackend changed, triggering asset reload");
             appCallbacks_->reloadAssetsAndRenderers();
         }
-        if (titleDataSourceChanged) {
+        if (titleDataSourceChanged || forceImagesOnlyChanged) {
             LOG_DEBUG("ConfigUI: Title data-source changed, triggering table reload");
             appCallbacks_->reloadTablesAndTitle();
         }

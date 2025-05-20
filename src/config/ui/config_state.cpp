@@ -213,3 +213,33 @@ bool ConfigUIState::hasVideoBackendChanged(const std::map<std::string, SettingsS
     LOG_DEBUG("ConfigUIState: No VideoBackend changes");
     return false;
 }
+
+bool ConfigUIState::hasForceImagesOnlyChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+    auto currentIt = currentIniData.find("MediaSettings");
+    auto lastIt = lastSavedIniData.find("MediaSettings");
+
+    if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
+        LOG_DEBUG("ConfigUIState: Internal section missing in current or last state");
+        return true;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    const std::string key = "ForceImagesOnly";
+    auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                      [key](const auto& pair) { return pair.first == key; });
+    auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                   [key](const auto& pair) { return pair.first == key; });
+
+    if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUIState: ForceImagesOnly key missing in current or last state");
+        return true;
+    }
+    if (currentPairIt->second != lastPairIt->second) {
+        LOG_DEBUG("ConfigUIState: ForceImagesOnly changed from " << lastPairIt->second << " to " << currentPairIt->second);
+        return true;
+    }
+    LOG_DEBUG("ConfigUIState: No ForceImagesOnly changes");
+    return false;
+}
+

@@ -21,9 +21,15 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
             table.wheelImage = getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
             table.backglassImage = getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
             table.dmdImage = getImagePath(table.folder, settings.customDmdImage, settings.defaultDmdImage);
-            table.playfieldVideo = getVideoPath(table.folder, settings.customPlayfieldVideo, settings.defaultPlayfieldVideo);
-            table.backglassVideo = getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
-            table.dmdVideo = getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
+            if (settings.forceImagesOnly){
+                table.playfieldVideo = "";
+                table.backglassVideo = "";
+                table.dmdVideo = "";
+            } else {
+                table.playfieldVideo = getVideoPath(table.folder, settings.customPlayfieldVideo, settings.defaultPlayfieldVideo);
+                table.backglassVideo = getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
+                table.dmdVideo = getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
+            }
             tables.push_back(table);
         }
     }

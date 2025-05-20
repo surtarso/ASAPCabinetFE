@@ -183,6 +183,10 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdY"); }},
 
         // Media sizes/positions
+        
+        {"forceImagesOnly", "MediaDimensions", "ForceImagesOnly", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "forceImagesOnly"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "forceImagesOnly"); }},
         {"wheelMediaHeight", "MediaDimensions", "WheelMediaHeight", 350, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "wheelMediaHeight"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "wheelMediaHeight"); }},
@@ -446,6 +450,7 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "showWheel") s.showWheel = v;
     else if (field == "showTitle") s.showTitle = v;
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
+    else if (field == "forceImagesOnly") s.forceImagesOnly = v;
     else LOG_ERROR("ConfigSchema: Unknown bool field: " << field);
 }
 
