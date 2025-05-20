@@ -6,7 +6,6 @@ FIX:
 - config save sound not playing on button click (but playing on double click save)
 
 QOL:
-- add toggle to force images only
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
