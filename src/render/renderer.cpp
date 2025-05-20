@@ -1,5 +1,5 @@
 #include "render/renderer.h"
-#include "render/video_player.h"
+#include "render/ivideo_player.h"
 #include "utils/logging.h"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
@@ -38,18 +38,16 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
     SDL_Rect wheelRect = {settings.wheelMediaX, settings.wheelMediaY, settings.wheelMediaWidth, settings.wheelMediaHeight};
     SDL_Rect titleRect = assets.getTitleRect();
 
-    // Render Playfield texture/video
     if (auto* videoPlayer = assets.getPlayfieldVideoPlayer()) {
-        if (videoPlayer->texture) {
-            updateVideoTexture(videoPlayer);
+        if (videoPlayer->getTexture()) {
+            videoPlayer->update();
             SDL_RenderCopyEx(playfieldRenderer_,
-                             videoPlayer->texture,
+                             videoPlayer->getTexture(),
                              nullptr,
                              &playfieldRect,
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            //LOG_DEBUG("Renderer: Rendered playfield video");
         } else {
             LOG_DEBUG("Renderer: Playfield video player has no texture");
         }
@@ -61,12 +59,10 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                          settings.playfieldRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        //LOG_DEBUG("Renderer: Rendered playfield texture");
     } else {
         LOG_DEBUG("Renderer: No playfield video or texture available");
     }
     
-    // Render wheel if enabled
     if (settings.showWheel) {
         if (auto* texture = assets.getWheelTexture()) {
             SDL_RenderCopyEx(playfieldRenderer_,
@@ -76,13 +72,11 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            //LOG_DEBUG("Renderer: Rendered wheel texture");
         } else {
             LOG_DEBUG("Renderer: No wheel texture available");
         }
     }
 
-    // Render title if enabled
     if (settings.showTitle) {
         if (auto* texture = assets.getTitleTexture()) {
             SDL_SetRenderDrawColor(playfieldRenderer_,
@@ -99,7 +93,6 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
                              settings.playfieldRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            //LOG_DEBUG("Renderer: Rendered title texture at x=" << titleRect.x << ", y=" << titleRect.y);
         } else {
             LOG_DEBUG("Renderer: No title texture available");
         }
@@ -108,12 +101,10 @@ void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
 
 void Renderer::renderBackglassWindow(IAssetManager& assets) {
     if (!backglassRenderer_) {
-        //LOG_DEBUG("Renderer: Backglass renderer is null");
         return;
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
     if (!settings.showBackglass) {
-        //LOG_DEBUG("Renderer: Backglass rendering skipped (showBackglass=false)");
         return;
     }
     int windowWidth, windowHeight;
@@ -121,16 +112,15 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
 
     SDL_Rect backglassRect = {settings.backglassMediaX, settings.backglassMediaY, settings.backglassMediaWidth, settings.backglassMediaHeight};
     if (auto* videoPlayer = assets.getBackglassVideoPlayer()) {
-        if (videoPlayer->texture) {
-            updateVideoTexture(videoPlayer);
+        if (videoPlayer->getTexture()) {
+            videoPlayer->update();
             SDL_RenderCopyEx(backglassRenderer_,
-                             videoPlayer->texture,
+                             videoPlayer->getTexture(),
                              nullptr,
                              &backglassRect,
                              settings.backglassRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            //LOG_DEBUG("Renderer: Rendered backglass video");
         } else {
             LOG_DEBUG("Renderer: Backglass video player has no texture");
         }
@@ -142,7 +132,6 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
                          settings.backglassRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        //LOG_DEBUG("Renderer: Rendered backglass texture");
     } else {
         LOG_DEBUG("Renderer: No backglass video or texture available");
     }
@@ -150,12 +139,10 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
 
 void Renderer::renderDMDWindow(IAssetManager& assets) {
     if (!dmdRenderer_) {
-        //LOG_DEBUG("Renderer: DMD renderer is null");
         return;
     }
     const Settings& settings = assets.getSettingsManager()->getSettings();
     if (!settings.showDMD) {
-        //LOG_DEBUG("Renderer: DMD rendering skipped (showDMD=false)");
         return;
     }
     int windowWidth, windowHeight;
@@ -163,16 +150,15 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
 
     SDL_Rect dmdRect = {settings.dmdMediaX, settings.dmdMediaY, settings.dmdMediaWidth, settings.dmdMediaHeight};
     if (auto* videoPlayer = assets.getDmdVideoPlayer()) {
-        if (videoPlayer->texture) {
-            updateVideoTexture(videoPlayer);
+        if (videoPlayer->getTexture()) {
+            videoPlayer->update();
             SDL_RenderCopyEx(dmdRenderer_,
-                             videoPlayer->texture,
+                             videoPlayer->getTexture(),
                              nullptr,
                              &dmdRect,
                              settings.dmdRotation,
                              nullptr,
                              SDL_FLIP_NONE);
-            //LOG_DEBUG("Renderer: Rendered DMD video");
         } else {
             LOG_DEBUG("Renderer: DMD video player has no texture");
         }
@@ -184,7 +170,6 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
                          settings.dmdRotation,
                          nullptr,
                          SDL_FLIP_NONE);
-        //LOG_DEBUG("Renderer: Rendered DMD texture");
     } else {
         LOG_DEBUG("Renderer: No DMD video or texture available");
     }

@@ -42,7 +42,8 @@ set(SOURCES
     src/render/asset_manager.cpp
     src/render/table_loader.cpp
     src/render/renderer.cpp
-    src/render/video_player.cpp
+    src/render/vlc_player.cpp
+    src/render/video_player_factory.cpp
     src/utils/logger.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources

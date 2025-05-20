@@ -311,10 +311,13 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseString(s, val, "screenshotQuitSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "screenshotQuitSound"); }},
 
-        // Logging
+        // Internal
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }}
+         [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
+        {"videoBackend", "Internal", "VideoBackend", std::string("vlc"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }}
     };
 }
 
@@ -374,6 +377,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "screenshotTakeSound") s.screenshotTakeSound = val;
     else if (field == "screenshotQuitSound") s.screenshotQuitSound = val;
     else if (field == "logFile") s.logFile = val;
+    else if (field == "videoBackend") s.videoBackend = val;
     else LOG_ERROR("ConfigSchema: Unknown string field: " << field);
 }
 
