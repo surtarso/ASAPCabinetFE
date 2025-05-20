@@ -9,8 +9,7 @@
 #include "config/iconfig_service.h"
 #include "render/table_loader.h"
 #include "core/iwindow_manager.h"
-
-struct VideoContext;
+#include "render/ivideo_player.h"
 
 class IAssetManager {
 public:
@@ -24,9 +23,9 @@ public:
     virtual SDL_Texture* getTitleTexture() = 0;
     
     // Video player accessors
-    virtual VideoContext* getPlayfieldVideoPlayer() = 0;
-    virtual VideoContext* getBackglassVideoPlayer() = 0;
-    virtual VideoContext* getDmdVideoPlayer() = 0;
+    virtual IVideoPlayer* getPlayfieldVideoPlayer() = 0;
+    virtual IVideoPlayer* getBackglassVideoPlayer() = 0;
+    virtual IVideoPlayer* getDmdVideoPlayer() = 0;
     
     // Settings and positioning
     virtual IConfigService* getSettingsManager() = 0;

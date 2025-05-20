@@ -3,7 +3,7 @@
 
 #include "render/itable_loader.h"
 #include "render/table_data.h"
-#include "render/video_player.h"
+#include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -22,9 +22,9 @@ public:
     SDL_Texture* getBackglassTexture() override { return backglassTexture.get(); }
     SDL_Texture* getDmdTexture() override { return dmdTexture.get(); }
     SDL_Texture* getTitleTexture() override { return titleTexture.get(); }
-    VideoContext* getPlayfieldVideoPlayer() override { return playfieldVideoPlayer; }
-    VideoContext* getBackglassVideoPlayer() override { return backglassVideoPlayer; }
-    VideoContext* getDmdVideoPlayer() override { return dmdVideoPlayer; }
+    IVideoPlayer* getPlayfieldVideoPlayer() override { return playfieldVideoPlayer.get(); }
+    IVideoPlayer* getBackglassVideoPlayer() override { return backglassVideoPlayer.get(); }
+    IVideoPlayer* getDmdVideoPlayer() override { return dmdVideoPlayer.get(); }
     IConfigService* getSettingsManager() override { return configManager_; }
     SDL_Rect getTitleRect() override { return titleRect; }
     void setTitlePosition(int x, int y) override;
@@ -37,7 +37,7 @@ public:
     void cleanupVideoPlayers() override;
 
     // Non-interface methods
-    void addOldVideoPlayer(VideoContext* player);
+    void addOldVideoPlayer(IVideoPlayer* player);
     void clearVideoCache();
     SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
     SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
@@ -56,9 +56,9 @@ public:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> titleTexture;
     
     SDL_Rect titleRect;
-    VideoContext* playfieldVideoPlayer;
-    VideoContext* backglassVideoPlayer;
-    VideoContext* dmdVideoPlayer;
+    std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
+    std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
+    std::unique_ptr<IVideoPlayer> dmdVideoPlayer;
 
 private:
     SDL_Renderer* playfieldRenderer;
@@ -70,7 +70,7 @@ private:
     TTF_Font* font;
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
-    std::vector<VideoContext*> oldVideoPlayers_;
+    std::vector<IVideoPlayer*> oldVideoPlayers_;
 
     // Caching for image textures
     std::string currentPlayfieldImagePath_;

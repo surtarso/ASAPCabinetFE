@@ -8,7 +8,6 @@ struct Settings {
     // VPX settings
     std::string VPXTablesPath;
     std::string VPinballXPath;
-    std::string vpxSubCmd;
     std::string vpxStartArgs;
     std::string vpxEndArgs;
 
@@ -123,7 +122,10 @@ struct Settings {
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
 
+    // internal
+    std::string vpxSubCmd;
     std::string logFile;
+    std::string videoBackend;
 };
 
 #endif // SETTINGS_H
