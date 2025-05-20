@@ -184,3 +184,32 @@ bool ConfigUIState::hasTitleDataSourceChanged(const std::map<std::string, Settin
     LOG_DEBUG("ConfigUIState: No TitleSource changes");
     return false;
 }
+
+bool ConfigUIState::hasVideoBackendChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+    auto currentIt = currentIniData.find("Internal");
+    auto lastIt = lastSavedIniData.find("Internal");
+
+    if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
+        LOG_DEBUG("ConfigUIState: Internal section missing in current or last state");
+        return true;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    const std::string key = "VideoBackend";
+    auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                      [key](const auto& pair) { return pair.first == key; });
+    auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                   [key](const auto& pair) { return pair.first == key; });
+
+    if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUIState: VideoBackend key missing in current or last state");
+        return true;
+    }
+    if (currentPairIt->second != lastPairIt->second) {
+        LOG_DEBUG("ConfigUIState: VideoBackend changed from " << lastPairIt->second << " to " << currentPairIt->second);
+        return true;
+    }
+    LOG_DEBUG("ConfigUIState: No VideoBackend changes");
+    return false;
+}

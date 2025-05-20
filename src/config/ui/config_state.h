@@ -21,6 +21,7 @@ public:
     bool hasVisibilitySettingsChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
     bool hasFontSettingsChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
     bool hasTitleDataSourceChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
+    bool hasVideoBackendChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
 
 private:
     static const std::vector<std::string> sectionOrder_;

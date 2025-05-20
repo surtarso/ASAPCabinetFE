@@ -220,6 +220,19 @@ static void openUrl(const std::string& url) {
     #endif
 }
 
+void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
+    const char* options[] = {"vlc", "opengl"};
+    int videoBackend = (value == "opengl") ? 1 : 0;
+
+    ImGui::SetNextItemWidth(150);
+    if (ImGui::Combo("##videoBackend", &videoBackend, options, IM_ARRAYSIZE(options))) {
+        std::string oldValue = value;
+        value = options[videoBackend];
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+    }
+}
+
 void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section, IConfigService* configService) {
     const char* options[] = {"filename", "metadata"};
     int titleSource = (value == "metadata") ? 1 : 0;
