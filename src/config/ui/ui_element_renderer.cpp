@@ -274,14 +274,24 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
             }
         }
     }
+    
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-    if (ImGui::BeginPopupModal("Metadata Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        //LOG_DEBUG("UiElementRenderer: Rendering Metadata Error");
-        ImGui::Text("Error: 'vpxtool_index.json' not found in the configured tables path.");
-        ImGui::Text("Please ensure 'vpxtool' is installed and rescan the tables path.");
+    if (ImGui::BeginPopupModal("Metadata Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
-        // Clickable GitHub link
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+        ImGui::TextWrapped("Error: 'vpxtool_index.json' not found in the configured tables path.");
+        ImGui::PopStyleColor();
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("Please ensure 'vpxtool' is installed and rescan the tables path.");
+
+        ImGui::Spacing();
+
         const char* url = "https://github.com/francisdb/vpxtool/";
+        ImGui::Indent();
         ImGui::TextColored(ImVec4(0.0f, 0.5f, 1.0f, 1.0f), "%s", url);
         if (ImGui::IsItemHovered()) {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -291,16 +301,27 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
             LOG_DEBUG("UiElementRenderer: Opening URL: " << url);
             openUrl(url);
         }
+        ImGui::Unindent();
 
+        ImGui::Spacing();
         ImGui::Separator();
-        if (ImGui::Button("OK", ImVec2(120, 0))) {
+        ImGui::Spacing();
+
+        float buttonWidth = 120.0f;
+        float windowWidth = ImGui::GetWindowWidth();
+        ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+
+        if (ImGui::Button("OK", ImVec2(buttonWidth, 0))) {
             LOG_DEBUG("UiElementRenderer: Closing Metadata Error");
             value = "filename";
-            titleSource = 0; // Update dropdown to reflect filename
+            titleSource = 0;
             hasChanges = true;
             LOG_DEBUG("UiElementRenderer: Reverted: " << section << "." << key << " = " << value);
             ImGui::CloseCurrentPopup();
         }
+
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
         ImGui::EndPopup();
     }
 }
