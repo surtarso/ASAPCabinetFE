@@ -5,6 +5,9 @@ project(ASAPCabinetFE VERSION 2.0.0 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set OpenGL preference to GLVND to use modern OpenGL libraries
+set(OpenGL_GL_PREFERENCE GLVND)
+
 # Generate a version.h header with the project version
 configure_file(
     ${CMAKE_SOURCE_DIR}/version.h.in
@@ -87,26 +90,35 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # Find and link dependencies
 find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
+find_package(OpenGL REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale)
+find_package(GLEW REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    SDL2::SDL2
-    ${SDL2_IMAGE_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES}
-    ${LIBVLC_LIBRARIES}
-)
-
-# Add include directories for pkg-config libraries
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${FFMPEG_INCLUDE_DIRS}
+    ${GLEW_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    SDL2::SDL2
+    SDL2_image::SDL2_image
+    SDL2_ttf::SDL2_ttf
+    SDL2_mixer::SDL2_mixer
+    ${LIBVLC_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
+    ${GLEW_LIBRARIES}
 )
 
 # Compile options
@@ -118,6 +130,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(${PROJECT_NAME} PRIVATE -g)
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG_LOGGING)
+    # ASan flags
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
+    target_link_libraries(${PROJECT_NAME} PRIVATE -fsanitize=address)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${PROJECT_NAME} PRIVATE -O2)
 endif()

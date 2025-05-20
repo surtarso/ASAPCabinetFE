@@ -192,12 +192,14 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
 }
 
 void SectionRenderer::renderTooltip(const std::string& key) {
-    auto tooltips = Tooltips::getTooltips();
+    //LOG_DEBUG("SectionRenderer::renderTooltip called for key: " << key);
+    const auto& tooltips = Tooltips::getTooltips(); // Use reference to avoid copy
     if (tooltips.count(key) && ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(tooltips[key].c_str());
+        ImGui::TextUnformatted(tooltips.at(key).c_str()); // Use .at() for safety
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+    //LOG_DEBUG("SectionRenderer::renderTooltip completed for key: " << key);
 }

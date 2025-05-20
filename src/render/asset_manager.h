@@ -4,19 +4,20 @@
 #include "render/itable_loader.h"
 #include "render/table_data.h"
 #include "render/ivideo_player.h"
-#include "render/iasset_manager.h"
+#include "render/iasset_manager.h" // Include IAssetManager
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <memory>
+#include <memory> // For std::unique_ptr
 #include <vector>
 
 class IConfigService;
+class IWindowManager; // Forward declare IWindowManager if not already included
 
 class AssetManager : public IAssetManager {
 public:
     AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f);
-    
-    // IAssetManager interface implementation
+
+    // IAssetManager interface implementation (these are already correct)
     SDL_Texture* getPlayfieldTexture() override { return playfieldTexture.get(); }
     SDL_Texture* getWheelTexture() override { return wheelTexture.get(); }
     SDL_Texture* getBackglassTexture() override { return backglassTexture.get(); }
@@ -37,7 +38,8 @@ public:
     void cleanupVideoPlayers() override;
 
     // Non-interface methods
-    void addOldVideoPlayer(IVideoPlayer* player);
+    // CORRECTED: Changed parameter type to std::unique_ptr
+    void addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player);
     void clearVideoCache();
     SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
     SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
@@ -54,7 +56,7 @@ public:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> titleTexture;
-    
+
     SDL_Rect titleRect;
     std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
     std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
@@ -70,7 +72,8 @@ private:
     TTF_Font* font;
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
-    std::vector<IVideoPlayer*> oldVideoPlayers_;
+    // This was already correctly changed to std::unique_ptr
+    std::vector<std::unique_ptr<IVideoPlayer>> oldVideoPlayers_;
 
     // Caching for image textures
     std::string currentPlayfieldImagePath_;

@@ -5,8 +5,8 @@
 #include <unordered_map>
 
 namespace Tooltips {
-    inline std::unordered_map<std::string, std::string> getTooltips() {
-        return {
+    inline const std::unordered_map<std::string, std::string>& getTooltips() {
+        static const std::unordered_map<std::string, std::string> tooltips = {
             // VPX
             {"VPXTablesPath",
                 "Specifies the absolute path to the folder containing VPX table files.\n"
@@ -296,23 +296,40 @@ namespace Tooltips {
             {"SubCmd",
                 "VPinballX internal command to play .vpx tables.\n"
                 "Use VPinballX --help command line menu to see more."},
-            {"LogFile", "Path to the debug log file, relative to exec dir."},
+            {"LogFile",
+                "Path to the debug log file, relative to exec dir."},
+            {"VideoBackend",
+                "Select video playback backend (vlc, opengl, test)"},
 
             // UI Sounds
-            {"ScrollPrevSound", "Sound played when scrolling to previous table."},
-            {"ScrollNextSound", "Sound played when scrolling to next table."},
-            {"ScrollFastPrevSound", "Sound played when fast scrolling backward."},
-            {"ScrollFastNextSound", "Sound played when fast scrolling forward."},
-            {"ScrollJumpPrevSound", "Sound played when jumping to previous letter."},
-            {"ScrollJumpNextSound", "Sound played when jumping to next letter."},
-            {"ScrollRandomSound", "Sound played when selecting a random table."},
-            {"LaunchTableSound", "Sound played when launching a table."},
-            {"LaunchScreenshotSound", "Sound played when entering screenshot mode."},
-            {"ConfigSaveSound", "Sound played when saving configuration."},
-            {"ConfigToggleSound", "Sound played when opening or closing configuration."},
-            {"ScreenshotTakeSound", "Sound played when taking a screenshot."},
-            {"ScreenshotQuitSound", "Sound played when exiting screenshot mode."}
+            {"ScrollPrevSound",
+                "Sound played when scrolling to previous table."},
+            {"ScrollNextSound",
+                "Sound played when scrolling to next table."},
+            {"ScrollFastPrevSound",
+                "Sound played when fast scrolling backward."},
+            {"ScrollFastNextSound",
+                "Sound played when fast scrolling forward."},
+            {"ScrollJumpPrevSound",
+                "Sound played when jumping to previous letter."},
+            {"ScrollJumpNextSound",
+                "Sound played when jumping to next letter."},
+            {"ScrollRandomSound",
+                "Sound played when selecting a random table."},
+            {"LaunchTableSound",
+                "Sound played when launching a table."},
+            {"LaunchScreenshotSound",
+                "Sound played when entering screenshot mode."},
+            {"ConfigSaveSound",
+                "Sound played when saving configuration."},
+            {"ConfigToggleSound",
+                "Sound played when opening or closing configuration."},
+            {"ScreenshotTakeSound",
+                "Sound played when taking a screenshot."},
+            {"ScreenshotQuitSound",
+                "Sound played when exiting screenshot mode."}
         };
+        return tooltips;
     }
 }
 

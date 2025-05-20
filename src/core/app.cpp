@@ -204,37 +204,54 @@ void App::update() {
 }
 
 void App::render() {
-    if (renderer_ && assets_) {
-        const Settings& settings = configManager_->getSettings();
-        
-        SDL_SetRenderDrawColor(windowManager_->getPlayfieldRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(windowManager_->getPlayfieldRenderer());
-        
-        if (settings.showBackglass) {
-            SDL_SetRenderDrawColor(windowManager_->getBackglassRenderer(), 0, 0, 0, 255);
-            SDL_RenderClear(windowManager_->getBackglassRenderer());
-        }
-        
-        if (settings.showDMD) {
-            SDL_SetRenderDrawColor(windowManager_->getDMDRenderer(), 0, 0, 0, 255);
-            SDL_RenderClear(windowManager_->getDMDRenderer());
-        }
-
-        guiManager_->newFrame();
-        renderer_->render(*assets_);
-        if (showConfig_) {
-            configEditor_->drawGUI();
-        }
-        guiManager_->render(windowManager_->getPlayfieldRenderer());
-
-        SDL_RenderPresent(windowManager_->getPlayfieldRenderer());
-        if (settings.showBackglass) {
-            SDL_RenderPresent(windowManager_->getBackglassRenderer());
-        }
-        if (settings.showDMD) {
-            SDL_RenderPresent(windowManager_->getDMDRenderer());
-        }
+    if (!renderer_ || !assets_) {
+        LOG_ERROR("App::render: renderer_ or assets_ is null");
+        return;
     }
+
+    const Settings& settings = configManager_->getSettings();
+    SDL_Renderer* playfieldRenderer = windowManager_->getPlayfieldRenderer();
+    SDL_Renderer* backglassRenderer = settings.showBackglass ? windowManager_->getBackglassRenderer() : nullptr;
+    SDL_Renderer* dmdRenderer = settings.showDMD ? windowManager_->getDMDRenderer() : nullptr;
+
+    if (!playfieldRenderer) {
+        LOG_ERROR("App::render: playfieldRenderer is null");
+        return;
+    }
+
+    //LOG_DEBUG("App::render: Starting render cycle");
+    SDL_SetRenderDrawColor(playfieldRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(playfieldRenderer);
+    
+    if (settings.showBackglass && backglassRenderer) {
+        SDL_SetRenderDrawColor(backglassRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(backglassRenderer);
+    } else if (settings.showBackglass) {
+        LOG_DEBUG("App::render: backglassRenderer is null but showBackglass is true");
+    }
+    
+    if (settings.showDMD && dmdRenderer) {
+        SDL_SetRenderDrawColor(dmdRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(dmdRenderer);
+    } else if (settings.showDMD) {
+        LOG_DEBUG("App::render: dmdRenderer is null but showDMD is true");
+    }
+
+    guiManager_->newFrame();
+    renderer_->render(*assets_);
+    if (showConfig_) {
+        configEditor_->drawGUI();
+    }
+    guiManager_->render(playfieldRenderer);
+
+    SDL_RenderPresent(playfieldRenderer);
+    if (settings.showBackglass && backglassRenderer) {
+        SDL_RenderPresent(backglassRenderer);
+    }
+    if (settings.showDMD && dmdRenderer) {
+        SDL_RenderPresent(dmdRenderer);
+    }
+    //LOG_DEBUG("App::render: Render cycle completed");
 }
 
 void App::cleanup() {
