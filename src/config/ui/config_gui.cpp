@@ -154,9 +154,11 @@ void ConfigUI::saveConfig() {
 
 void ConfigUI::discardChanges() {
     LOG_DEBUG("ConfigUI: 'ConfigUI::discardChanges' called");
-    configService_->setIniData(state_.lastSavedIniData);
+    // Reload config from file instead of using lastSavedIniData
+    configService_->loadConfig();
     state_.saveMessageTimer = 0.0f;
     state_.hasChanges = false;
+    showConfig_ = false; // Ensure UI closes
 }
 
 void ConfigUI::handleEvent(const SDL_Event& event) {

@@ -182,8 +182,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     auto stopAndMove = [this](std::unique_ptr<IVideoPlayer>& current, std::string& currentPath) {
         if (current) {
             current->stop();
-            addOldVideoPlayer(current.release());
-            current = nullptr;
+            // Now, we move the unique_ptr itself into the addOldVideoPlayer function
+            addOldVideoPlayer(std::move(current)); // Transfer ownership
+            current.reset(); // 'current' is now empty (nullptr)
             currentPath.clear();
         }
     };
@@ -292,7 +293,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     lastShowBackglass = settings.showBackglass;
     lastShowDMD = settings.showDMD;
-    clearOldVideoPlayers();
+    //clearOldVideoPlayers();
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -325,11 +326,12 @@ void AssetManager::cleanupVideoPlayers() {
     clearOldVideoPlayers();
 }
 
-void AssetManager::addOldVideoPlayer(IVideoPlayer* player) {
+void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
     if (player) {
-        oldVideoPlayers_.push_back(player);
+        // Push the unique_ptr directly. The unique_ptr now owns the player.
+        oldVideoPlayers_.push_back(std::move(player));
         if (oldVideoPlayers_.size() > 10) {
-            delete oldVideoPlayers_.front();
+            // When removing, unique_ptr will automatically call delete on the managed object
             oldVideoPlayers_.erase(oldVideoPlayers_.begin());
             LOG_DEBUG("AssetManager: Removed oldest video player from queue");
         }
@@ -337,10 +339,9 @@ void AssetManager::addOldVideoPlayer(IVideoPlayer* player) {
 }
 
 void AssetManager::clearOldVideoPlayers() {
-    for (IVideoPlayer* player : oldVideoPlayers_) {
-        delete player;
-    }
+    // No manual deletion loop needed! unique_ptr handles it when the vector clears or elements are removed.
     oldVideoPlayers_.clear();
+    //LOG_DEBUG("AssetManager: Cleared all old video players from queue");
 }
 
 SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string& path) {
