@@ -9,6 +9,7 @@ on:
       - "CMakeLists.txt"              # Watch CMakeLists.txt instead of Makefile
       - "external/imgui/**"           # Watch ImGui files
       - "external/ImGuiFileDialog/**" # Watch ImGuiFileDialog files
+      - "external/nlohmann/**"        # Watch Nlohmann Json files
   pull_request:
     branches: [ "main" ]
 
@@ -25,8 +26,7 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev
-
+        sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
     - name: Configure with CMake
       run: |
         mkdir build && cd build
