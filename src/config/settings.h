@@ -84,6 +84,8 @@ struct Settings {
     int titleY;
 
     // media sizes/positions
+    bool forceImagesOnly;
+
     int wheelMediaHeight;
     int wheelMediaWidth;
     int wheelMediaX;

@@ -183,6 +183,8 @@ namespace Tooltips {
                 "Y position of the table title"},
 
             // MediaDimensions
+            {"ForceImagesOnly", 
+                "Use only images (skip videos)."},
             {"WheelMediaHeight",
                 "Height of the wheel image in pixels."},
             {"WheelMediaWidth",

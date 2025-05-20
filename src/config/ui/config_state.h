@@ -22,7 +22,8 @@ public:
     bool hasFontSettingsChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
     bool hasTitleDataSourceChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
     bool hasVideoBackendChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
-
+    bool hasForceImagesOnlyChanged(const std::map<std::string, SettingsSection>& oldIniData) const;
+    
 private:
     static const std::vector<std::string> sectionOrder_;
     IConfigService* configService_;
