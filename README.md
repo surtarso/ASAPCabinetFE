@@ -10,7 +10,7 @@
 
 ## TL:DR
 ```sh
-sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotool imagemagick ffmpeg
+sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -43,14 +43,15 @@ make -j$(nproc)
 > - **SDL2_ttf**: Font rendering.
 > - **SDL2_mixer**: Audio playback.
 > - **VLC**: Video playback support.
+> - **OpenGL**: Video playback support
+> - **FFMpeg**: Video assembly.
 > - **xdotools**: Screen manipulation.
 > - **ImageMagick**: Screen capture.
-> - **FFMpeg**: Video assembly.
 
 ### Installing Dependencies (Debian based)
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev xdotool imagemagick ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
 ```
 
 ### Compiling and Running
