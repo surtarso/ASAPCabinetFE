@@ -2,7 +2,7 @@ TODO
 
 FIX:
 - cant use 'c' or 'q' in config text field..... facepalm.
-- transitions still suck, need to remove the blink/black on table switch
+- transitions still suck using vlc
 - finish the layout and text of vpxtool metadata pop-up
 - config save sound not playing on button click (but playing on double click save)
 
@@ -28,5 +28,4 @@ Later:
 - add pup windows to screenshot capture
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
-- add opengl renderer as options
 - adapt to be crossplatform?
