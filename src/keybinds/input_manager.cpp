@@ -1,6 +1,7 @@
 #include "keybinds/input_manager.h"
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
+#include "imgui.h"
 #include <iostream>
 #include <random>
 
@@ -203,17 +204,52 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return; // Let ScreenshotManager handle its own events
     }
 
-    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
-        actionHandlers_["ToggleConfig"]();
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Process specific global keybinds that *should* work even when ImGui has focus,
+    // but only if they are not intended as text input.
+    // For 'C' (ToggleConfig) and 'Q' (Quit/ConfigClose), if ImGui is capturing keyboard,
+    // it implies the key is for text input, so we should bypass the global action.
+    if (event.type == SDL_KEYDOWN) {
+        // Handle ToggleConfig (C)
+        if (keybindProvider_->isAction(event.key, "ToggleConfig")) {
+            // Only activate global toggle if ImGui is NOT currently capturing keyboard input.
+            // This allows 'C' to be typed into a text field when focused.
+            if (!io.WantCaptureKeyboard) {
+                actionHandlers_["ToggleConfig"]();
+                return; // Event handled, stop further processing
+            }
+        }
+
+        // Handle Quit/ConfigClose (Q) when config is open
+        if (*showConfig_ && (keybindProvider_->isAction(event.key, "ConfigClose") || keybindProvider_->isAction(event.key, "Quit"))) {
+            // Only activate global close/quit if ImGui is NOT currently capturing keyboard input.
+            // This allows 'Q' to be typed into a text field when focused in config.
+            if (!io.WantCaptureKeyboard) {
+                actionHandlers_["Quit"](); // Assuming "Quit" action handles closing config when applicable
+                return; // Event handled, stop further processing
+            }
+        }
+    }
+
+    // If ImGui is currently capturing any keyboard input (e.g., a text field is active),
+    // and the event hasn't been handled by a specific global keybind above,
+    // then let ImGui handle the event and skip further custom InputManager processing.
+    if (io.WantCaptureKeyboard) {
         return;
     }
-    
+
+    // Continue with original event handling for cases where ImGui is not capturing
+    // keyboard input or for non-keyboard events.
     if (!*showConfig_) {
         handleDoubleClick(event);
     }
 
+    // If config is active but ImGui is not capturing keyboard (meaning no text field
+    // or other ImGui element has focus that consumes keyboard input), then regular
+    // keybinds (e.g., navigation) should still work.
     if (*showConfig_) {
-        handleConfigEvents(event);
+        handleRegularEvents(event);
     } else {
         handleRegularEvents(event);
     }
