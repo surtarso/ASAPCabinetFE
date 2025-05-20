@@ -94,6 +94,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
+    keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
+    };
 }
 
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {

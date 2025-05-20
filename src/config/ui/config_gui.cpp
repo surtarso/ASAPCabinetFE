@@ -108,13 +108,19 @@ void ConfigUI::saveConfig() {
     }
 
     LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called");
+    // Store current iniData before saving to preserve old state
+    const auto oldIniData = configService_->getIniData();
     configService_->saveConfig(configService_->getIniData());
     const auto& currentIniData = configService_->getIniData();
-    bool windowSettingsChanged = state_.hasWindowSettingsChanged(currentIniData);
-    bool visibilitySettingsChanged = state_.hasVisibilitySettingsChanged(currentIniData);
-    bool fontSettingsChanged = state_.hasFontSettingsChanged(currentIniData);
-    bool titleDataSourceChanged = state_.hasTitleDataSourceChanged(currentIniData);
+    
+    // Check for changes using oldIniData
+    bool windowSettingsChanged = state_.hasWindowSettingsChanged(oldIniData);
+    bool visibilitySettingsChanged = state_.hasVisibilitySettingsChanged(oldIniData);
+    bool fontSettingsChanged = state_.hasFontSettingsChanged(oldIniData);
+    bool titleDataSourceChanged = state_.hasTitleDataSourceChanged(oldIniData);
+    bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
 
+    // Update lastSavedIniData after checking changes
     state_.lastSavedIniData = currentIniData;
 
     if (assets_ && assets_->getTitleTexture()) {
@@ -132,8 +138,8 @@ void ConfigUI::saveConfig() {
             LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
             appCallbacks_->reloadWindows();
         }
-        if (visibilitySettingsChanged) {
-            LOG_DEBUG("ConfigUI: ShowDMD or ShowBackglass changed, triggering asset reload");
+        if (visibilitySettingsChanged || videoBackendChanged) {
+            LOG_DEBUG("ConfigUI: ShowDMD, ShowBackglass, or videoBackend changed, triggering asset reload");
             appCallbacks_->reloadAssetsAndRenderers();
         }
         if (titleDataSourceChanged) {

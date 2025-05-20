@@ -161,30 +161,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     if (backglassRenderer && settings.showBackglass) {
         if (table.backglassImage != currentBackglassImagePath_ || !backglassTexture) {
-            playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
-            currentPlayfieldImagePath_ = table.playfieldImage;
-        }
-        if (table.wheelImage != currentWheelImagePath_ || !wheelTexture) {
-            wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
-            currentWheelImagePath_ = table.wheelImage;
-        }
-        if (font) {
-            titleRect = {settings.titleX, settings.titleY, 0, 0};
-            std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            titleTexture.reset(renderText(playfieldRenderer, font, title, settings.fontColor, titleRect));
-        } else {
-            titleTexture.reset();
-        }
-    } else {
-        playfieldTexture.reset();
-        wheelTexture.reset();
-        titleTexture.reset();
-        currentPlayfieldImagePath_.clear();
-        currentWheelImagePath_.clear();
-    }
-
-    if (backglassRenderer && settings.showBackglass) {
-        if (table.backglassImage != currentBackglassImagePath_ || !backglassTexture) {
             backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
             currentBackglassImagePath_ = table.backglassImage;
         }
@@ -231,7 +207,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 currentPlayfieldMediaWidth_ = settings.playfieldMediaWidth;
                 currentPlayfieldMediaHeight_ = settings.playfieldMediaHeight;
             } else {
-                LOG_ERROR("AssetManager: Failed to setup playfield video: " << table.playfieldVideo);
+                LOG_DEBUG("AssetManager: Failed to setup playfield video: " << table.playfieldVideo << ", keeping existing player");
             }
         } else if (playfieldVideoPlayer && !playfieldVideoPlayer->isPlaying()) {
             playfieldVideoPlayer->play();
@@ -263,9 +239,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 currentBackglassMediaWidth_ = settings.backglassMediaWidth;
                 currentBackglassMediaHeight_ = settings.backglassMediaHeight;
             } else {
-                LOG_ERROR("AssetManager: Failed to setup backglass video: " << table.backglassVideo);
+                LOG_DEBUG("AssetManager: Failed to setup backglass video: " << table.backglassVideo << ", keeping existing player");
             }
-        } else if (backglassVideoPlayer && !playfieldVideoPlayer->isPlaying()) {
+        } else if (backglassVideoPlayer && !backglassVideoPlayer->isPlaying()) {
             backglassVideoPlayer->play();
         }
     } else if (backglassVideoPlayer) {
@@ -299,7 +275,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 currentDmdMediaWidth_ = settings.dmdMediaWidth;
                 currentDmdMediaHeight_ = settings.dmdMediaHeight;
             } else {
-                LOG_ERROR("AssetManager: Failed to setup DMD video: " << table.dmdVideo);
+                LOG_DEBUG("AssetManager: Failed to setup DMD video: " << table.dmdVideo << ", keeping existing player");
             }
         } else if (dmdVideoPlayer && !dmdVideoPlayer->isPlaying()) {
             dmdVideoPlayer->play();
