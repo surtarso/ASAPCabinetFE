@@ -40,12 +40,14 @@ private:
     IKeybindProvider* keybindProvider_;
     IAssetManager* assets_;
     ISoundManager* soundManager_;
+    
     IConfigService* settingsManager_;
     IWindowManager* windowManager_;
     size_t* currentIndex_;
     const std::vector<TableData>* tables_;
     bool* showConfig_;
     std::string exeDir_;
+    IScreenshotManager* screenshotManager_;
     ConfigUI* runtimeEditor_ = nullptr;
     std::map<std::string, ActionHandler> actionHandlers_;
     std::map<char, size_t> letterIndex_;
@@ -54,7 +56,7 @@ private:
     // Renamed inScreenshotMode_ to reflect its specific usage within the ScreenshotMode action,
     // and introduced a more general flag for being in an external process.
     bool screenshotModeActive_ = false; // Flag for internal screenshot action state
-    IScreenshotManager* screenshotManager_;
+    
     std::unordered_map<Uint32, Uint32> lastClickTimes_; // Double-click detection
 
     // --- NEW/MODIFIED MEMBERS FOR DEBOUNCING AND EXTERNAL APP STATE ---
