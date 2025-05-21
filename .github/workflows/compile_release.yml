@@ -35,8 +35,6 @@ jobs:
         path: |
           /var/lib/apt/lists/
           /var/cache/apt/archives/
-        # The key uses the OS and a hash of 'apt-packages.txt'.
-        # If apt-packages.txt changes, the cache will be busted and rebuilt.
         key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
         restore-keys: |
           ${{ runner.os }}-apt-
@@ -44,31 +42,30 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        # Install packages from the apt-packages.txt file.
-        # Make sure you create 'apt-packages.txt' in your repository root
-        # with one package name per line (e.g., 'libsdl2-dev').
         cat apt-packages.txt | xargs sudo apt-get install -y
         
         # --- Crucial for caching: Ensure APT cache directories are readable by the runner ---
-        # This prevents "Permission denied" errors during cache save.
         sudo chmod -R a+rX /var/lib/apt/lists/
         sudo chmod -R a+rX /var/cache/apt/archives/
-        sudo rm -f /var/lib/apt/lists/lock # Remove any lingering lock files
-        sudo rm -f /var/cache/apt/archives/lock # Remove any lingering lock files
+        sudo rm -f /var/lib/apt/lists/lock
+        sudo rm -f /var/cache/apt/archives/lock
 
     - name: Configure with CMake
       run: |
-        mkdir build && cd build
+        # Use a consistent build directory, ensure it's within the workspace
+        mkdir -p "${GITHUB_WORKSPACE}/build" && cd "${GITHUB_WORKSPACE}/build"
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
 
     - name: Compile with CMake
       run: |
-        cd build
+        # Change to the build directory
+        cd "${GITHUB_WORKSPACE}/build"
         make -j$(nproc)
 
     - name: Run `make install` to package the application
       run: |
-        cd build
+        # Change to the build directory
+        cd "${GITHUB_WORKSPACE}/build"
         cmake --install . # This uses the CMAKE_INSTALL_PREFIX set during configure
 
     - name: Create distributable archive
@@ -79,27 +76,36 @@ jobs:
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
 
-        # Define the full path for the tarball
+        # Define the full path for the tarball, explicitly in the workspace root
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
-        TARBALL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
+        TARBALL_FULL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
 
-        echo "Creating archive ${TARBALL_NAME}"
+        echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        # Navigate INTO the install_root to ensure files are at the root of the tarball
-        cd "${GITHUB_WORKSPACE}/install_root"
-        # Tar the current directory's contents and output the archive to the workspace root
-        tar -czvf "${TARBALL_PATH}" ./*
+        # Change directory to the workspace root, then explicitly tar the 'install_root' directory.
+        # This is the most reliable way to create the tarball without conflicts
+        # and ensure it's in the root of the workspace.
+        cd "${GITHUB_WORKSPACE}"
+        tar -czvf "${TARBALL_FULL_PATH}" ./install_root
+        # This will create a tarball where the top-level directory inside is 'install_root/'.
+        # E.g., tar -tf ASAPCabinetFE-...tar.gz would show:
+        # install_root/
+        # install_root/bin/
+        # install_root/bin/ASAPCabinetFE
+        # ... and so on.
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # The tarball is now explicitly created at this path
+        # This path is now definitively where the tarball will be.
         path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
 
     - name: Test Version Flag
       run: |
-       # Get the version directly from the generated executable
+       # Ensure we are in the main workspace directory or specify full path
+        cd "${GITHUB_WORKSPACE}"
+       # Get the version directly from the generated executable in the build directory
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
         # We'll just check if it contains the project name and 'version' keyword.
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
