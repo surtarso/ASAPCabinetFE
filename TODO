@@ -1,11 +1,11 @@
 TODO
 
 FIX:
-- set showmetadata to false when no json found on start
 - transitions still suck using vlc
-- keep metadata panel below config always
+- metadata year/manufacturer better parsing
 
 QOL:
+- sort by year/manufacturer
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 

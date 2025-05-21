@@ -29,6 +29,13 @@ void ConfigUI::drawGUI() {
     updateSaveMessageTimer();
 
     ImGuiIO& io = ImGui::GetIO();
+
+    if (requestFocusNextFrame_) {
+        ImGui::SetNextWindowFocus();
+        requestFocusNextFrame_ = false; // Reset the flag after use
+        LOG_DEBUG("ConfigUI: Applying ImGui::SetNextWindowFocus for config window.");
+    }
+
     if (standaloneMode_) {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
@@ -184,6 +191,8 @@ void ConfigUI::saveConfig() {
     state_.hasChanges = false;
     state_.saveMessageTimer = 1.5f;
     LOG_DEBUG("ConfigUI: Save completed");
+
+    requestFocusNextFrame_ = true;
 }
 
 void ConfigUI::discardChanges() {

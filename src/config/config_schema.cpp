@@ -246,10 +246,9 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdRotation"); }},
 
         // Title display
-        {"showMetadata", "TitleDisplay", "ShowMetadata", true, Type::Bool, false, PostProcess::None,
+        {"showMetadata", "TitleDisplay", "ShowMetadata", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showMetadata"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showMetadata"); }},
-        
         {"fontPath", "TitleDisplay", "FontPath", std::string("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "fontPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "fontPath"); }},
@@ -262,7 +261,7 @@ ConfigSchema::ConfigSchema() {
         {"fontSize", "TitleDisplay", "FontSize", 28, Type::Int, false, PostProcess::DpiScaleFontSize,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "fontSize"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "fontSize"); }},
-        {"titleSource", "TitleDisplay", "TitleSource", std::string("metadata"), Type::String, false, PostProcess::None,
+        {"titleSource", "TitleDisplay", "TitleSource", std::string("filename"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "titleSource"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "titleSource"); }},
         {"showWheel", "TitleDisplay", "ShowWheel", true, Type::Bool, false, PostProcess::None,
@@ -323,7 +322,7 @@ ConfigSchema::ConfigSchema() {
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
-        {"videoBackend", "Internal", "VideoBackend", std::string("vlc"), Type::String, false, PostProcess::None,
+        {"videoBackend", "Internal", "VideoBackend", std::string("opengl"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }}
     };
