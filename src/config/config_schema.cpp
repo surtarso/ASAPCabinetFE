@@ -136,6 +136,9 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultString(s, val, "puPFullDmdVideo"); }},
 
         // Window settings
+        {"videoBackend", "WindowSettings", "VideoBackend", std::string("vlc"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }},
         {"useVPinballXIni", "WindowSettings", "UseVPinballXIni", true, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "useVPinballXIni"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "useVPinballXIni"); }},      
@@ -322,9 +325,6 @@ ConfigSchema::ConfigSchema() {
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
-        {"videoBackend", "Internal", "VideoBackend", std::string("ffmpeg"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }}
     };
 }
 
