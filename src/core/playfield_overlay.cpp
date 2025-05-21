@@ -119,11 +119,10 @@ void PlayfieldOverlay::renderMetadataPanel() {
 
     // Begin the metadata panel window without title bar or close button
     if (ImGui::Begin("Table Metadata", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "METADATA INFO"); // Yellow header
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE INFO"); // Yellow header
         std::filesystem::path filePath(currentTable.vpxFile);
         ImGui::Text("File: %s", filePath.filename().string().c_str());
         ImGui::Text("Table Name: %s", currentTable.tableName.c_str());
-        ImGui::Text("Author: %s", currentTable.authorName.c_str());
         ImGui::Text("Rom Name: %s", currentTable.gameName.c_str());
         ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
         ImGui::Text("Year: %s", currentTable.year.c_str());
@@ -132,6 +131,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
         ImGui::Text("Revision: %s", currentTable.tableRevision.c_str());
         ImGui::Text("Save Date: %s", currentTable.tableSaveDate.c_str());
         ImGui::Text("Last Modified: %s", currentTable.lastModified.c_str());
+        ImGui::Text("Author: %s", currentTable.authorName.c_str());
         
         ImGui::Separator();
         ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());

@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- whole saving process is a mess, works tho. needs polish
 - metadata year/manufacturer better parsing
 
 QOL:
