@@ -1,10 +1,10 @@
-name: C++ Compile Test
+name: Release C++ Compile
 
 on:
   push:
     branches: [ "main" ]
     paths:
-      - ".github/workflows/compile_test.yml"
+      - ".github/workflows/compile_release.yml"
       - "src/**"                      # Watch all source files
       - "CMakeLists.txt"              # Watch CMakeLists.txt
       - "external/imgui/**"           # Watch ImGui files
@@ -15,7 +15,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  compile_app:
+  compile_release:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       with:
         submodules: recursive
         # Fetch tags to ensure `git describe` works correctly for versioning
-        fetch-depth: 0
+        fetch-depth: 0 # Crucial for `git describe` to work on tags
 
     - name: Install System Dependencies
       run: |
@@ -34,7 +34,6 @@ jobs:
     - name: Configure with CMake
       run: |
         mkdir build && cd build
-        # Define an install prefix for the artifact
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
 
     - name: Compile with CMake
@@ -49,35 +48,35 @@ jobs:
 
     - name: Create distributable archive
       run: |
-        cd ${GITHUB_WORKSPACE}/install_root
-        # Get version from generated header for filename
-        VERSION=$(grep '#define ASAPCABINETFE_VERSION_STRING' bin/ASAPCabinetFE | cut -d'"' -f2) # Read version from generated executable string
-        # Fallback if the above fails (e.g., if executable is not built yet or string isn't found)
+        cd "${GITHUB_WORKSPACE}/install_root"
+        
+        # Get the version string using git describe.
+        # This will be the most accurate reflection of the version at the commit.
+        # --abbrev=7 gives a short hash. -dirty indicates uncommitted changes.
+        VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
+        
+        # Fallback if git describe fails for any reason (though unlikely with fetch-depth:0)
         if [ -z "$VERSION" ]; then
-            VERSION=$(grep "project(ASAPCabinetFE LANGUAGES" ${GITHUB_WORKSPACE}/CMakeLists.txt | sed 's/.*ASAPCabinetFE //;s/ LANGUAGES.*//' | tr -d '\n')
-            if [ -z "$VERSION" ]; then # If project version not found either
-                VERSION=$(git describe --tags --always --dirty="-dirty" || echo "unknown")
-            fi
+            VERSION="unknown-$(date +%Y%m%d%H%M%S)" # Fallback to timestamp if Git fails
         fi
 
-        tar -czvf ASAPCabinetFE-${VERSION}-linux-x64.tar.gz ./*
+        echo "Creating archive ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
+        # Tar the current directory ('.') - this is the key fix!
+        tar -czvf ASAPCabinetFE-"${VERSION}"-linux-x64.tar.gz .
+        # Using quotes around "${VERSION}" to handle potential special characters in version string
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        path: install_root/ASAPCabinetFE-*.tar.gz
-        # Optional: You can upload individual files or the whole directory
-        # path: install_root/bin/ASAPCabinetFE
-        # path: install_root/share/ASAPCabinetFE/
-        # path: install_root/ASAPCabinetFE-*.tar.gz
+        # Use a wildcard here since the version string will be dynamic
+        path: "${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE-*-linux-x64.tar.gz"
 
     - name: Test Version Flag
       run: |
        # Get the version directly from the generated executable
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
-        # We can't easily predict the exact Git-derived version string for EXPECTED_OUTPUT
-        # so we'll just check if it contains the project name and 'version' keyword.
+        # We'll just check if it contains the project name and 'version' keyword.
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
         else
