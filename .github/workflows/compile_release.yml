@@ -48,7 +48,10 @@ jobs:
 
     - name: Create distributable archive
       run: |
-        cd "${GITHUB_WORKSPACE}/install_root"
+        # Change directory to the workspace root before creating the tarball
+        # This resolves the "file changed as we read it" warning by ensuring
+        # the tar output file is not inside the directory being archived.
+        cd "${GITHUB_WORKSPACE}"
         
         # Get the version string using git describe.
         # This will be the most accurate reflection of the version at the commit.
@@ -57,20 +60,22 @@ jobs:
         
         # Fallback if git describe fails for any reason (though unlikely with fetch-depth:0)
         if [ -z "$VERSION" ]; then
-            VERSION="unknown-$(date +%Y%m%d%H%M%S)" # Fallback to timestamp if Git fails
+            # Using a timestamp as a robust fallback for the version name if Git fails
+            VERSION="unknown-$(date +%Y%m%d%H%M%S)" 
         fi
 
         echo "Creating archive ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
-        # Tar the current directory ('.') - this is the key fix!
-        tar -czvf ASAPCabinetFE-"${VERSION}"-linux-x64.tar.gz .
-        # Using quotes around "${VERSION}" to handle potential special characters in version string
+        # Tar the 'install_root' directory. This is the key fix for the tar error.
+        # Quotes around "${VERSION}" handle potential special characters in the version string.
+        tar -czvf ASAPCabinetFE-"${VERSION}"-linux-x64.tar.gz ./install_root/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # Use a wildcard here since the version string will be dynamic
-        path: "${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE-*-linux-x64.tar.gz"
+        # The tarball is now located directly in the workspace root,
+        # so the path should reflect that.
+        path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
 
     - name: Test Version Flag
       run: |
