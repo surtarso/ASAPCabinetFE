@@ -54,6 +54,7 @@ struct Settings {
     std::string puPFullDmdVideo;
 
     // Window settings
+    std::string videoBackend;
     bool useVPinballXIni;
     int playfieldWindowWidth;
     int playfieldWindowHeight;
@@ -128,7 +129,6 @@ struct Settings {
     // internal
     std::string vpxSubCmd;
     std::string logFile;
-    std::string videoBackend;
 };
 
 #endif // SETTINGS_H
