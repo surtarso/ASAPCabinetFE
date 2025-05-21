@@ -1,3 +1,4 @@
+# .github/workflows/compile_release.yml
 name: Release C++ Compile
 
 on:
@@ -11,6 +12,7 @@ on:
       - "external/ImGuiFileDialog/**" # Watch ImGuiFileDialog files
       - "external/nlohmann/**"        # Watch Nlohmann Json files
       - "version.h.in"                # IMPORTANT: Watch this too!
+      - "apt-packages.txt"            # Watch the list of APT dependencies for caching
   pull_request:
     branches: [ "main" ]
 
@@ -26,10 +28,26 @@ jobs:
         # Fetch tags to ensure `git describe` works correctly for versioning
         fetch-depth: 0 # Crucial for `git describe` to work on tags
 
+    # --- Cache APT packages to speed up dependency installation ---
+    - name: Cache APT packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          /var/lib/apt/lists/
+          /var/cache/apt/archives/
+        # The key uses the OS and a hash of 'apt-packages.txt'.
+        # If apt-packages.txt changes, the cache will be busted and rebuilt.
+        key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
+
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
+        # Install packages from the apt-packages.txt file.
+        # Make sure you create 'apt-packages.txt' in your repository root
+        # with one package name per line (e.g., 'libsdl2-dev').
+        cat apt-packages.txt | xargs sudo apt-get install -y
 
     - name: Configure with CMake
       run: |
@@ -48,14 +66,14 @@ jobs:
 
     - name: Create distributable archive
       run: |
-        # Change directory to the workspace root before creating the tarball
-        # This resolves the "file changed as we read it" warning by ensuring
-        # the tar output file is not inside the directory being archived.
+        # IMPORTANT: Change directory to the workspace root before creating the tarball.
+        # This prevents the "file changed as we read it" warning by creating the archive
+        # outside the directory being compressed.
         cd "${GITHUB_WORKSPACE}"
         
         # Get the version string using git describe.
         # This will be the most accurate reflection of the version at the commit.
-        # --abbrev=7 gives a short hash. -dirty indicates uncommitted changes.
+        # `--abbrev=7` gives a short hash. `-dirty` indicates uncommitted changes.
         VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
         
         # Fallback if git describe fails for any reason (though unlikely with fetch-depth:0)
@@ -65,7 +83,7 @@ jobs:
         fi
 
         echo "Creating archive ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
-        # Tar the 'install_root' directory. This is the key fix for the tar error.
+        # Tar the 'install_root' directory.
         # Quotes around "${VERSION}" handle potential special characters in the version string.
         tar -czvf ASAPCabinetFE-"${VERSION}"-linux-x64.tar.gz ./install_root/
 
@@ -73,8 +91,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # The tarball is now located directly in the workspace root,
-        # so the path should reflect that.
+        # IMPORTANT: The tarball is now located directly in the workspace root.
+        # This path correctly points to where the archive was created.
         path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
 
     - name: Test Version Flag
