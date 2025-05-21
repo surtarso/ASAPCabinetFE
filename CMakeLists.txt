@@ -1,5 +1,110 @@
 cmake_minimum_required(VERSION 3.10)
-project(ASAPCabinetFE VERSION 2.1.0 LANGUAGES CXX C)
+#project(ASAPCabinetFE VERSION 2.1.0 LANGUAGES CXX C)
+project(ASAPCabinetFE LANGUAGES CXX C)
+
+# Find Git executable
+find_package(Git QUIET)
+
+# Default version info if Git is not found or no tags exist
+set(ASAPCABINETFE_VERSION_MAJOR 0)
+set(ASAPCABINETFE_VERSION_MINOR 0)
+set(ASAPCABINETFE_VERSION_PATCH 0)
+set(ASAPCABINETFE_VERSION_BUILD 0) # Used for commit count since last tag
+set(ASAPCABINETFE_VERSION_STRING "0.0.0-unknown")
+set(ASAPCABINETFE_GIT_HASH "unknown")
+set(ASAPCABINETFE_GIT_BRANCH "unknown")
+set(ASAPCABINETFE_GIT_DIRTY "")
+
+if (GIT_FOUND)
+    # Get the latest Git tag (e.g., v2.1.0)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE GIT_TAG_RESULT
+    )
+
+    # Get the number of commits since the last tag (for patch or build number)
+    # If no tag is found, this will count all commits.
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-list --count ${GIT_TAG}..HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_COUNT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE GIT_COMMIT_COUNT_RESULT
+    )
+    if (GIT_COMMIT_COUNT_RESULT EQUAL 0) # If no tag, count all commits
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-list --count HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_COUNT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    endif()
+
+
+    # Get the short commit hash
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Get the current branch name
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Check if the repository is dirty (has uncommitted changes)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} status --porcelain
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_STATUS
+    )
+    if (GIT_STATUS)
+        set(GIT_DIRTY_FLAG "+dirty")
+    else()
+        set(GIT_DIRTY_FLAG "")
+    endif()
+
+    # Parse SemVer from the Git tag
+    # Example: v2.1.0 -> 2, 1, 0
+    if (GIT_TAG_RESULT EQUAL 0 AND GIT_TAG MATCHES "v([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+        set(ASAPCABINETFE_VERSION_MAJOR ${CMAKE_MATCH_1})
+        set(ASAPCABINETFE_VERSION_MINOR ${CMAKE_MATCH_2})
+        set(ASAPCABINETFE_VERSION_PATCH ${CMAKE_MATCH_3})
+        set(ASAPCABINETFE_VERSION_BUILD ${GIT_COMMIT_COUNT}) # Use commit count as build number
+    else()
+        # Fallback if no valid SemVer tag is found, or no tags at all.
+        # Use a base version and append commit count.
+        # You might want to initialize these with a starting version like 0.1.0
+        set(ASAPCABINETFE_VERSION_MAJOR 0)
+        set(ASAPCABINETFE_VERSION_MINOR 1)
+        set(ASAPCABINETFE_VERSION_PATCH ${GIT_COMMIT_COUNT}) # Or use 0 and make build = commit_count
+        set(ASAPCABINETFE_VERSION_BUILD ${GIT_COMMIT_COUNT})
+        message(STATUS "No valid SemVer tag found. Using base version and commit count.")
+    endif()
+
+    set(ASAPCABINETFE_VERSION_STRING "${ASAPCABINETFE_VERSION_MAJOR}.${ASAPCABINETFE_VERSION_MINOR}.${ASAPCABINETFE_VERSION_PATCH}")
+    if (NOT GIT_COMMIT_COUNT STREQUAL "0" AND GIT_TAG_RESULT EQUAL 0) # Only append commit count if we are *not* on a tag
+        set(ASAPCABINETFE_VERSION_STRING "${ASAPCABINETFE_VERSION_STRING}-${GIT_COMMIT_COUNT}")
+    endif()
+    set(ASAPCABINETFE_VERSION_STRING "${ASAPCABINETFE_VERSION_STRING}+${GIT_HASH}${GIT_DIRTY_FLAG}")
+
+    set(ASAPCABINETFE_GIT_HASH "${GIT_HASH}")
+    set(ASAPCABINETFE_GIT_BRANCH "${GIT_BRANCH}")
+    set(ASAPCABINETFE_GIT_DIRTY "${GIT_DIRTY_FLAG}")
+
+else()
+    message(WARNING "Git not found. Version information will be set to defaults.")
+endif()
+
+
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -162,3 +267,39 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
     ${CMAKE_BINARY_DIR}/logs
 )
+
+
+# Install executable ("make install")
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin # For executables
+    LIBRARY DESTINATION lib # For shared libraries (if any)
+    ARCHIVE DESTINATION lib # For static libraries (if any)
+)
+
+# Install resources (copying them to the install directory)
+# This uses the same logic as your POST_BUILD, but for installation
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img"
+        DESTINATION "share/${PROJECT_NAME}/img"
+        PATTERN ".DS_Store" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd"
+        DESTINATION "share/${PROJECT_NAME}/snd"
+        PATTERN ".DS_Store" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+)
+
+install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini"
+        DESTINATION "share/${PROJECT_NAME}"
+)
+install(FILES "${CMAKE_SOURCE_DIR}/tools/generate_media.sh"
+              "${CMAKE_SOURCE_DIR}/tools/missing_media.sh"
+        DESTINATION "share/${PROJECT_NAME}/tools"
+)
+
+# Remove the add_custom_command POST_BUILD if you intend to primarily use `make install`
+# If you want resources in the build directory *and* in the install directory, keep both.
+# However, usually, POST_BUILD is for local dev/testing, and install is for distribution.
+# I recommend removing the POST_BUILD if you're using install, to avoid duplication
+# of effort and potential inconsistencies.
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD ... ) # <-- REMOVE THIS BLOCK

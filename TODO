@@ -9,7 +9,8 @@ QOL:
 - make windows resizeable with mouse and pass to config
 
 UI:
-- add blinking arrows on sides to indicate table flow/keys
+- overall polish on config ui (imgui)
+- add blinking arrows on sides to indicate table flow/keys?
 - show a couple of prev/next table wheels?
 
 On hold:
