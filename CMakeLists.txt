@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-#project(ASAPCabinetFE VERSION 2.1.0 LANGUAGES CXX C)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
 # Find Git executable
@@ -82,7 +81,6 @@ if (GIT_FOUND)
     else()
         # Fallback if no valid SemVer tag is found, or no tags at all.
         # Use a base version and append commit count.
-        # You might want to initialize these with a starting version like 0.1.0
         set(ASAPCABINETFE_VERSION_MAJOR 0)
         set(ASAPCABINETFE_VERSION_MINOR 1)
         set(ASAPCABINETFE_VERSION_PATCH ${GIT_COMMIT_COUNT}) # Or use 0 and make build = commit_count
@@ -103,7 +101,6 @@ if (GIT_FOUND)
 else()
     message(WARNING "Git not found. Version information will be set to defaults.")
 endif()
-
 
 
 # Set C++ standard
@@ -243,63 +240,31 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${PROJECT_NAME} PRIVATE -O2)
 endif()
 
-# Set output directory
+# Set output directory (this is for the build directory, not install)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-# Copy resources to the build directory after building the executable
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    # assets:
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets/img ${CMAKE_BINARY_DIR}/img
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets/snd ${CMAKE_BINARY_DIR}/snd
-    # config:
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/src/config.ini ${CMAKE_BINARY_DIR}/config.ini
-    # tools:
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/tools/generate_media.sh ${CMAKE_BINARY_DIR}/generate_media.sh
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/tools/missing_media.sh ${CMAKE_BINARY_DIR}/missing_media.sh
-    # logs:
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    ${CMAKE_BINARY_DIR}/logs
-)
+# --- REMOVED POST_BUILD COMMAND ---
+# This command is removed as the 'install' commands below will now handle
+# placing all necessary resources into the final distribution structure.
+# Keeping it would duplicate efforts and potentially cause inconsistencies
+# between the build directory and the installed package.
 
 
-# Install executable ("make install")
+# --- INSTALLATION RULES FOR /opt-style Flat Structure ---
+# When 'make install' (or 'cmake --install .') is run, files will be placed
+# directly into the CMAKE_INSTALL_PREFIX (which in CI is install_root).
+# This creates a self-contained directory for the application.
+
+# Install the executable directly into the root of the install prefix
 install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin # For executables
-    LIBRARY DESTINATION lib # For shared libraries (if any)
-    ARCHIVE DESTINATION lib # For static libraries (if any)
+    RUNTIME DESTINATION . # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
 )
 
-# Install resources (copying them to the install directory)
-# This uses the same logic as your POST_BUILD, but for installation
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img"
-        DESTINATION "share/${PROJECT_NAME}/img"
-        PATTERN ".DS_Store" EXCLUDE
-        PATTERN "*.bak" EXCLUDE
-)
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd"
-        DESTINATION "share/${PROJECT_NAME}/snd"
-        PATTERN ".DS_Store" EXCLUDE
-        PATTERN "*.bak" EXCLUDE
-)
-
-install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini"
-        DESTINATION "share/${PROJECT_NAME}"
-)
-install(FILES "${CMAKE_SOURCE_DIR}/tools/generate_media.sh"
-              "${CMAKE_SOURCE_DIR}/tools/missing_media.sh"
-        DESTINATION "share/${PROJECT_NAME}/tools"
-)
-
-# Remove the add_custom_command POST_BUILD if you intend to primarily use `make install`
-# If you want resources in the build directory *and* in the install directory, keep both.
-# However, usually, POST_BUILD is for local dev/testing, and install is for distribution.
-# I recommend removing the POST_BUILD if you're using install, to avoid duplication
-# of effort and potential inconsistencies.
-# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD ... ) # <-- REMOVE THIS BLOCK
+# Install resource directories directly into the root of the install prefix
+# Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
+install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini" DESTINATION .)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/tools" DESTINATION .)
