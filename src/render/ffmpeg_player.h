@@ -11,10 +11,10 @@ struct AVFrame;
 struct AVPacket;
 struct SwsContext;
 
-class OpenGLPlayer : public IVideoPlayer {
+class FFmpegPlayer : public IVideoPlayer {
 public:
-    OpenGLPlayer();
-    ~OpenGLPlayer() override;
+    FFmpegPlayer();
+    ~FFmpegPlayer() override;
 
     bool setup(SDL_Renderer* renderer, const std::string& path, int width, int height) override;
     void play() override;

@@ -322,7 +322,7 @@ ConfigSchema::ConfigSchema() {
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
-        {"videoBackend", "Internal", "VideoBackend", std::string("opengl"), Type::String, false, PostProcess::None,
+        {"videoBackend", "Internal", "VideoBackend", std::string("ffmpeg"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }}
     };

@@ -1,6 +1,6 @@
 #include "render/video_player_factory.h"
 #include "render/vlc_player.h"
-#include "render/opengl_player.h"
+#include "render/ffmpeg_player.h"
 #include "config/iconfig_service.h"
 #include "config/settings.h"
 #include "utils/logging.h"
@@ -34,10 +34,10 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
         }
         LOG_ERROR("VideoPlayerFactory: Failed to setup VLC video player for path=" << path);
         return nullptr;
-    } else if (videoBackend == "opengl") {
-        auto player = std::make_unique<OpenGLPlayer>();
+    } else if (videoBackend == "ffmpeg") {
+        auto player = std::make_unique<FFmpegPlayer>();
         if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created OpenGLPlayer for path=" << path);
+            LOG_DEBUG("VideoPlayerFactory: Created FFmpegPlayer for path=" << path);
             return player;
         }
         LOG_ERROR("VideoPlayerFactory: Failed to setup OpenGL video player for path=" << path);
