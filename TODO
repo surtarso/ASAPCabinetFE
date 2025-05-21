@@ -1,8 +1,8 @@
 TODO
 
 FIX:
+- set showmetadata to false when no json found on start
 - transitions still suck using vlc
-- config blinks on save
 - keep metadata panel below config always
 
 QOL:

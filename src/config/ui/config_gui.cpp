@@ -108,9 +108,12 @@ void ConfigUI::saveConfig() {
         return;
     }
 
-    LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' called");
-    // Store current iniData before saving to preserve old state
+    LOG_DEBUG("ConfigUI: 'ConfigUI::saveConfig' started");
+
+    // Store current iniData before saving
     const auto oldIniData = configService_->getIniData();
+    
+    // Save the config
     configService_->saveConfig(configService_->getIniData());
     const auto& currentIniData = configService_->getIniData();
     
@@ -123,40 +126,64 @@ void ConfigUI::saveConfig() {
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
     bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
 
-    // Update lastSavedIniData after checking changes
+    // Log change detection results
+    LOG_DEBUG("ConfigUI: Change detection: "
+              << "windowSettings=" << windowSettingsChanged
+              << ", visibility=" << visibilitySettingsChanged
+              << ", font=" << fontSettingsChanged
+              << ", titleDataSource=" << titleDataSourceChanged
+              << ", videoBackend=" << videoBackendChanged
+              << ", forceImagesOnly=" << forceImagesOnlyChanged
+              << ", metadata=" << metadataSettingsChanged);
+
+    // Update lastSavedIniData
     state_.lastSavedIniData = currentIniData;
 
+    // Update title position if needed
     if (assets_ && assets_->getTitleTexture()) {
         const Settings& settings = configService_->getSettings();
         assets_->setTitlePosition(settings.titleX, settings.titleY);
         LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
 
+    // Trigger callbacks for relevant changes
     if (appCallbacks_ && !standaloneMode_) {
+        bool anyCallbackTriggered = false;
         if (fontSettingsChanged) {
-            LOG_DEBUG("ConfigUI: Font settings changed, reloading font");
+            LOG_DEBUG("ConfigUI: Font settings changed, triggering reloadFont");
             appCallbacks_->reloadFont(standaloneMode_);
+            anyCallbackTriggered = true;
         }
         if (windowSettingsChanged) {
-            LOG_DEBUG("ConfigUI: WindowSettings changed, triggering window reload");
+            LOG_DEBUG("ConfigUI: WindowSettings changed, triggering reloadWindows");
             appCallbacks_->reloadWindows();
+            anyCallbackTriggered = true;
         }
         if (visibilitySettingsChanged || videoBackendChanged) {
-            LOG_DEBUG("ConfigUI: ShowDMD, ShowBackglass, or videoBackend changed, triggering asset reload");
+            LOG_DEBUG("ConfigUI: ShowDMD, ShowBackglass, or videoBackend changed, triggering reloadAssetsAndRenderers");
             appCallbacks_->reloadAssetsAndRenderers();
+            anyCallbackTriggered = true;
         }
         if (titleDataSourceChanged || forceImagesOnlyChanged) {
-            LOG_DEBUG("ConfigUI: Title data-source changed, triggering table reload");
+            LOG_DEBUG("ConfigUI: Title data-source or ForceImagesOnly changed, triggering reloadTablesAndTitle");
             appCallbacks_->reloadTablesAndTitle();
+            anyCallbackTriggered = true;
         }
         if (metadataSettingsChanged) {
-            LOG_DEBUG("ConfigUI: ShowMetadata changed, triggering overlay settings reload");
+            LOG_DEBUG("ConfigUI: ShowMetadata changed, triggering reloadOverlaySettings");
             appCallbacks_->reloadOverlaySettings();
+            anyCallbackTriggered = true;
         }
+        if (!anyCallbackTriggered) {
+            LOG_DEBUG("ConfigUI: No callbacks triggered");
+        }
+    } else {
+        LOG_DEBUG("ConfigUI: Callbacks skipped (appCallbacks_ is null or standaloneMode_)");
     }
 
     state_.hasChanges = false;
     state_.saveMessageTimer = 1.5f;
+    LOG_DEBUG("ConfigUI: Save completed");
 }
 
 void ConfigUI::discardChanges() {
