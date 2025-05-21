@@ -25,21 +25,19 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    # --- NEW: Ensure APT cache directories are clean and writable before caching ---
-    # This step is crucial to prevent "Permission denied" and "File exists" errors
-    # during the cache restoration phase by the actions/cache action itself.
     - name: Prepare APT cache directories for caching
       run: |
         echo "Preparing /var/lib/apt/lists/ and /var/cache/apt/archives/ for caching..."
-        # Aggressively remove all contents
         sudo rm -rf /var/lib/apt/lists/* || true
         sudo rm -rf /var/cache/apt/archives/* || true
-        # Ensure the directories exist and are writable by all (including the runner user)
         sudo mkdir -p /var/lib/apt/lists/ || true
         sudo mkdir -p /var/cache/apt/archives/ || true
+        # Change ownership to the runner user for full control during cache operations
+        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
+        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
+        # Ensure full read/write/execute permissions for all
         sudo chmod -R 777 /var/lib/apt/lists/ || true
         sudo chmod -R 777 /var/cache/apt/archives/ || true
-        # Remove any lingering lock files that might interfere
         sudo rm -f /var/lib/apt/lists/lock || true
         sudo rm -f /var/cache/apt/archives/lock || true
 
@@ -83,29 +81,33 @@ jobs:
         fi
 
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
-        TARBALL_FULL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
+        # Define a temporary path outside GITHUB_WORKSPACE for the artifact
+        ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
+        mkdir -p "${ARTIFACT_TEMP_DIR}"
+        TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
 
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        cd "${GITHUB_WORKSPACE}"
-        tar -czvf "${TARBALL_FULL_PATH}" ./install_root
+        # Change directory to install_root to ensure clean tarball contents
+        cd "${GITHUB_WORKSPACE}/install_root"
+        # Create the tarball in the temporary directory
+        tar -czvf "${TARBALL_FULL_PATH}" ./*
         
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         
         echo "DEBUG: Checking for created tarball at ${TARBALL_FULL_PATH}"
         ls -l "${TARBALL_FULL_PATH}" || { echo "ERROR: Tarball not found after creation attempt!"; exit 1; }
-        echo "DEBUG: Contents of workspace root:"
+        echo "DEBUG: Contents of temporary artifact directory:"
+        ls -l "${ARTIFACT_TEMP_DIR}"
+        echo "DEBUG: Contents of workspace root (just to be sure):"
         ls -l "${GITHUB_WORKSPACE}"
-
-        # --- NEW: Add a short delay to ensure file system consistency ---
-        echo "Adding a short delay before artifact upload..."
-        sleep 5 # Wait for 5 seconds
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        path: "${GITHUB_WORKSPACE}/${{ steps.create-archive.outputs.tarball_name }}"
+        # Upload from the temporary directory
+        path: "${{ runner.temp }}/artifacts/${{ steps.create-archive.outputs.tarball_name }}"
         retention-days: 7
 
     - name: Test Version Flag
