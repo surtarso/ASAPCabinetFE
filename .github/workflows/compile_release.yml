@@ -6,13 +6,11 @@ on:
     branches: [ "main" ]
     paths:
       - ".github/workflows/compile_release.yml"
-      - "src/**"                      # Watch all source files
-      - "CMakeLists.txt"              # Watch CMakeLists.txt
-      - "external/imgui/**"           # Watch ImGui files
-      - "external/ImGuiFileDialog/**" # Watch ImGuiFileDialog files
-      - "external/nlohmann/**"        # Watch Nlohmann Json files
-      - "version.h.in"                # IMPORTANT: Watch this too!
-      - "apt-packages.txt"            # Watch the list of APT dependencies for caching
+      - "src/**"
+      - "CMakeLists.txt"
+      - "external/**"
+      - "version.h.in"
+      - "apt-packages.txt" # Watch the list of APT dependencies for caching
   pull_request:
     branches: [ "main" ]
 
@@ -27,10 +25,23 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    # --- NEW: Clean APT cache directories before attempting to restore/use cache ---
+    - name: Clean APT cache directories
+      run: |
+        # These commands clean out existing files and ensure proper permissions
+        # for both the cache action and subsequent apt-get operations.
+        # '|| true' prevents job failure if a directory doesn't exist yet on first run.
+        sudo rm -rf /var/lib/apt/lists/* || true
+        sudo rm -rf /var/cache/apt/archives/* || true
+        sudo rm -f /var/lib/apt/lists/lock || true
+        sudo rm -f /var/cache/apt/archives/lock || true
+        sudo chmod -R a+rX /var/lib/apt/lists/ || true
+        sudo chmod -R a+rX /var/cache/apt/archives/ || true
+
     # --- Cache APT packages to speed up dependency installation ---
     - name: Cache APT packages
-      uses: actions/cache@v4
       id: apt-cache # Add an ID to refer to this step's outputs
+      uses: actions/cache@v4
       with:
         path: |
           /var/lib/apt/lists/
@@ -41,21 +52,11 @@ jobs:
 
     - name: Install System Dependencies
       run: |
-        # --- Crucial for caching: Ensure APT cache directories are readable by the runner ---
-        # Do this *before* apt-get update to ensure proper permissions from the start
-        sudo chmod -R a+rX /var/lib/apt/lists/ || true # Use || true to prevent job failure if path doesn't exist yet
-        sudo chmod -R a+rX /var/cache/apt/archives/ || true
-        sudo rm -f /var/lib/apt/lists/lock # Remove any lingering lock files
-        sudo rm -f /var/cache/apt/archives/lock # Remove any lingering lock files
-
-        # Update package lists (will be fast if cached)
-        sudo apt-get update
-
-        # Install packages from the apt-packages.txt file.
-        # Check if cache was restored. If it was, maybe skip install if all packages are already in cache?
-        # This is tricky because apt-get install -y will still 'install' (unpack) even if downloaded.
-        # For now, let's keep it simple and just let apt-get install run.
-        # It should be faster if downloads are skipped due to cache.
+        # apt-get update is necessary to refresh package lists, even with cache.
+        # It should be fast if lists are in cache.
+        sudo apt-get update 
+        
+        # Install packages. Downloads should be skipped if files are in cache.
         cat apt-packages.txt | xargs sudo apt-get install -y
 
     - name: Configure with CMake
@@ -74,17 +75,13 @@ jobs:
         cmake --install .
 
     - name: Create distributable archive
+      id: create-archive # Add an ID to this step to output the filename
       run: |
-        # Get the version string
         VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
         if [ -z "$VERSION" ]; then
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
 
-        # Debugging: Print the version used
-        echo "DEBUG: Version determined: ${VERSION}"
-
-        # Define the full path for the tarball, explicitly in the workspace root
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
         TARBALL_FULL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
 
@@ -93,8 +90,10 @@ jobs:
         # Change directory to the workspace root.
         cd "${GITHUB_WORKSPACE}"
         # Tar the 'install_root' directory. This ensures the output is in GITHUB_WORKSPACE.
-        # The content of the tarball will be 'install_root/...'
         tar -czvf "${TARBALL_FULL_PATH}" ./install_root
+        
+        # Output the exact filename for the next step to consume
+        echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         
         # Debugging: Check if the file was created and its permissions
         echo "DEBUG: Checking for created tarball at ${TARBALL_FULL_PATH}"
@@ -106,8 +105,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
-        # Add a timeout for the upload to prevent indefinite hangs
+        # Use the exact filename from the previous step's output to avoid globbing issues
+        path: "${GITHUB_WORKSPACE}/${{ steps.create-archive.outputs.tarball_name }}"
         retention-days: 7 # Optional: Set how long to keep the artifact
 
     - name: Test Version Flag
