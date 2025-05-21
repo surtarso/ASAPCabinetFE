@@ -9,6 +9,9 @@ imgui.ini
 create_codebase.sh
 codebase.txt
 
+# Doxygen generated documentation
+docs/
+
 # Prerequisites
 *.d
 
