@@ -4,6 +4,7 @@
 #include "core/dependency_factory.h"
 #include "core/joystick_manager.h"
 #include "core/first_run.h"
+#include "core/playfield_overlay.h"
 #include "render/table_loader.h"
 #include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
@@ -113,6 +114,16 @@ void App::reloadTablesAndTitle() {
     LOG_DEBUG("App: Title texture reloaded for table " << tables_[currentIndex_].title);
 }
 
+void App::reloadOverlaySettings() {
+    LOG_DEBUG("App: Reloading overlay settings");
+    if (playfieldOverlay_) {
+        playfieldOverlay_->updateSettings(configManager_->getSettings());
+        LOG_DEBUG("App: Overlay settings reloaded");
+    } else {
+        LOG_ERROR("App: PlayfieldOverlay is null, cannot reload settings");
+    }
+}
+
 std::string App::getExecutableDir() {
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
@@ -170,6 +181,14 @@ void App::initializeDependencies() {
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
+
+    playfieldOverlay_ = std::make_unique<PlayfieldOverlay>(
+        &tables_,           // Pass pointer to tables vector
+        &currentIndex_,     // Pass pointer to currentIndex
+        configManager_.get(),
+        windowManager_.get(),
+        assets_.get()
+    );
 
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
                                    currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
@@ -239,6 +258,9 @@ void App::render() {
 
     guiManager_->newFrame();
     renderer_->render(*assets_);
+    if (playfieldOverlay_) {
+        playfieldOverlay_->render();
+    }
     if (showConfig_) {
         configEditor_->drawGUI();
     }

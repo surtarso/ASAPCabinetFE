@@ -243,3 +243,31 @@ bool ConfigUIState::hasForceImagesOnlyChanged(const std::map<std::string, Settin
     return false;
 }
 
+bool ConfigUIState::hasMetadataSettingsChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+    auto currentIt = currentIniData.find("TitleDisplay");
+    auto lastIt = lastSavedIniData.find("TitleDisplay");
+
+    if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
+        LOG_DEBUG("ConfigUIState: TitleDisplay section missing in current or last state");
+        return true;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
+    const std::string key = "ShowMetadata";
+    auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                      [key](const auto& pair) { return pair.first == key; });
+    auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                   [key](const auto& pair) { return pair.first == key; });
+
+    if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUIState: ShowMetadata key missing in current or last state");
+        return true;
+    }
+    if (currentPairIt->second != lastPairIt->second) {
+        LOG_DEBUG("ConfigUIState: ShowMetadata changed from " << lastPairIt->second << " to " << currentPairIt->second);
+        return true;
+    }
+    LOG_DEBUG("ConfigUIState: No ShowMetadata changes");
+    return false;
+}

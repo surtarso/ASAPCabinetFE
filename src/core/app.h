@@ -16,6 +16,7 @@
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
 #include "core/joystick_manager.h"
+#include "core/playfield_overlay.h"
 #include "sound/isound_manager.h"
 #include "core/gui_manager.h"
 #include "core/dependency_factory.h"
@@ -29,7 +30,8 @@ public:
     void reloadFont(bool isStandalone = false) override;         
     void reloadWindows() override;                               
     void reloadAssetsAndRenderers() override;                    
-    void reloadTablesAndTitle() override;                        
+    void reloadTablesAndTitle() override;
+    void reloadOverlaySettings() override;
 
 private:
     std::string exeDir_;
@@ -50,6 +52,7 @@ private:
     std::unique_ptr<IInputManager> inputManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
     std::vector<TableData> tables_;
+    std::unique_ptr<PlayfieldOverlay> playfieldOverlay_;
 
     std::string getExecutableDir();
     bool prevShowConfig_ = false;

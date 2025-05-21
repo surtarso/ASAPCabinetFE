@@ -196,7 +196,7 @@ ConfigSchema::ConfigSchema() {
         {"wheelMediaX", "MediaDimensions", "WheelMediaX", 720, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "wheelMediaX"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "wheelMediaX"); }},
-        {"wheelMediaY", "MediaDimensions", "WheelMediaY", 1570, Type::Int, false, PostProcess::None,
+        {"wheelMediaY", "MediaDimensions", "WheelMediaY", 1550, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "wheelMediaY"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "wheelMediaY"); }},
         {"playfieldMediaWidth", "MediaDimensions", "PlayfieldMediaWidth", 1080, Type::Int, false, PostProcess::None,
@@ -246,6 +246,10 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdRotation"); }},
 
         // Title display
+        {"showMetadata", "TitleDisplay", "ShowMetadata", true, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "showMetadata"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "showMetadata"); }},
+        
         {"fontPath", "TitleDisplay", "FontPath", std::string("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "fontPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "fontPath"); }},
@@ -258,7 +262,7 @@ ConfigSchema::ConfigSchema() {
         {"fontSize", "TitleDisplay", "FontSize", 28, Type::Int, false, PostProcess::DpiScaleFontSize,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "fontSize"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "fontSize"); }},
-        {"titleSource", "TitleDisplay", "TitleSource", std::string("filename"), Type::String, false, PostProcess::None,
+        {"titleSource", "TitleDisplay", "TitleSource", std::string("metadata"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "titleSource"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "titleSource"); }},
         {"showWheel", "TitleDisplay", "ShowWheel", true, Type::Bool, false, PostProcess::None,
@@ -451,6 +455,7 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "showTitle") s.showTitle = v;
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else if (field == "forceImagesOnly") s.forceImagesOnly = v;
+    else if (field == "showMetadata") s.showMetadata = v;
     else LOG_ERROR("ConfigSchema: Unknown bool field: " << field);
 }
 

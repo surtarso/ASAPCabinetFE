@@ -1,4 +1,5 @@
 #include "config/ui/config_gui.h"
+#include "core/playfield_overlay.h"
 #include "utils/logging.h"
 #include "imgui.h"
 
@@ -120,6 +121,7 @@ void ConfigUI::saveConfig() {
     bool titleDataSourceChanged = state_.hasTitleDataSourceChanged(oldIniData);
     bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
+    bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
 
     // Update lastSavedIniData after checking changes
     state_.lastSavedIniData = currentIniData;
@@ -147,6 +149,10 @@ void ConfigUI::saveConfig() {
             LOG_DEBUG("ConfigUI: Title data-source changed, triggering table reload");
             appCallbacks_->reloadTablesAndTitle();
         }
+        if (metadataSettingsChanged) {
+            LOG_DEBUG("ConfigUI: ShowMetadata changed, triggering overlay settings reload");
+            appCallbacks_->reloadOverlaySettings();
+        }
     }
 
     state_.hasChanges = false;
@@ -156,9 +162,11 @@ void ConfigUI::saveConfig() {
 void ConfigUI::discardChanges() {
     LOG_DEBUG("ConfigUI: 'ConfigUI::discardChanges' called");
     // Reload config from file instead of using lastSavedIniData
-    configService_->loadConfig();
-    state_.saveMessageTimer = 0.0f;
-    state_.hasChanges = false;
+    if (state_.hasChanges == true) {
+        configService_->loadConfig();
+        state_.saveMessageTimer = 0.0f;
+        state_.hasChanges = false;
+    }
     showConfig_ = false; // Ensure UI closes
 }
 

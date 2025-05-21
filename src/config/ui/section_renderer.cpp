@@ -40,6 +40,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ShowDMD"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["ForceImagesOnly"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
