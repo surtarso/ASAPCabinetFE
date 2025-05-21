@@ -25,12 +25,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
-        # Fetch tags to ensure `git describe` works correctly for versioning
-        fetch-depth: 0 # Crucial for `git describe` to work on tags
+        fetch-depth: 0
 
     # --- Cache APT packages to speed up dependency installation ---
     - name: Cache APT packages
       uses: actions/cache@v4
+      id: apt-cache # Add an ID to refer to this step's outputs
       with:
         path: |
           /var/lib/apt/lists/
@@ -41,32 +41,37 @@ jobs:
 
     - name: Install System Dependencies
       run: |
-        sudo apt-get update
-        cat apt-packages.txt | xargs sudo apt-get install -y
-        
         # --- Crucial for caching: Ensure APT cache directories are readable by the runner ---
-        sudo chmod -R a+rX /var/lib/apt/lists/
-        sudo chmod -R a+rX /var/cache/apt/archives/
-        sudo rm -f /var/lib/apt/lists/lock
-        sudo rm -f /var/cache/apt/archives/lock
+        # Do this *before* apt-get update to ensure proper permissions from the start
+        sudo chmod -R a+rX /var/lib/apt/lists/ || true # Use || true to prevent job failure if path doesn't exist yet
+        sudo chmod -R a+rX /var/cache/apt/archives/ || true
+        sudo rm -f /var/lib/apt/lists/lock # Remove any lingering lock files
+        sudo rm -f /var/cache/apt/archives/lock # Remove any lingering lock files
+
+        # Update package lists (will be fast if cached)
+        sudo apt-get update
+
+        # Install packages from the apt-packages.txt file.
+        # Check if cache was restored. If it was, maybe skip install if all packages are already in cache?
+        # This is tricky because apt-get install -y will still 'install' (unpack) even if downloaded.
+        # For now, let's keep it simple and just let apt-get install run.
+        # It should be faster if downloads are skipped due to cache.
+        cat apt-packages.txt | xargs sudo apt-get install -y
 
     - name: Configure with CMake
       run: |
-        # Use a consistent build directory, ensure it's within the workspace
         mkdir -p "${GITHUB_WORKSPACE}/build" && cd "${GITHUB_WORKSPACE}/build"
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
 
     - name: Compile with CMake
       run: |
-        # Change to the build directory
         cd "${GITHUB_WORKSPACE}/build"
         make -j$(nproc)
 
     - name: Run `make install` to package the application
       run: |
-        # Change to the build directory
         cd "${GITHUB_WORKSPACE}/build"
-        cmake --install . # This uses the CMAKE_INSTALL_PREFIX set during configure
+        cmake --install .
 
     - name: Create distributable archive
       run: |
@@ -76,38 +81,39 @@ jobs:
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
 
+        # Debugging: Print the version used
+        echo "DEBUG: Version determined: ${VERSION}"
+
         # Define the full path for the tarball, explicitly in the workspace root
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
         TARBALL_FULL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
 
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        # Change directory to the workspace root, then explicitly tar the 'install_root' directory.
-        # This is the most reliable way to create the tarball without conflicts
-        # and ensure it's in the root of the workspace.
+        # Change directory to the workspace root.
         cd "${GITHUB_WORKSPACE}"
+        # Tar the 'install_root' directory. This ensures the output is in GITHUB_WORKSPACE.
+        # The content of the tarball will be 'install_root/...'
         tar -czvf "${TARBALL_FULL_PATH}" ./install_root
-        # This will create a tarball where the top-level directory inside is 'install_root/'.
-        # E.g., tar -tf ASAPCabinetFE-...tar.gz would show:
-        # install_root/
-        # install_root/bin/
-        # install_root/bin/ASAPCabinetFE
-        # ... and so on.
+        
+        # Debugging: Check if the file was created and its permissions
+        echo "DEBUG: Checking for created tarball at ${TARBALL_FULL_PATH}"
+        ls -l "${TARBALL_FULL_PATH}" || { echo "ERROR: Tarball not found after creation attempt!"; exit 1; }
+        echo "DEBUG: Contents of workspace root:"
+        ls -l "${GITHUB_WORKSPACE}"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # This path is now definitively where the tarball will be.
         path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
+        # Add a timeout for the upload to prevent indefinite hangs
+        retention-days: 7 # Optional: Set how long to keep the artifact
 
     - name: Test Version Flag
       run: |
-       # Ensure we are in the main workspace directory or specify full path
         cd "${GITHUB_WORKSPACE}"
-       # Get the version directly from the generated executable in the build directory
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
-        # We'll just check if it contains the project name and 'version' keyword.
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
         else
