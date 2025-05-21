@@ -1,7 +1,7 @@
 TODO
 
 FIX:
-- transitions still suck using vlc
+- pressing 'LAUNCH' multiple tiles queue opening vpx multiple times
 - metadata year/manufacturer better parsing
 
 QOL:
