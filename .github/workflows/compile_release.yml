@@ -10,7 +10,7 @@ on:
       - "CMakeLists.txt"
       - "external/**"
       - "version.h.in"
-      - "apt-packages.txt" # Watch the list of APT dependencies for caching
+      - "apt-packages.txt"
   pull_request:
     branches: [ "main" ]
 
@@ -25,22 +25,26 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    # --- NEW: Clean APT cache directories before attempting to restore/use cache ---
-    - name: Clean APT cache directories
+    # --- NEW: Ensure APT cache directories are clean and writable before caching ---
+    # This step is crucial to prevent "Permission denied" and "File exists" errors
+    # during the cache restoration phase by the actions/cache action itself.
+    - name: Prepare APT cache directories for caching
       run: |
-        # These commands clean out existing files and ensure proper permissions
-        # for both the cache action and subsequent apt-get operations.
-        # '|| true' prevents job failure if a directory doesn't exist yet on first run.
+        echo "Preparing /var/lib/apt/lists/ and /var/cache/apt/archives/ for caching..."
+        # Aggressively remove all contents
         sudo rm -rf /var/lib/apt/lists/* || true
         sudo rm -rf /var/cache/apt/archives/* || true
+        # Ensure the directories exist and are writable by all (including the runner user)
+        sudo mkdir -p /var/lib/apt/lists/ || true
+        sudo mkdir -p /var/cache/apt/archives/ || true
+        sudo chmod -R 777 /var/lib/apt/lists/ || true
+        sudo chmod -R 777 /var/cache/apt/archives/ || true
+        # Remove any lingering lock files that might interfere
         sudo rm -f /var/lib/apt/lists/lock || true
         sudo rm -f /var/cache/apt/archives/lock || true
-        sudo chmod -R a+rX /var/lib/apt/lists/ || true
-        sudo chmod -R a+rX /var/cache/apt/archives/ || true
 
-    # --- Cache APT packages to speed up dependency installation ---
     - name: Cache APT packages
-      id: apt-cache # Add an ID to refer to this step's outputs
+      id: apt-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -52,11 +56,7 @@ jobs:
 
     - name: Install System Dependencies
       run: |
-        # apt-get update is necessary to refresh package lists, even with cache.
-        # It should be fast if lists are in cache.
         sudo apt-get update 
-        
-        # Install packages. Downloads should be skipped if files are in cache.
         cat apt-packages.txt | xargs sudo apt-get install -y
 
     - name: Configure with CMake
@@ -75,7 +75,7 @@ jobs:
         cmake --install .
 
     - name: Create distributable archive
-      id: create-archive # Add an ID to this step to output the filename
+      id: create-archive
       run: |
         VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
         if [ -z "$VERSION" ]; then
@@ -87,27 +87,26 @@ jobs:
 
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        # Change directory to the workspace root.
         cd "${GITHUB_WORKSPACE}"
-        # Tar the 'install_root' directory. This ensures the output is in GITHUB_WORKSPACE.
         tar -czvf "${TARBALL_FULL_PATH}" ./install_root
         
-        # Output the exact filename for the next step to consume
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         
-        # Debugging: Check if the file was created and its permissions
         echo "DEBUG: Checking for created tarball at ${TARBALL_FULL_PATH}"
         ls -l "${TARBALL_FULL_PATH}" || { echo "ERROR: Tarball not found after creation attempt!"; exit 1; }
         echo "DEBUG: Contents of workspace root:"
         ls -l "${GITHUB_WORKSPACE}"
 
+        # --- NEW: Add a short delay to ensure file system consistency ---
+        echo "Adding a short delay before artifact upload..."
+        sleep 5 # Wait for 5 seconds
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # Use the exact filename from the previous step's output to avoid globbing issues
         path: "${GITHUB_WORKSPACE}/${{ steps.create-archive.outputs.tarball_name }}"
-        retention-days: 7 # Optional: Set how long to keep the artifact
+        retention-days: 7
 
     - name: Test Version Flag
       run: |
