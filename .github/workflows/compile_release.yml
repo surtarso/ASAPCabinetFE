@@ -48,6 +48,13 @@ jobs:
         # Make sure you create 'apt-packages.txt' in your repository root
         # with one package name per line (e.g., 'libsdl2-dev').
         cat apt-packages.txt | xargs sudo apt-get install -y
+        
+        # --- Crucial for caching: Ensure APT cache directories are readable by the runner ---
+        # This prevents "Permission denied" errors during cache save.
+        sudo chmod -R a+rX /var/lib/apt/lists/
+        sudo chmod -R a+rX /var/cache/apt/archives/
+        sudo rm -f /var/lib/apt/lists/lock # Remove any lingering lock files
+        sudo rm -f /var/cache/apt/archives/lock # Remove any lingering lock files
 
     - name: Configure with CMake
       run: |
@@ -66,33 +73,28 @@ jobs:
 
     - name: Create distributable archive
       run: |
-        # IMPORTANT: Change directory to the workspace root before creating the tarball.
-        # This prevents the "file changed as we read it" warning by creating the archive
-        # outside the directory being compressed.
-        cd "${GITHUB_WORKSPACE}"
-        
-        # Get the version string using git describe.
-        # This will be the most accurate reflection of the version at the commit.
-        # `--abbrev=7` gives a short hash. `-dirty` indicates uncommitted changes.
+        # Get the version string
         VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
-        
-        # Fallback if git describe fails for any reason (though unlikely with fetch-depth:0)
         if [ -z "$VERSION" ]; then
-            # Using a timestamp as a robust fallback for the version name if Git fails
-            VERSION="unknown-$(date +%Y%m%d%H%M%S)" 
+            VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
 
-        echo "Creating archive ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
-        # Tar the 'install_root' directory.
-        # Quotes around "${VERSION}" handle potential special characters in the version string.
-        tar -czvf ASAPCabinetFE-"${VERSION}"-linux-x64.tar.gz ./install_root/
+        # Define the full path for the tarball
+        TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
+        TARBALL_PATH="${GITHUB_WORKSPACE}/${TARBALL_NAME}"
+
+        echo "Creating archive ${TARBALL_NAME}"
+        
+        # Navigate INTO the install_root to ensure files are at the root of the tarball
+        cd "${GITHUB_WORKSPACE}/install_root"
+        # Tar the current directory's contents and output the archive to the workspace root
+        tar -czvf "${TARBALL_PATH}" ./*
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # IMPORTANT: The tarball is now located directly in the workspace root.
-        # This path correctly points to where the archive was created.
+        # The tarball is now explicitly created at this path
         path: "${GITHUB_WORKSPACE}/ASAPCabinetFE-*-linux-x64.tar.gz"
 
     - name: Test Version Flag
