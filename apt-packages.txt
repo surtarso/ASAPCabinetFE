@@ -1,4 +1,3 @@
-# apt-packages.txt
 build-essential
 cmake
 git
