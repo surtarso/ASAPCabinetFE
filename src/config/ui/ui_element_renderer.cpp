@@ -327,35 +327,38 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
 }
 
 void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, IConfigService* configService) {
-    bool boolValue = (value == "false");
+    bool boolValue = (value == "true");
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
         hasChanges = true;
         LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
         
-        LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
-        const auto& iniData = configService->getIniData();
-        auto vpxIt = iniData.find("VPX");
-        if (vpxIt != iniData.end()) {
-            LOG_DEBUG("UiElementRenderer: VPX section found");
-            auto pathIt = std::find_if(vpxIt->second.keyValues.begin(), vpxIt->second.keyValues.end(),
-                                    [](const auto& pair) { return pair.first == "VPXTablesPath"; });
-            if (pathIt != vpxIt->second.keyValues.end()) {
-                LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
-                if (!pathIt->second.empty()) {
-                    std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
-                    LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
-                    if (!std::filesystem::exists(jsonPath)) {
-                        LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
-                        ImGui::OpenPopup("Metadata Error");
+        // Only perform the check and open popup if the checkbox is being set to true
+        if (boolValue) { 
+            LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
+            const auto& iniData = configService->getIniData();
+            auto vpxIt = iniData.find("VPX");
+            if (vpxIt != iniData.end()) {
+                LOG_DEBUG("UiElementRenderer: VPX section found");
+                auto pathIt = std::find_if(vpxIt->second.keyValues.begin(), vpxIt->second.keyValues.end(),
+                                        [](const auto& pair) { return pair.first == "VPXTablesPath"; });
+                if (pathIt != vpxIt->second.keyValues.end()) {
+                    LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
+                    if (!pathIt->second.empty()) {
+                        std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
+                        LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
+                        if (!std::filesystem::exists(jsonPath)) {
+                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
+                            ImGui::OpenPopup("Metadata Error");
+                        } else {
+                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                        }
                     } else {
-                        LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                        LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
                     }
                 } else {
-                    LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
+                    LOG_DEBUG("UiElementRenderer: VPXTablesPath not found in VPX section");
                 }
-            } else {
-                LOG_DEBUG("UiElementRenderer: VPXTablesPath not found in VPX section");
             }
         }
     }
@@ -398,8 +401,8 @@ void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string
 
         if (ImGui::Button("OK", ImVec2(buttonWidth, 0))) {
             LOG_DEBUG("UiElementRenderer: Closing Metadata Error");
-            value = "true";
-            boolValue = false;
+            // Set value back to false when "OK" is clicked in the error popup
+            value = "false"; 
             hasChanges = true;
             LOG_DEBUG("UiElementRenderer: Reverted: " << section << "." << key << " = " << value);
             ImGui::CloseCurrentPopup();

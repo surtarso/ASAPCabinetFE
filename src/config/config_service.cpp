@@ -23,8 +23,27 @@ void ConfigService::loadConfig() {
         initializeIniData();
         fileHandler_.writeConfig(iniData_);
     }
+
+    // Store original showMetadata value to detect changes
+    // bool originalShowMetadata = false;
+    // auto titleDisplayIt = iniData_.find("TitleDisplay");
+    // if (titleDisplayIt != iniData_.end() && titleDisplayIt->second.keyValues.size() > 0) {
+    //     auto it = std::find_if(titleDisplayIt->second.keyValues.begin(),
+    //                            titleDisplayIt->second.keyValues.end(),
+    //                            [](const auto& pair) { return pair.first == "ShowMetadata"; });
+    //     if (it != titleDisplayIt->second.keyValues.end()) {
+    //         originalShowMetadata = (it->second == "true");
+    //     }
+    // }
+
     parser_.parse(iniData_, settings_, keybindManager_);
-    LOG_INFO("ConfigService: Config loaded from " << configPath_);
+    // LOG_INFO("ConfigService: Config loaded from " << configPath_);
+
+    // // Check if showMetadata was changed due to titleSource == "filename"
+    // if (settings_.titleSource == "filename" && originalShowMetadata && !settings_.showMetadata) {
+    //     fileHandler_.writeConfig(iniData_);
+    //     LOG_INFO("ConfigService: Updated config.ini to reflect showMetadata=false due to titleSource=filename");
+    // }
 
     // Apply VPinballX.ini settings if enabled
     if (settings_.useVPinballXIni) {
@@ -67,16 +86,16 @@ void ConfigService::loadConfig() {
 
             if (iniSettings->playfieldX) updateKeyValue("PlayfieldX", std::to_string(*iniSettings->playfieldX));
             if (iniSettings->playfieldY) updateKeyValue("PlayfieldY", std::to_string(*iniSettings->playfieldY));
-            if (iniSettings->playfieldWidth) updateKeyValue("PlayfieldWindowWidth", std::to_string(*iniSettings->playfieldWidth));
-            if (iniSettings->playfieldHeight) updateKeyValue("PlayfieldWindowHeight", std::to_string(*iniSettings->playfieldHeight));
+            if (iniSettings->playfieldWidth) updateKeyValue("PlayfieldWidth", std::to_string(*iniSettings->playfieldWidth));
+            if (iniSettings->playfieldHeight) updateKeyValue("PlayfieldHeight", std::to_string(*iniSettings->playfieldHeight));
             if (iniSettings->backglassX) updateKeyValue("BackglassX", std::to_string(*iniSettings->backglassX));
             if (iniSettings->backglassY) updateKeyValue("BackglassY", std::to_string(*iniSettings->backglassY));
-            if (iniSettings->backglassWidth) updateKeyValue("BackglassWindowWidth", std::to_string(*iniSettings->backglassWidth));
-            if (iniSettings->backglassHeight) updateKeyValue("BackglassWindowHeight", std::to_string(*iniSettings->backglassHeight));
+            if (iniSettings->backglassWidth) updateKeyValue("BackglassWidth", std::to_string(*iniSettings->backglassWidth));
+            if (iniSettings->backglassHeight) updateKeyValue("BackglassHeight", std::to_string(*iniSettings->backglassHeight));
             if (iniSettings->dmdX) updateKeyValue("DMDX", std::to_string(*iniSettings->dmdX));
             if (iniSettings->dmdY) updateKeyValue("DMDY", std::to_string(*iniSettings->dmdY));
-            if (iniSettings->dmdWidth) updateKeyValue("DMDWindowWidth", std::to_string(*iniSettings->dmdWidth));
-            if (iniSettings->dmdHeight) updateKeyValue("DMDWindowHeight", std::to_string(*iniSettings->dmdHeight));
+            if (iniSettings->dmdWidth) updateKeyValue("DMDWidth", std::to_string(*iniSettings->dmdWidth));
+            if (iniSettings->dmdHeight) updateKeyValue("DMDHeight", std::to_string(*iniSettings->dmdHeight));
 
             fileHandler_.writeConfig(iniData_);
             LOG_DEBUG("ConfigService: Updated iniData_ and saved config with VPinballX.ini values");
@@ -145,16 +164,16 @@ void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& ini
 
             if (iniSettings->playfieldX) updateKeyValue("PlayfieldX", std::to_string(*iniSettings->playfieldX));
             if (iniSettings->playfieldY) updateKeyValue("PlayfieldY", std::to_string(*iniSettings->playfieldY));
-            if (iniSettings->playfieldWidth) updateKeyValue("PlayfieldWindowWidth", std::to_string(*iniSettings->playfieldWidth));
-            if (iniSettings->playfieldHeight) updateKeyValue("PlayfieldWindowHeight", std::to_string(*iniSettings->playfieldHeight));
+            if (iniSettings->playfieldWidth) updateKeyValue("PlayfieldWidth", std::to_string(*iniSettings->playfieldWidth));
+            if (iniSettings->playfieldHeight) updateKeyValue("PlayfieldHeight", std::to_string(*iniSettings->playfieldHeight));
             if (iniSettings->backglassX) updateKeyValue("BackglassX", std::to_string(*iniSettings->backglassX));
             if (iniSettings->backglassY) updateKeyValue("BackglassY", std::to_string(*iniSettings->backglassY));
-            if (iniSettings->backglassWidth) updateKeyValue("BackglassWindowWidth", std::to_string(*iniSettings->backglassWidth));
-            if (iniSettings->backglassHeight) updateKeyValue("BackglassWindowHeight", std::to_string(*iniSettings->backglassHeight));
+            if (iniSettings->backglassWidth) updateKeyValue("BackglassWidth", std::to_string(*iniSettings->backglassWidth));
+            if (iniSettings->backglassHeight) updateKeyValue("BackglassHeight", std::to_string(*iniSettings->backglassHeight));
             if (iniSettings->dmdX) updateKeyValue("DMDX", std::to_string(*iniSettings->dmdX));
             if (iniSettings->dmdY) updateKeyValue("DMDY", std::to_string(*iniSettings->dmdY));
-            if (iniSettings->dmdWidth) updateKeyValue("DMDWindowWidth", std::to_string(*iniSettings->dmdWidth));
-            if (iniSettings->dmdHeight) updateKeyValue("DMDWindowHeight", std::to_string(*iniSettings->dmdHeight));
+            if (iniSettings->dmdWidth) updateKeyValue("DMDWidth", std::to_string(*iniSettings->dmdWidth));
+            if (iniSettings->dmdHeight) updateKeyValue("DMDHeight", std::to_string(*iniSettings->dmdHeight));
 
             fileHandler_.writeConfig(iniData_);
             LOG_DEBUG("ConfigService: Updated iniData_ and saved config with VPinballX.ini values after save");

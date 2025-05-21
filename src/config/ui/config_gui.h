@@ -45,6 +45,7 @@ private:
     void renderButtonPane();
     void updateSaveMessageTimer();
     std::vector<std::string> getVisibleSections() const;
+    bool requestFocusNextFrame_ = false;
 };
 
 #endif // CONFIG_UI_H
