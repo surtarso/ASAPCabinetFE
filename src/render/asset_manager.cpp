@@ -297,11 +297,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    LOG_INFO("AssetManager: Loaded assets for table: " << table.title << ", took " << duration << "ms");
+    LOG_INFO("Loaded " << table.title << " in " << duration << "ms");
 }
 
 void AssetManager::cleanupVideoPlayers() {
-    LOG_INFO("AssetManager: Cleaning up video players");
+    LOG_DEBUG("AssetManager: Cleaning up video players");
     if (playfieldVideoPlayer) {
         playfieldVideoPlayer->stop();
         playfieldVideoPlayer.reset();

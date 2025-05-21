@@ -30,12 +30,12 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
         return;
     }
     
-    info("Logger: Initialized");
+    debug("Logger: Initialized");
 }
 
 Logger::~Logger() {
     if (logFile_.is_open()) {
-        info("Logger: Shutting down");
+        info("Shutting down");
         logFile_.close();
     }
 }

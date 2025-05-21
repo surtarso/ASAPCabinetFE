@@ -23,12 +23,12 @@ FFmpegPlayer::FFmpegPlayer()
       swsContext_(nullptr),
       videoStreamIndex_(-1),
       rgbBuffer_(nullptr) { // Initialize rgbBuffer_ to nullptr
-    LOG_DEBUG("FFmpegPlayer: Constructor called");
+    //LOG_DEBUG("FFmpegPlayer: Constructor called");
 }
 
 FFmpegPlayer::~FFmpegPlayer() {
     cleanup();
-    LOG_DEBUG("FFmpegPlayer: Destructor called");
+    //LOG_DEBUG("FFmpegPlayer: Destructor called");
 }
 
 bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
@@ -46,7 +46,7 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         return false;
     }
 
-    LOG_DEBUG("Allocating formatContext");
+    //LOG_DEBUG("FFmpegPlayer: Allocating formatContext");
     formatContext_ = avformat_alloc_context();
     if (!formatContext_) {
         LOG_ERROR("FFmpegPlayer: Failed to allocate format context");
@@ -116,7 +116,7 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         return false;
     }
 
-    LOG_DEBUG("FFmpegPlayer: Codec Context dimensions - width=" << codecContext_->width << ", height=" << codecContext_->height << ", pix_fmt=" << av_get_pix_fmt_name(codecContext_->pix_fmt));
+    //LOG_DEBUG("FFmpegPlayer: Codec Context dimensions - width=" << codecContext_->width << ", height=" << codecContext_->height << ", pix_fmt=" << av_get_pix_fmt_name(codecContext_->pix_fmt));
 
     frame_ = av_frame_alloc();
     rgbFrame_ = av_frame_alloc();
@@ -127,8 +127,8 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         return false;
     }
 
-    LOG_DEBUG("FFmpegPlayer: sws_getContext params: src_w=" << codecContext_->width << ", src_h=" << codecContext_->height << ", src_pix_fmt=" << av_get_pix_fmt_name(codecContext_->pix_fmt)
-          << ", dst_w=" << width_ << ", dst_h=" << height_ << ", dst_pix_fmt=" << av_get_pix_fmt_name(AV_PIX_FMT_RGB24));
+    // LOG_DEBUG("FFmpegPlayer: sws_getContext params: src_w=" << codecContext_->width << ", src_h=" << codecContext_->height << ", src_pix_fmt=" << av_get_pix_fmt_name(codecContext_->pix_fmt)
+    //       << ", dst_w=" << width_ << ", dst_h=" << height_ << ", dst_pix_fmt=" << av_get_pix_fmt_name(AV_PIX_FMT_RGB24));
 
     swsContext_ = sws_getContext(
         codecContext_->width, codecContext_->height, codecContext_->pix_fmt,
@@ -172,8 +172,8 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     }
 
     // Log the actual linesize FFmpeg determined for the RGB frame
-    LOG_DEBUG("FFmpegPlayer: Manually allocated RGB buffer with size " << allocated_rgb_buffer_size
-              << ". rgbFrame_ linesize[0]=" << rgbFrame_->linesize[0] << ", Expected pixel data size=" << min_rgb_buffer_size);
+    // LOG_DEBUG("FFmpegPlayer: Manually allocated RGB buffer with size " << allocated_rgb_buffer_size
+    //           << ". rgbFrame_ linesize[0]=" << rgbFrame_->linesize[0] << ", Expected pixel data size=" << min_rgb_buffer_size);
 
     // Set other rgbFrame_ properties for consistency
     rgbFrame_->width = width_;
@@ -186,28 +186,28 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         SDL_DestroyTexture(texture_);
         texture_ = nullptr;
     }
-    LOG_DEBUG("Creating texture: w=" << width << ", h=" << height);
+    //LOG_DEBUG("FFmpegPlayer: Creating texture: w=" << width << ", h=" << height);
     texture_ = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
     
     int texWidth, texHeight;
     Uint32 texFormat;
     SDL_QueryTexture(texture_, &texFormat, nullptr, &texWidth, &texHeight);
-    LOG_DEBUG("FFmpegPlayer: SDL Texture created: width=" << texWidth << ", height=" << texHeight << ", format=" << SDL_GetPixelFormatName(texFormat));
+    //LOG_DEBUG("FFmpegPlayer: SDL Texture created: width=" << texWidth << ", height=" << texHeight << ", format=" << SDL_GetPixelFormatName(texFormat));
 
     if (!texture_) {
-        LOG_ERROR("Failed to create texture: " << SDL_GetError());
+        LOG_ERROR("FFmpegPlayer: Failed to create texture: " << SDL_GetError());
         cleanup();
         return false;
     }
 
-    LOG_DEBUG("Setup complete");
+    //LOG_DEBUG("FFmpegPlayer: Setup complete");
     return true;
 }
 
 void FFmpegPlayer::play() {
     if (isPlaying_) return;
     isPlaying_ = true;
-    LOG_DEBUG("FFmpegPlayer: Play started");
+    //LOG_DEBUG("FFmpegPlayer: Play started");
 }
 
 void FFmpegPlayer::stop() {
@@ -220,7 +220,7 @@ void FFmpegPlayer::stop() {
         // Flush codec buffers to ensure no old frames are returned after seek
         avcodec_flush_buffers(codecContext_);
     }
-    LOG_DEBUG("FFmpegPlayer: Stopped and reset to start");
+    //LOG_DEBUG("FFmpegPlayer: Stopped and reset to start");
 }
 
 void FFmpegPlayer::update() {
@@ -244,7 +244,7 @@ bool FFmpegPlayer::decodeFrame() {
         if (ret < 0) {
             if (ret == AVERROR_EOF) {
                 // End of file reached, loop the video
-                LOG_DEBUG("FFmpegPlayer: End of video stream, looping.");
+                //LOG_DEBUG("FFmpegPlayer: End of video stream, looping.");
                 if (formatContext_ && videoStreamIndex_ >= 0) {
                     av_seek_frame(formatContext_, videoStreamIndex_, 0, AVSEEK_FLAG_BACKWARD);
                     avcodec_flush_buffers(codecContext_);
@@ -312,7 +312,7 @@ void FFmpegPlayer::updateTexture() {
         }
         SDL_UnlockTexture(texture_);
     } else {
-        LOG_ERROR("Failed to lock texture: " << SDL_GetError());
+        LOG_ERROR("FFmpegPlayer: Failed to lock texture: " << SDL_GetError());
     }
 }
 
@@ -320,21 +320,22 @@ void FFmpegPlayer::cleanup() {
     // Add a check to prevent logging a potentially invalid path_ if cleanup is called very early
     // or after path_ has been cleared.
     if (!path_.empty()) {
-        LOG_DEBUG("FFmpegPlayer::cleanup() started for path: " << path_);
-    } else {
-        LOG_DEBUG("FFmpegPlayer::cleanup() started (path empty).");
+        //LOG_DEBUG("FFmpegPlayer::cleanup() started for path: " << path_);
     }
+    // else {
+    //     LOG_DEBUG("FFmpegPlayer::cleanup() started (path empty).");
+    // }
 
     if (texture_) {
         SDL_DestroyTexture(texture_);
         texture_ = nullptr;
-        LOG_DEBUG("  - Destroyed SDL Texture.");
+        // LOG_DEBUG("FFmpegPlayer:   - Destroyed SDL Texture.");
     }
 
     if (swsContext_) {
         sws_freeContext(swsContext_);
         swsContext_ = nullptr;
-        LOG_DEBUG("  - Freed SwsContext.");
+        // LOG_DEBUG("FFmpegPlayer:   - Freed SwsContext.");
     }
 
     // Free the rgbBuffer_ memory, which was allocated by av_malloc.
@@ -342,7 +343,7 @@ void FFmpegPlayer::cleanup() {
     if (rgbBuffer_) {
         av_freep(&rgbBuffer_); // av_freep takes a pointer to the pointer, and nullifies it.
         // After this, rgbFrame_->data[0] will also be null if it pointed to rgbBuffer_.
-        LOG_DEBUG("  - Explicitly freed rgbBuffer_ (allocated by av_malloc).");
+        // LOG_DEBUG("FFmpegPlayer:   - Explicitly freed rgbBuffer_ (allocated by av_malloc).");
     }
 
     if (rgbFrame_) {
@@ -352,31 +353,31 @@ void FFmpegPlayer::cleanup() {
         // Since we used av_image_fill_arrays, the data pointer was external and freed above.
         av_frame_free(&rgbFrame_); 
         rgbFrame_ = nullptr;
-        LOG_DEBUG("  - Freed RGB AVFrame (structure).");
+        // LOG_DEBUG("FFmpegPlayer:   - Freed RGB AVFrame (structure).");
     }
 
     if (frame_) {
         av_frame_free(&frame_);
         frame_ = nullptr;
-        LOG_DEBUG("  - Freed AVFrame.");
+        // LOG_DEBUG("FFmpegPlayer:   - Freed AVFrame.");
     }
 
     if (packet_) {
         av_packet_free(&packet_);
         packet_ = nullptr;
-        LOG_DEBUG("  - Freed AVPacket.");
+        // LOG_DEBUG("FFmpegPlayer:   - Freed AVPacket.");
     }
 
     if (codecContext_) {
         avcodec_free_context(&codecContext_);
         codecContext_ = nullptr;
-        LOG_DEBUG("  - Freed AVCodecContext.");
+        // LOG_DEBUG("FFmpegPlayer:   - Freed AVCodecContext.");
     }
 
     if (formatContext_) {
         avformat_close_input(&formatContext_); // This also calls avformat_free_context internally
         formatContext_ = nullptr;
-        LOG_DEBUG("  - Closed AVFormatContext.");
+        // LOG_DEBUG("FFmpegPlayer:   - Closed AVFormatContext.");
     }
 
     renderer_ = nullptr;
@@ -385,5 +386,5 @@ void FFmpegPlayer::cleanup() {
     height_ = 0;
     videoStreamIndex_ = -1;
 
-    LOG_DEBUG("FFmpegPlayer::cleanup() complete.");
+    //LOG_DEBUG("FFmpegPlayer::cleanup() complete.");
 }

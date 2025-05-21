@@ -41,13 +41,13 @@ struct SDLBootstrap {
             SDL_Quit();
             throw std::runtime_error("Main: IMG initialization failed");
         }
-        LOG_INFO("Main: SDL subsystems initialized");
+        LOG_DEBUG("Main: SDL subsystems initialized");
     }
     ~SDLBootstrap() {
         IMG_Quit();
         TTF_Quit();
         SDL_Quit();
-        LOG_INFO("Main: SDL subsystems cleaned up");
+        LOG_DEBUG("Main: SDL subsystems cleaned up");
     }
 };
 

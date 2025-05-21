@@ -225,7 +225,7 @@ void InputManager::registerActions() {
             LOG_DEBUG("InputManager: Closed config");
         } else {
             quit_ = true;
-            LOG_INFO("InputManager: Quitting app");
+            LOG_DEBUG("InputManager: Quitting app");
         }
     };
 

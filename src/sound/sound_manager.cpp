@@ -15,7 +15,7 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
         Mix_CloseAudio();
         throw std::runtime_error("SoundManager: Failed to initialize MP3 support");
     }
-    LOG_INFO("SoundManager: SDL_mixer initialized");
+    LOG_DEBUG("SoundManager: SDL_mixer initialized");
 
     // Prepopulate sounds map
     sounds_.emplace("config_toggle", std::unique_ptr<Mix_Music, void(*)(Mix_Music*)>(nullptr, Mix_FreeMusic));
@@ -38,7 +38,7 @@ SoundManager::~SoundManager() {
     sounds_.clear();  // unique_ptr handles Mix_FreeMusic
     Mix_CloseAudio();
     Mix_Quit();
-    LOG_INFO("SoundManager: SoundManager destroyed");
+    LOG_DEBUG("SoundManager: SoundManager destroyed");
 }
 
 void SoundManager::loadSounds() {
