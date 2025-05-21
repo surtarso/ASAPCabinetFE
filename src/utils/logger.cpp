@@ -48,13 +48,15 @@ void Logger::log(const std::string& level, const std::string& message) {
     std::stringstream logMessage;
     logMessage << "[" << timestamp << "] " << level << ": " << message;
     
-    // Write to file (no color)
+    // Always write to file (no color) if open
     if (logFile_.is_open()) {
         logFile_ << logMessage.str() << std::endl;
     }
     
-    // Write to console with color (if debugBuild_)
-    if (debugBuild_) {
+    // Decide when to print to console
+    // Only DEBUG messages are conditionally printed based on debugBuild_
+    // INFO and ERROR messages are always printed to console.
+    if (level == "INFO" || level == "ERROR" || debugBuild_) {
         std::string colorCode;
         if (level == "ERROR") {
             colorCode = COLOR_RED;
@@ -70,6 +72,7 @@ void Logger::log(const std::string& level, const std::string& message) {
     }
 }
 
+// And ensure your debug() method still only logs in debug builds:
 void Logger::debug(const std::string& message) {
     if (debugBuild_) { // Only log debug messages in debug builds
         log("DEBUG", message);
