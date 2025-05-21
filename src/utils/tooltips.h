@@ -163,6 +163,8 @@ namespace Tooltips {
                 "Select the source of the title info.\n"
                 "- 'filename' to use filename as title.\n"
                 "- 'metadata' to use file metadata as title. (requires vpxtool)\n"},
+            {"ShowMetadata",
+                "Show/hide the metadata panel overlay on the playfield window."},
             {"FontPath",
                 "Select a font for the table title display."},
             {"FontColor",
