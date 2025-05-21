@@ -46,7 +46,7 @@ App::App(const std::string& configPath)
 
 App::~App() {
     cleanup();
-    LOG_INFO("App: App destructor completed");
+    LOG_DEBUG("App: App destructor completed");
 }
 
 void App::run() {
@@ -155,7 +155,7 @@ void App::loadTables() {
         LOG_ERROR("App: Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
         exit(1);
     }
-    LOG_INFO("App: Loaded " << tables_.size() << " tables");
+    LOG_INFO("Found " << tables_.size() << " tables");
 }
 
 void App::initializeDependencies() {
@@ -196,7 +196,7 @@ void App::initializeDependencies() {
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 
-    LOG_INFO("App: Initialization complete");
+    LOG_INFO("Initialization complete");
 }
 
 void App::handleEvents() {
@@ -277,8 +277,8 @@ void App::render() {
 }
 
 void App::cleanup() {
-    LOG_DEBUG("App: Cleaning up");
+    LOG_DEBUG("App::cleanup: Cleaning up");
     assets_->cleanupVideoPlayers();
     assets_.reset();
-    LOG_INFO("App: Cleanup complete");
+    LOG_DEBUG("App::cleanup: Cleanup complete");
 }

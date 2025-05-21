@@ -16,7 +16,7 @@ PlayfieldOverlay::PlayfieldOverlay(const std::vector<TableData>* tables, size_t*
       windowManager_(windowManager), assetManager_(assetManager),
       showMetadataPanel_(configService->getSettings().showMetadata) // can be toggled by user input
 {
-    LOG_INFO("PlayfieldOverlay: Initialized.");
+    LOG_DEBUG("PlayfieldOverlay: Initialized.");
 }
 
 void PlayfieldOverlay::updateSettings(const Settings& settings) {

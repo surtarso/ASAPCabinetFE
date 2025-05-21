@@ -17,7 +17,7 @@ GuiManager::~GuiManager() {
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext(context_);
-        LOG_INFO("GuiManager: GuiManager destroyed");
+        LOG_DEBUG("GuiManager: GuiManager destroyed");
     }
 }
 
@@ -46,7 +46,7 @@ void GuiManager::initialize() {
         ImGui_ImplSDL2_InitForSDLRenderer(configWindow_, configRenderer_);
         ImGui_ImplSDLRenderer2_Init(configRenderer_);
     }
-    LOG_INFO("GuiManager: GuiManager initialized");
+    LOG_DEBUG("GuiManager: GuiManager initialized");
 }
 
 void GuiManager::newFrame() {

@@ -4,17 +4,17 @@
 
 JoystickManager::JoystickManager() {
     initializeJoysticks();
-    LOG_INFO("JoystickManager: JoystickManager constructed");
+    LOG_DEBUG("JoystickManager: JoystickManager constructed");
 }
 
 JoystickManager::~JoystickManager() {
     cleanupJoysticks();
-    LOG_INFO("JoystickManager: JoystickManager destroyed");
+    LOG_DEBUG("JoystickManager: JoystickManager destroyed");
 }
 
 void JoystickManager::initializeJoysticks() {
     int numJoysticks = SDL_NumJoysticks();
-    LOG_INFO("JoystickManager: Found " << numJoysticks << " joysticks");
+    LOG_INFO("Found " << numJoysticks << " joysticks");
     for (int i = 0; i < numJoysticks; ++i) {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
         if (joystick) {
