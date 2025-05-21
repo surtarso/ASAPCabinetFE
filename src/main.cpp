@@ -53,8 +53,13 @@ struct SDLBootstrap {
 
 int main(int argc, char* argv[]) {
     std::string configPath = "config.ini";
-    if (argc == 2 && std::string(argv[1]) == "--version") {
-        std::cout << "ASAPCabinetFE version " << PROJECT_VERSION << std::endl;
+    if (argc > 1 && std::string(argv[1]) == "--version") {
+        std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
+        std::cout << "Git Hash: " << ASAPCABINETFE_GIT_HASH << std::endl;
+        std::cout << "Git Branch: " << ASAPCABINETFE_GIT_BRANCH << std::endl;
+        if (std::string(ASAPCABINETFE_GIT_DIRTY) == "+dirty") {
+            std::cout << " (Repository has uncommitted changes)" << std::endl;
+        }
         return 0;
     }
 
