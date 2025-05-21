@@ -13,6 +13,8 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
+#include <functional> // Required for std::function
+#include <SDL.h>      // Required for Uint32
 
 class InputManager : public IInputManager {
 public:
@@ -30,7 +32,8 @@ public:
 private:
     using ActionHandler = std::function<void()>;
 
-    void handleConfigEvents(const SDL_Event& event);
+    // handleConfigEvents is no longer needed/used due to refactoring in handleEvent
+    // void handleConfigEvents(const SDL_Event& event); 
     void handleRegularEvents(const SDL_Event& event);
     void handleDoubleClick(const SDL_Event& event);
 
@@ -47,9 +50,25 @@ private:
     std::map<std::string, ActionHandler> actionHandlers_;
     std::map<char, size_t> letterIndex_;
     bool quit_ = false;
-    bool inScreenshotMode_ = false;
+
+    // Renamed inScreenshotMode_ to reflect its specific usage within the ScreenshotMode action,
+    // and introduced a more general flag for being in an external process.
+    bool screenshotModeActive_ = false; // Flag for internal screenshot action state
     IScreenshotManager* screenshotManager_;
     std::unordered_map<Uint32, Uint32> lastClickTimes_; // Double-click detection
+
+    // --- NEW/MODIFIED MEMBERS FOR DEBOUNCING AND EXTERNAL APP STATE ---
+    // This flag indicates that the application is currently "out" of the main loop
+    // because an external process (like VPX or screenshot tool) is running.
+    bool inExternalAppMode_ = false; 
+    
+    // Stores the SDL_GetTicks() timestamp when an external application returned.
+    Uint32 lastExternalAppReturnTime_ = 0; 
+    
+    // Defines the duration (in milliseconds) after an external app returns 
+    // during which input events will be ignored to prevent re-launching.
+    static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; // E.g., 500ms debounce
+    // --- END NEW/MODIFIED MEMBERS ---
 };
 
 #endif // INPUT_MANAGER_H
