@@ -326,6 +326,91 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
     }
 }
 
+void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, IConfigService* configService) {
+    bool boolValue = (value == "false");
+    if (ImGui::Checkbox("##checkbox", &boolValue)) {
+        value = boolValue ? "true" : "false";
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        
+        LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
+        const auto& iniData = configService->getIniData();
+        auto vpxIt = iniData.find("VPX");
+        if (vpxIt != iniData.end()) {
+            LOG_DEBUG("UiElementRenderer: VPX section found");
+            auto pathIt = std::find_if(vpxIt->second.keyValues.begin(), vpxIt->second.keyValues.end(),
+                                    [](const auto& pair) { return pair.first == "VPXTablesPath"; });
+            if (pathIt != vpxIt->second.keyValues.end()) {
+                LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
+                if (!pathIt->second.empty()) {
+                    std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
+                    LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
+                    if (!std::filesystem::exists(jsonPath)) {
+                        LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
+                        ImGui::OpenPopup("Metadata Error");
+                    } else {
+                        LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                    }
+                } else {
+                    LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
+                }
+            } else {
+                LOG_DEBUG("UiElementRenderer: VPXTablesPath not found in VPX section");
+            }
+        }
+    }
+
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Metadata Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+        ImGui::TextWrapped("Error: 'vpxtool_index.json' not found in the configured tables path.");
+        ImGui::PopStyleColor();
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("Please ensure 'vpxtool' is installed and rescan the tables path.");
+
+        ImGui::Spacing();
+
+        const char* url = "https://github.com/francisdb/vpxtool/";
+        ImGui::Indent();
+        ImGui::TextColored(ImVec4(0.0f, 0.5f, 1.0f, 1.0f), "%s", url);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+            ImGui::SetTooltip("Open in browser");
+        }
+        if (ImGui::IsItemClicked()) {
+            LOG_DEBUG("UiElementRenderer: Opening URL: " << url);
+            openUrl(url);
+        }
+        ImGui::Unindent();
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        float buttonWidth = 120.0f;
+        float windowWidth = ImGui::GetWindowWidth();
+        ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+
+        if (ImGui::Button("OK", ImVec2(buttonWidth, 0))) {
+            LOG_DEBUG("UiElementRenderer: Closing Metadata Error");
+            value = "true";
+            boolValue = false;
+            hasChanges = true;
+            LOG_DEBUG("UiElementRenderer: Reverted: " << section << "." << key << " = " << value);
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+        ImGui::EndPopup();
+    }
+}
+
 void renderResolution([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     char buffer[16];
     strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
