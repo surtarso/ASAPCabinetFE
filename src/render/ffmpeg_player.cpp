@@ -1,4 +1,4 @@
-#include "render/opengl_player.h"
+#include "render/ffmpeg_player.h"
 #include "utils/logging.h"
 #include <SDL.h>
 extern "C" {
@@ -8,7 +8,7 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
-OpenGLPlayer::OpenGLPlayer()
+FFmpegPlayer::FFmpegPlayer()
     : renderer_(nullptr),
       width_(0),
       height_(0),
@@ -22,16 +22,16 @@ OpenGLPlayer::OpenGLPlayer()
       swsContext_(nullptr),
       videoStreamIndex_(-1),
       rgbBuffer_(nullptr) {
-    LOG_DEBUG("OpenGLPlayer: Constructor called");
+    LOG_DEBUG("FFmpegPlayer: Constructor called");
 }
 
-OpenGLPlayer::~OpenGLPlayer() {
+FFmpegPlayer::~FFmpegPlayer() {
     cleanup();
-    LOG_DEBUG("OpenGLPlayer: Destructor called");
+    LOG_DEBUG("FFmpegPlayer: Destructor called");
 }
 
-bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
-    LOG_DEBUG("OpenGLPlayer: Setting up video playback for path=" << path << ", width=" << width << ", height=" << height);
+bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
+    LOG_DEBUG("FFmpegPlayer: Setting up video playback for path=" << path << ", width=" << width << ", height=" << height);
     cleanup(); // Ensure everything is cleaned up from previous usage
 
     renderer_ = renderer;
@@ -40,7 +40,7 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     height_ = height;
 
     if (!renderer_ || path_.empty() || width_ <= 0 || height_ <= 0) {
-        LOG_ERROR("OpenGLPlayer: Invalid setup parameters");
+        LOG_ERROR("FFmpegPlayer: Invalid setup parameters");
         cleanup(); // Still safe to call cleanup here as pointers will be null
         return false;
     }
@@ -48,7 +48,7 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     LOG_DEBUG("Allocating formatContext");
     formatContext_ = avformat_alloc_context();
     if (!formatContext_) {
-        LOG_ERROR("OpenGLPlayer: Failed to allocate format context");
+        LOG_ERROR("FFmpegPlayer: Failed to allocate format context");
         cleanup(); // Pointers will be null, cleanup is safe
         return false;
     }
@@ -63,13 +63,13 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
 
     // Open input and find stream info using the *same* formatContext_
     if (avformat_open_input(&formatContext_, path_.c_str(), nullptr, nullptr) < 0) {
-        LOG_ERROR("OpenGLPlayer: Failed to open video file: " << path_);
+        LOG_ERROR("FFmpegPlayer: Failed to open video file: " << path_);
         cleanup();
         return false;
     }
 
     if (avformat_find_stream_info(formatContext_, nullptr) < 0) {
-        LOG_ERROR("OpenGLPlayer: Failed to find stream info");
+        LOG_ERROR("FFmpegPlayer: Failed to find stream info");
         cleanup();
         return false;
     }
@@ -84,33 +84,33 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         }
     }
     if (videoStreamIndex_ == -1) {
-        LOG_ERROR("OpenGLPlayer: No video stream found");
+        LOG_ERROR("FFmpegPlayer: No video stream found");
         cleanup();
         return false;
     }
 
     const AVCodec* codec = avcodec_find_decoder(formatContext_->streams[videoStreamIndex_]->codecpar->codec_id);
     if (!codec) {
-        LOG_ERROR("OpenGLPlayer: Codec not found");
+        LOG_ERROR("FFmpegPlayer: Codec not found");
         cleanup();
         return false;
     }
 
     codecContext_ = avcodec_alloc_context3(codec);
     if (!codecContext_) {
-        LOG_ERROR("OpenGLPlayer: Failed to allocate codec context");
+        LOG_ERROR("FFmpegPlayer: Failed to allocate codec context");
         cleanup();
         return false;
     }
 
     if (avcodec_parameters_to_context(codecContext_, formatContext_->streams[videoStreamIndex_]->codecpar) < 0) {
-        LOG_ERROR("OpenGLPlayer: Failed to copy codec parameters");
+        LOG_ERROR("FFmpegPlayer: Failed to copy codec parameters");
         cleanup();
         return false;
     }
 
     if (avcodec_open2(codecContext_, codec, nullptr) < 0) {
-        LOG_ERROR("OpenGLPlayer: Failed to open codec");
+        LOG_ERROR("FFmpegPlayer: Failed to open codec");
         cleanup();
         return false;
     }
@@ -119,7 +119,7 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     rgbFrame_ = av_frame_alloc();
     packet_ = av_packet_alloc();
     if (!frame_ || !rgbFrame_ || !packet_) {
-        LOG_ERROR("OpenGLPlayer: Failed to allocate frame or packet");
+        LOG_ERROR("FFmpegPlayer: Failed to allocate frame or packet");
         cleanup();
         return false;
     }
@@ -129,14 +129,14 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         width_, height_, AV_PIX_FMT_RGB24,
         SWS_BILINEAR, nullptr, nullptr, nullptr);
     if (!swsContext_) {
-        LOG_ERROR("OpenGLPlayer: Failed to initialize swscale context");
+        LOG_ERROR("FFmpegPlayer: Failed to initialize swscale context");
         cleanup();
         return false;
     }
 
     int ret = av_image_alloc(rgbFrame_->data, rgbFrame_->linesize, width_, height_, AV_PIX_FMT_RGB24, 1);
     if (ret < 0) {
-        LOG_ERROR("OpenGLPlayer: Failed to allocate RGB frame buffer: " << ret);
+        LOG_ERROR("FFmpegPlayer: Failed to allocate RGB frame buffer: " << ret);
         cleanup();
         return false;
     }
@@ -161,40 +161,40 @@ bool OpenGLPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     return true;
 }
 
-void OpenGLPlayer::play() {
+void FFmpegPlayer::play() {
     if (isPlaying_) return;
     isPlaying_ = true;
-    LOG_DEBUG("OpenGLPlayer: Play started");
+    LOG_DEBUG("FFmpegPlayer: Play started");
 }
 
-void OpenGLPlayer::stop() {
+void FFmpegPlayer::stop() {
     if (!isPlaying_) return;
     isPlaying_ = false;
     if (formatContext_ && videoStreamIndex_ >= 0) {
         av_seek_frame(formatContext_, videoStreamIndex_, 0, AVSEEK_FLAG_BACKWARD);
     }
-    LOG_DEBUG("OpenGLPlayer: Stopped and reset to start");
+    LOG_DEBUG("FFmpegPlayer: Stopped and reset to start");
 }
 
-void OpenGLPlayer::update() {
+void FFmpegPlayer::update() {
     if (!isPlaying_ || !texture_) return;
     if (decodeFrame()) {
         updateTexture();
     }
 }
 
-SDL_Texture* OpenGLPlayer::getTexture() const {
+SDL_Texture* FFmpegPlayer::getTexture() const {
     return texture_;
 }
 
-bool OpenGLPlayer::isPlaying() const {
+bool FFmpegPlayer::isPlaying() const {
     return isPlaying_;
 }
 
-bool OpenGLPlayer::decodeFrame() {
+bool FFmpegPlayer::decodeFrame() {
     while (isPlaying_) {
         if (av_read_frame(formatContext_, packet_) < 0) {
-            LOG_DEBUG("OpenGLPlayer: End of video stream");
+            LOG_DEBUG("FFmpegPlayer: End of video stream");
             if (formatContext_ && videoStreamIndex_ >= 0) {
                 av_seek_frame(formatContext_, videoStreamIndex_, 0, AVSEEK_FLAG_BACKWARD);
                 avcodec_flush_buffers(codecContext_);
@@ -217,7 +217,7 @@ bool OpenGLPlayer::decodeFrame() {
     return false;
 }
 
-void OpenGLPlayer::updateTexture() {
+void FFmpegPlayer::updateTexture() {
     if (!texture_ || !rgbFrame_ || !rgbFrame_->data[0]) return;
     void* pixels;
     int pitch;
@@ -236,8 +236,8 @@ void OpenGLPlayer::updateTexture() {
     }
 }
 
-void OpenGLPlayer::cleanup() {
-    LOG_DEBUG("OpenGLPlayer::cleanup() started for path: " << path_);
+void FFmpegPlayer::cleanup() {
+    LOG_DEBUG("FFmpegPlayer::cleanup() started for path: " << path_);
 
     if (texture_) {
         SDL_DestroyTexture(texture_);
@@ -298,5 +298,5 @@ void OpenGLPlayer::cleanup() {
     height_ = 0;
     videoStreamIndex_ = -1;
 
-    LOG_DEBUG("OpenGLPlayer::cleanup() complete.");
+    LOG_DEBUG("FFmpegPlayer::cleanup() complete.");
 }

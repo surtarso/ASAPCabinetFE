@@ -305,8 +305,8 @@ namespace Tooltips {
                 "Path to the debug log file, relative to exec dir."},
             {"VideoBackend",
                 "Select video playback backend:\n"
-                "VLC: Slower, lighter.\n"
-                "OpenGL: Faster, heavier."},
+                "VLC: Software Decoding\n"
+                "FFMpeg: Hardware Accelerated"},
 
             // UI Sounds
             {"ScrollPrevSound",

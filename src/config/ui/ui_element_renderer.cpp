@@ -221,8 +221,8 @@ static void openUrl(const std::string& url) {
 }
 
 void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
-    const char* options[] = {"vlc", "opengl"};
-    int videoBackend = (value == "opengl") ? 1 : 0;
+    const char* options[] = {"vlc", "ffmpeg"};
+    int videoBackend = (value == "ffmpeg") ? 1 : 0;
 
     ImGui::SetNextItemWidth(150);
     if (ImGui::Combo("##videoBackend", &videoBackend, options, IM_ARRAYSIZE(options))) {
