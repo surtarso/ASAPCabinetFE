@@ -74,6 +74,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
 
+        # Clear lingering locks for all apt-installs
+        echo "Cleaning up apt locks after system dependencies install..."
+        sleep 5 # Give apt a moment to fully finish and release its locks
+        sudo rm -f /var/lib/apt/lists/lock || true
+        sudo rm -f /var/cache/apt/archives/lock || true
+        sudo rm -f /var/lib/apt/lists/partial/* || true
+        sudo rm -f /var/cache/apt/archives/partial/* || true
+
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
 

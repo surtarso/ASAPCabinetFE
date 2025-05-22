@@ -117,9 +117,6 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set OpenGL preference to GLVND to use modern OpenGL libraries
-# set(OpenGL_GL_PREFERENCE GLVND)
-
 # Generate a version.h header with the project version
 configure_file(
     ${CMAKE_SOURCE_DIR}/version.h.in
@@ -208,9 +205,7 @@ find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
-# find_package(OpenGL REQUIRED)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale)
-# find_package(GLEW REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
@@ -218,9 +213,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_TTF_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
-    # ${OPENGL_INCLUDE_DIR}
     ${FFMPEG_INCLUDE_DIRS}
-    # ${GLEW_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -229,9 +222,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     SDL2_ttf::SDL2_ttf
     SDL2_mixer::SDL2_mixer
     ${LIBVLC_LIBRARIES}
-    # ${OPENGL_LIBRARIES}
     ${FFMPEG_LIBRARIES}
-    # ${GLEW_LIBRARIES}
 )
 
 # Compile options
@@ -287,11 +278,3 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     )
-
-
-# --- INSTALLATION RULES FOR /opt-style Flat Structure ---
-# When 'make install' (or 'cmake --install .') is run, files will be placed
-# directly into the CMAKE_INSTALL_PREFIX (which in CI is install_root).
-# This creates a self-contained directory for the application.
-
-
