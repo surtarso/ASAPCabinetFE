@@ -23,6 +23,7 @@
 
 ## TL:DR
 ```sh
+sudo apt-get install git -y
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat apt-packages.txt | xargs sudo apt-get install -y
@@ -72,6 +73,12 @@ cd ~/ASAPCabinetFE
 
 ### Compiling and Running
 
+Install Git
+```sh
+sudo apt-get update
+sudo apt-get install git -y
+```
+
 Clone the Repository
 ```sh
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -80,7 +87,6 @@ cd ASAPCabinetFE-src
 
 Install Dependencies (Debian based)
 ```sh
-sudo apt-get update
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
 
@@ -98,7 +104,7 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> The `Debug` build uses assets in /build and has no `--install` target.
+> The `Debug` build is meant to be run in /build and has no `--install` target.
 
 
 ### Default Keymap
