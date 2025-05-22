@@ -12,6 +12,7 @@ on:
       - "version.h.in"
       - "apt-packages.txt"
       - "Doxyfile"
+      - "docs/**"
   pull_request:
     branches: [ "main" ]
 
@@ -25,6 +26,8 @@ permissions:
 jobs:
   compile_release:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages 
 
     steps:
     - name: Checkout code
