@@ -24,6 +24,7 @@ cd ~/ASAPCabinetFE
 > You can download already compiled builds directly from the [Actions page](https://github.com/surtarso/ASAPCabinetFE/actions).
 > This is the quickest way to get started if you don't want to compile from source.
 > Select the latest successful run and scroll down to the "Artifacts" section.
+> Make sure you have runtime dependencies installed (vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0).
 
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.
