@@ -1,3 +1,16 @@
+<div align="center">
+  
+[![GitHub stars](https://img.shields.io/github/stars/surtarso/ASAPCabinetFE.svg?style=social)](https://github.com/surtarso/ASAPCabinetFE/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/surtarso/ASAPCabinetFE.svg?style=social)](https://github.com/surtarso/ASAPCabinetFE/network/members)
+[![License](https://img.shields.io/github/license/surtarso/ASAPCabinetFE.svg)](https://github.com/surtarso/ASAPCabinetFE/blob/main/LICENSE)
+[![C++ Standard](https://img.shields.io/badge/C++-17-blue.svg?logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
+[![CMake](https://img.shields.io/badge/CMake-3.x-orange?logo=cmake&logoColor=white)](https://cmake.org/)
+[![Release C++ Compile](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml/badge.svg?branch=main)](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml)
+[![Artifacts](https://img.shields.io/badge/Artifacts-Releases-lightgrey)](https://github.com/surtarso/ASAPCabinetFE/actions)
+<!-- [![Documentation](https://img.shields.io/badge/Docs-Doxygen-blueviolet)](YOUR_DOXYGEN_DOCS_URL) -->
+
+</div>
+
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
 <p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
