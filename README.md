@@ -11,10 +11,12 @@
 ## TL:DR
 ```sh
 sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git && cd ASAPCabinetFE
+git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src && cd ASAPCabinetFE-src
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)
+cmake --build . -j$(nproc)
+cmake --install .
+cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
 
@@ -58,21 +60,29 @@ sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev 
 
 Clone the Repository
 ```sh
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git
-cd ASAPCabinetFE
+git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+cd ASAPCabinetFE-src
 ```
 
-Build it
+Build and install it
 ```sh
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build -j$(nproc)
+# from the build/ dir you can run it ./ASAPCabinetFE
+# or install it and remove build/ dir if you'd like
+cmake --install build
+# rm -rf build/
 ```
 
-- Run it and configure your paths:
-  ```sh
-  ./ASAPCabinetFE
-  ```
+Run it and configure your paths:
+```sh
+cd ~/ASAPCabinetFE
+./ASAPCabinetFE
+```
+
+> [!NOTE]
+> The config file will be read from the binary dir, so either configure the app in build/ dir or in ~/ASAPCabinetFE/
+
 
 ### Default Keymap
 | Action             |        Key       | Description                               |

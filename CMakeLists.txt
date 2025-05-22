@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
+unset(CMAKE_INSTALL_PREFIX CACHE)
+
+# Set default install prefix to user's home directory if not specified
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/ASAPCabinetFE" CACHE PATH "Installation prefix for ASAPCabinetFE")
+endif()
+
+# This will print the resolved installation prefix during the configure step.
+message(STATUS "ASAPCabinetFE Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
+
 # Find Git executable
 find_package(Git QUIET)
 
@@ -259,7 +269,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # Install the executable directly into the root of the install prefix
 install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION . # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
+    RUNTIME DESTINATION ./ # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
 )
 
 # Install resource directories directly into the root of the install prefix
