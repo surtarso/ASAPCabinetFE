@@ -15,6 +15,23 @@ class ConfigUI;
 class IScreenshotManager;
 class IWindowManager;
 
+/**
+ * @brief Interface for managing user input and associated actions.
+ *
+ * The IInputManager interface provides an abstract definition for handling input events,
+ * registering application-specific actions, and setting up necessary dependencies for
+ * processing interactive events within the application.
+ *
+ * Implementers are required to define the following functionalities:
+ *
+ * - Processing of SDL_Event events.
+ * - Registration of input-related actions.
+ * - Injection of dependencies such as asset management, sound, configuration,
+ *   table data, screenshot management, and window control.
+ * - Integration with a runtime configuration editor.
+ * - Querying the current state of the configuration mode.
+ * - Determining whether the application should exit.
+ */
 class IInputManager {
 public:
     virtual ~IInputManager() = default;
