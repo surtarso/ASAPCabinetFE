@@ -87,10 +87,9 @@ Build and install it
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build -j$(nproc)
-# from the build/ dir you can run it ./ASAPCabinetFE
-# or install it and remove build/ dir if you'd like
 cmake --install build
-# rm -rf build/
+# After install you can remove build/ dir if you'd like
+rm -rf build/
 ```
 
 Run it and configure your paths:
@@ -100,7 +99,7 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> The config file will be read from the binary dir, so either configure the app in build/ dir or in ~/ASAPCabinetFE/
+> The `Debug` build uses assets in /build and has no `--install` target.
 
 
 ### Default Keymap
