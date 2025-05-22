@@ -115,7 +115,7 @@ jobs:
       run: |
         # cd "${GITHUB_WORKSPACE}"
         cd "${HOME}/ASAPCabinetFE"
-        VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
+        VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
         else
