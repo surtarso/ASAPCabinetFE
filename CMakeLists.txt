@@ -8,6 +8,7 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/ASAPCabinetFE" CACHE PATH "Installation prefix for ASAPCabinetFE")
 endif()
 
+# --- Git Versioning Start ---
 # This will print the resolved installation prefix during the configure step.
 message(STATUS "ASAPCabinetFE Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
 
@@ -111,7 +112,7 @@ if (GIT_FOUND)
 else()
     message(WARNING "Git not found. Version information will be set to defaults.")
 endif()
-
+# --- End Git Versioning ---
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -198,6 +199,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
+# --- Dependencies Start ---
 # Find and link dependencies
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
@@ -224,6 +226,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
 )
+# --- Dependencies End ---
 
 # Compile options
 target_compile_options(${PROJECT_NAME} PRIVATE

@@ -28,6 +28,8 @@ permissions:
 jobs:
   compile_release:
     runs-on: ubuntu-latest
+    container: ubuntu:20.04
+
     environment:
       name: github-pages 
 
@@ -38,42 +40,51 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    # - name: Prepare APT cache directories for caching
-    #   run: |
-    #     echo "Preparing /var/lib/apt/lists/ and /var/cache/apt/archives/ for caching..."
-    #     sudo rm -rf /var/lib/apt/lists/* || true
-    #     sudo rm -rf /var/cache/apt/archives/* || true
-    #     sudo mkdir -p /var/lib/apt/lists/ || true
-    #     sudo mkdir -p /var/cache/apt/archives/ || true
-    #     # Change ownership to the runner user for full control during cache operations
-    #     sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
-    #     sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
-    #     # Ensure full read/write/execute permissions for all
-    #     sudo chmod -R 777 /var/lib/apt/lists/ || true
-    #     sudo chmod -R 777 /var/cache/apt/archives/ || true
-    #     sudo rm -f /var/lib/apt/lists/lock || true
-    #     sudo rm -f /var/cache/apt/archives/lock || true
+    # --- Start APT Caching ---
+    - name: Prepare APT cache directories for caching
+      run: |
+        echo "Preparing /var/lib/apt/lists/ and /var/cache/apt/archives/ for caching..."
+        sudo rm -rf /var/lib/apt/lists/* || true
+        sudo rm -rf /var/cache/apt/archives/* || true
+        sudo mkdir -p /var/lib/apt/lists/ || true
+        sudo mkdir -p /var/cache/apt/archives/ || true
+        # Change ownership to the runner user for full control during cache operations
+        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
+        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
+        # Ensure full read/write/execute permissions for all
+        sudo chmod -R 777 /var/lib/apt/lists/ || true
+        sudo chmod -R 777 /var/cache/apt/archives/ || true
+        sudo rm -f /var/lib/apt/lists/lock || true
+        sudo rm -f /var/cache/apt/archives/lock || true
 
-    # - name: Cache APT packages
-    #   id: apt-cache
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: |
-    #       /var/lib/apt/lists/
-    #       /var/cache/apt/archives/
-    #     key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}-v2
-    #     restore-keys: |
-    #       ${{ runner.os }}-apt-
+    - name: Cache APT packages
+      id: apt-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          /var/lib/apt/lists/
+          /var/cache/apt/archives/
+        key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}-v3
+        restore-keys: |
+          ${{ runner.os }}-apt-
+
+    # --- End APT Caching ---
 
     - name: Install System Dependencies
       run: |
-        sudo apt-get update 
+        # Only run update if the cache was missed or partially restored
+        if [ "${{ steps.apt-cache.outputs.cache-hit }}" != "true" ]; then
+          echo "APT cache miss, running apt-get update..."
+          apt-get update
+        else
+          echo "APT cache hit, skipping apt-get update."
+        fi
+
         cat apt-packages.txt | xargs sudo apt-get install -y
 
     # --- Start of Doxygen Documentation Steps ---
     - name: Install Doxygen and Graphviz
       run: |
-        sudo apt-get update
         sudo apt-get install -y doxygen graphviz
 
     - name: Generate Doxygen documentation
@@ -128,7 +139,6 @@ jobs:
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
         # Change directory to install_root to ensure clean tarball contents
-        # cd "${GITHUB_WORKSPACE}/install_root"
         cd "${HOME}/ASAPCabinetFE"
         # Create the tarball in the temporary directory
         tar -czvf "${TARBALL_FULL_PATH}" ./*
@@ -152,7 +162,6 @@ jobs:
 
     - name: Test Version Flag
       run: |
-        # cd "${GITHUB_WORKSPACE}"
         cd "${HOME}/ASAPCabinetFE"
         VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
