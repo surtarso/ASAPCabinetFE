@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+/// @brief Generates tooltips for the config ui
 namespace Tooltips {
     inline const std::unordered_map<std::string, std::string>& getTooltips() {
         static const std::unordered_map<std::string, std::string> tooltips = {
