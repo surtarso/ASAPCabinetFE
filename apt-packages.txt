@@ -11,6 +11,5 @@ libavcodec-dev
 libavformat-dev
 libavutil-dev
 libswscale-dev
-libglew-dev
 xdotool
 imagemagick
