@@ -23,9 +23,10 @@
 
 ## TL:DR
 ```sh
-cat apt-packages.txt | xargs sudo apt-get install -y
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
-cd ASAPCabinetFE-src && mkdir build && cd build
+cd ASAPCabinetFE-src
+cat apt-packages.txt | xargs sudo apt-get install -y
+mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j$(nproc)
 cmake --install .
@@ -69,12 +70,6 @@ cd ~/ASAPCabinetFE
 > - **xdotools**: Screen manipulation.
 > - **ImageMagick**: Screen capture.
 
-### Installing Dependencies (Debian based)
-```sh
-sudo apt-get update
-cat apt-packages.txt | xargs sudo apt-get install -y
-```
-
 ### Compiling and Running
 
 Clone the Repository
@@ -83,13 +78,17 @@ git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/
 cd ASAPCabinetFE-src
 ```
 
+Install Dependencies (Debian based)
+```sh
+sudo apt-get update
+cat apt-packages.txt | xargs sudo apt-get install -y
+```
+
 Build and install it
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build -j$(nproc)
 cmake --install build
-# After install you can remove build/ dir if you'd like
-rm -rf build/
 ```
 
 Run it and configure your paths:
