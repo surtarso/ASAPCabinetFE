@@ -21,7 +21,7 @@ permissions:
   contents: write # Allows the workflow to push to the gh-pages branch
   pages: write    # Required for GitHub Pages deployment
   id-token: write # Required for GitHub Pages deployment
-# End of Doxygen permissions for github pages
+# End Doxygen permissions for github pages
 
 jobs:
   compile_release:
@@ -80,7 +80,7 @@ jobs:
     - name: Create .nojekyll file
       # This creates an empty file named .nojekyll inside your Doxygen HTML output directory
       run: touch docs/html/.nojekyll
-      
+
     - name: Configure GitHub Pages deployment
       # IMPORTANT: 'path' MUST match your Doxyfile's OUTPUT_DIRECTORY/HTML_OUTPUT
       # Example: If Doxyfile has OUTPUT_DIRECTORY = docs and HTML_OUTPUT = html
