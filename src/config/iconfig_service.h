@@ -9,6 +9,22 @@
 
 struct SettingsSection;  // Forward declare to avoid including full definition
 
+/**
+ * @brief Interface for configuration services.
+ *
+ * The IConfigService interface declares a contract for managing application configurations.
+ * It provides methods for retrieving settings, validating configuration, loading and saving configuration data,
+ * managing INI file data, and updating window positions for various display areas.
+ *
+ * The interface includes the following functionalities:
+ * - Retrieve the current settings via getSettings().
+ * - Validate the configuration state via isConfigValid().
+ * - Load the configuration data via loadConfig().
+ * - Save the configuration to persistent storage via saveConfig().
+ * - Access and modify INI file data via getIniData() and setIniData().
+ * - Obtain a reference to the key binding manager via getKeybindManager().
+ * - Update the positions of specific application windows (playfield, backglass, and DMD) via updateWindowPositions().
+ */
 class IConfigService {
 public:
     virtual ~IConfigService() = default;
