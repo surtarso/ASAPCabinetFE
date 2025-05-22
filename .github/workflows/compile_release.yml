@@ -13,6 +13,8 @@ on:
       - "apt-packages.txt"
       - "Doxyfile"
       - "docs/**"
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
@@ -73,14 +75,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
-
-        # Clear lingering locks for all apt-installs
-        echo "Cleaning up apt locks after system dependencies install..."
-        sleep 5 # Give apt a moment to fully finish and release its locks
-        sudo rm -f /var/lib/apt/lists/lock || true
-        sudo rm -f /var/cache/apt/archives/lock || true
-        sudo rm -f /var/lib/apt/lists/partial/* || true
-        sudo rm -f /var/cache/apt/archives/partial/* || true
 
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
@@ -168,3 +162,20 @@ jobs:
           echo "Got: $VERSION_OUTPUT"
           exit 1
         fi
+    
+    # Create a Github Release based on Tag pushes to main
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref_name }} # The tag name (e.g., v1.0.0)
+        name: Release ${{ github.ref_name }} # The release title
+        body: |
+          Automated release for ${{ github.ref_name }}
+          
+          This release includes the compiled Linux x64 artifact.
+        draft: false # Set to true to create a draft release
+        prerelease: false # Set to true for pre-release versions
+        files: ${{ steps.create-archive.outputs.tarball_full_path }} # Path to the compiled archive
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
