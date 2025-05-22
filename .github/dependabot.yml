@@ -11,7 +11,7 @@ updates:
       interval: "weekly" # Check for updates once a week.
       day: "monday" # (Optional) You can specify the day, e.g., "monday", "tuesday", etc.
     target-branch: "main" # (Optional) The branch to create pull requests against. Defaults to the repository's default branch.
-    # commit-message: # (Optional) Customize the commit message for Dependabot's PRs.
-    #   prefix: "chore"
-    #   prefix-development: "chore"
-    #   include: "scope"
+    commit-message: # (Optional) Customize the commit message for Dependabot's PRs.
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
