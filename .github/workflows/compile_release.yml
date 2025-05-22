@@ -20,6 +20,7 @@ permissions:
   contents: write # Allows the workflow to push to the gh-pages branch
   pages: write    # Required for GitHub Pages deployment
   id-token: write # Required for GitHub Pages deployment
+# End of Doxygen permissions for github pages
 
 jobs:
   compile_release:
