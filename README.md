@@ -10,15 +10,20 @@
 
 ## TL:DR
 ```sh
-sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src && cd ASAPCabinetFE-src
-mkdir build && cd build
+cat apt-packages.txt | xargs sudo apt-get install -y
+git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+cd ASAPCabinetFE-src && mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j$(nproc)
 cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+
+> [!NOTE]
+> You can download already compiled builds directly from the [Actions page](https://github.com/surtarso/ASAPCabinetFE/actions).
+> This is the quickest way to get started if you don't want to compile from source.
+> Select the latest successful run and scroll down to the "Artifacts" section.
 
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.
@@ -53,7 +58,7 @@ cd ~/ASAPCabinetFE
 ### Installing Dependencies (Debian based)
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential cmake git libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libvlc-dev libvlccore-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libglew-dev xdotool imagemagick
+cat apt-packages.txt | xargs sudo apt-get install -y
 ```
 
 ### Compiling and Running
