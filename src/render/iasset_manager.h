@@ -60,18 +60,21 @@ public:
     /**
      * @brief Retrieves the video player associated with the playfield.
      * @return IVideoPlayer* Pointer to the playfield video player.
+     * @see IVideoPlayer
      */
     virtual IVideoPlayer* getPlayfieldVideoPlayer() = 0;
 
     /**
      * @brief Retrieves the video player associated with the backglass.
      * @return IVideoPlayer* Pointer to the backglass video player.
+     * @see IVideoPlayer
      */
     virtual IVideoPlayer* getBackglassVideoPlayer() = 0;
 
     /**
      * @brief Retrieves the video player associated with the dot matrix display (DMD).
      * @return IVideoPlayer* Pointer to the DMD video player.
+     * @see IVideoPlayer
      */
     virtual IVideoPlayer* getDmdVideoPlayer() = 0;
     
@@ -79,11 +82,12 @@ public:
     /**
      * @brief Retrieves the configuration service that manages application settings.
      * @return IConfigService* Pointer to the settings manager.
+     * @see IConfigService
      */
     virtual IConfigService* getSettingsManager() = 0;
 
     /**
-     * @brief Retrieves the rectangle that specifies the title's position and dimensions.
+     * @brief Retrieves the rectangle that specifies the title's position and dimensions (x, y, width, height).
      * @return SDL_Rect The rectangle representing the title's size and position.
      */
     virtual SDL_Rect getTitleRect() = 0;
@@ -106,10 +110,10 @@ public:
      * @brief Reloads the title texture using a new title string and color, updating the title rectangle accordingly.
      * @param title The new title string.
      * @param color The color used for text rendering.
-     * @param titleRect In/out parameter that is updated to reflect the new title dimensions.
+     * @param titleRect [in,out] Parameter that is updated to reflect the new title's dimensions (width and height) after the texture is reloaded.
      */
     virtual void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) = 0;
-    
+
     // Asset management
     /**
      * @brief Reloads all relevant assets with updated settings, fonts, and table data.
@@ -117,12 +121,14 @@ public:
      * @param font Pointer to the TTF_Font used for text rendering.
      * @param tables A vector containing table data necessary for asset creation.
      * @param index The index of the table data to reload assets for.
+     * @see IWindowManager
      */
     virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) = 0;
     
     /**
      * @brief Sets the configuration service (settings manager) responsible for application settings.
      * @param cm Pointer to the new IConfigService instance.
+     * @see IConfigService
      */
     virtual void setSettingsManager(IConfigService* cm) = 0;
     
