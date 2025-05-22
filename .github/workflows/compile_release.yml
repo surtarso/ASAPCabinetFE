@@ -90,7 +90,7 @@ jobs:
         
         # Change directory to install_root to ensure clean tarball contents
         # cd "${GITHUB_WORKSPACE}/install_root"
-        cd "${HOME}/ASAPCABINETFE"
+        cd "${HOME}/ASAPCabineFE"
         # Create the tarball in the temporary directory
         tar -czvf "${TARBALL_FULL_PATH}" ./*
         
@@ -114,7 +114,7 @@ jobs:
     - name: Test Version Flag
       run: |
         # cd "${GITHUB_WORKSPACE}"
-        cd "${HOME}/ASAPCABINETFE"
+        cd "${HOME}/ASAPCabinetFE"
         VERSION_OUTPUT=$(./build/ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
