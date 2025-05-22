@@ -23,9 +23,11 @@
 
 ## TL:DR
 ```sh
-cat apt-packages.txt | xargs sudo apt-get install -y
+sudo apt-get install git -y
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
-cd ASAPCabinetFE-src && mkdir build && cd build
+cd ASAPCabinetFE-src
+cat apt-packages.txt | xargs sudo apt-get install -y
+mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j$(nproc)
 cmake --install .
@@ -34,10 +36,10 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> You can download already compiled builds directly from the [Actions page](https://github.com/surtarso/ASAPCabinetFE/actions).
+> You can **download already compiled builds** directly from the [Actions page](https://github.com/surtarso/ASAPCabinetFE/actions).
 > This is the quickest way to get started if you don't want to compile from source.
-> Select the latest successful run and scroll down to the "Artifacts" section.
-> Make sure you have runtime dependencies installed (vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0).
+> Select the latest successful run and scroll down to the **"Artifacts"** section.
+> Make sure you have runtime dependencies installed _(vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0)_.
 
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.
@@ -60,22 +62,22 @@ cd ~/ASAPCabinetFE
 ### Dependencies
 > [!IMPORTANT]
 > Ensure the following libraries are installed:
-> - **SDL2**: Core library for graphics and input.
-> - **SDL2_image**: Image loading support.
-> - **SDL2_ttf**: Font rendering.
-> - **SDL2_mixer**: Audio playback.
-> - **VLC**: Software decoding.
-> - **FFMpeg**: Video assembly/playback.
-> - **xdotools**: Screen manipulation.
-> - **ImageMagick**: Screen capture.
-
-### Installing Dependencies (Debian based)
-```sh
-sudo apt-get update
-cat apt-packages.txt | xargs sudo apt-get install -y
-```
+ - **SDL2**: Core library for graphics and input.
+ - **SDL2_image**: Image loading support.
+ - **SDL2_ttf**: Font rendering.
+ - **SDL2_mixer**: Audio playback.
+ - **VLC**: Software decoding.
+ - **FFMpeg**: Video assembly/playback.
+ - **xdotools**: Screen manipulation.
+ - **ImageMagick**: Screen capture.
 
 ### Compiling and Running
+
+Install Git
+```sh
+sudo apt-get update
+sudo apt-get install git -y
+```
 
 Clone the Repository
 ```sh
@@ -83,13 +85,16 @@ git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/
 cd ASAPCabinetFE-src
 ```
 
+Install Dependencies (Debian based)
+```sh
+cat apt-packages.txt | xargs sudo apt-get install -y
+```
+
 Build and install it
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build -j$(nproc)
 cmake --install build
-# After install you can remove build/ dir if you'd like
-rm -rf build/
 ```
 
 Run it and configure your paths:
@@ -99,7 +104,7 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> The `Debug` build uses assets in /build and has no `--install` target.
+> The `Debug` build is meant to be run in /build and has no `--install` target.
 
 
 ### Default Keymap
