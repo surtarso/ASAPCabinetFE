@@ -118,7 +118,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set OpenGL preference to GLVND to use modern OpenGL libraries
-set(OpenGL_GL_PREFERENCE GLVND)
+# set(OpenGL_GL_PREFERENCE GLVND)
 
 # Generate a version.h header with the project version
 configure_file(
@@ -208,9 +208,9 @@ find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
-find_package(OpenGL REQUIRED)
+# find_package(OpenGL REQUIRED)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale)
-find_package(GLEW REQUIRED)
+# find_package(GLEW REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
@@ -218,9 +218,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_TTF_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
+    # ${OPENGL_INCLUDE_DIR}
     ${FFMPEG_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
+    # ${GLEW_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -229,9 +229,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     SDL2_ttf::SDL2_ttf
     SDL2_mixer::SDL2_mixer
     ${LIBVLC_LIBRARIES}
-    ${OPENGL_LIBRARIES}
+    # ${OPENGL_LIBRARIES}
     ${FFMPEG_LIBRARIES}
-    ${GLEW_LIBRARIES}
+    # ${GLEW_LIBRARIES}
 )
 
 # Compile options
@@ -246,20 +246,47 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # ASan flags
     target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
     target_link_libraries(${PROJECT_NAME} PRIVATE -fsanitize=address)
+
+    # Copy resources to the build directory after building the executable
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        # assets:
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets/img ${CMAKE_BINARY_DIR}/img
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets/snd ${CMAKE_BINARY_DIR}/snd
+        # config:
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/src/config.ini ${CMAKE_BINARY_DIR}/config.ini
+        # tools:
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/tools/generate_media.sh ${CMAKE_BINARY_DIR}/generate_media.sh
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/tools/missing_media.sh ${CMAKE_BINARY_DIR}/missing_media.sh
+        # logs:
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_BINARY_DIR}/logs
+    )
+
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${PROJECT_NAME} PRIVATE -O2)
-endif()
 
-# Set output directory (this is for the build directory, not install)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
+    # Install the executable directly into the root of the install prefix
+    install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION ./ # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
+    )
 
-# --- REMOVED POST_BUILD COMMAND ---
-# This command is removed as the 'install' commands below will now handle
-# placing all necessary resources into the final distribution structure.
-# Keeping it would duplicate efforts and potentially cause inconsistencies
-# between the build directory and the installed package.
+    # Install resource directories directly into the root of the install prefix
+    # Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
+    install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini" DESTINATION .)
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/tools" DESTINATION .)
+    endif()
+
+    # Set output directory (this is for the build directory, not install)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
 
 
 # --- INSTALLATION RULES FOR /opt-style Flat Structure ---
@@ -267,14 +294,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # directly into the CMAKE_INSTALL_PREFIX (which in CI is install_root).
 # This creates a self-contained directory for the application.
 
-# Install the executable directly into the root of the install prefix
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION ./ # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
-)
 
-# Install resource directories directly into the root of the install prefix
-# Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
-install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini" DESTINATION .)
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/tools" DESTINATION .)
