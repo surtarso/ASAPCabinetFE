@@ -27,18 +27,20 @@ permissions:
 
 jobs:
   compile_release:
-    runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    runs-on: ubuntu-latest # Keep this as the host runner
+    container: ubuntu:20.04 # <-- IMPORTANT: This is your build environment (GLIBC 2.31)
 
     environment:
       name: github-pages
 
     steps:
-      # Install Git before checking out the code, as actions/checkout needs it for submodules.
-    - name: Install Git in Container
+    # Install essential requirements and configure Git safe directory before checkout
+    - name: Install Core Requirements and Configure Git
       run: |
-        apt-get update
-        apt-get install -y git findutils
+        apt-get update -qq
+        apt-get install -y git findutils apt-utils # findutils and apt-utils for general utility
+        # Fix for "dubious ownership" error: tell Git to trust the workspace directory
+        git config --global --add safe.directory "${GITHUB_WORKSPACE}"
         rm -rf /var/lib/apt/lists/* # Clean up to save space
 
     - name: Checkout code
@@ -55,12 +57,7 @@ jobs:
         rm -rf /var/cache/apt/archives/* || true
         mkdir -p /var/lib/apt/lists/ || true
         mkdir -p /var/cache/apt/archives/ || true
-        # Change ownership to the runner user for full control during cache operations
-        chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
-        chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
-        # Ensure full read/write/execute permissions for all
-        chmod -R 777 /var/lib/apt/lists/ || true
-        chmod -R 777 /var/cache/apt/archives/ || true
+        # Ownership and permissions are usually fine by default for root inside container
         rm -f /var/lib/apt/lists/lock || true
         rm -f /var/cache/apt/archives/lock || true
 
@@ -85,18 +82,18 @@ jobs:
         # Only run update if the cache was missed or partially restored
         if [ "${{ steps.apt-cache.outputs.cache-hit }}" != "true" ]; then
           echo "APT cache miss, running apt-get update..."
-          apt-get update
+          apt-get update -qq
         else
           echo "APT cache hit, skipping apt-get update."
         fi
 
+        # Install packages listed in apt-packages.txt
         cat apt-packages.txt | xargs apt-get install -y -qq
 
     # --- Start of Doxygen Documentation Steps ---
-    - name: Install Doxygen and Graphviz
-      run: |
-        apt-get install -y doxygen graphviz
-
+    # Removed explicit Doxygen and Graphviz installation here.
+    # Ensure 'doxygen' and 'graphviz' are listed in your apt-packages.txt
+    # so they are installed by the 'Install System Dependencies' step.
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
 
@@ -120,7 +117,9 @@ jobs:
     - name: Configure with CMake
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/build" && cd "${GITHUB_WORKSPACE}/build"
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
+        # CRITICAL FIX: Removed -DCMAKE_INSTALL_PREFIX override.
+        # CMakeLists.txt will now correctly use $ENV{HOME}/ASAPCabinetFE (which is /root/ASAPCabinetFE in container).
+        cmake -DCMAKE_BUILD_TYPE=Release ..
 
     - name: Compile with CMake
       run: |
@@ -148,7 +147,7 @@ jobs:
 
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        # Change directory to install_root to ensure clean tarball contents
+        # Change directory to the final installation root to ensure clean tarball contents
         cd "${HOME}/ASAPCabinetFE"
         # Create the tarball in the temporary directory
         tar -czvf "${TARBALL_FULL_PATH}" ./*
