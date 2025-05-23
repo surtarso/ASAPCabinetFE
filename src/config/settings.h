@@ -5,17 +5,17 @@
 #include <SDL2/SDL.h>
 
 struct Settings {
-    // VPX settings
+    // [VPX]
     std::string VPXTablesPath;
     std::string VPinballXPath;
     std::string vpxStartArgs;
     std::string vpxEndArgs;
 
-    // DPI settings
+    // [DPISettings]
     float dpiScale = 1.0f;
     bool enableDpiScaling = true;
 
-    // Default media paths
+    // [DefaultMedia]
     std::string defaultPlayfieldImage;
     std::string defaultBackglassImage;
     std::string defaultDmdImage;
@@ -34,7 +34,7 @@ struct Settings {
     std::string defaultPuPFullDmdVideo;
     std::string defaultPuPTopperVideo;
 
-    // Custom media paths
+    // [CustomMedia]
     std::string customPlayfieldImage;
     std::string customBackglassImage;
     std::string customDmdImage;
@@ -53,7 +53,7 @@ struct Settings {
     std::string puPDmdVideo;
     std::string puPFullDmdVideo;
 
-    // Window settings
+    // [WindowSettings]
     std::string videoBackend;
     bool useVPinballXIni;
     int playfieldWindowWidth;
@@ -73,7 +73,7 @@ struct Settings {
     int dmdX;
     int dmdY;
 
-    // Title display
+    // [TitleDisplay]
     std::string fontPath;
     SDL_Color fontColor;
     SDL_Color fontBgColor;
@@ -85,7 +85,7 @@ struct Settings {
     int titleX;
     int titleY;
 
-    // media sizes/positions
+    // [MediaDimensions]
     bool forceImagesOnly;
 
     int wheelMediaHeight;
@@ -111,7 +111,17 @@ struct Settings {
     int dmdMediaY;
     int dmdRotation;
 
-    // sound settings
+    // [AudioSettings]
+    bool mediaAudioMute;
+    float mediaAudioVol;
+    bool tableMusicMute;
+    float tableMusicVol;
+    bool interfaceAudioMute;
+    float interfaceAudioVol;
+    bool interfaceAmbienceMute;
+    float interfaceAmbienceVol;
+
+    // [UiSounds]
     std::string scrollPrevSound;
     std::string scrollNextSound;
     std::string scrollFastPrevSound;
@@ -125,8 +135,11 @@ struct Settings {
     std::string configSaveSound;
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
+    std::string ambienceSound;
+    //std::string tableMusic; // Placeholder for table music
 
-    // internal
+
+    // [Internal]
     std::string vpxSubCmd;
     std::string logFile;
 };
