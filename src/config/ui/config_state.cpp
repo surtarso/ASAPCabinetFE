@@ -4,7 +4,7 @@
 
 const std::vector<std::string> ConfigUIState::sectionOrder_ = {
     "VPX", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
-    "Keybinds", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
+    "Keybinds", "AudioSettings", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
 };
 
 ConfigUIState::ConfigUIState(IConfigService* configService) : configService_(configService) {

@@ -103,6 +103,30 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["MediaAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TableMusicMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["InterfaceAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["InterfaceAmbienceMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["MediaAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
+    };
+    keyRenderers_["TableMusicVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
+    };
+    keyRenderers_["InterfaceAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
+    };
+    keyRenderers_["InterfaceAmbienceVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
+    };
 }
 
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {

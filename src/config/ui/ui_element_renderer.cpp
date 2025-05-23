@@ -467,4 +467,19 @@ void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string
     }
 }
 
+void renderVolumeScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, [[maybe_unused]] SettingsSection& sectionData) {
+    float volume = 50.0f;
+    try {
+        volume = std::stof(value);
+    } catch (...) {
+        LOG_ERROR("UiElementRenderer: Invalid volume value: " << value << ", defaulting to 50.0");
+    }
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::SliderFloat(("##volume_" + key).c_str(), &volume, 0.0f, 100.0f, "%.0f")) {
+        value = std::to_string(volume);
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+    }
+}
+
 } // namespace UIElementRenderer
