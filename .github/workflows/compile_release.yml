@@ -79,6 +79,9 @@ jobs:
 
     - name: Install System Dependencies
       run: |
+        # Set DEBIAN_FRONTEND to noninteractive to prevent prompts
+        export DEBIAN_FRONTEND=noninteractive
+        
         # Only run update if the cache was missed or partially restored
         if [ "${{ steps.apt-cache.outputs.cache-hit }}" != "true" ]; then
           echo "APT cache miss, running apt-get update..."
@@ -87,7 +90,7 @@ jobs:
           echo "APT cache hit, skipping apt-get update."
         fi
 
-        cat apt-packages.txt | xargs apt-get install -y
+        cat apt-packages.txt | xargs apt-get install -y -qq
 
     # --- Start of Doxygen Documentation Steps ---
     - name: Install Doxygen and Graphviz
