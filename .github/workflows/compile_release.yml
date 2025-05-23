@@ -38,7 +38,7 @@ jobs:
     - name: Install Git in Container
       run: |
         apt-get update
-        apt-get install -y git xargs
+        apt-get install -y git findutils
         rm -rf /var/lib/apt/lists/* # Clean up to save space
 
     - name: Checkout code
