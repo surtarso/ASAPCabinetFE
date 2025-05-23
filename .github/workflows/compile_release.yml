@@ -93,7 +93,7 @@ jobs:
     # --- Start of Doxygen Documentation Steps ---
     - name: Install Doxygen in CI only
       run: |
-        apt-get install doxygen graphviz
+        apt-get install doxygen graphviz -y -qq
 
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
