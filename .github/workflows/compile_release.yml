@@ -51,18 +51,18 @@ jobs:
     - name: Prepare APT cache directories for caching
       run: |
         echo "Preparing /var/lib/apt/lists/ and /var/cache/apt/archives/ for caching..."
-        sudo rm -rf /var/lib/apt/lists/* || true
-        sudo rm -rf /var/cache/apt/archives/* || true
-        sudo mkdir -p /var/lib/apt/lists/ || true
-        sudo mkdir -p /var/cache/apt/archives/ || true
+        rm -rf /var/lib/apt/lists/* || true
+        rm -rf /var/cache/apt/archives/* || true
+        mkdir -p /var/lib/apt/lists/ || true
+        mkdir -p /var/cache/apt/archives/ || true
         # Change ownership to the runner user for full control during cache operations
-        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
-        sudo chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
+        chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/lib/apt/lists/ || true
+        chown -R "${USER:-$(whoami)}:${USER:-$(whoami)}" /var/cache/apt/archives/ || true
         # Ensure full read/write/execute permissions for all
-        sudo chmod -R 777 /var/lib/apt/lists/ || true
-        sudo chmod -R 777 /var/cache/apt/archives/ || true
-        sudo rm -f /var/lib/apt/lists/lock || true
-        sudo rm -f /var/cache/apt/archives/lock || true
+        chmod -R 777 /var/lib/apt/lists/ || true
+        chmod -R 777 /var/cache/apt/archives/ || true
+        rm -f /var/lib/apt/lists/lock || true
+        rm -f /var/cache/apt/archives/lock || true
 
     - name: Cache APT packages
       id: apt-cache
@@ -87,12 +87,12 @@ jobs:
           echo "APT cache hit, skipping apt-get update."
         fi
 
-        cat apt-packages.txt | xargs sudo apt-get install -y
+        cat apt-packages.txt | xargs apt-get install -y
 
     # --- Start of Doxygen Documentation Steps ---
     - name: Install Doxygen and Graphviz
       run: |
-        sudo apt-get install -y doxygen graphviz
+        apt-get install -y doxygen graphviz
 
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
