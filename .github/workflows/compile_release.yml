@@ -28,7 +28,7 @@ permissions:
 jobs:
   compile_release:
     runs-on: ubuntu-latest # Keep this as the host runner
-    container: ubuntu:20.04 # <-- IMPORTANT: This is your build environment (GLIBC 2.31)
+    container: ubuntu:22.04 # <-- IMPORTANT: This is your build environment (GLIBC 2.31)
 
     environment:
       name: github-pages
