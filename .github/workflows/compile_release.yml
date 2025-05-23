@@ -31,7 +31,15 @@ jobs:
     container: ubuntu:20.04
 
     environment:
-      name: github-pages 
+      name: github-pages
+
+    steps:
+    # Install Git before checking out the code, as actions/checkout needs it for submodules.
+    - name: Install Git in Container
+      run: |
+        apt-get update
+        apt-get install -y git
+        rm -rf /var/lib/apt/lists/* # Clean up to save space
 
     steps:
     - name: Checkout code
