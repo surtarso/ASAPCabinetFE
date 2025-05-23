@@ -125,7 +125,7 @@ jobs:
     - name: Compile with CMake
       run: |
         cd "${GITHUB_WORKSPACE}/build"
-        cmake --build -j$(nproc)
+        cmake --build . -j$(nproc)
 
     - name: Run `make install` to package the application
       run: |
