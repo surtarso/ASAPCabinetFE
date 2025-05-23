@@ -91,9 +91,10 @@ jobs:
         cat apt-packages.txt | xargs apt-get install -y -qq
 
     # --- Start of Doxygen Documentation Steps ---
-    # Removed explicit Doxygen and Graphviz installation here.
-    # Ensure 'doxygen' and 'graphviz' are listed in your apt-packages.txt
-    # so they are installed by the 'Install System Dependencies' step.
+    - name: Install Doxygen in CI only
+      run: |
+        apt-get install doxygen graphviz
+
     - name: Generate Doxygen documentation
       run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
 
