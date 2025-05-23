@@ -23,7 +23,7 @@
 
 ## TL:DR
 ```sh
-sudo apt-get install git -y
+sudo apt-get install git findutils -y -qq
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat apt-packages.txt | xargs sudo apt-get install -y
@@ -73,10 +73,10 @@ cd ~/ASAPCabinetFE
 
 ### Compiling and Running
 
-Install Git
+Make sure you have `git` and `xargs` available
 ```sh
 sudo apt-get update
-sudo apt-get install git -y
+sudo apt-get install git findutils -y
 ```
 
 Clone the Repository
