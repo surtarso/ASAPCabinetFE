@@ -1,7 +1,8 @@
 TODO
 
 FIX:
-- whole saving process is a mess, works tho. needs polish
+- fix screenshotmode key being captured while config is opened.
+- finish implementation of sound settings (just visual for now, NYI)
 - metadata year/manufacturer better parsing
 
 QOL:
