@@ -14,6 +14,7 @@ extern "C" {
 #include <libswresample/swresample.h> // For audio resampling
 #include <libavutil/audio_fifo.h> // For audio buffering
 #include <libavutil/channel_layout.h> // For modern channel layout APIs
+#include <libavutil/error.h> // For av_make_error_string
 }
 
 // Global variable to store the FFmpegPlayer instance for the SDL audio callback
@@ -459,7 +460,9 @@ bool FFmpegPlayer::decodeVideoFrame() {
                 }
                 return false;
             } else {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error reading video frame: " << err_str);
                 return false;
             }
@@ -468,7 +471,9 @@ bool FFmpegPlayer::decodeVideoFrame() {
         if (videoPacket_->stream_index == videoStreamIndex_) {
             ret = avcodec_send_packet(videoCodecContext_, videoPacket_);
             if (ret < 0) {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error sending video packet to decoder: " << err_str);
                 av_packet_unref(videoPacket_);
                 return false;
@@ -484,7 +489,9 @@ bool FFmpegPlayer::decodeVideoFrame() {
                 av_packet_unref(videoPacket_);
                 continue;
             } else {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error receiving video frame from decoder: " << err_str);
                 av_packet_unref(videoPacket_);
                 return false;
@@ -506,7 +513,9 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 }
                 return false;
             } else {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error reading audio frame: " << err_str);
                 return false;
             }
@@ -515,7 +524,9 @@ bool FFmpegPlayer::decodeAudioFrame() {
         if (audioPacket_->stream_index == audioStreamIndex_) {
             ret = avcodec_send_packet(audioCodecContext_, audioPacket_);
             if (ret < 0) {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error sending audio packet to decoder: " << err_str);
                 av_packet_unref(audioPacket_);
                 return false;
@@ -545,7 +556,9 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 int converted_samples = swr_convert(swrContext_, &out_buffer, out_samples,
                                                     (const uint8_t**)audioFrame_->data, audioFrame_->nb_samples);
                 if (converted_samples < 0) {
-                    std::string err_str = av_err2str(converted_samples);
+                    char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                    av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, converted_samples);
+                    std::string err_str = err_buf;
                     LOG_ERROR("FFmpegPlayer: Audio resampling failed: " << err_str);
                     av_freep(&out_buffer);
                     av_packet_unref(audioPacket_);
@@ -555,7 +568,9 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 // Write resampled audio to FIFO
                 ret = av_audio_fifo_write(audioFifo_, (void**)&out_buffer, converted_samples);
                 if (ret < 0) {
-                    std::string err_str = av_err2str(ret);
+                    char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                    av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                    std::string err_str = err_buf;
                     LOG_ERROR("FFmpegPlayer: Failed to write to audio FIFO: " << err_str);
                     av_freep(&out_buffer);
                     av_packet_unref(audioPacket_);
@@ -569,7 +584,9 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 av_packet_unref(audioPacket_);
                 continue;
             } else {
-                std::string err_str = av_err2str(ret);
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                std::string err_str = err_buf;
                 LOG_ERROR("FFmpegPlayer: Error receiving audio frame from decoder: " << err_str);
                 av_packet_unref(audioPacket_);
                 return false;
@@ -625,7 +642,9 @@ void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
 
     int read_samples = av_audio_fifo_read(player->audioFifo_, (void**)&stream, audio_len_samples);
     if (read_samples < 0) {
-        std::string err_str = av_err2str(read_samples);
+        char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+        av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, read_samples);
+        std::string err_str = err_buf;
         LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO: " << err_str);
         return;
     }
