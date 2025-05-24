@@ -156,7 +156,7 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 
 ## Contribute
 Contributions are very welcome! Check the TODO list, open issues or pull requests to help improve this app.
-You can create doxygen documentation by typing `doxygen` on the project root, and opening docs/index.html.
+You can find the [documentation here](surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ### FOOTNOTE
 If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
