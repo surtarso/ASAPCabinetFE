@@ -200,12 +200,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # --- Dependencies Start ---
-# Find and link dependencies
-# find_package(SDL2 REQUIRED)
-# find_package(SDL2_image REQUIRED)
-# find_package(SDL2_ttf REQUIRED)
-# find_package(SDL2_mixer REQUIRED)
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
