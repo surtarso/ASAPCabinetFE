@@ -145,8 +145,9 @@ std::string TableLoader::getMusicPath(const std::string& root, const std::string
     fs::path musicFile = fs::path(root) / musicPath;
     if (fs::exists(musicFile) && fs::is_regular_file(musicFile)) { // Check if it's a regular file
         return musicFile.string();
+        LOG_DEBUG("TableLoader: Found Music: " << musicPath);
     } else {
-        LOG_DEBUG("TableLoader: No music file found or not a regular file for: " << musicFile.string());
+        //LOG_DEBUG("TableLoader: No music file found or not a regular file for: " << musicFile.string());
         return ""; // Return empty string if file doesn't exist or is not a regular file
     }
 }

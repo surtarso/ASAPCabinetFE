@@ -13,10 +13,10 @@ extern "C" {
 #include <libavutil/opt.h> // For av_opt_set_int
 #include <libswresample/swresample.h> // For audio resampling
 #include <libavutil/audio_fifo.h> // For audio buffering
+#include <libavutil/channel_layout.h> // For modern channel layout APIs
 }
 
 // Global variable to store the FFmpegPlayer instance for the SDL audio callback
-// This is a common pattern when using static callbacks that need to access class members.
 static FFmpegPlayer* globalFFmpegPlayerInstance = nullptr;
 
 FFmpegPlayer::FFmpegPlayer()
@@ -33,17 +33,16 @@ FFmpegPlayer::FFmpegPlayer()
       swsContext_(nullptr),
       videoStreamIndex_(-1),
       rgbBuffer_(nullptr),
-      audioCodecContext_(nullptr), // Initialize audio members
+      audioCodecContext_(nullptr),
       audioFrame_(nullptr),
       audioPacket_(nullptr),
       swrContext_(nullptr),
       audioFifo_(nullptr),
       audioStreamIndex_(-1),
-      audioDevice_(0), // 0 means no device opened
-      currentVolume_(1.0f), // Default to full volume
-      isMuted_(false) // Default to not muted
+      audioDevice_(0),
+      currentVolume_(1.0f),
+      isMuted_(false)
 {
-    // Set the global instance for the static callback
     globalFFmpegPlayerInstance = this;
 }
 
@@ -57,7 +56,6 @@ FFmpegPlayer::~FFmpegPlayer() {
 void FFmpegPlayer::cleanup() {
     LOG_DEBUG("FFmpegPlayer::cleanup() started for path: " << path_);
 
-    // Close SDL audio device
     if (audioDevice_ != 0) {
         SDL_CloseAudioDevice(audioDevice_);
         audioDevice_ = 0;
@@ -147,7 +145,7 @@ void FFmpegPlayer::cleanup() {
 
 bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
     LOG_DEBUG("FFmpegPlayer: Setting up video playback for path=" << path << ", width=" << width << ", height=" << height);
-    cleanup(); // Ensure everything is cleaned up from previous usage
+    cleanup();
 
     renderer_ = renderer;
     path_ = path;
@@ -185,7 +183,6 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         return false;
     }
 
-    // Find video and audio streams
     videoStreamIndex_ = -1;
     audioStreamIndex_ = -1;
     for (unsigned int i = 0; i < formatContext_->nb_streams; ++i) {
@@ -290,8 +287,7 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         const AVCodec* audioCodec = avcodec_find_decoder(formatContext_->streams[audioStreamIndex_]->codecpar->codec_id);
         if (!audioCodec) {
             LOG_ERROR("FFmpegPlayer: Audio codec not found");
-            // Don't cleanup everything, just audio related stuff
-            audioStreamIndex_ = -1; // Mark audio as not available
+            audioStreamIndex_ = -1;
         } else {
             audioCodecContext_ = avcodec_alloc_context3(audioCodec);
             if (!audioCodecContext_) {
@@ -312,31 +308,39 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
                             LOG_ERROR("FFmpegPlayer: Failed to allocate audio frame or packet");
                             audioStreamIndex_ = -1;
                         } else {
-                            // Setup SDL Audio
                             SDL_AudioSpec wantedSpec;
-                            wantedSpec.freq = 44100; // Target sample rate
-                            wantedSpec.format = AUDIO_S16SYS; // Signed 16-bit little-endian samples
-                            wantedSpec.channels = 2; // Stereo
-                            wantedSpec.samples = 1024; // Buffer size
+                            wantedSpec.freq = 44100;
+                            wantedSpec.format = AUDIO_S16SYS;
+                            wantedSpec.channels = 2;
+                            wantedSpec.samples = 1024;
                             wantedSpec.callback = SDLAudioCallback;
-                            wantedSpec.userdata = this; // Pass FFmpegPlayer instance
+                            wantedSpec.userdata = this;
 
                             audioDevice_ = SDL_OpenAudioDevice(nullptr, 0, &wantedSpec, &audioSpec_, 0);
                             if (audioDevice_ == 0) {
                                 LOG_ERROR("FFmpegPlayer: Failed to open audio device: " << SDL_GetError());
                                 audioStreamIndex_ = -1;
                             } else {
-                                // Initialize SwrContext for resampling
                                 swrContext_ = swr_alloc();
                                 if (!swrContext_) {
                                     LOG_ERROR("FFmpegPlayer: Could not allocate resampler context");
                                     audioStreamIndex_ = -1;
                                 } else {
-                                    av_opt_set_int(swrContext_, "in_channel_layout", audioCodecContext_->channel_layout ? audioCodecContext_->channel_layout : av_get_default_channel_layout(audioCodecContext_->channels), 0);
+                                    AVChannelLayout in_ch_layout;
+                                    if (audioCodecContext_->ch_layout.nb_channels > 0) {
+                                        in_ch_layout = audioCodecContext_->ch_layout;
+                                    } else {
+                                        AVChannelLayout default_layout = AV_CHANNEL_LAYOUT_STEREO;
+                                        av_channel_layout_copy(&in_ch_layout, &default_layout);
+                                    }
+
+                                    AVChannelLayout out_ch_layout = AV_CHANNEL_LAYOUT_STEREO;
+
+                                    av_opt_set_chlayout(swrContext_, "in_chlayout", &in_ch_layout, 0);
                                     av_opt_set_int(swrContext_, "in_sample_rate", audioCodecContext_->sample_rate, 0);
                                     av_opt_set_sample_fmt(swrContext_, "in_sample_fmt", audioCodecContext_->sample_fmt, 0);
 
-                                    av_opt_set_int(swrContext_, "out_channel_layout", av_get_default_channel_layout(wantedSpec.channels), 0);
+                                    av_opt_set_chlayout(swrContext_, "out_chlayout", &out_ch_layout, 0);
                                     av_opt_set_int(swrContext_, "out_sample_rate", wantedSpec.freq, 0);
                                     av_opt_set_sample_fmt(swrContext_, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
 
@@ -345,15 +349,17 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
                                         swr_free(&swrContext_);
                                         audioStreamIndex_ = -1;
                                     } else {
-                                        // Initialize audio FIFO buffer
-                                        audioFifo_ = av_audio_fifo_alloc(AV_SAMPLE_FMT_S16, wantedSpec.channels, 1); // 1 initial samples
+                                        audioFifo_ = av_audio_fifo_alloc(AV_SAMPLE_FMT_S16, wantedSpec.channels, 1);
                                         if (!audioFifo_) {
                                             LOG_ERROR("FFmpegPlayer: Could not allocate audio FIFO");
                                             audioStreamIndex_ = -1;
                                         } else {
-                                            SDL_PauseAudioDevice(audioDevice_, 0); // Start playing audio
+                                            SDL_PauseAudioDevice(audioDevice_, 0);
                                             LOG_DEBUG("FFmpegPlayer: Audio stream setup complete.");
                                         }
+                                    }
+                                    if (audioCodecContext_->ch_layout.nb_channels <= 0) {
+                                        av_channel_layout_uninit(&in_ch_layout);
                                     }
                                 }
                             }
@@ -379,7 +385,6 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
 void FFmpegPlayer::play() {
     if (isPlaying_) return;
     isPlaying_ = true;
-    // Resume audio device if it was paused
     if (audioDevice_ != 0) {
         SDL_PauseAudioDevice(audioDevice_, 0);
     }
@@ -389,10 +394,8 @@ void FFmpegPlayer::play() {
 void FFmpegPlayer::stop() {
     if (!isPlaying_) return;
     isPlaying_ = false;
-    // Pause audio device
     if (audioDevice_ != 0) {
         SDL_PauseAudioDevice(audioDevice_, 1);
-        // Clear audio buffer
         if (audioFifo_) {
             av_audio_fifo_drain(audioFifo_, av_audio_fifo_size(audioFifo_));
         }
@@ -412,16 +415,14 @@ void FFmpegPlayer::stop() {
 void FFmpegPlayer::update() {
     if (!isPlaying_) return;
 
-    // Decode video frame
     if (videoStreamIndex_ != -1 && texture_) {
         decodeVideoFrame();
         updateTexture();
     }
 
-    // Decode audio frame and push to FIFO
     if (audioStreamIndex_ != -1 && audioFifo_) {
-        // Keep decoding audio until FIFO has enough data or we run out of packets
-        while (av_audio_fifo_size(audioFifo_) < audioSpec_.samples * audioSpec_.channels) {
+        // Decode audio until FIFO has at least 4x the requested samples to prevent underruns
+        while (av_audio_fifo_size(audioFifo_) < audioSpec_.samples * audioSpec_.channels * 4) {
             if (!decodeAudioFrame()) {
                 break; // No more audio frames or error
             }
@@ -438,15 +439,12 @@ bool FFmpegPlayer::isPlaying() const {
 }
 
 void FFmpegPlayer::setVolume(float volume) {
-    // Manual clamping for C++11/14 compatibility
     currentVolume_ = std::min(std::max(volume, 0.0f), 1.0f);
-    // SDL audio callback will apply this volume
     LOG_DEBUG("FFmpegPlayer: Volume set to " << currentVolume_);
 }
 
 void FFmpegPlayer::setMute(bool mute) {
     isMuted_ = mute;
-    // SDL audio callback will apply this mute state
     LOG_DEBUG("FFmpegPlayer: Mute set to " << (isMuted_ ? "true" : "false"));
 }
 
@@ -494,12 +492,12 @@ bool FFmpegPlayer::decodeVideoFrame() {
     return false;
 }
 
+// BEGIN MODIFIED SECTION: Fix heap-buffer-overflow in audio decoding
 bool FFmpegPlayer::decodeAudioFrame() {
     while (isPlaying_) {
         int ret = av_read_frame(formatContext_, audioPacket_);
         if (ret < 0) {
             if (ret == AVERROR_EOF) {
-                // End of file, loop audio if needed
                 if (formatContext_ && audioStreamIndex_ != -1) {
                     av_seek_frame(formatContext_, audioStreamIndex_, 0, AVSEEK_FLAG_BACKWARD);
                     avcodec_flush_buffers(audioCodecContext_);
@@ -521,25 +519,49 @@ bool FFmpegPlayer::decodeAudioFrame() {
 
             ret = avcodec_receive_frame(audioCodecContext_, audioFrame_);
             if (ret >= 0) {
-                // Resample audio
-                uint8_t* out_buffer;
-                int out_samples = swr_convert(swrContext_, &out_buffer, audioFrame_->nb_samples * 2, // Max possible output samples
-                                              (const uint8_t**)audioFrame_->data, audioFrame_->nb_samples);
+                // Calculate required output buffer size
+                int out_samples = swr_get_out_samples(swrContext_, audioFrame_->nb_samples);
                 if (out_samples < 0) {
-                    LOG_ERROR("FFmpegPlayer: Audio resampling failed.");
+                    LOG_ERROR("FFmpegPlayer: Failed to calculate output samples for resampling.");
                     av_packet_unref(audioPacket_);
                     return false;
                 }
 
-                // Add to FIFO
-                av_audio_fifo_write(audioFifo_, (void**)&out_buffer, out_samples);
-                av_freep(&out_buffer); // Free buffer allocated by swr_convert
+                // Allocate output buffer for resampled audio
+                int bytes_per_sample = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+                int out_buffer_size = out_samples * audioSpec_.channels * bytes_per_sample;
+                uint8_t* out_buffer = (uint8_t*)av_malloc(out_buffer_size);
+                if (!out_buffer) {
+                    LOG_ERROR("FFmpegPlayer: Failed to allocate output buffer for resampling.");
+                    av_packet_unref(audioPacket_);
+                    return false;
+                }
 
+                // Resample audio
+                int converted_samples = swr_convert(swrContext_, &out_buffer, out_samples,
+                                                    (const uint8_t**)audioFrame_->data, audioFrame_->nb_samples);
+                if (converted_samples < 0) {
+                    LOG_ERROR("FFmpegPlayer: Audio resampling failed: " << av_err2str(converted_samples));
+                    av_freep(&out_buffer);
+                    av_packet_unref(audioPacket_);
+                    return false;
+                }
+
+                // Write resampled audio to FIFO
+                ret = av_audio_fifo_write(audioFifo_, (void**)&out_buffer, converted_samples);
+                if (ret < 0) {
+                    LOG_ERROR("FFmpegPlayer: Failed to write to audio FIFO: " << av_err2str(ret));
+                    av_freep(&out_buffer);
+                    av_packet_unref(audioPacket_);
+                    return false;
+                }
+
+                av_freep(&out_buffer);
                 av_packet_unref(audioPacket_);
-                return true; // Successfully decoded and buffered audio
+                return true;
             } else if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                 av_packet_unref(audioPacket_);
-                continue; // Need more packets
+                continue;
             } else {
                 LOG_ERROR("FFmpegPlayer: Error receiving audio frame from decoder: " << av_err2str(ret));
                 av_packet_unref(audioPacket_);
@@ -550,6 +572,7 @@ bool FFmpegPlayer::decodeAudioFrame() {
     }
     return false;
 }
+// END MODIFIED SECTION
 
 void FFmpegPlayer::updateTexture() {
     if (!texture_ || !rgbFrame_ || !rgbBuffer_) return;
@@ -576,34 +599,30 @@ void FFmpegPlayer::updateTexture() {
 void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
     FFmpegPlayer* player = static_cast<FFmpegPlayer*>(userdata);
     if (!player || !player->audioFifo_ || !player->isPlaying_) {
-        memset(stream, 0, len); // Fill with silence if player is not ready or not playing
+        memset(stream, 0, len);
         return;
     }
 
-    SDL_memset(stream, 0, len); // Initialize buffer with silence
+    SDL_memset(stream, 0, len);
 
     int audio_len_bytes = len;
     int audio_len_samples = audio_len_bytes / (player->audioSpec_.channels * (SDL_AUDIO_BITSIZE(player->audioSpec_.format) / 8));
 
-    // If muted, fill with silence
     if (player->isMuted_) {
         return;
     }
 
-    // Read from FIFO
     int fifo_size = av_audio_fifo_size(player->audioFifo_);
     if (fifo_size < audio_len_samples) {
-        // Not enough data in FIFO, fill remaining with silence
         LOG_DEBUG("FFmpegPlayer: Audio FIFO underrun. Requested " << audio_len_samples << " samples, got " << fifo_size);
     }
 
     int read_samples = av_audio_fifo_read(player->audioFifo_, (void**)&stream, audio_len_samples);
     if (read_samples < 0) {
-        LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO.");
+        LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO: " << av_err2str(read_samples));
         return;
     }
 
-    // Apply volume
     if (player->currentVolume_ < 1.0f) {
         SDL_MixAudioFormat(stream, stream, player->audioSpec_.format, read_samples * player->audioSpec_.channels * (SDL_AUDIO_BITSIZE(player->audioSpec_.format) / 8), static_cast<int>(player->currentVolume_ * SDL_MIX_MAXVOLUME));
     }

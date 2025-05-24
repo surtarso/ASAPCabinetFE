@@ -48,7 +48,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playSound("scroll_prev");
+            soundManager_->playUISound("scroll_prev");
         }
     };
 
@@ -58,7 +58,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playSound("scroll_next");
+            soundManager_->playUISound("scroll_next");
         }
     };
 
@@ -68,7 +68,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playSound("scroll_fast_prev");
+            soundManager_->playUISound("scroll_fast_prev");
         }
     };
 
@@ -78,7 +78,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playSound("scroll_fast_next");
+            soundManager_->playUISound("scroll_fast_next");
         }
     };
 
@@ -93,7 +93,7 @@ void InputManager::registerActions() {
             if (newIndex != *currentIndex_) {
                 assets_->loadTableAssets(newIndex, *tables_);
                 *currentIndex_ = newIndex;
-                soundManager_->playSound("scroll_jump_prev");
+                soundManager_->playUISound("scroll_jump_prev");
             }
         } else {
             auto lastIt = std::prev(letterIndex_.end());
@@ -101,7 +101,7 @@ void InputManager::registerActions() {
             if (newIndex != *currentIndex_) {
                 assets_->loadTableAssets(newIndex, *tables_);
                 *currentIndex_ = newIndex;
-                soundManager_->playSound("scroll_jump_prev");
+                soundManager_->playUISound("scroll_jump_prev");
             }
         }
     };
@@ -116,14 +116,14 @@ void InputManager::registerActions() {
             if (newIndex != *currentIndex_) {
                 assets_->loadTableAssets(newIndex, *tables_);
                 *currentIndex_ = newIndex;
-                soundManager_->playSound("scroll_jump_next");
+                soundManager_->playUISound("scroll_jump_next");
             }
         } else {
             size_t newIndex = letterIndex_.begin()->second;
             if (newIndex != *currentIndex_) {
                 assets_->loadTableAssets(newIndex, *tables_);
                 *currentIndex_ = newIndex;
-                soundManager_->playSound("scroll_jump_next");
+                soundManager_->playUISound("scroll_jump_next");
             }
         }
     };
@@ -138,7 +138,7 @@ void InputManager::registerActions() {
             if (newIndex != *currentIndex_) {
                 assets_->loadTableAssets(newIndex, *tables_);
                 *currentIndex_ = newIndex;
-                soundManager_->playSound("scroll_random");
+                soundManager_->playUISound("scroll_random");
             }
         }
     };
@@ -159,7 +159,7 @@ void InputManager::registerActions() {
 
         inExternalAppMode_ = true; // Set flag to indicate external app is launching
         LOG_DEBUG("InputManager: Launch table triggered");
-        soundManager_->playSound("launch_table");
+        soundManager_->playUISound("launch_table");
 
         const Settings& settings = settingsManager_->getSettings();
         std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
@@ -195,7 +195,7 @@ void InputManager::registerActions() {
 
         LOG_DEBUG("InputManager: Screenshot mode triggered");
         if (!screenshotModeActive_) { // Use the specific flag for the action's internal state
-            soundManager_->playSound("launch_screenshot");
+            soundManager_->playUISound("launch_screenshot");
             screenshotModeActive_ = true; // Set internal flag
             inExternalAppMode_ = true; // Also set general external app flag
             
@@ -210,7 +210,7 @@ void InputManager::registerActions() {
 
     actionHandlers_["ToggleConfig"] = [this]() {
         LOG_DEBUG("InputManager: ToggleConfig action triggered");
-        soundManager_->playSound("config_toggle");
+        soundManager_->playUISound("config_toggle");
         *showConfig_ = !*showConfig_;
         LOG_DEBUG("InputManager: Toggled showConfig to: " << (*showConfig_ ? 1 : 0));
     };
@@ -349,7 +349,7 @@ void InputManager::handleDoubleClick(const SDL_Event& event) {
             int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY;
             windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
             settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY);
-            soundManager_->playSound("config_save");
+            soundManager_->playUISound("config_save");
             lastClickTimes_.erase(it); // Clear to reset double-click detection
         } else {
             lastClickTimes_[windowID] = currentTime;

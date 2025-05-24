@@ -55,11 +55,11 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 SDL_KeyboardEvent keyEvent = event.key;
                 if (keybindProvider_->isAction(keyEvent, "ScreenshotKey")) {
                     LOG_INFO("ScreenshotManager: Capture key pressed");
-                    soundManager_->playSound("screenshot_take");
+                    soundManager_->playUISound("screenshot_take");
                     capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 } else if (keybindProvider_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_INFO("ScreenshotManager: Quit key pressed");
-                    soundManager_->playSound("screenshot_quit");
+                    soundManager_->playUISound("screenshot_quit");
                     isRunning_ = false;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -67,7 +67,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 SDL_Rect button = {0, 0, 215, 35};
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_INFO("ScreenshotManager: Capturing screenshots with mouse click...");
-                    soundManager_->playSound("screenshot_take");
+                    soundManager_->playUISound("screenshot_take");
                     capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 }
             }
