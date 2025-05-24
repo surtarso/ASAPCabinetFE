@@ -48,6 +48,7 @@ struct TableData {
     std::string playfieldVideo;  // Path to table video (if any)
     std::string backglassVideo;  // Path to backglass video (if any)
     std::string dmdVideo;        // Path to DMD video (if any)
+    std::string music;       // Path to the Music file (if any)
 
     // vpxtool metadata
     std::string tableName;

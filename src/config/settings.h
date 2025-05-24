@@ -52,6 +52,7 @@ struct Settings {
     std::string puPBackglassVideo;
     std::string puPDmdVideo;
     std::string puPFullDmdVideo;
+    std::string tableMusic;
 
     // [WindowSettings]
     std::string videoBackend;
@@ -136,8 +137,6 @@ struct Settings {
     std::string screenshotTakeSound;
     std::string screenshotQuitSound;
     std::string ambienceSound;
-    //std::string tableMusic; // Placeholder for table music
-
 
     // [Internal]
     std::string vpxSubCmd;

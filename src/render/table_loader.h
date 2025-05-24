@@ -15,6 +15,7 @@ private:
     std::map<char, int> letterIndex;
     std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath);
     std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath);
+    std::string getMusicPath(const std::string& root, const std::string& musicPath);
 };
 
 #endif // TABLE_LOADER_H
