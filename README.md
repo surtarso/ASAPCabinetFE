@@ -155,7 +155,7 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 - Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
 ## Contribute
-Contributions are very welcome! Check the TODO list, open issues or pull requests to help improve this app.
+Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app.
 You can find the [documentation here](surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ### FOOTNOTE
