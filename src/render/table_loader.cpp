@@ -17,6 +17,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
             table.vpxFile = entry.path().string();
             table.folder = entry.path().parent_path().string();
             table.title = entry.path().stem().string();
+            table.music = getMusicPath(table.folder, settings.tableMusic);
             table.playfieldImage = getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
             table.wheelImage = getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
             table.backglassImage = getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
@@ -133,4 +134,14 @@ std::string TableLoader::getVideoPath(const std::string& root, const std::string
         return defaultVideoPath;
     else
         return "";
+}
+
+std::string TableLoader::getMusicPath(const std::string& root, const std::string& musicPath) {
+    fs::path musicFile = fs::path(root) / musicPath;
+    if (fs::exists(musicFile)) {
+        return musicFile.string();
+    } else {
+        LOG_DEBUG("TableLoader: No music found for: " << root);
+        return "";
+    }
 }
