@@ -44,7 +44,7 @@ void renderColorPicker([[maybe_unused]] const std::string& key, std::string& val
                 std::to_string(int(color[2] * 255)) + "," +
                 std::to_string(int(color[3] * 255));
         hasChanges = true;
-        LOG_INFO("UiElementRenderer: Color updated: " << section << "." << key << " = " << value);
+        LOG_INFO("UiElementRenderer::renderColorPicker: " << section << "." << key << " = " << value);
         ImGui::EndPopup();
     }
     ImGui::PopStyleVar();
@@ -61,7 +61,7 @@ void renderFontPath([[maybe_unused]] const std::string& key, std::string& value,
             if (ImGui::Selectable(fontName.c_str(), isSelected)) {
                 value = availableFonts[i]; // Set full path as value
                 preview = fontName; // Update preview to filename
-                LOG_INFO("UiElementRenderer: Font selected: " << section << "." << key << " = " << value);
+                LOG_INFO("UiElementRenderer:renderFontPath: " << section << "." << key << " = " << value);
                 hasChanges = true;
             }
             if (isSelected) ImGui::SetItemDefaultFocus();
@@ -77,7 +77,7 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
     ImGui::SetNextItemWidth(-60);
     if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
         value = std::string(buffer);
-        LOG_DEBUG("UiElementRenderer: Text updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderPathOrExecutable: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
     ImGui::SameLine();
@@ -118,7 +118,7 @@ void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value,
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderCheckbox: " << section << "." << key << " = " << value);
     }
 }
 
@@ -143,7 +143,7 @@ void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value,
     if (ImGui::SliderFloat("##dpiScale", &dpiScale, 0.5f, 3.0f, "%.1f")) {
         value = std::to_string(dpiScale);
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderDpiScale: " << section << "." << key << " = " << value);
     }
     if (!isEnabled) {
         ImGui::PopStyleVar();
@@ -162,7 +162,7 @@ void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value
     if (ImGui::SliderInt("##sliderInt", &intValue, min, max, "%d")) {
         value = std::to_string(intValue);
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderSliderInt: " << section << "." << key << " = " << value);
     }
 }
 
@@ -204,7 +204,7 @@ void renderRotationSlider([[maybe_unused]] const std::string& key, std::string& 
         if (snappedValue != intValue) {
             value = std::to_string(snappedValue);
             hasChanges = true;
-            LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+            LOG_DEBUG("UiElementRenderer::renderRotationSlider: " << section << "." << key << " = " << value);
         }
     }
 }
@@ -229,7 +229,7 @@ void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::st
         std::string oldValue = value;
         value = options[videoBackend];
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderVideoBackendDropdown: " << section << "." << key << " = " << value);
     }
 }
 
@@ -242,7 +242,7 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
         std::string oldValue = value;
         value = options[titleSource];
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderTitleDropdown: " << section << "." << key << " = " << value);
         
         if (value == "metadata" && oldValue != "metadata") {
             LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
@@ -331,7 +331,7 @@ void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderMetadataCheckbox: " << section << "." << key << " = " << value);
         
         // Only perform the check and open popup if the checkbox is being set to true
         if (boolValue) { 
@@ -422,7 +422,7 @@ void renderResolution([[maybe_unused]] const std::string& key, std::string& valu
     if (ImGui::InputText("##res", buffer, sizeof(buffer), ImGuiInputTextFlags_CharsDecimal)) {
         value = std::string(buffer);
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderResolution: " << section << "." << key << " = " << value);
     }
     ImGui::SameLine();
     const char* commonRes[] = {"128", "256", "512", "600", "720", "768", "800", "900", "1024", "1080", "1200", "1280", "1366", "1440", "1600", "1920", "2160", "2560", "3840"};
@@ -450,7 +450,7 @@ void renderGenericText([[maybe_unused]] const std::string& key, std::string& val
     ImGui::SetNextItemWidth(-1);
     if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
         value = std::string(buffer);
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderGenericText: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
 }
@@ -462,7 +462,7 @@ void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string
     ImGui::SetNextItemWidth(100);
     if (ImGui::InputText("##value", buffer, sizeof(buffer), ImGuiInputTextFlags_CharsDecimal)) {
         value = std::string(buffer);
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderGenericTextShort: " << section << "." << key << " = " << value);
         hasChanges = true;
     }
 }
@@ -478,7 +478,7 @@ void renderVolumeScale([[maybe_unused]] const std::string& key, std::string& val
     if (ImGui::SliderFloat(("##volume_" + key).c_str(), &volume, 0.0f, 100.0f, "%.0f")) {
         value = std::to_string(volume);
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer: Updated: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderVolumeScale: " << section << "." << key << " = " << value);
     }
 }
 

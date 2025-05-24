@@ -119,7 +119,6 @@ void ConfigUI::saveConfig() {
 
     // Store current iniData before saving
     const auto oldIniData = configService_->getIniData();
-    
     // Save the config
     configService_->saveConfig(configService_->getIniData());
     const auto& currentIniData = configService_->getIniData();
@@ -207,6 +206,7 @@ void ConfigUI::discardChanges() {
 }
 
 void ConfigUI::handleEvent(const SDL_Event& event) {
+    //LOG_DEBUG("ConfigUI: Handling event type: " << event.type);
     auto& iniData = const_cast<std::map<std::string, SettingsSection>&>(configService_->getIniData());
     inputHandler_.handleEvent(event, iniData, state_.currentSection);
 }

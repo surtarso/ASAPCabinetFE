@@ -186,8 +186,8 @@ bool ConfigUIState::hasTitleDataSourceChanged(const std::map<std::string, Settin
 }
 
 bool ConfigUIState::hasVideoBackendChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
-    auto currentIt = currentIniData.find("Internal");
-    auto lastIt = lastSavedIniData.find("Internal");
+    auto currentIt = currentIniData.find("WindowSettings");
+    auto lastIt = lastSavedIniData.find("WindowSettings");
 
     if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
         LOG_DEBUG("ConfigUIState: Internal section missing in current or last state");
@@ -219,7 +219,7 @@ bool ConfigUIState::hasForceImagesOnlyChanged(const std::map<std::string, Settin
     auto lastIt = lastSavedIniData.find("MediaDimensions");
 
     if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
-        LOG_DEBUG("ConfigUIState: MediaSettings section missing in current or last state, assuming no change");
+        LOG_DEBUG("ConfigUIState: MediaDimensions section missing in current or last state, assuming no change");
         return false;
     }
 

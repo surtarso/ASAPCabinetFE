@@ -23,18 +23,8 @@ App::App(const std::string& configPath)
       tableLoader_(std::make_unique<TableLoader>()) {
     exeDir_ = getExecutableDir();
     configPath_ = exeDir_ + configPath_;
-    LOG_DEBUG("App: Config path: " << configPath_);
-    LOG_DEBUG("App: Exec dir set to: " << exeDir_);
 
-    configManager_ = DependencyFactory::createConfigService(configPath_);
-    std::string logFile = configManager_->getSettings().logFile;
-    if (!logFile.empty() && 
-        logFile.find('/') != 0 && 
-        logFile.find('\\') != 0) {
-        logFile = exeDir_ + logFile;
-    } else if (logFile.empty()) {
-        logFile = exeDir_ + "logs/debug.log";
-    }
+    std::string logFile = exeDir_ + "logs/debug.log";
     Logger::getInstance().initialize(logFile,
     #ifdef DEBUG_LOGGING
             true
@@ -204,6 +194,11 @@ void App::handleEvents() {
     while (SDL_PollEvent(&event)) {
         if (!screenshotManager_->isActive()) {
             guiManager_->processEvent(event);
+            ImGuiIO& io = ImGui::GetIO();
+            if (event.type == SDL_TEXTINPUT && io.WantCaptureKeyboard) {
+                LOG_DEBUG("App: Consuming SDL_TEXTINPUT event due to ImGui WantCaptureKeyboard");
+                continue; // Skip further processing
+            }
             inputManager_->handleEvent(event);
             if (showConfig_) {
                 configEditor_->handleEvent(event);

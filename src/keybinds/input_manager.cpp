@@ -246,6 +246,8 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return; 
     }
 
+    // Log event type for debugging
+    //LOG_DEBUG("InputManager: Processing event type: " << event.type);
     // Process ImGui events first, regardless of other state.
     // ImGui needs to process all events to maintain its internal state correctly.
     ImGui_ImplSDL2_ProcessEvent(&event);
@@ -253,7 +255,10 @@ void InputManager::handleEvent(const SDL_Event& event) {
     // Get current time for debounce check
     Uint32 currentTime = SDL_GetTicks();
 
-    // --- **FIXED TYPO HERE**: `lastExternalAppAppReturnTime_` was `lastExternalAppReturnTime_` ---
+    // Log ImGui input capture state
+    //ImGuiIO& io = ImGui::GetIO();
+    //LOG_DEBUG("InputManager: ImGui WantCaptureKeyboard: " << (io.WantCaptureKeyboard ? "true" : "false"));
+
     // If we are currently in an external application (VPX, screenshot tool, etc.)
     // OR if we are within the debounce period after an external app returned,
     // then ignore all further custom actions to prevent queued inputs from triggering.
@@ -262,7 +267,6 @@ void InputManager::handleEvent(const SDL_Event& event) {
         //LOG_DEBUG("InputManager: Event ignored due to external app mode or debounce.");
         return; // Skip all other custom input handling
     }
-    // --- END FIX ---
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -297,13 +301,6 @@ void InputManager::handleEvent(const SDL_Event& event) {
     handleRegularEvents(event);
     handleDoubleClick(event);
 }
-
-// handleConfigEvents is no longer needed/used, its logic is merged
-/*
-void InputManager::handleConfigEvents(const SDL_Event& event) {
-    // ... (removed)
-}
-*/
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
     for (const auto& action : keybindProvider_->getActions()) {

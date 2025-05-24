@@ -63,5 +63,10 @@ void GuiManager::render(SDL_Renderer* renderer) {
 }
 
 void GuiManager::processEvent(const SDL_Event& event) {
+    if (event.type == SDL_TEXTINPUT) {
+        LOG_DEBUG("GuiManager: SDL_TEXTINPUT event, text: " << event.text.text);
+    } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+        LOG_DEBUG("GuiManager: SDL_KEYDOWN event, Escape key pressed");
+    }
     ImGui_ImplSDL2_ProcessEvent(&event);
 }
