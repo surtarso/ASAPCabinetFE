@@ -320,8 +320,11 @@ ConfigSchema::ConfigSchema() {
         {"screenshotQuitSound", "UISounds", "ScreenshotQuitSound", std::string("snd/screenshot_quit.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "screenshotQuitSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "screenshotQuitSound"); }},
-
-        // Internal
+        {"ambienceSound", "UISounds", "AmbienceSound", std::string("snd/interface_ambience.mp3"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "ambienceSound"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "ambienceSound"); }},
+        
+         // Internal
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
@@ -383,6 +386,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "configSaveSound") s.configSaveSound = val;
     else if (field == "screenshotTakeSound") s.screenshotTakeSound = val;
     else if (field == "screenshotQuitSound") s.screenshotQuitSound = val;
+    else if (field == "ambienceSound") s.ambienceSound = val;
     else if (field == "logFile") s.logFile = val;
     else if (field == "videoBackend") s.videoBackend = val;
     else LOG_ERROR("ConfigSchema: Unknown string field: " << field);

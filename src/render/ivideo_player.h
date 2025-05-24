@@ -8,8 +8,8 @@
  * @brief Interface for a video player.
  *
  * This abstract class defines the necessary methods for any video player implementation.
- * It ensures that any concrete class provides functionality to load, play, stop, update, and retrieve 
- * video textures along with the playing state.
+ * It ensures that any concrete class provides functionality to load, play, stop, update, and retrieve
+ * video textures along with the playing state. It also includes methods for audio control.
  *
  * @note All implementations should handle resource management appropriately.
  *
@@ -37,7 +37,7 @@ public:
      * @return true if the setup is successful; false otherwise.
      */
     virtual bool setup(SDL_Renderer* renderer, const std::string& path, int width, int height) = 0;
-    
+
     /**
      * @brief Starts video playback.
      *
@@ -77,6 +77,18 @@ public:
      * @return true if the video is being played; false otherwise.
      */
     virtual bool isPlaying() const = 0;
+
+    /**
+     * @brief Sets the volume for the video's audio track.
+     * @param volume The desired volume, typically a float between 0.0 (silent) and 1.0 (full volume).
+     */
+    virtual void setVolume(float volume) = 0;
+
+    /**
+     * @brief Sets the mute state for the video's audio track.
+     * @param mute True to mute the audio, false to unmute.
+     */
+    virtual void setMute(bool mute) = 0;
 };
 
 #endif // IVIDEO_PLAYER_H

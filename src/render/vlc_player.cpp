@@ -113,6 +113,7 @@ void VlcVideoPlayer::play() {
 void VlcVideoPlayer::stop() {
     if (ctx_ && ctx_->player) {
         libvlc_media_player_stop(ctx_->player);
+        ctx_->isPlaying = false; // Ensure isPlaying state is false after stopping
     }
 }
 
@@ -124,6 +125,14 @@ void VlcVideoPlayer::update() {
     if (!ctx_->isPlaying) {
         return;
     }
+
+    // Check if the player is still playing, VLC might stop it internally
+    libvlc_state_t state = libvlc_media_player_get_state(ctx_->player);
+    if (state == libvlc_Ended || state == libvlc_Stopped || state == libvlc_Error) {
+        ctx_->isPlaying = false;
+        return;
+    }
+
     if (SDL_LockMutex(ctx_->mutex) == 0) {
         if (SDL_UpdateTexture(ctx_->texture, nullptr, ctx_->pixels, ctx_->pitch) != 0) {
             LOG_ERROR("VlcVideoPlayer: SDL_UpdateTexture failed: " << SDL_GetError());
@@ -140,4 +149,27 @@ SDL_Texture* VlcVideoPlayer::getTexture() const {
 
 bool VlcVideoPlayer::isPlaying() const {
     return ctx_ ? ctx_->isPlaying : false;
+}
+
+void VlcVideoPlayer::setVolume(float volume) {
+    if (ctx_ && ctx_->player) {
+        // VLC volume is typically 0-100, so scale the 0.0-1.0 float
+        int vlcVolume = static_cast<int>(volume * 100.0f);
+        if (vlcVolume < 0) vlcVolume = 0;
+        if (vlcVolume > 100) vlcVolume = 100; // Cap at 100%
+
+        libvlc_audio_set_volume(ctx_->player, vlcVolume);
+        LOG_DEBUG("VlcVideoPlayer: Volume set to " << volume << " (VLC: " << vlcVolume << ")");
+    } else {
+        LOG_ERROR("VlcVideoPlayer: Cannot set volume, player not initialized.");
+    }
+}
+
+void VlcVideoPlayer::setMute(bool mute) {
+    if (ctx_ && ctx_->player) {
+        libvlc_audio_set_mute(ctx_->player, mute ? 1 : 0);
+        LOG_DEBUG("VlcVideoPlayer: Mute set to " << (mute ? "true" : "false"));
+    } else {
+        LOG_ERROR("VlcVideoPlayer: Cannot set mute state, player not initialized.");
+    }
 }

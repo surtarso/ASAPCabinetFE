@@ -212,7 +212,7 @@ pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
-pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
