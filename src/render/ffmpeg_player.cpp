@@ -459,7 +459,8 @@ bool FFmpegPlayer::decodeVideoFrame() {
                 }
                 return false;
             } else {
-                LOG_ERROR("FFmpegPlayer: Error reading video frame: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error reading video frame: " << err_str);
                 return false;
             }
         }
@@ -467,7 +468,8 @@ bool FFmpegPlayer::decodeVideoFrame() {
         if (videoPacket_->stream_index == videoStreamIndex_) {
             ret = avcodec_send_packet(videoCodecContext_, videoPacket_);
             if (ret < 0) {
-                LOG_ERROR("FFmpegPlayer: Error sending video packet to decoder: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error sending video packet to decoder: " << err_str);
                 av_packet_unref(videoPacket_);
                 return false;
             }
@@ -482,7 +484,8 @@ bool FFmpegPlayer::decodeVideoFrame() {
                 av_packet_unref(videoPacket_);
                 continue;
             } else {
-                LOG_ERROR("FFmpegPlayer: Error receiving video frame from decoder: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error receiving video frame from decoder: " << err_str);
                 av_packet_unref(videoPacket_);
                 return false;
             }
@@ -492,7 +495,6 @@ bool FFmpegPlayer::decodeVideoFrame() {
     return false;
 }
 
-// BEGIN MODIFIED SECTION: Fix heap-buffer-overflow in audio decoding
 bool FFmpegPlayer::decodeAudioFrame() {
     while (isPlaying_) {
         int ret = av_read_frame(formatContext_, audioPacket_);
@@ -504,7 +506,8 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 }
                 return false;
             } else {
-                LOG_ERROR("FFmpegPlayer: Error reading audio frame: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error reading audio frame: " << err_str);
                 return false;
             }
         }
@@ -512,7 +515,8 @@ bool FFmpegPlayer::decodeAudioFrame() {
         if (audioPacket_->stream_index == audioStreamIndex_) {
             ret = avcodec_send_packet(audioCodecContext_, audioPacket_);
             if (ret < 0) {
-                LOG_ERROR("FFmpegPlayer: Error sending audio packet to decoder: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error sending audio packet to decoder: " << err_str);
                 av_packet_unref(audioPacket_);
                 return false;
             }
@@ -541,7 +545,8 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 int converted_samples = swr_convert(swrContext_, &out_buffer, out_samples,
                                                     (const uint8_t**)audioFrame_->data, audioFrame_->nb_samples);
                 if (converted_samples < 0) {
-                    LOG_ERROR("FFmpegPlayer: Audio resampling failed: " << av_err2str(converted_samples));
+                    std::string err_str = av_err2str(converted_samples);
+                    LOG_ERROR("FFmpegPlayer: Audio resampling failed: " << err_str);
                     av_freep(&out_buffer);
                     av_packet_unref(audioPacket_);
                     return false;
@@ -550,7 +555,8 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 // Write resampled audio to FIFO
                 ret = av_audio_fifo_write(audioFifo_, (void**)&out_buffer, converted_samples);
                 if (ret < 0) {
-                    LOG_ERROR("FFmpegPlayer: Failed to write to audio FIFO: " << av_err2str(ret));
+                    std::string err_str = av_err2str(ret);
+                    LOG_ERROR("FFmpegPlayer: Failed to write to audio FIFO: " << err_str);
                     av_freep(&out_buffer);
                     av_packet_unref(audioPacket_);
                     return false;
@@ -563,7 +569,8 @@ bool FFmpegPlayer::decodeAudioFrame() {
                 av_packet_unref(audioPacket_);
                 continue;
             } else {
-                LOG_ERROR("FFmpegPlayer: Error receiving audio frame from decoder: " << av_err2str(ret));
+                std::string err_str = av_err2str(ret);
+                LOG_ERROR("FFmpegPlayer: Error receiving audio frame from decoder: " << err_str);
                 av_packet_unref(audioPacket_);
                 return false;
             }
@@ -572,7 +579,6 @@ bool FFmpegPlayer::decodeAudioFrame() {
     }
     return false;
 }
-// END MODIFIED SECTION
 
 void FFmpegPlayer::updateTexture() {
     if (!texture_ || !rgbFrame_ || !rgbBuffer_) return;
@@ -619,7 +625,8 @@ void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
 
     int read_samples = av_audio_fifo_read(player->audioFifo_, (void**)&stream, audio_len_samples);
     if (read_samples < 0) {
-        LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO: " << av_err2str(read_samples));
+        std::string err_str = av_err2str(read_samples);
+        LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO: " << err_str);
         return;
     }
 
