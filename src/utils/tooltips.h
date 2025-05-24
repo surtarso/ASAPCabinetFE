@@ -102,6 +102,10 @@ namespace Tooltips {
                 "Relative path to the PuP full DMD video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
+            {"TableMusic",
+                "Relative path to the table music file.\n"
+                "These are relative to your table folder.\n"
+                "/path/to/tables/<table_folder>/"},
 
             // DPI Settings
             {"EnableDpiScaling",
@@ -115,7 +119,8 @@ namespace Tooltips {
 
             // WindowSettings
             {"UseVPinballXIni",
-                "Uses sizes and positions from ~/.vpinball/VPinballX.ini"},
+                "Uses sizes and positions from ~/.vpinball/VPinballX.ini\n"
+                "Using this options will override options bellow."},
             {"PlayfieldWidth",
                 "Width of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media width."},
@@ -297,6 +302,24 @@ namespace Tooltips {
                 "Key to take a screenshot while in screenshot mode."},
             {"ScreenshotQuit",
                 "Key to quit screenshot mode."},
+            
+            // Audio Settings
+            {"MediaAudioMute",
+                "Mute playfield, backglass and DMD audio"},
+            {"MediaAudioVol",
+                "Adjust playfield, backglass and DMD video volume."},
+            {"TableMusicMute",
+                "Mute current table music."},
+            {"TableMusicVol",
+                "Adjust current table music volume."},
+            {"InterfaceAudioMute",
+                "Mute interface sounds."},
+            {"InterfaceAudioVol",
+                "Adjust interface sounds volume."},
+            {"InterfaceAmbienceMute",
+                "Mute interface ambience."},
+            {"InterfaceAmbienceVol",
+                "Adjust interface ambience volume."},
 
             // Internal
             {"SubCmd",
