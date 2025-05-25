@@ -175,7 +175,7 @@ void App::initializeDependencies() {
     loadFont();
     loadTables();
 
-    assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_);
+    assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_, soundManager_.get());
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());

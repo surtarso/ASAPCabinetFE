@@ -69,7 +69,8 @@ public:
      */
     static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
                                                             IConfigService* configService, size_t index, 
-                                                            const std::vector<TableData>& tables);
+                                                            const std::vector<TableData>& tables,
+                                                            ISoundManager* soundManager);
 
     /**
      * @brief Creates a renderer instance.

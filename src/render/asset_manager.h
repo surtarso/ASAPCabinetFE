@@ -3,10 +3,9 @@
  * @brief Defines the AssetManager class for managing VPX table assets in ASAPCabinetFE.
  *
  * This header provides the AssetManager class, which implements the IAssetManager interface
- * to manage textures, video players, and table data for Visual Pinball X (VPX) tables.
+ * to manage textures, video players, audio, and table data for Visual Pinball X (VPX) tables.
  * It handles asset loading, caching, and rendering resources using SDL and TTF.
  */
-
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
@@ -14,6 +13,7 @@
 #include "render/table_data.h"
 #include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
+#include "sound/isound_manager.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <memory>
@@ -33,27 +33,28 @@ class IWindowManager;
 
 /**
  * @class AssetManager
- * @brief Manages textures, video players, and table assets for VPX rendering.
+ * @brief Manages textures, video players, audio, and table assets for VPX rendering.
  *
  * This class implements the IAssetManager interface to load, cache, and provide access
- * to textures, video players, and table data for playfield, backglass, and DMD displays.
- * It interfaces with IConfigService for settings, ITableLoader for table data, and
- * SDL/TTF for rendering resources.
+ * to textures, video players, music, and table data for playfield, backglass, and DMD displays.
+ * It interfaces with IConfigService for settings, ITableLoader for table data, ISoundManager
+ * for audio, and SDL/TTF for rendering resources.
  */
 class AssetManager : public IAssetManager {
 public:
     /**
-     * @brief Constructs an AssetManager instance with specified renderers and font.
+     * @brief Constructs an AssetManager instance with specified renderers, font, and sound manager.
      *
      * Initializes the asset manager with SDL renderers for playfield, backglass, and
-     * DMD displays, and a TTF font for text rendering.
+     * DMD displays, a TTF font for text rendering, and a sound manager for audio playback.
      *
      * @param playfield The SDL renderer for the playfield display.
      * @param backglass The SDL renderer for the backglass display.
      * @param dmd The SDL renderer for the DMD display.
      * @param f The TTF font for rendering text.
+     * @param soundManager The sound manager for audio playback.
      */
-    AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f);
+    AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f, ISoundManager* soundManager);
 
     /**
      * @brief Gets the playfield texture.
@@ -194,6 +195,26 @@ public:
     void cleanupVideoPlayers() override;
 
     /**
+     * @brief Sets the sound manager for audio playback.
+     *
+     * Updates the sound manager used for playing table music.
+     *
+     * @param soundManager The sound manager to set.
+     */
+    void setSoundManager(ISoundManager* soundManager) override;
+
+    /**
+     * @brief Plays table-specific music.
+     *
+     * Plays the music associated with the specified table index, looping as needed.
+     * If the music path is empty, stops table music and resumes ambience music.
+     *
+     * @param index The index of the table to play music for.
+     * @param tables The vector of table data with music paths.
+     */
+    void playTableMusic(size_t index, const std::vector<TableData>& tables) override;
+
+    /**
      * @brief Adds a video player to the old players cache.
      *
      * Stores a video player in the cache for later cleanup.
@@ -287,6 +308,7 @@ private:
     SDL_Renderer* playfieldRenderer; ///< SDL renderer for the playfield display.
     SDL_Renderer* backglassRenderer; ///< SDL renderer for the backglass display.
     SDL_Renderer* dmdRenderer;       ///< SDL renderer for the DMD display.
+    ISoundManager* soundManager_;    ///< Sound manager for audio playback.
     std::string currentPlayfieldVideoPath_;  ///< Cached path to the current playfield video.
     std::string currentBackglassVideoPath_;  ///< Cached path to the current backglass video.
     std::string currentDmdVideoPath_;        ///< Cached path to the current DMD video.

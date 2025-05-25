@@ -1,3 +1,12 @@
+/**
+ * @file iasset_manager.h
+ * @brief Defines the IAssetManager interface for managing assets in ASAPCabinetFE.
+ *
+ * This interface abstracts asset management for textures, video players, fonts, and
+ * audio, providing methods to load, access, and update assets for Visual Pinball X
+ * (VPX) tables. Implementations ensure proper resource management and coordination
+ * with rendering and sound systems.
+ */
 #ifndef IASSET_MANAGER_H
 #define IASSET_MANAGER_H
 
@@ -12,10 +21,16 @@
 #include "render/ivideo_player.h"
 
 /**
+ * @class ISoundManager
+ * @brief Interface for sound management (forward declaration).
+ */
+class ISoundManager;
+
+/**
  * @brief The IAssetManager interface provides methods to manage and access various assets used in the application.
  *
  * This interface abstracts asset management functionality including handling textures, video players,
- * configuration settings, fonts, and positions for display elements. Implementations of this interface should
+ * configuration settings, fonts, audio, and positions for display elements. Implementations of this interface should
  * ensure proper resource management and provide mechanisms for updating assets dynamically.
  */
 class IAssetManager {
@@ -148,6 +163,20 @@ public:
      * @brief Cleans up video players, releasing allocated resources appropriately.
      */
     virtual void cleanupVideoPlayers() = 0;
+
+    /**
+     * @brief Sets the sound manager for audio playback.
+     * @param soundManager Pointer to the ISoundManager instance.
+     * @see ISoundManager
+     */
+    virtual void setSoundManager(ISoundManager* soundManager) = 0;
+
+    /**
+     * @brief Plays table-specific music.
+     * @param index The index of the table to play music for.
+     * @param tables A vector containing table data with music paths.
+     */
+    virtual void playTableMusic(size_t index, const std::vector<TableData>& tables) = 0;
 };
 
 #endif // IASSET_MANAGER_H

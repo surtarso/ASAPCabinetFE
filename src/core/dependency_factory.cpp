@@ -57,14 +57,17 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
  * @param configService The configuration service for settings.
  * @param index The index of the table to load assets for.
  * @param tables The list of table data.
+ * @param soundManager The sound manager for handling audio assets.
  * @return A unique pointer to an IAssetManager instance.
  */
 std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
                                                                     IConfigService* configService, size_t index, 
-                                                                    const std::vector<TableData>& tables) {
+                                                                    const std::vector<TableData>& tables,
+                                                                    ISoundManager* soundManager) {
     auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
                                                  windowManager->getBackglassRenderer(),
-                                                 windowManager->getDMDRenderer(), font);
+                                                 windowManager->getDMDRenderer(), font,
+                                                 soundManager);
     assets->setSettingsManager(configService);
     assets->loadTableAssets(index, tables);
     return assets;

@@ -1,8 +1,10 @@
 TODO
 
 FIX:
+- ffmpeg videos sound are altered/weird
+- play both ambience and table music at the same time
+- finish implementation of sound settings (videos sound control)
 - fix screenshotmode key being captured while config is opened.
-- finish implementation of sound settings (just visual for now, NYI)
 - metadata year/manufacturer better parsing
 
 QOL:

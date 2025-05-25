@@ -8,7 +8,7 @@
 #include <chrono>
 
 // Constructor: Initializes renderers, font, and nulls out pointers
-AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f)
+AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f, ISoundManager* soundManager)
     : playfieldTexture(nullptr, SDL_DestroyTexture),
       wheelTexture(nullptr, SDL_DestroyTexture),
       backglassTexture(nullptr, SDL_DestroyTexture),
@@ -21,6 +21,7 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       playfieldRenderer(playfield),
       backglassRenderer(backglass),
       dmdRenderer(dmd),
+      soundManager_(soundManager),
       currentPlayfieldVideoPath_(),
       currentBackglassVideoPath_(),
       currentDmdVideoPath_(),
@@ -36,6 +37,25 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       currentBackglassMediaHeight_(0),
       currentDmdMediaWidth_(0),
       currentDmdMediaHeight_(0) {}
+
+void AssetManager::setSoundManager(ISoundManager* soundManager) {
+    soundManager_ = soundManager;
+    LOG_DEBUG("AssetManager: Sound manager set to " << soundManager);
+}
+
+void AssetManager::playTableMusic(size_t index, const std::vector<TableData>& tables) {
+    if (!soundManager_ || index >= tables.size()) {
+        LOG_ERROR("AssetManager: Cannot play table music: invalid soundManager or index " << index);
+        return;
+    }
+    const std::string& musicPath = tables[index].music;
+    soundManager_->playTableMusic(musicPath);
+    if (!musicPath.empty()) {
+        LOG_DEBUG("AssetManager: Playing table music: " << musicPath);
+    } else {
+        LOG_DEBUG("AssetManager: No music path for table, stopping table music");
+    }
+}
 
 void AssetManager::setSettingsManager(IConfigService* configService) {
     configManager_ = configService;
@@ -182,9 +202,8 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     auto stopAndMove = [this](std::unique_ptr<IVideoPlayer>& current, std::string& currentPath) {
         if (current) {
             current->stop();
-            // Now, we move the unique_ptr itself into the addOldVideoPlayer function
-            addOldVideoPlayer(std::move(current)); // Transfer ownership
-            current.reset(); // 'current' is now empty (nullptr)
+            addOldVideoPlayer(std::move(current));
+            current.reset();
             currentPath.clear();
         }
     };
@@ -203,6 +222,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
                 playfieldVideoPlayer = std::move(newPlayer);
+                playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
                 playfieldVideoPlayer->play();
                 currentPlayfieldVideoPath_ = table.playfieldVideo;
                 currentPlayfieldMediaWidth_ = settings.playfieldMediaWidth;
@@ -211,6 +231,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup playfield video: " << table.playfieldVideo << ", keeping existing player");
             }
         } else if (playfieldVideoPlayer && !playfieldVideoPlayer->isPlaying()) {
+            playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
             playfieldVideoPlayer->play();
         }
     } else if (playfieldVideoPlayer) {
@@ -235,6 +256,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
                 backglassVideoPlayer = std::move(newPlayer);
+                backglassVideoPlayer->setVolume(settings.mediaAudioVol);
                 backglassVideoPlayer->play();
                 currentBackglassVideoPath_ = table.backglassVideo;
                 currentBackglassMediaWidth_ = settings.backglassMediaWidth;
@@ -243,6 +265,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup backglass video: " << table.backglassVideo << ", keeping existing player");
             }
         } else if (backglassVideoPlayer && !backglassVideoPlayer->isPlaying()) {
+            backglassVideoPlayer->setVolume(settings.mediaAudioVol);
             backglassVideoPlayer->play();
         }
     } else if (backglassVideoPlayer) {
@@ -271,6 +294,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
                 dmdVideoPlayer = std::move(newPlayer);
+                dmdVideoPlayer->setVolume(settings.mediaAudioVol);
                 dmdVideoPlayer->play();
                 currentDmdVideoPath_ = table.dmdVideo;
                 currentDmdMediaWidth_ = settings.dmdMediaWidth;
@@ -279,6 +303,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup DMD video: " << table.dmdVideo << ", keeping existing player");
             }
         } else if (dmdVideoPlayer && !dmdVideoPlayer->isPlaying()) {
+            dmdVideoPlayer->setVolume(settings.mediaAudioVol);
             dmdVideoPlayer->play();
         }
     } else if (dmdVideoPlayer) {
@@ -293,7 +318,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     lastShowBackglass = settings.showBackglass;
     lastShowDMD = settings.showDMD;
-    //clearOldVideoPlayers();
+
+    // Play table music
+    playTableMusic(index, tables);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
