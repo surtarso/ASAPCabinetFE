@@ -149,7 +149,6 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
   - Install missing runtime libraries (e.g., `sudo apt-get install libsdl2-2.0-0`).
 
 ## Planned Features:
-- Music.
 - Dynamic custom window creation for PuP, Toppers etc.
 - Single table overrides for settings.
 - Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
