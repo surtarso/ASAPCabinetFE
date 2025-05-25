@@ -189,7 +189,6 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdY"); }},
 
         // Media sizes/positions
-        
         {"forceImagesOnly", "MediaDimensions", "ForceImagesOnly", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "forceImagesOnly"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "forceImagesOnly"); }},
@@ -282,8 +281,35 @@ ConfigSchema::ConfigSchema() {
         {"titleY", "TitleDisplay", "TitleY", 1850, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "titleY"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "titleY"); }},
+        
+        // sound settings
+        {"mediaAudioVol", "AudioSettings", "MediaAudioVol", 60.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "mediaAudioVol"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "mediaAudioVol"); }},
+        {"tableMusicVol", "AudioSettings", "TableMusicVol", 60.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "tableMusicVol"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "tableMusicVol"); }},
+        {"interfaceAudioVol", "AudioSettings", "InterfaceAudioVol", 60.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "interfaceAudioVol"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "interfaceAudioVol"); }},
+        {"interfaceAmbienceVol", "AudioSettings", "InterfaceAmbienceVol", 60.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "interfaceAmbienceVol"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "interfaceAmbienceVol"); }},
+        {"mediaAudioMute", "AudioSettings", "MediaAudioMute", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "mediaAudioMute"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "mediaAudioMute"); }},
+        {"tableMusicMute", "AudioSettings", "TableMusicMute", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "tableMusicMute"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "tableMusicMute"); }},
+        {"interfaceAudioMute", "AudioSettings", "InterfaceAudioMute", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "interfaceAudioMute"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "interfaceAudioMute"); }},
+        {"interfaceAmbienceMute", "AudioSettings", "InterfaceAmbienceMute", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "interfaceAmbienceMute"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "interfaceAmbienceMute"); }},
 
-        // Sound settings
+
+        // ui settings
         {"scrollPrevSound", "UISounds", "ScrollPrevSound", std::string("snd/scroll_prev.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "scrollPrevSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "scrollPrevSound"); }},
@@ -446,6 +472,10 @@ void ConfigSchema::defaultInt(Settings& s, const std::variant<std::string, int, 
 void ConfigSchema::parseFloat(Settings& s, const std::string& val, const std::string& field) const {
     float v = std::stof(val);
     if (field == "dpiScale") s.dpiScale = v;
+    else if (field == "mediaAudioVol") s.mediaAudioVol = v;
+    else if (field == "tableMusicVol") s.tableMusicVol = v;
+    else if (field == "interfaceAudioVol") s.interfaceAudioVol = v;
+    else if (field == "interfaceAmbienceVol") s.interfaceAmbienceVol = v;
     else LOG_ERROR("ConfigSchema: Unknown float field: " << field);
 }
 
@@ -463,6 +493,10 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else if (field == "forceImagesOnly") s.forceImagesOnly = v;
     else if (field == "showMetadata") s.showMetadata = v;
+    else if (field == "mediaAudioMute") s.mediaAudioMute = v;
+    else if (field == "tableMusicMute") s.tableMusicMute = v;
+    else if (field == "interfaceAudioMute") s.interfaceAudioMute = v;
+    else if (field == "interfaceAmbienceMute") s.interfaceAmbienceMute = v;
     else LOG_ERROR("ConfigSchema: Unknown bool field: " << field);
 }
 
