@@ -1,8 +1,33 @@
+/**
+ * @file default_config_factory.cpp
+ * @brief Implements the DefaultConfigFactory class for generating default configurations in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the DefaultConfigFactory class, which
+ * generates default INI configuration data and settings using a ConfigSchema. It
+ * populates SettingsSection objects with default key-value pairs and initializes
+ * Settings objects with default values.
+ */
+
 #include "default_config_factory.h"
 #include <sstream>
 
+/**
+ * @brief Constructs a DefaultConfigFactory instance.
+ *
+ * Initializes the factory with a ConfigSchema for defining default settings.
+ */
 DefaultConfigFactory::DefaultConfigFactory() : schema_() {}
 
+/**
+ * @brief Gets default INI configuration data.
+ *
+ * Generates a map of section names to SettingsSection objects containing default
+ * key-value pairs for settings (from ConfigSchema) and keybindings (hardcoded).
+ * Formats values based on their type (string, int, float, bool, SDLColor) and
+ * populates key-to-line index mappings.
+ *
+ * @return A map of section names to SettingsSection objects.
+ */
 std::map<std::string, SettingsSection> DefaultConfigFactory::getDefaultIniData() const {
     std::map<std::string, SettingsSection> iniData;
 
@@ -66,6 +91,14 @@ std::map<std::string, SettingsSection> DefaultConfigFactory::getDefaultIniData()
     return iniData;
 }
 
+/**
+ * @brief Populates a Settings object with default values.
+ *
+ * Initializes the provided Settings object with default values defined by the
+ * ConfigSchema, using the schema's default setters to assign values to Settings fields.
+ *
+ * @param settings The Settings object to populate with default values.
+ */
 void DefaultConfigFactory::getDefaultSettings(Settings& settings) const {
     // Initialize all fields to default values (e.g., empty strings, zeros)
     settings = Settings{};
