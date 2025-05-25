@@ -5,12 +5,17 @@
 #include <filesystem> // For std::filesystem::exists and is_regular_file
 #include <cctype>     // For std::isspace
 
+// Assuming Settings struct is defined somewhere and accessible
+// #include "config/settings.h" // Example path if settings is in a separate header
+
 SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     : exeDir_(exeDir),
       settings_(settings), // Initialize settings_ with passed settings
-      currentPlayingMusicType_(MusicType::None), // Initialize the new state variable
       ambienceMusic_(nullptr, Mix_FreeMusic), // Initialize smart pointers for music
-      tableMusic_(nullptr, Mix_FreeMusic) // Initialize smart pointers for music
+      tableMusic_(nullptr, Mix_FreeChunk), // Initialize tableMusic_ as Mix_Chunk
+      tableMusicChannel_(-1), // Initialize channel to an invalid value
+      isAmbiencePlaying_(false), // Initialize independent playing state
+      isTableMusicPlaying_(false) // Initialize independent playing state
 {
     // Initialize SDL_mixer
     // Support MP3 and OGG (commonly used for music)
@@ -25,6 +30,18 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
         throw std::runtime_error("SoundManager: Failed to initialize MP3/OGG support");
     }
     LOG_DEBUG("SoundManager: SDL_mixer initialized with MP3 and OGG support");
+
+    // Allocate a specific channel for table music
+    // We request more channels than default (8) if needed.
+    Mix_AllocateChannels(16); // Ensure enough channels are available (default is 8 for effects)
+    tableMusicChannel_ = Mix_GroupAvailable(-1); // Get first available channel not in use
+    if (tableMusicChannel_ == -1) {
+        LOG_ERROR("SoundManager: Could not allocate a channel for table music. Table music may not play concurrently.");
+        // Decide how to handle this critical error: throw, or proceed without table music
+    } else {
+        LOG_DEBUG("SoundManager: Allocated channel " << tableMusicChannel_ << " for table music.");
+    }
+
 
     // Initialize the UI sounds map with placeholders (will be loaded in loadSounds)
     // Using Mix_Chunk for UI sounds as they are short effects and can play concurrently
@@ -46,40 +63,45 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
 SoundManager::~SoundManager() {
     uiSounds_.clear();  // unique_ptr handles Mix_FreeChunk
     ambienceMusic_.reset(); // unique_ptr handles Mix_FreeMusic
-    tableMusic_.reset(); // unique_ptr handles Mix_FreeMusic
+    tableMusic_.reset(); // unique_ptr handles Mix_FreeChunk (now a Mix_Chunk)
     Mix_CloseAudio();
     Mix_Quit();
     LOG_DEBUG("SoundManager: SoundManager destroyed and SDL_mixer quit");
 }
 
 /**
+ * @brief Helper to load UI sounds (Mix_Chunk).
+ * This function is separated for clarity and reusability.
+ * @param key The unique identifier for the UI sound.
+ * @param path The relative path to the sound file.
+ */
+void SoundManager::loadUiSound(const std::string& key, const std::string& path) {
+    if (path.empty()) {
+        LOG_DEBUG("SoundManager: UI sound path is empty for key: " << key);
+        uiSounds_.at(key).reset(); // Ensure it's null if path is empty
+        return;
+    }
+    std::string fullPath = exeDir_ + path;
+    if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
+        uiSounds_.at(key).reset(Mix_LoadWAV(fullPath.c_str()));
+        if (!uiSounds_.at(key)) {
+            LOG_ERROR("SoundManager: Mix_LoadWAV Error for " << key << " at " << fullPath << ": " << Mix_GetError());
+        }
+        // else {
+        //     LOG_DEBUG("SoundManager: UI sound '" << key << "' loaded successfully from " << fullPath);
+        // }
+    } else {
+        LOG_ERROR("SoundManager: UI sound file not found or not a regular file for " << key << " at " << fullPath);
+        uiSounds_.at(key).reset(); // Ensure it's null if file is not found/invalid
+    }
+}
+
+/**
  * @brief Loads all necessary sound resources based on current settings.
- * This includes UI sound effects and the ambience music file.
+ * This includes UI sound effects. Ambience and table music are loaded dynamically.
  */
 void SoundManager::loadSounds() {
     LOG_DEBUG("SoundManager: Loading sounds...");
-
-    // Helper to load UI sounds (Mix_Chunk)
-    auto loadUiSound = [&](const std::string& key, const std::string& path) {
-        if (path.empty()) {
-            LOG_DEBUG("SoundManager: UI sound path is empty for key: " << key);
-            uiSounds_.at(key).reset(); // Ensure it's null if path is empty
-            return;
-        }
-        std::string fullPath = exeDir_ + path; // trim will be applied inside config service
-        if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
-            uiSounds_.at(key).reset(Mix_LoadWAV(fullPath.c_str()));
-            if (!uiSounds_.at(key)) {
-                LOG_ERROR("SoundManager: Mix_LoadWAV Error for " << key << " at " << fullPath << ": " << Mix_GetError());
-            }
-            // else {
-            //     LOG_DEBUG("SoundManager: UI sound '" << key << "' loaded successfully from " << fullPath);
-            // }
-        } else {
-            LOG_ERROR("SoundManager: UI sound file not found or not a regular file for " << key << " at " << fullPath);
-            uiSounds_.at(key).reset(); // Ensure it's null if file is not found/invalid
-        }
-    };
 
     // Load all UI sounds
     loadUiSound("config_toggle", settings_.configToggleSound);
@@ -96,24 +118,9 @@ void SoundManager::loadSounds() {
     loadUiSound("screenshot_take", settings_.screenshotTakeSound);
     loadUiSound("screenshot_quit", settings_.screenshotQuitSound);
 
-    // Load ambience sound (only if path is valid and not empty)
-    if (settings_.ambienceSound.empty()) {
-        LOG_INFO("SoundManager: Ambience sound path is empty in settings. Ambience will not play.");
-        ambienceMusic_.reset(); // Ensure it's null
-    } else {
-        std::string ambienceFullPath = exeDir_ + settings_.ambienceSound;
-        if (std::filesystem::exists(ambienceFullPath) && std::filesystem::is_regular_file(ambienceFullPath)) {
-            ambienceMusic_.reset(Mix_LoadMUS(ambienceFullPath.c_str()));
-            if (!ambienceMusic_) {
-                LOG_ERROR("SoundManager: Mix_LoadMUS Error for ambience at " << ambienceFullPath << ": " << Mix_GetError());
-            } else {
-                LOG_DEBUG("SoundManager: Ambience sound loaded successfully from " << ambienceFullPath);
-            }
-        } else {
-            LOG_INFO("SoundManager: Ambience sound file not found or is not a regular file at " << ambienceFullPath << ". Ambience will not play.");
-            ambienceMusic_.reset(); // Ensure it's null if file doesn't exist or is a directory
-        }
-    }
+    // Ambience sound loading happens within playAmbienceMusic or updateSettings
+    // to ensure it's playing/reloaded correctly based on application state.
+    // We don't load it unconditionally here as it might not be needed immediately or its path could change.
 }
 
 /**
@@ -135,103 +142,146 @@ void SoundManager::playUISound(const std::string& key) {
 
 /**
  * @brief Plays the background ambience music.
+ * If the same ambience music is already playing, its volume settings are updated.
+ * Otherwise, the new ambience music is loaded and played, persistently looping
+ * across table changes unless explicitly stopped or muted.
  * @param path The full path to the ambience music file.
  */
 void SoundManager::playAmbienceMusic(const std::string& path) {
     LOG_DEBUG("SoundManager: Attempting to play ambience music: " << path);
 
-    stopMusic(); // Stop any currently playing music (table or previous ambience)
-
+    // If no path is provided or it's invalid, stop current ambience.
     if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        LOG_INFO("SoundManager: No ambience music path provided, file not found, or not a regular file: " << path);
-        ambienceMusic_.reset(); // Ensure it's null if path is invalid
-        currentPlayingMusicType_ = MusicType::None; // Update state
-        return; // Nothing to play
+        LOG_INFO("SoundManager: No ambience music path provided, file not found, or not a regular file: " << path << ". Stopping ambience.");
+        stopAmbienceMusic(); // Use the new stopAmbienceMusic function
+        return;
     }
 
-    // Load music if not already loaded or if path changed
-    // Check if the currently loaded ambience music is different from the requested path
-    // Mix_GetMusicTitle might return nullptr if no music is loaded or if it's not a file-based music
-    bool needsReload = !ambienceMusic_ || 
-                       (Mix_GetMusicTitle(ambienceMusic_.get()) == nullptr) || 
-                       (std::string(Mix_GetMusicTitle(ambienceMusic_.get())) != path);
+    // Check if the same ambience music is already playing and doesn't need reload.
+    // Mix_PlayingMusic() checks if ANY Mix_Music is playing. We need to verify if it's OUR ambience.
+    bool currentMusicIsAmbience = Mix_PlayingMusic() && (lastAmbiencePath_ == path);
 
-    if (needsReload) {
-        ambienceMusic_.reset(Mix_LoadMUS(path.c_str()));
-        if (!ambienceMusic_) {
-            LOG_ERROR("SoundManager: Mix_LoadMUS Error for ambience music " << path << ": " << Mix_GetError());
-            currentPlayingMusicType_ = MusicType::None; // Update state
-            return;
-        }
-        LOG_DEBUG("SoundManager: Ambience music loaded successfully from " << path);
+    if (currentMusicIsAmbience) {
+        LOG_DEBUG("SoundManager: Same ambience music (" << path << ") is already playing. Adjusting volume.");
+        applyAudioSettings(); // Just reapply settings if it's already playing
+        return;
     }
+
+    // If different music is playing or nothing is playing, load and start.
+    ambienceMusic_.reset(Mix_LoadMUS(path.c_str()));
+    if (!ambienceMusic_) {
+        LOG_ERROR("SoundManager: Mix_LoadMUS Error for ambience music " << path << ": " << Mix_GetError());
+        isAmbiencePlaying_ = false; // Update state on failure
+        lastAmbiencePath_ = ""; // Clear path as it failed to load
+        return;
+    }
+    LOG_DEBUG("SoundManager: Ambience music loaded successfully from " << path);
+    lastAmbiencePath_ = path; // Update the path tracker
 
     // Play ambience on loop (-1)
     if (Mix_PlayMusic(ambienceMusic_.get(), -1) == -1) {
         LOG_ERROR("SoundManager: Mix_PlayMusic Error for ambience music " << path << ": " << Mix_GetError());
-        currentPlayingMusicType_ = MusicType::None; // Update state on failure
+        isAmbiencePlaying_ = false; // Update state on failure
     } else {
         LOG_INFO("SoundManager: Playing ambience music: " << path);
-        currentPlayingMusicType_ = MusicType::Ambience; // Update state on success
+        isAmbiencePlaying_ = true; // Update state on success
     }
     applyAudioSettings(); // Reapply volume after playing
 }
 
 /**
- * @brief Plays the table-specific music.
+ * @brief Plays the table-specific music on a dedicated channel.
+ * This music plays concurrently with the ambience music. If no valid
+ * table music path is provided or the file is not found, any currently
+ * playing table music is stopped, and ambience music (if configured)
+ * is ensured to be playing.
  * @param path The full path to the table music file.
  */
 void SoundManager::playTableMusic(const std::string& path) {
     LOG_DEBUG("SoundManager: Attempting to play table music: " << path);
 
-    stopMusic(); // Stop any currently playing music (ambience or previous table)
+    // Always stop previous table music before playing a new one.
+    stopTableMusic(); // Use the new stopTableMusic function
 
     if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        LOG_INFO("SoundManager: No table music path provided, file not found, or not a regular file: " << path);
+        LOG_INFO("SoundManager: No table music path provided, file not found, or not a regular file: " << path << ". Stopping table music.");
         tableMusic_.reset(); // Ensure it's null if path is invalid
-        currentPlayingMusicType_ = MusicType::None; // Update state
-        // If no table music, try to resume ambience
-        if (!settings_.ambienceSound.empty() && std::filesystem::exists(exeDir_ + settings_.ambienceSound) && std::filesystem::is_regular_file(exeDir_ + settings_.ambienceSound)) {
-             playAmbienceMusic(exeDir_ + settings_.ambienceSound);
+        lastTableMusicPath_ = ""; // Clear path tracker
+        isTableMusicPlaying_ = false; // Update state
+
+        // If no table music, ensure ambience is playing if configured
+        if (!isAmbiencePlaying_ && !settings_.ambienceSound.empty()) {
+            playAmbienceMusic(exeDir_ + settings_.ambienceSound);
         }
         return; // Nothing more to play for table music
     }
 
-    // Load music if not already loaded or if path changed
-    bool needsReload = !tableMusic_ || 
-                       (Mix_GetMusicTitle(tableMusic_.get()) == nullptr) || 
-                       (std::string(Mix_GetMusicTitle(tableMusic_.get())) != path);
+    // Load table music (now as Mix_Chunk) if path changed or not loaded
+    bool needsReload = !tableMusic_ || (lastTableMusicPath_ != path);
 
     if (needsReload) {
-        tableMusic_.reset(Mix_LoadMUS(path.c_str()));
+        tableMusic_.reset(Mix_LoadWAV(path.c_str())); // Load as WAV for Mix_Chunk
         if (!tableMusic_) {
-            LOG_ERROR("SoundManager: Mix_LoadMUS Error for table music " << path << ": " << Mix_GetError());
-            currentPlayingMusicType_ = MusicType::None; // Update state
+            LOG_ERROR("SoundManager: Mix_LoadWAV Error for table music " << path << ": " << Mix_GetError());
+            isTableMusicPlaying_ = false; // Update state
+            lastTableMusicPath_ = ""; // Clear path tracker
+            // If table music failed to load, ensure ambience is playing if configured
+            if (!isAmbiencePlaying_ && !settings_.ambienceSound.empty()) {
+                playAmbienceMusic(exeDir_ + settings_.ambienceSound);
+            }
             return;
         }
         LOG_DEBUG("SoundManager: Table music loaded successfully from " << path);
+        lastTableMusicPath_ = path; // Update the path tracker
     }
 
-    // Play table music on loop (-1)
-    if (Mix_PlayMusic(tableMusic_.get(), -1) == -1) {
-        LOG_ERROR("SoundManager: Mix_PlayMusic Error for table music " << path << ": " << Mix_GetError());
-        currentPlayingMusicType_ = MusicType::None; // Update state on failure
+    // Play table music on its dedicated channel (-1 for infinite loop)
+    if (Mix_PlayChannel(tableMusicChannel_, tableMusic_.get(), -1) == -1) {
+        LOG_ERROR("SoundManager: Mix_PlayChannel Error for table music " << path << " on channel " << tableMusicChannel_ << ": " << Mix_GetError());
+        isTableMusicPlaying_ = false; // Update state on failure
     } else {
-        LOG_INFO("SoundManager: Playing table music: " << path);
-        currentPlayingMusicType_ = MusicType::Table; // Update state on success
+        LOG_INFO("SoundManager: Playing table music: " << path << " on channel " << tableMusicChannel_);
+        isTableMusicPlaying_ = true; // Update state on success
     }
     applyAudioSettings(); // Reapply volume after playing
 }
 
 /**
- * @brief Stops any currently playing background music (ambience or table music).
+ * @brief Stops all currently playing music (ambience and table music).
+ * This method will halt both Mix_Music and the dedicated Mix_Chunk channel.
+ * For more granular control, use stopAmbienceMusic() or stopTableMusic().
  */
 void SoundManager::stopMusic() {
-    if (Mix_PlayingMusic()) {
-        Mix_HaltMusic(); // Stops any playing music on the music channel
-        LOG_DEBUG("SoundManager: Halted current background music.");
+    stopAmbienceMusic(); // Stop ambience
+    stopTableMusic();   // Stop table music
+    LOG_DEBUG("SoundManager: Halted all background music.");
+}
+
+/**
+ * @brief Stops only the background ambience music.
+ * This halts the Mix_Music channel.
+ */
+void SoundManager::stopAmbienceMusic() {
+    if (Mix_PlayingMusic()) { // Checks if any Mix_Music is playing
+        Mix_HaltMusic(); // Stops Mix_Music (our ambience)
+        LOG_DEBUG("SoundManager: Halted ambience music.");
     }
-    currentPlayingMusicType_ = MusicType::None; // Update state
+    isAmbiencePlaying_ = false; // Update state
+    lastAmbiencePath_ = ""; // Clear path as it's no longer playing
+}
+
+/**
+ * @brief Stops only the table-specific music.
+ * This halts playback on the dedicated table music channel.
+ */
+void SoundManager::stopTableMusic() {
+    if (tableMusicChannel_ != -1 && Mix_Playing(tableMusicChannel_)) { // Check if channel is valid and playing
+        Mix_HaltChannel(tableMusicChannel_); // Stops music on the dedicated channel
+        LOG_DEBUG("SoundManager: Halted table music on channel " << tableMusicChannel_ << ".");
+    }
+    isTableMusicPlaying_ = false; // Update state
+    // lastTableMusicPath_ is kept to allow reloading same song without re-reading from disk if needed,
+    // but cleared if the path becomes empty in playTableMusic.
 }
 
 /**
@@ -242,45 +292,33 @@ void SoundManager::applyAudioSettings() {
     LOG_DEBUG("SoundManager: Applying UI audio settings. Mute: " << settings_.interfaceAudioMute << ", Volume: " << settings_.interfaceAudioVol);
     int uiVolume = static_cast<int>(settings_.interfaceAudioVol * MIX_MAX_VOLUME / 100.0f);
     if (settings_.interfaceAudioMute) {
-        Mix_Volume(-1, 0); // Mute all channels for UI sounds
+        Mix_Volume(-1, 0); // Mute all channels for UI sounds (-1 sets all allocated channels)
         LOG_DEBUG("SoundManager: UI sounds muted.");
     } else {
         Mix_Volume(-1, uiVolume); // Set global volume for all channels
         LOG_DEBUG("SoundManager: UI sounds volume set to " << settings_.interfaceAudioVol << "% (SDL_mixer: " << uiVolume << ")");
     }
 
-    // Ambience/Table Music (Mix_Music) - controlled by a single channel
-    LOG_DEBUG("SoundManager: Applying music audio settings (Ambience/Table).");
-    if (Mix_PlayingMusic()) { // Only apply if music is actually playing
-        if (currentPlayingMusicType_ == MusicType::Ambience) {
-            LOG_DEBUG("SoundManager: Ambience music is currently playing (tracked state).");
-            int ambienceVolume = static_cast<int>(settings_.interfaceAmbienceVol * MIX_MAX_VOLUME / 100.0f);
-            if (settings_.interfaceAmbienceMute) {
-                Mix_VolumeMusic(0);
-                LOG_DEBUG("SoundManager: Ambience music muted.");
-            } else {
-                Mix_VolumeMusic(ambienceVolume);
-                LOG_DEBUG("SoundManager: Ambience music volume set to " << settings_.interfaceAmbienceVol << "% (SDL_mixer: " << ambienceVolume << ")");
-            }
-        } else if (currentPlayingMusicType_ == MusicType::Table) {
-            LOG_DEBUG("SoundManager: Table music is currently playing (tracked state).");
-            int tableVolume = static_cast<int>(settings_.tableMusicVol * MIX_MAX_VOLUME / 100.0f);
-            if (settings_.tableMusicMute) {
-                Mix_VolumeMusic(0);
-                LOG_DEBUG("SoundManager: Table music muted.");
-            } else {
-                Mix_VolumeMusic(tableVolume);
-                LOG_DEBUG("SoundManager: Table music volume set to " << settings_.tableMusicVol << "% (SDL_mixer: " << tableVolume << ")");
-            }
-        } else {
-            // This case should ideally not be hit if currentPlayingMusicType_ is correctly managed,
-            // but as a fallback, mute if we don't know what's playing.
-            Mix_VolumeMusic(0);
-            LOG_DEBUG("SoundManager: Unknown music playing, setting music volume to 0.");
-        }
+    // Ambience Music (Mix_Music)
+    LOG_DEBUG("SoundManager: Applying ambience music settings. Mute: " << settings_.interfaceAmbienceMute << ", Volume: " << settings_.interfaceAmbienceVol);
+    int ambienceVolume = static_cast<int>(settings_.interfaceAmbienceVol * MIX_MAX_VOLUME / 100.0f);
+    if (settings_.interfaceAmbienceMute) {
+        Mix_VolumeMusic(0);
+        LOG_DEBUG("SoundManager: Ambience music muted.");
     } else {
-        Mix_VolumeMusic(0); // No music playing, ensure volume is 0
-        LOG_DEBUG("SoundManager: No music playing, setting music volume to 0.");
+        Mix_VolumeMusic(ambienceVolume);
+        LOG_DEBUG("SoundManager: Ambience music volume set to " << settings_.interfaceAmbienceVol << "% (SDL_mixer: " << ambienceVolume << ")");
+    }
+
+    // Table Music (Mix_Chunk on dedicated channel)
+    LOG_DEBUG("SoundManager: Applying table music settings. Mute: " << settings_.tableMusicMute << ", Volume: " << settings_.tableMusicVol);
+    int tableVolume = static_cast<int>(settings_.tableMusicVol * MIX_MAX_VOLUME / 100.0f);
+    if (settings_.tableMusicMute || !isTableMusicPlaying_) { // Also mute if not playing
+        Mix_Volume(tableMusicChannel_, 0); // Mute specific channel
+        LOG_DEBUG("SoundManager: Table music muted or not playing on channel " << tableMusicChannel_ << ".");
+    } else {
+        Mix_Volume(tableMusicChannel_, tableVolume); // Set volume for specific channel
+        LOG_DEBUG("SoundManager: Table music volume set to " << settings_.tableMusicVol << "% (SDL_mixer: " << tableVolume << ") on channel " << tableMusicChannel_ << ".");
     }
 }
 
@@ -306,40 +344,52 @@ void SoundManager::updateSettings(const Settings& newSettings) {
                                (settings_.screenshotTakeSound != newSettings.screenshotTakeSound) ||
                                (settings_.screenshotQuitSound != newSettings.screenshotQuitSound);
 
-    // Check if ambience music path has changed
+    // Check if ambience music path or mute settings have changed
     bool ambiencePathChanged = (settings_.ambienceSound != newSettings.ambienceSound);
+    bool ambienceMuteChanged = (settings_.interfaceAmbienceMute != newSettings.interfaceAmbienceMute);
+    bool ambienceVolumeChanged = (settings_.interfaceAmbienceVol != newSettings.interfaceAmbienceVol);
+
+    // Check if table music mute/volume settings have changed (path change is handled in playTableMusic)
+    bool tableMuteChanged = (settings_.tableMusicMute != newSettings.tableMusicMute);
+    bool tableVolumeChanged = (settings_.tableMusicVol != newSettings.tableMusicVol);
 
     // Update the internal settings_ member variable with the new settings
     settings_ = newSettings;
 
     if (uiSoundPathsChanged) {
         LOG_DEBUG("SoundManager: UI sound paths changed, reloading UI sounds.");
-        // Reload all UI sounds (Mix_Chunk)
-        loadSounds();
+        loadSounds(); // Reload all UI sounds (Mix_Chunk)
     }
 
-    // Handle ambience music: if path changed, restart it. If it was playing and path didn't change,
-    // just re-apply settings. If it wasn't playing but now has a valid path, start it.
-    if (ambiencePathChanged) {
-        LOG_DEBUG("SoundManager: Ambience music path changed, attempting to restart ambience.");
-        playAmbienceMusic(exeDir_ + settings_.ambienceSound);
-    } else if (currentPlayingMusicType_ == MusicType::Ambience) {
-        // Ambience was playing and path didn't change, just re-apply volume/mute
-        applyAudioSettings();
-    } else if (currentPlayingMusicType_ == MusicType::None && !settings_.ambienceSound.empty() &&
-               std::filesystem::exists(exeDir_ + settings_.ambienceSound) &&
-               std::filesystem::is_regular_file(exeDir_ + settings_.ambienceSound)) {
-        LOG_DEBUG("SoundManager: Ambience music was not playing but has a valid path, attempting to start.");
-        playAmbienceMusic(exeDir_ + settings_.ambienceSound);
-    } else {
-        // If ambience path is empty or invalid, and it was previously playing ambience, ensure it's stopped
-        if (currentPlayingMusicType_ == MusicType::Ambience) {
-            stopMusic();
+    // Handle Ambience Music (always try to keep it playing if configured)
+    std::string currentAmbienceFullPath = exeDir_ + settings_.ambienceSound;
+    if (!settings_.ambienceSound.empty() && std::filesystem::exists(currentAmbienceFullPath) && std::filesystem::is_regular_file(currentAmbienceFullPath)) {
+        if (!isAmbiencePlaying_ || ambiencePathChanged) {
+            // Ambience is not playing, or its path changed, so play/re-play it.
+            // This will load if necessary and start.
+            playAmbienceMusic(currentAmbienceFullPath);
+        } else if (ambienceMuteChanged || ambienceVolumeChanged) {
+            // Ambience is playing and path hasn't changed, but mute/volume did.
+            // Just re-apply settings without restarting.
+            applyAudioSettings();
         }
-        ambienceMusic_.reset();
+    } else {
+        // Ambience path is empty or invalid, ensure it's stopped.
+        if (isAmbiencePlaying_) {
+            stopAmbienceMusic();
+        }
     }
-    
+
+    // Handle Table Music (only need to re-apply settings if volume/mute changed)
+    // The path change is implicitly handled when playTableMusic is called by AssetManager upon table change.
+    if (isTableMusicPlaying_ && (tableMuteChanged || tableVolumeChanged)) {
+        LOG_DEBUG("SoundManager: Table music volume/mute settings changed, reapplying.");
+        applyAudioSettings();
+    }
+    // No else-if here, as ambience takes priority when no table music is active.
+
     // Always apply audio settings to update volumes/mutes for all categories
+    // This call is redundant if individual music types re-apply, but harmless for safety.
     applyAudioSettings();
 }
 
