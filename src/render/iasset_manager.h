@@ -177,6 +177,14 @@ public:
      * @param tables A vector containing table data with music paths.
      */
     virtual void playTableMusic(size_t index, const std::vector<TableData>& tables) = 0;
+
+    /**
+     * @brief Applies audio settings to all active video players.
+     *
+     * Updates the volume and mute state of playfield, backglass, and DMD video players
+     * based on the current mediaAudioVol and mediaAudioMute settings.
+     */
+    virtual void applyVideoAudioSettings() = 0;
 };
 
 #endif // IASSET_MANAGER_H

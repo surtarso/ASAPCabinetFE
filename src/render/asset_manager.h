@@ -215,6 +215,14 @@ public:
     void playTableMusic(size_t index, const std::vector<TableData>& tables) override;
 
     /**
+     * @brief Applies audio settings to all active video players.
+     *
+     * Updates the volume and mute state of playfield, backglass, and DMD video players
+     * based on the current mediaAudioVol and mediaAudioMute settings.
+     */
+    void applyVideoAudioSettings() override;
+
+    /**
      * @brief Adds a video player to the old players cache.
      *
      * Stores a video player in the cache for later cleanup.

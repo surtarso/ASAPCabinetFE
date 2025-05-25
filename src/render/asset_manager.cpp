@@ -129,6 +129,37 @@ void AssetManager::clearVideoCache() {
     currentDmdMediaHeight_ = 0;
 }
 
+void AssetManager::applyVideoAudioSettings() {
+    if (!configManager_) {
+        LOG_ERROR("AssetManager: Cannot apply video audio settings: configManager is null");
+        return;
+    }
+    const Settings& settings = configManager_->getSettings();
+    LOG_DEBUG("AssetManager: Applying video audio settings: mediaAudioVol=" << settings.mediaAudioVol 
+              << ", mediaAudioMute=" << settings.mediaAudioMute);
+    if (playfieldVideoPlayer) {
+        playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
+        playfieldVideoPlayer->setMute(settings.mediaAudioMute);
+        LOG_DEBUG("AssetManager: Applied audio settings to playfield video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+    } else {
+        LOG_DEBUG("AssetManager: No playfield video player to apply audio settings");
+    }
+    if (backglassVideoPlayer) {
+        backglassVideoPlayer->setVolume(settings.mediaAudioVol);
+        backglassVideoPlayer->setMute(settings.mediaAudioMute);
+        LOG_DEBUG("AssetManager: Applied audio settings to backglass video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+    } else {
+        LOG_DEBUG("AssetManager: No backglass video player to apply audio settings");
+    }
+    if (dmdVideoPlayer) {
+        dmdVideoPlayer->setVolume(settings.mediaAudioVol);
+        dmdVideoPlayer->setMute(settings.mediaAudioMute);
+        LOG_DEBUG("AssetManager: Applied audio settings to DMD video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+    } else {
+        LOG_DEBUG("AssetManager: No DMD video player to apply audio settings");
+    }
+}
+
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& tables) {
     auto start = std::chrono::high_resolution_clock::now();
     if (index >= tables.size()) {
@@ -222,7 +253,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
                 playfieldVideoPlayer = std::move(newPlayer);
-                playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
                 playfieldVideoPlayer->play();
                 currentPlayfieldVideoPath_ = table.playfieldVideo;
                 currentPlayfieldMediaWidth_ = settings.playfieldMediaWidth;
@@ -231,7 +261,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup playfield video: " << table.playfieldVideo << ", keeping existing player");
             }
         } else if (playfieldVideoPlayer && !playfieldVideoPlayer->isPlaying()) {
-            playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
             playfieldVideoPlayer->play();
         }
     } else if (playfieldVideoPlayer) {
@@ -256,7 +285,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
                 backglassVideoPlayer = std::move(newPlayer);
-                backglassVideoPlayer->setVolume(settings.mediaAudioVol);
                 backglassVideoPlayer->play();
                 currentBackglassVideoPath_ = table.backglassVideo;
                 currentBackglassMediaWidth_ = settings.backglassMediaWidth;
@@ -265,7 +293,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup backglass video: " << table.backglassVideo << ", keeping existing player");
             }
         } else if (backglassVideoPlayer && !backglassVideoPlayer->isPlaying()) {
-            backglassVideoPlayer->setVolume(settings.mediaAudioVol);
             backglassVideoPlayer->play();
         }
     } else if (backglassVideoPlayer) {
@@ -294,7 +321,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             if (newPlayer) {
                 stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
                 dmdVideoPlayer = std::move(newPlayer);
-                dmdVideoPlayer->setVolume(settings.mediaAudioVol);
                 dmdVideoPlayer->play();
                 currentDmdVideoPath_ = table.dmdVideo;
                 currentDmdMediaWidth_ = settings.dmdMediaWidth;
@@ -303,7 +329,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("AssetManager: Failed to setup DMD video: " << table.dmdVideo << ", keeping existing player");
             }
         } else if (dmdVideoPlayer && !dmdVideoPlayer->isPlaying()) {
-            dmdVideoPlayer->setVolume(settings.mediaAudioVol);
             dmdVideoPlayer->play();
         }
     } else if (dmdVideoPlayer) {
@@ -315,6 +340,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             currentDmdMediaHeight_ = 0;
         }
     }
+
+    // Apply audio settings to all video players
+    applyVideoAudioSettings();
 
     lastShowBackglass = settings.showBackglass;
     lastShowDMD = settings.showDMD;

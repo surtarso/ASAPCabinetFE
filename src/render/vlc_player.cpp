@@ -152,24 +152,31 @@ bool VlcVideoPlayer::isPlaying() const {
 }
 
 void VlcVideoPlayer::setVolume(float volume) {
-    if (ctx_ && ctx_->player) {
-        // VLC volume is typically 0-100, so scale the 0.0-1.0 float
-        int vlcVolume = static_cast<int>(volume * 100.0f);
-        if (vlcVolume < 0) vlcVolume = 0;
-        if (vlcVolume > 100) vlcVolume = 100; // Cap at 100%
-
-        libvlc_audio_set_volume(ctx_->player, vlcVolume);
-        LOG_DEBUG("VlcVideoPlayer: Volume set to " << volume << " (VLC: " << vlcVolume << ")");
-    } else {
-        LOG_ERROR("VlcVideoPlayer: Cannot set volume, player not initialized.");
+    if (!ctx_ || !ctx_->player) {
+        LOG_ERROR("VlcVideoPlayer: Cannot set volume, player not initialized");
+        return;
     }
+    // Normalize volume from 0-100 (Settings) to 0.0-1.0
+    float normalizedVolume = volume / 100.0f;
+    // Clamp volume to 0.0-1.0 range
+    float clampedVolume = normalizedVolume < 0.0f ? 0.0f : (normalizedVolume > 1.0f ? 1.0f : normalizedVolume);
+    // VLC volume is 0-100, so scale the 0.0-1.0 float
+    int vlcVolume = static_cast<int>(clampedVolume * 100.0f);
+    LOG_DEBUG("VlcVideoPlayer: Setting volume to " << clampedVolume << " (VLC: " << vlcVolume << ")");
+    libvlc_audio_set_volume(ctx_->player, vlcVolume);
+    // Verify VLC state
+    int currentVolume = libvlc_audio_get_volume(ctx_->player);
+    LOG_DEBUG("VlcVideoPlayer: VLC reported volume: " << currentVolume);
 }
 
 void VlcVideoPlayer::setMute(bool mute) {
-    if (ctx_ && ctx_->player) {
-        libvlc_audio_set_mute(ctx_->player, mute ? 1 : 0);
-        LOG_DEBUG("VlcVideoPlayer: Mute set to " << (mute ? "true" : "false"));
-    } else {
-        LOG_ERROR("VlcVideoPlayer: Cannot set mute state, player not initialized.");
+    if (!ctx_ || !ctx_->player) {
+        LOG_ERROR("VlcVideoPlayer: Cannot set mute state, player not initialized");
+        return;
     }
+    LOG_DEBUG("VlcVideoPlayer: Setting mute to " << (mute ? "true" : "false"));
+    libvlc_audio_set_mute(ctx_->player, mute ? 1 : 0);
+    // Verify VLC state
+    int muteState = libvlc_audio_get_mute(ctx_->player);
+    LOG_DEBUG("VlcVideoPlayer: VLC reported mute state: " << (muteState ? "true" : "false"));
 }

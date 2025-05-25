@@ -440,8 +440,11 @@ bool FFmpegPlayer::isPlaying() const {
 }
 
 void FFmpegPlayer::setVolume(float volume) {
-    currentVolume_ = std::min(std::max(volume, 0.0f), 1.0f);
-    LOG_DEBUG("FFmpegPlayer: Volume set to " << currentVolume_);
+    // Normalize volume from 0-100 (Settings) to 0.0-1.0
+    float normalizedVolume = volume / 100.0f;
+    // Clamp to 0.0-1.0 range
+    currentVolume_ = std::min(std::max(normalizedVolume, 0.0f), 1.0f);
+    LOG_DEBUG("FFmpegPlayer: Volume set to " << currentVolume_ << " (input: " << volume << ")");
 }
 
 void FFmpegPlayer::setMute(bool mute) {
@@ -622,18 +625,22 @@ void FFmpegPlayer::updateTexture() {
 void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
     FFmpegPlayer* player = static_cast<FFmpegPlayer*>(userdata);
     if (!player || !player->audioFifo_ || !player->isPlaying_) {
-        memset(stream, 0, len);
+        SDL_memset(stream, 0, len);
+        LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Skipped (invalid state)");
         return;
     }
 
     SDL_memset(stream, 0, len);
+    //LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Processing len=" << len << ", volume=" << player->currentVolume_ << ", mute=" << (player->isMuted_ ? "true" : "false"));
+
+    if (player->isMuted_) {
+        LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Muted, returning silence");
+        return;
+    }
 
     int audio_len_bytes = len;
     int audio_len_samples = audio_len_bytes / (player->audioSpec_.channels * (SDL_AUDIO_BITSIZE(player->audioSpec_.format) / 8));
-
-    if (player->isMuted_) {
-        return;
-    }
+    //LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Requesting " << audio_len_samples << " samples");
 
     int fifo_size = av_audio_fifo_size(player->audioFifo_);
     if (fifo_size < audio_len_samples) {
@@ -648,8 +655,10 @@ void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
         LOG_ERROR("FFmpegPlayer: Error reading from audio FIFO: " << err_str);
         return;
     }
+    //LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Read " << read_samples << " samples");
 
-    if (player->currentVolume_ < 1.0f) {
-        SDL_MixAudioFormat(stream, stream, player->audioSpec_.format, read_samples * player->audioSpec_.channels * (SDL_AUDIO_BITSIZE(player->audioSpec_.format) / 8), static_cast<int>(player->currentVolume_ * SDL_MIX_MAXVOLUME));
-    }
+    // Always apply volume scaling
+    int volume = static_cast<int>(player->currentVolume_ * SDL_MIX_MAXVOLUME);
+    SDL_MixAudioFormat(stream, stream, player->audioSpec_.format, read_samples * player->audioSpec_.channels * (SDL_AUDIO_BITSIZE(player->audioSpec_.format) / 8), volume);
+    //LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: Applied volume scaling, SDL volume=" << volume);
 }

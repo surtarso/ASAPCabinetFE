@@ -167,14 +167,20 @@ void ConfigUI::saveConfig() {
         LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
 
-    // Update audio settings in ISoundManager if AudioSettings changed
-    if (appCallbacks_ && audioSettingsChanged) {
-        ISoundManager* soundManager = appCallbacks_->getSoundManager();
-        if (soundManager) {
-            soundManager->updateSettings(configService_->getSettings());
-            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated ISoundManager");
-        } else {
-            LOG_ERROR("ConfigUI: Failed to get ISoundManager from appCallbacks_");
+    // Update audio settings in ISoundManager and AssetManager if AudioSettings changed
+    if (audioSettingsChanged) {
+        if (appCallbacks_) {
+            ISoundManager* soundManager = appCallbacks_->getSoundManager();
+            if (soundManager) {
+                soundManager->updateSettings(configService_->getSettings());
+                LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated ISoundManager");
+            } else {
+                LOG_ERROR("ConfigUI: Failed to get ISoundManager from appCallbacks_");
+            }
+        }
+        if (assets_) {
+            assets_->applyVideoAudioSettings();
+            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated AssetManager video audio settings");
         }
     }
 
