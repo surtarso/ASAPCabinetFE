@@ -47,7 +47,6 @@ cd ~/ASAPCabinetFE
 - Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata. _(optional)_
 - Navigate tables with titles and/or wheels.
 - Extended settings for many display configuration arrangements.
-- Software and hardware rendering.
 - Keybind friendly and joystick support.
 - Extremely lightweight and customizable.
 - No need to download artpacks, generate your own. (See [tools](#generator-tools))
