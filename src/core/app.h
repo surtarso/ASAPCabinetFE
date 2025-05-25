@@ -28,6 +28,7 @@
 #include "core/joystick_manager.h"
 #include "core/playfield_overlay.h"
 #include "sound/isound_manager.h"
+#include "sound/sound_manager.h"
 #include "core/gui_manager.h"
 #include "core/dependency_factory.h"
 #include "core/iapp_callbacks.h"
@@ -44,6 +45,7 @@
  */
 class App : public IAppCallbacks {
 public:
+    ISoundManager* getSoundManager() override; // Changed to ISoundManager*
     /**
      * @brief Constructs an App instance.
      *
@@ -107,8 +109,8 @@ public:
 private:
     std::string exeDir_;                        ///< Executable directory for resolving paths.
     std::string configPath_;                    ///< Path to the configuration file.
-    bool showConfig_ = false;                           ///< Flag controlling configuration UI visibility.
-    size_t currentIndex_ = 0;                       ///< Index of the current table.
+    bool showConfig_ = false;                   ///< Flag controlling configuration UI visibility.
+    size_t currentIndex_ = 0;                   ///< Index of the current table.
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.
     std::unique_ptr<JoystickManager> joystickManager_;   ///< Manager for SDL joysticks.
     std::unique_ptr<IWindowManager> windowManager_;      ///< Manager for SDL windows and renderers.
@@ -123,7 +125,7 @@ private:
     std::unique_ptr<ITableLoader> tableLoader_;          ///< Loader for table data.
     std::vector<TableData> tables_;                      ///< List of table data.
     std::unique_ptr<PlayfieldOverlay> playfieldOverlay_; ///< Overlay for ImGui UI elements.
-    bool prevShowConfig_ = false;                                ///< Previous state of showConfig_ flag.
+    bool prevShowConfig_ = false;                        ///< Previous state of showConfig_ flag.
 
     /**
      * @brief Gets the executable directory.

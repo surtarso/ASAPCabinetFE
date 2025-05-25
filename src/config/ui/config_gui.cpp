@@ -1,5 +1,6 @@
 #include "config/ui/config_gui.h"
 #include "core/playfield_overlay.h"
+#include "sound/isound_manager.h"
 #include "utils/logging.h"
 #include "imgui.h"
 
@@ -56,6 +57,18 @@ void ConfigUI::drawGUI() {
     renderSectionsPane();
     ImGui::SameLine();
     renderKeyValuesPane();
+
+    // // Apply audio settings changes in real-time
+    // if (state_.hasChanges && state_.currentSection == "AudioSettings" && appCallbacks_) {
+    //     ISoundManager* soundManager = appCallbacks_->getSoundManager();
+    //     if (soundManager) {
+    //         soundManager->updateSettings(configService_->getSettings());
+    //         LOG_DEBUG("ConfigUI: AudioSettings changed, updated ISoundManager in real-time");
+    //     } else {
+    //         LOG_ERROR("ConfigUI: Failed to get ISoundManager from appCallbacks_");
+    //     }
+    // }
+
     renderButtonPane();
 
     if (inputHandler_.isCapturingKey()) {
@@ -131,6 +144,7 @@ void ConfigUI::saveConfig() {
     bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
     bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
+    bool audioSettingsChanged = state_.hasSectionChanged("AudioSettings", oldIniData);
 
     // Log change detection results
     LOG_DEBUG("ConfigUI: Change detection: "
@@ -140,7 +154,8 @@ void ConfigUI::saveConfig() {
               << ", titleDataSource=" << titleDataSourceChanged
               << ", videoBackend=" << videoBackendChanged
               << ", forceImagesOnly=" << forceImagesOnlyChanged
-              << ", metadata=" << metadataSettingsChanged);
+              << ", metadata=" << metadataSettingsChanged
+              << ", audioSettings=" << audioSettingsChanged);
 
     // Update lastSavedIniData
     state_.lastSavedIniData = currentIniData;
@@ -150,6 +165,17 @@ void ConfigUI::saveConfig() {
         const Settings& settings = configService_->getSettings();
         assets_->setTitlePosition(settings.titleX, settings.titleY);
         LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
+    }
+
+    // Update audio settings in ISoundManager if AudioSettings changed
+    if (appCallbacks_ && audioSettingsChanged) {
+        ISoundManager* soundManager = appCallbacks_->getSoundManager();
+        if (soundManager) {
+            soundManager->updateSettings(configService_->getSettings());
+            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated ISoundManager");
+        } else {
+            LOG_ERROR("ConfigUI: Failed to get ISoundManager from appCallbacks_");
+        }
     }
 
     // Trigger callbacks for relevant changes

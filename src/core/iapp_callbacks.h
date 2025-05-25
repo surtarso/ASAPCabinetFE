@@ -1,6 +1,8 @@
 #ifndef IAPP_CALLBACKS_H
 #define IAPP_CALLBACKS_H
 
+class ISoundManager; // Forward declaration
+
 /**
  * @brief Interface for handling various application callbacks.
  *
@@ -13,6 +15,7 @@
  * - reloadAssetsAndRenderers(): Reloads asset and renderer configurations.
  * - reloadTablesAndTitle(): Updates the display tables and application title.
  * - reloadOverlaySettings(): Reapplies settings for overlays.
+ * - getSoundManager(): Retrieves the ISoundManager instance for real-time updates.
  *
  * A virtual destructor is provided to ensure proper cleanup in derived classes.
  */
@@ -23,6 +26,7 @@ public:
     virtual void reloadAssetsAndRenderers() = 0;
     virtual void reloadTablesAndTitle() = 0;
     virtual void reloadOverlaySettings() = 0;
+    virtual ISoundManager* getSoundManager() = 0; // Changed to ISoundManager*
     virtual ~IAppCallbacks() = default;
 };
 

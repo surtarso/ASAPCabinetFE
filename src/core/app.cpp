@@ -77,6 +77,10 @@ void App::reloadFont(bool isStandalone) {
     }
 }
 
+ISoundManager* App::getSoundManager() {
+    return soundManager_.get(); // Return raw pointer from unique_ptr
+}
+
 void App::reloadAssetsAndRenderers() {
     reloadWindows();
     assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
