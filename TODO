@@ -1,9 +1,9 @@
 TODO
 
 FIX:
-- ffmpeg videos sound are altered/weird
+- ffmpeg videos are sped up
+- ffmpeg volume slider has incorrect values (too narrow range)
 - play both ambience and table music at the same time
-- finish implementation of sound settings (videos sound control)
 - fix screenshotmode key being captured while config is opened.
 - metadata year/manufacturer better parsing
 
