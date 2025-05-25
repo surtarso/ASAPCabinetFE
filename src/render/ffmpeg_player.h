@@ -4,6 +4,7 @@
 #include "render/ivideo_player.h"
 #include <SDL.h>
 #include <string>
+#include <chrono> // For timing video frames
 
 // Forward declarations for FFmpeg structs
 struct AVFormatContext;
@@ -100,6 +101,11 @@ private:
     int videoStreamIndex_;
     uint8_t* rgbBuffer_;
 
+    // Video synchronization
+    double videoClock_; // Current video timestamp in seconds
+    std::chrono::high_resolution_clock::time_point lastFrameTime_; // Time when the last frame was displayed
+    std::chrono::high_resolution_clock::time_point playbackStartTime_; // Time when playback started for current loop
+
     // FFmpeg audio context
     AVCodecContext* audioCodecContext_;
     AVFrame* audioFrame_;
@@ -109,9 +115,10 @@ private:
     int audioStreamIndex_;
     SDL_AudioDeviceID audioDevice_;
     SDL_AudioSpec audioSpec_;
+    bool needsVideoDecoderReset_; 
     float currentVolume_;
     bool isMuted_;
-
+    
     /**
      * @brief Cleans up all FFmpeg and SDL resources.
      */

@@ -1,10 +1,10 @@
 TODO
 
 FIX:
-- ffmpeg videos are sped up
 - ffmpeg volume slider has incorrect values (too narrow range)
 - play both ambience and table music at the same time
 - fix screenshotmode key being captured while config is opened.
+- keep config.ini structure on save
 - metadata year/manufacturer better parsing
 
 QOL:
