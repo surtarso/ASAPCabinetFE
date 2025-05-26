@@ -18,12 +18,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# Doxygen permissions for github pages
+# --- Doxygen permissions for github pages ---
 permissions:
   contents: write # Allows the workflow to push to the gh-pages branch
   pages: write    # Required for GitHub Pages deployment
   id-token: write # Required for GitHub Pages deployment
-# End Doxygen permissions for github pages
 
 jobs:
   compile_release:
@@ -38,17 +37,21 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    # --- System requirements ---
     - name: Install System Dependencies
       run: |
-        sudo apt-get update
         # Make sure core packages are installed for CI
+        sudo apt-get update
         sudo apt-get install findutils apt-utils git doxygen graphviz -y -qq
+        
         # Tell git to trust workspace dir
         git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+        
         # Install App Specific Dependencies
         cat apt-packages.txt | xargs sudo apt-get install -y -qq
 
     - name: Get Library Versions for Release Tag
+      if: startsWith(github.ref, 'refs/tags/')
       id: get-lib-versions
       run: |
         SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
@@ -66,39 +69,42 @@ jobs:
         echo "Detected VLC Version: $VLC_VER"
         echo "Detected GLIBC Version: $GLIBC_VER"
 
-    # --- Start of Doxygen Documentation Steps ---
+    # --- Doxygen Documentation Steps ---
     - name: Generate Doxygen documentation
-      run: doxygen Doxyfile # Assumes Doxyfile is in the root of your repo
+      run: doxygen Doxyfile # Doxyfile in the root repo
 
     - name: Create .nojekyll file
-      # This creates an empty file named .nojekyll inside your Doxygen HTML output directory
       run: touch docs/html/.nojekyll
 
     - name: Configure GitHub Pages deployment
-      # IMPORTANT: 'path' MUST match your Doxyfile's OUTPUT_DIRECTORY/HTML_OUTPUT
+      # IMPORTANT: 'path' MUST match Doxyfile's OUTPUT_DIRECTORY/HTML_OUTPUT
       # Example: If Doxyfile has OUTPUT_DIRECTORY = docs and HTML_OUTPUT = html
       # then path: docs/html
       uses: actions/upload-pages-artifact@v3
       with:
-        path: docs/html # <--- **ADJUST THIS PATH** to your actual Doxygen HTML output
+        path: docs/html # Doxygen HTML output
 
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-    # --- End of Doxygen Documentation Steps ---
 
+    # --- Compilation ---
     - name: Configure with CMake
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/build" && cd "${GITHUB_WORKSPACE}/build"
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
+
     - name: Compile with CMake
       run: |
         cd "${GITHUB_WORKSPACE}/build"
         cmake --build . -j$(nproc)
-    - name: Run `make install` to package the application
+
+    - name: Run `make install` for packaging
       run: |
         cd "${GITHUB_WORKSPACE}/build"
         cmake --install .
+
+    # --- Create and Upload artifact ---
     - name: Create distributable archive
       id: create-archive
       run: |
@@ -107,14 +113,14 @@ jobs:
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-linux-x64.tar.gz"
+        
         # Define a temporary path outside GITHUB_WORKSPACE for the artifact
         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
         echo "Creating archive ${TARBALL_NAME} at ${TARBALL_FULL_PATH}"
         
-        # Change directory to install_root to ensure clean tarball contents
-        # cd "${GITHUB_WORKSPACE}/install_root"
+        # Change directory to make install target to ensure clean tarball contents
         cd "${HOME}/ASAPCabinetFE"
         # Create the tarball in the temporary directory
         tar -czvf "${TARBALL_FULL_PATH}" ./*
@@ -128,17 +134,17 @@ jobs:
         ls -l "${ARTIFACT_TEMP_DIR}"
         echo "DEBUG: Contents of workspace root (just to be sure):"
         ls -l "${GITHUB_WORKSPACE}"
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-linux-x64
-        # Upload from the temporary directory
         path: "${{ runner.temp }}/artifacts/${{ steps.create-archive.outputs.tarball_name }}"
         retention-days: 7
 
+    # --- Test binary ---
     - name: Test Version Flag
       run: |
-        # cd "${GITHUB_WORKSPACE}"
         cd "${HOME}/ASAPCabinetFE"
         VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
@@ -149,21 +155,34 @@ jobs:
           exit 1
         fi
     
-    # Create a Github Release based on Tag pushes to main
+    # --- Create a Github Release on Tag pushes ---
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref_name }} # The tag name (e.g., v1.0.0)
-        name: Release ${{ github.ref_name }} # The release title
+        name: ASAPCabinetFE Release ${{ github.ref_name }} # The release title
         body: |
-          Automated release for ${{ github.ref_name }}
+          ### _As Simple As Possible Cabinet Front-End_ release ${{ github.ref_name }}
           
-          This release includes the compiled Linux x64 artifact.
+          This release includes the Linux x64 artifact, compiled using:
           - GLIBC: ${{ env.GLIBC_VERSION }}
           - SDL2: ${{ env.SDL2_VERSION }}
           - FFmpeg (libavcodec): ${{ env.FFMPEG_VERSION }}
           - VLC (libvlc): ${{ env.VLC_VERSION }}
+
+          Unpack and run ./ASAPCabinetFE
+
+          **Changes**:
+            - This is an automated release, this will be filled soon.
+          
+          **Fixes**:
+            - This is an automated release, this will be filled soon.
+
+          **Known bugs**:
+            - This is an automated release, this will be filled soon.
+
+          **Full Changelog**: https://github.com/surtarso/ASAPCabinetFE/commits/${{ github.ref_name }}
         draft: false # Set to true to create a draft release
         prerelease: false # Set to true for pre-release versions
         files: ${{ steps.create-archive.outputs.tarball_full_path }} # Path to the compiled archive
