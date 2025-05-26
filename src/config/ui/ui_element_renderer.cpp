@@ -467,19 +467,234 @@ void renderGenericTextShort([[maybe_unused]] const std::string& key, std::string
     }
 }
 
-void renderVolumeScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, [[maybe_unused]] SettingsSection& sectionData) {
+void renderVolumeScale(const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, [[maybe_unused]] SettingsSection& sectionData) {
+    using namespace ImGui;
+
     float volume = 50.0f;
     try {
         volume = std::stof(value);
     } catch (...) {
         LOG_ERROR("UiElementRenderer: Invalid volume value: " << value << ", defaulting to 50.0");
     }
-    ImGui::SetNextItemWidth(-1);
-    if (ImGui::SliderFloat(("##volume_" + key).c_str(), &volume, 0.0f, 100.0f, "%.0f")) {
+
+    // --- VERTICAL SLIDER SIZE ---
+    ImVec2 sliderSize(30, 150); // Width, Height. This makes it vertical. Adjust `150` for desired height.
+
+    // Determine distinct color based on the key
+    ImVec4 baseSliderColor;
+    if (key.find("MediaAudio") != std::string::npos) {
+        baseSliderColor = (ImVec4)ImColor::HSV(0.0f, 0.6f, 0.6f);
+    } else if (key.find("TableMusic") != std::string::npos) {
+        baseSliderColor = (ImVec4)ImColor::HSV(0.3f, 0.6f, 0.6f);
+    } else if (key.find("InterfaceAudio") != std::string::npos) {
+        baseSliderColor = (ImVec4)ImColor::HSV(0.6f, 0.6f, 0.6f);
+    } else if (key.find("InterfaceAmbience") != std::string::npos) {
+        baseSliderColor = (ImVec4)ImColor::HSV(0.9f, 0.6f, 0.6f);
+    } else {
+        baseSliderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    }
+
+    // --- Check for mute state and prepare for unmuting / greying out ---
+    bool isMuted = false;
+    std::string prefix = key.substr(0, key.length() - 3); // Get "MediaAudio" from "MediaAudioVol"
+    std::string muteKey = prefix + "Mute"; // Construct the corresponding mute key
+
+    auto muteIt = std::find_if(sectionData.keyValues.begin(), sectionData.keyValues.end(),
+                               [&muteKey](const auto& pair) { return pair.first == muteKey; });
+
+    if (muteIt != sectionData.keyValues.end()) {
+        isMuted = (muteIt->second == "true");
+    } else {
+        LOG_DEBUG("UIElementRenderer: Mute key '" << muteKey << "' not found for volume slider '" << key << "'.");
+    }
+
+    int pushedStyleVars = 0;
+    if (isMuted) {
+        PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * 0.5f);
+        pushedStyleVars++;
+    }
+
+    // --- PUSHING 5 STYLE COLORS FOR THE SLIDER ---
+    PushStyleColor(ImGuiCol_FrameBg, baseSliderColor);
+    PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(baseSliderColor.x + 0.1f, baseSliderColor.y + 0.1f, baseSliderColor.z + 0.1f, baseSliderColor.w));
+    PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(baseSliderColor.x + 0.2f, baseSliderColor.y + 0.2f, baseSliderColor.z + 0.2f, baseSliderColor.w));
+    PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(baseSliderColor.x, 0.9f, 0.9f));
+    PushStyleColor(ImGuiCol_SliderGrabActive, (ImVec4)ImColor::HSV(baseSliderColor.x, 1.0f, 1.0f));
+
+    // Render the vertical slider
+    if (VSliderFloat(("##volume_" + key).c_str(), sliderSize, &volume, 0.0f, 100.0f, "%.0f")) {
         value = std::to_string(volume);
         hasChanges = true;
         LOG_DEBUG("UiElementRenderer::renderVolumeScale: " << section << "." << key << " = " << value);
+
+        // Auto-unmute when slider is moved
+        if (muteIt != sectionData.keyValues.end() && muteIt->second == "true") {
+            muteIt->second = "false";
+            hasChanges = true;
+            LOG_DEBUG("UiElementRenderer: Auto-unmuted '" << muteKey << "' due to volume change.");
+        }
     }
+
+    PopStyleColor(5);
+
+    if (pushedStyleVars > 0) {
+        PopStyleVar(pushedStyleVars);
+    }
+
+    // Tooltip for the slider
+    if (IsItemHovered() || IsItemActive()) {
+        static const std::map<std::string, std::string> friendlyNames = {
+            {"MediaAudioVol", "Videos Audio"},
+            {"TableMusicVol", "Table Music"},
+            {"InterfaceAudioVol", "UI Sounds"},
+            {"InterfaceAmbienceVol", "Ambient Sound"}
+        };
+
+        auto it = friendlyNames.find(key);
+        if (it != friendlyNames.end()) {
+            SetTooltip("%s", it->second.c_str());
+        } else {
+            SetTooltip("%s", key.c_str());
+        }
+    }
+}
+
+
+void renderAudioMuteButton(const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
+    using namespace ImGui;
+
+    bool isMuted = (value == "true");
+    ImVec2 buttonSize(35, 25); // Adjust size for better visual
+
+    // Determine color based on mute state (Red for Muted, Green for Unmuted)
+    ImVec4 baseColor = isMuted ? ImVec4(0.8f, 0.2f, 0.2f, 1.0f) : ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
+    
+    // --- PUSHING 3 STYLE COLORS FOR THE BUTTON ---
+    PushStyleColor(ImGuiCol_Button, baseColor);
+    PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(baseColor.x + 0.1f, baseColor.y + 0.1f, baseColor.z + 0.1f, baseColor.w));
+    PushStyleColor(ImGuiCol_ButtonActive, ImVec4(baseColor.x + 0.2f, baseColor.y + 0.2f, baseColor.z + 0.2f, baseColor.w));
+
+    // Create a unique ID for the button to prevent clashes
+    PushID(key.c_str());
+
+    std::string buttonLabel = isMuted ? "MUTE" : "ON";
+    if (Button(buttonLabel.c_str(), buttonSize)) {
+        isMuted = !isMuted;
+        value = isMuted ? "true" : "false";
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer::renderAudioMuteButton: " << section << "." << key << " = " << value);
+    }
+
+    PopID(); // Pop the unique ID
+    
+    // --- POPPING 3 STYLE COLORS ---
+    PopStyleColor(3); // This must match the number of PushStyleColor calls above.
+
+    // // Optional: Add a tooltip
+    // if (IsItemHovered()) {
+    //     SetTooltip("%s", isMuted ? "Click to Unmute" : "Click to Mute");
+    // }
+}
+
+void renderAudioSettingsMixer([[maybe_unused]] const std::string& key, [[maybe_unused]] std::string& value, bool& hasChanges, const std::string& section, SettingsSection& sectionData) {
+    using namespace ImGui;
+
+    std::vector<std::string> audioKeyPrefixes = {
+        "MediaAudio",
+        "TableMusic",
+        "InterfaceAudio",
+        "InterfaceAmbience"
+    };
+
+    static const std::map<std::string, std::string> channelDisplayNames = {
+        {"MediaAudio", "Media"},
+        {"TableMusic", "Music"},
+        {"InterfaceAudio", "UI FX"},
+        {"InterfaceAmbience", "Ambience"}
+    };
+
+    float sliderWidth = 30.0f;
+    float buttonWidth = 35.0f;
+    float desiredColumnContentWidth = 60.0f;
+    float gapBetweenColumns = 30.0f;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 5)); 
+
+    // Calculate the total expected height of a fully rendered column
+    float textLineHeight = ImGui::GetTextLineHeight();
+    float itemSpacingY = ImGui::GetStyle().ItemSpacing.y; 
+    float totalColumnHeight = textLineHeight + itemSpacingY + 150.0f + itemSpacingY + 25.0f;
+
+    // Determine the target absolute screen Y for the BOTTOM of all columns
+    float rowBottomScreenY = ImGui::GetCursorScreenPos().y + totalColumnHeight;
+
+    // Render the columns
+    for (size_t i = 0; i < audioKeyPrefixes.size(); ++i) {
+        const std::string& prefix = audioKeyPrefixes[i];
+        std::string volKey = prefix + "Vol";
+        std::string muteKey = prefix + "Mute";
+
+        ImGui::PushID(prefix.c_str());
+
+        // --- Calculate target Y for this column's top, aiming for bottom alignment ---
+        float currentColumnTargetTopY = rowBottomScreenY - totalColumnHeight;
+        
+        // --- HACK: Adjust Y for the first column if it's consistently too high ---
+        if (i == 0) {
+            currentColumnTargetTopY += 5.0f; // Add 5 pixels to push the first column down
+        }
+
+        ImGui::SetCursorScreenPos(ImVec2(ImGui::GetCursorScreenPos().x, currentColumnTargetTopY));
+        
+        ImGui::BeginGroup(); 
+        float currentGroupStartX = ImGui::GetCursorPosX(); 
+
+        // --- 1. Render Label (centered within its column) ---
+        std::string displayName = channelDisplayNames.at(prefix); 
+        float textWidth = ImGui::CalcTextSize(displayName.c_str()).x;
+        float textOffsetX = (desiredColumnContentWidth - textWidth) / 2.0f;
+        
+        ImGui::SetCursorPosX(currentGroupStartX + textOffsetX);
+        ImGui::TextUnformatted(displayName.c_str());
+        ImGui::NewLine(); 
+
+        // --- 2. Render Slider (centered within its column) ---
+        float sliderOffsetX = (desiredColumnContentWidth - sliderWidth) / 2.0f;
+        ImGui::SetCursorPosX(currentGroupStartX + sliderOffsetX);
+        
+        auto volIt = std::find_if(sectionData.keyValues.begin(), sectionData.keyValues.end(),
+                                  [&volKey](const auto& pair) { return pair.first == volKey; });
+        if (volIt != sectionData.keyValues.end()) {
+            renderVolumeScale(volKey, volIt->second, hasChanges, section, sectionData);
+        } else {
+            LOG_ERROR("UIElementRenderer::renderAudioSettingsMixer: Missing volume key for prefix: " << prefix << " (Key: " << volKey << ")");
+            ImGui::Dummy(ImVec2(sliderWidth, 150));
+        }
+        ImGui::NewLine(); 
+
+        // --- 3. Render Mute Button (centered within its column) ---
+        float buttonOffsetX = (desiredColumnContentWidth - buttonWidth) / 2.0f;
+        ImGui::SetCursorPosX(currentGroupStartX + buttonOffsetX);
+
+        auto muteIt = std::find_if(sectionData.keyValues.begin(), sectionData.keyValues.end(),
+                                   [&muteKey](const auto& pair) { return pair.first == muteKey; });
+        if (muteIt != sectionData.keyValues.end()) {
+            renderAudioMuteButton(muteKey, muteIt->second, hasChanges, section);
+        } else {
+            LOG_ERROR("UIElementRenderer::renderAudioSettingsMixer: Missing mute key for prefix: " << prefix << " (Key: " << muteKey << ")");
+            ImGui::Dummy(ImVec2(buttonWidth, 25));
+        }
+
+        ImGui::EndGroup(); 
+
+        if (i < audioKeyPrefixes.size() - 1) {
+            ImGui::SameLine(0.0f, gapBetweenColumns);
+        }
+        ImGui::PopID(); 
+    }
+
+    ImGui::PopStyleVar(); 
+    ImGui::NewLine();     
 }
 
 } // namespace UIElementRenderer

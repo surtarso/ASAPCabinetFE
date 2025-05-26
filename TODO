@@ -2,7 +2,7 @@ TODO
 
 FIX:
 - ffmpeg volume slider has incorrect values (too narrow range)
-- fix screenshotmode key being captured while config is opened.
+- ffmpeg player video looping takes too long to start
 - keep config.ini structure on save
 - metadata year/manufacturer better parsing
 

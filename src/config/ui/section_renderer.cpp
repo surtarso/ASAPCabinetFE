@@ -104,16 +104,16 @@ void SectionRenderer::initializeKeyRenderers() {
         renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["MediaAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
+        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["TableMusicMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
+        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["InterfaceAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
+        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["InterfaceAmbienceMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
+        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["MediaAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
@@ -188,34 +188,55 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
 
     if (!currentSection_.empty() && iniData.count(currentSection_)) {
         auto& section = iniData[currentSection_];
-        float maxKeyWidth = 150.0f;
-        hasChanges_ = false; 
+        hasChanges_ = false; // Reset changes flag for this section
 
-        // Update keyValues directly instead of using a copy
-        for (auto& [key, value] : section.keyValues) {
-            ImGui::PushID(key.c_str());
-            ImGui::AlignTextToFramePadding();
-            ImGui::Text("%s:", key.c_str());
-            ImGui::SameLine(maxKeyWidth);
+        // --- IMPORTANT CHANGE STARTS HERE ---
+        if (currentSection_ == "AudioSettings") {
+            // If the current section is "AudioSettings", render the custom mixer
+            // The dummy key/value are needed because renderAudioSettingsMixer has a signature
+            // that expects them, even if it doesn't strictly use them internally for its core logic.
+            // It gets the actual audio settings from 'sectionData' (which is 'section' here).
+            std::string dummyKey = "";
+            std::string dummyValue = "";
+            UIElementRenderer::renderAudioSettingsMixer(dummyKey, dummyValue, hasChanges_, currentSection_, section);
 
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-            if (ImGui::Button("?", ImVec2(16, 0))) {}
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor(3);
-            renderTooltip(key);
-            ImGui::SameLine();
-
-            bool oldHasChanges = hasChanges;
-            renderKeyValue(key, value, section);
-            if (hasChanges_ && !oldHasChanges) {
-                hasChanges = true; // Propagate to ConfigUI
-                LOG_DEBUG("SectionRenderer: Change detected in " << currentSection_ << "." << key << " = " << value);
+            // Propagate changes from renderAudioSettingsMixer to the main 'hasChanges' flag
+            if (hasChanges_) {
+                hasChanges = true;
             }
-            ImGui::PopID();
+        } else {
+            // For all other sections, proceed with the generic key-value rendering loop
+            float maxKeyWidth = 150.0f; // This variable is only relevant for generic rendering
+
+            // Iterate and render each key-value pair
+            for (auto& [key, value] : section.keyValues) {
+                ImGui::PushID(key.c_str());
+                ImGui::AlignTextToFramePadding();
+                ImGui::Text("%s:", key.c_str());
+                ImGui::SameLine(maxKeyWidth);
+
+                // Render the '?' button for tooltips
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                if (ImGui::Button("?", ImVec2(16, 0))) {} // Button for tooltip trigger
+                ImGui::PopStyleVar();
+                ImGui::PopStyleColor(3);
+                renderTooltip(key); // Assuming renderTooltip is in UIElementRenderer namespace or globally accessible
+                ImGui::SameLine();
+
+                // Call renderKeyValue for individual elements
+                bool oldHasChanges = hasChanges; // Capture global hasChanges state before renderKeyValue
+                renderKeyValue(key, value, section); // Call into UIElementRenderer namespace
+                if (hasChanges_ && !oldHasChanges) { // Check if renderKeyValue set hasChanges_
+                    hasChanges = true; // Propagate to ConfigUI if a change was made
+                    LOG_DEBUG("SectionRenderer: Change detected in " << currentSection_ << "." << key << " = " << value);
+                }
+                ImGui::PopID();
+            }
         }
+        // --- IMPORTANT CHANGE ENDS HERE ---
     }
     ImGui::PopStyleVar();
     ImGui::EndChild();

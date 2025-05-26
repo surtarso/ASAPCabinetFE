@@ -246,58 +246,56 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return; 
     }
 
-    // Log event type for debugging
-    //LOG_DEBUG("InputManager: Processing event type: " << event.type);
-    // Process ImGui events first, regardless of other state.
-    // ImGui needs to process all events to maintain its internal state correctly.
+    // Process ImGui events first, always.
     ImGui_ImplSDL2_ProcessEvent(&event);
 
-    // Get current time for debounce check
     Uint32 currentTime = SDL_GetTicks();
+    ImGuiIO& io = ImGui::GetIO(); // Get ImGuiIO state here once
 
-    // Log ImGui input capture state
-    //ImGuiIO& io = ImGui::GetIO();
-    //LOG_DEBUG("InputManager: ImGui WantCaptureKeyboard: " << (io.WantCaptureKeyboard ? "true" : "false"));
-
-    // If we are currently in an external application (VPX, screenshot tool, etc.)
-    // OR if we are within the debounce period after an external app returned,
-    // then ignore all further custom actions to prevent queued inputs from triggering.
+    // Priority 1: External application active or debounce period
+    // If an external app is running or recently returned, block all custom input.
     if (inExternalAppMode_ || screenshotManager_->isActive() ||
         (currentTime - lastExternalAppReturnTime_) < EXTERNAL_APP_DEBOUNCE_TIME_MS) {
-        //LOG_DEBUG("InputManager: Event ignored due to external app mode or debounce.");
-        return; // Skip all other custom input handling
+        return; 
     }
 
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Process specific global keybinds that *should* work even when ImGui has focus,
-    // but only if they are not intended as text input.
-    if (event.type == SDL_KEYDOWN) {
-        // Handle ToggleConfig (C)
-        if (keybindProvider_->isAction(event.key, "ToggleConfig")) {
-            if (!io.WantCaptureKeyboard) {
-                actionHandlers_["ToggleConfig"]();
-                return;
-            }
-        }
-
-        // Handle Quit/ConfigClose (Q) when config is open
-        if (*showConfig_ && (keybindProvider_->isAction(event.key, "ConfigClose") || keybindProvider_->isAction(event.key, "Quit"))) {
-            if (!io.WantCaptureKeyboard) {
-                actionHandlers_["Quit"]();
-                return;
-            }
+    // Priority 2: Handle 'ToggleConfig' (e.g., 'C' key)
+    // This action should always work to open or close the config UI,
+    // UNLESS ImGui is actively capturing keyboard input (e.g., in a text field).
+    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
+        if (!io.WantCaptureKeyboard) { // If user is not typing in an ImGui text field
+            actionHandlers_["ToggleConfig"](); // This will toggle *showConfig_
+            return; // Consume the event, no further processing needed
         }
     }
 
-    // If ImGui is currently capturing any keyboard input,
-    // prevent your custom actions from firing when ImGui has focus.
+    // Priority 3: Config UI is open (*showConfig_ == true)
+    // If the config UI is currently open, we should only allow specific config-related actions.
+    // All other game actions (like ScreenshotMode) should be blocked.
+    if (*showConfig_) {
+        if (event.type == SDL_KEYDOWN) {
+            // Allow 'ConfigClose' or 'Quit' action (e.g., 'Q' key) to close the config or quit the app.
+            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a config text field
+                if (keybindProvider_->isAction(event.key, "ConfigClose") || keybindProvider_->isAction(event.key, "Quit")) {
+                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the config or truly quitting
+                    return; // Consume the event
+                }
+            }
+        }
+        // If config is open and the event wasn't handled by 'ToggleConfig' or 'ConfigClose/Quit',
+        // then block all other custom actions (including ScreenshotMode).
+        return; 
+    }
+
+    // Priority 4: ImGui is capturing keyboard input (e.g., a text field in the main UI)
+    // This check applies if the config is *not* open, but another ImGui element has focus.
     if (io.WantCaptureKeyboard) {
-        return;
+        return; // Block custom game actions, let ImGui handle the key press.
     }
 
-    // Continue with regular event handling for cases where ImGui is not capturing
-    // keyboard input and no external app is active/debouncing.
+    // Priority 5: Regular game event handling
+    // If none of the above conditions are met (no external app, config is closed,
+    // and ImGui is not capturing keyboard for text input), then process regular game actions.
     handleRegularEvents(event);
     handleDoubleClick(event);
 }
