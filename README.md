@@ -51,25 +51,13 @@ cd ~/ASAPCabinetFE
 - No need to download artpacks, generate your own. (See [tools](#generator-tools))
 - Just what it takes to make your cabinet look good!
 
-## How it works
+### How it works
 - Scans recursively for `.vpx` files.
 - Creates up to three windows for playfield, backglass and DMD.
 - Loads default or custom images and/or videos for the playfield, wheel, backglass, and DMD for each table.
 - Launches tables with desired VPX executable.
 
-### Dependencies
-> [!IMPORTANT]
-> Ensure the following libraries are installed:
- - **SDL2**: Core library for graphics and input.
- - **SDL2_image**: Image loading support.
- - **SDL2_ttf**: Font rendering.
- - **SDL2_mixer**: Audio playback.
- - **VLC**: Software decoding.
- - **FFMpeg**: Video assembly/playback.
- - **xdotools**: Screen manipulation.
- - **ImageMagick**: Screen capture.
-
-### Compiling and Running
+## Compiling and Running
 
 Make sure you have `git` and `xargs` available
 ```sh
@@ -88,7 +76,7 @@ Install Dependencies (Debian based)
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
 
-Build and install it
+Build and install it (Release)
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build -j$(nproc)
@@ -100,12 +88,10 @@ Run it and configure your paths:
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+> [!IMPORTANT]
+> The `Debug` type has no `--install` target. Run it in build/ folder.
 
-> [!NOTE]
-> The `Debug` build is meant to be run in /build and has no `--install` target.
-
-
-### Default Keymap
+## Default Keymap
 | Action             |        Key       | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
@@ -137,14 +123,6 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ```sh
 ./missing_media.sh --help
 ```
-
-## Troubleshooting
-- **Compilation Fails**:
-  - Verify all dependencies are installed.
-  - Ensure the ImGui submodule is initialized (`imgui` directory should not be empty).
-- **Runtime Errors**:
-  - Check that `config.ini` exists and is readable/writable.
-  - Install missing runtime libraries (e.g., `sudo apt-get install libsdl2-2.0-0`).
 
 ## Planned Features:
 - Dynamic custom window creation for PuP, Toppers etc.
