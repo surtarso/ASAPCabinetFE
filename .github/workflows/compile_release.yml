@@ -120,6 +120,7 @@ jobs:
         tar -czvf "${TARBALL_FULL_PATH}" ./*
         
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
+        echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
         
         echo "DEBUG: Checking for created tarball at ${TARBALL_FULL_PATH}"
         ls -l "${TARBALL_FULL_PATH}" || { echo "ERROR: Tarball not found after creation attempt!"; exit 1; }
