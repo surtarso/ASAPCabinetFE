@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- ambience sound is blocking ui sounds if ambience file exists
 - ffmpeg volume slider has incorrect values (too narrow range)
 - fix screenshotmode key being captured while config is opened.
 - keep config.ini structure on save
