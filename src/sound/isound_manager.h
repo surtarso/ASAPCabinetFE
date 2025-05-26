@@ -9,7 +9,7 @@
  *
  * The ISoundManager class provides an abstract interface for loading and playing sounds within the application.
  * It distinguishes between UI sound effects (Mix_Chunk), background ambience music (Mix_Music),
- * and table-specific music (Mix_Chunk playing on a dedicated channel), providing methods for each.
+ * and table-specific music (Mix_Music), providing methods for each.
  */
 class ISoundManager {
 public:
@@ -22,8 +22,7 @@ public:
      * @brief Loads all necessary sound resources for the application.
      *
      * This method is typically called once during application initialization and
-     * when sound-related settings change. It primarily loads UI sounds; ambience
-     * and table music are loaded dynamically as needed.
+     * when sound-related settings change.
      */
     virtual void loadSounds() = 0;
 
@@ -36,27 +35,21 @@ public:
 
     /**
      * @brief Plays the background ambience music.
-     * This music typically loops and plays continuously, designed to persist
-     * across table selections. If the same ambience music is already playing,
-     * its volume settings are updated. If the path is empty or invalid,
-     * any currently playing ambience music is stopped.
-     * @param path The full path to the ambience music file (e.g., MP3, OGG).
+     * This music typically loops and plays continuously unless overridden by table music.
+     * @param path The full path to the ambience music file. If empty, stops current ambience.
      */
     virtual void playAmbienceMusic(const std::string& path) = 0;
 
     /**
-     * @brief Plays the table-specific music on a dedicated channel.
-     * This music plays concurrently with the ambience music. It is recommended
-     * that table music files are in a format suitable for Mix_Chunk (e.g., WAV, OGG)
-     * and of reasonable size, as they are loaded entirely into memory.
-     * If the path is empty or invalid, any currently playing table music is stopped.
-     * @param path The full path to the table music file.
+     * @brief Plays the table-specific music.
+     * This music typically loops and will stop any currently playing ambience music.
+     * If the path is empty or invalid, it will attempt to resume ambience music.
+     * @param path The full path to the table music file. If empty, stops current table music.
      */
     virtual void playTableMusic(const std::string& path) = 0;
 
     /**
-     * @brief Stops all currently playing background music.
-     * This includes both the ambience music and the table-specific music.
+     * @brief Stops any currently playing background music (ambience or table music).
      */
     virtual void stopMusic() = 0;
 
@@ -68,9 +61,6 @@ public:
 
     /**
      * @brief Updates the internal settings and reloads sounds if necessary.
-     * UI sounds are reloaded if their paths change. Ambience music is managed
-     * to ensure continuous playback unless its path becomes invalid or it's muted.
-     * Table music volume/mute settings are reapplied.
      * @param newSettings The new settings to apply.
      */
     virtual void updateSettings(const Settings& newSettings) = 0;
