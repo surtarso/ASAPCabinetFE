@@ -8,6 +8,7 @@
  */
 
 #include "video_player_factory.h"
+#include "dummy_player.h"
 #include "render/video_players/vlc/vlc_player.h"
 #include "render/video_players/ffmpeg/ffmpeg_player.h"
 #include "render/video_players/gstreamer/gstreamer_player.h"
@@ -54,15 +55,15 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
     }
 
     // Create DUMMY player if specified
-    // if (videoBackend == "novideo") {
-    //     auto player = std::make_unique<DummyVideoPlayer>();
-    //     if (player->setup(renderer, path, width, height)) {
-    //         LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
-    //         return player;
-    //     }
-    //     LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
-    //     return nullptr;
-    // } 
+    if (videoBackend == "novideo") {
+        auto player = std::make_unique<DummyVideoPlayer>();
+        if (player->setup(renderer, path, width, height)) {
+            LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
+            return player;
+        }
+        LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
+        return nullptr;
+    } 
     // Create VLC player if specified
     if (videoBackend == "vlc") {
         auto player = std::make_unique<VlcVideoPlayer>();
