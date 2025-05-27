@@ -139,31 +139,43 @@ void GStreamerVideoPlayer::cleanupContext() {
         if (decodebin_temp) {
             LOG_DEBUG("GStreamerVideoPlayer: Setting decodebin to NULL for cleanup.");
             gst_element_set_state(decodebin_temp, GST_STATE_NULL);
-            gst_element_get_state(decodebin_temp, nullptr, nullptr, GST_CLOCK_TIME_NONE); // Wait for it
-            g_signal_handlers_disconnect_by_func(decodebin_temp, (gpointer)onPadAdded, this); // Disconnect signal early
+            gst_element_get_state(decodebin_temp, nullptr, nullptr, GST_CLOCK_TIME_NONE); // Wait for state change
+            g_signal_handlers_disconnect_by_func(decodebin_temp, (gpointer)onPadAdded, this); // Disconnect signal
             gst_object_unref(decodebin_temp); // Release the temporary reference
             LOG_DEBUG("GStreamerVideoPlayer: Decodebin unref'd.");
         }
 
-        // Explicitly set stored sinks to NULL (already there, but confirm order)
+        // Disconnect signals from stored appsink
+        if (ctx_->videosink_element) {
+            g_signal_handlers_disconnect_by_func(ctx_->videosink_element, (gpointer)onNewSample, this);
+            LOG_DEBUG("GStreamerVideoPlayer: Disconnected new-sample signal from appsink (using stored ref).");
+        }
+
+        // Set stored elements to NULL without unreferencing (except videosink if needed)
         if (ctx_->videosink_element) {
             LOG_DEBUG("GStreamerVideoPlayer: Setting stored videosink_element to NULL.");
             gst_element_set_state(ctx_->videosink_element, GST_STATE_NULL);
             gst_element_get_state(ctx_->videosink_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+            gst_object_unref(ctx_->videosink_element); // Unref only videosink due to signal connection
+            ctx_->videosink_element = nullptr;
+            LOG_DEBUG("GStreamerVideoPlayer: Stored videosink_element unreferenced.");
         }
         if (ctx_->audiosink_element) {
             LOG_DEBUG("GStreamerVideoPlayer: Setting stored audiosink_element to NULL.");
             gst_element_set_state(ctx_->audiosink_element, GST_STATE_NULL);
             gst_element_get_state(ctx_->audiosink_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+            ctx_->audiosink_element = nullptr; // Do not unref, let pipeline handle it
+            LOG_DEBUG("GStreamerVideoPlayer: Stored audiosink_element set to nullptr.");
         }
         if (ctx_->volume_element) {
-             LOG_DEBUG("GStreamerVideoPlayer: Setting stored volume_element to NULL (if applicable).");
-             gst_element_set_state(ctx_->volume_element, GST_STATE_NULL);
-             gst_element_get_state(ctx_->volume_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+            LOG_DEBUG("GStreamerVideoPlayer: Setting stored volume_element to NULL.");
+            gst_element_set_state(ctx_->volume_element, GST_STATE_NULL);
+            gst_element_get_state(ctx_->volume_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+            ctx_->volume_element = nullptr; // Do not unref, let pipeline handle it
+            LOG_DEBUG("GStreamerVideoPlayer: Stored volume_element set to nullptr.");
         }
 
-
-        // Set the main pipeline to NULL (this will further propagate state changes)
+        // Set the main pipeline to NULL to propagate state changes to children
         LOG_DEBUG("GStreamerVideoPlayer: Setting main pipeline to NULL for cleanup.");
         GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
         if (ret == GST_STATE_CHANGE_FAILURE) {
@@ -183,36 +195,13 @@ void GStreamerVideoPlayer::cleanupContext() {
             gst_object_unref(bus);
         }
 
-        // Disconnect signals from *stored* appsink
-        if (ctx_->videosink_element) { // Use the stored reference
-            g_signal_handlers_disconnect_by_func(ctx_->videosink_element, (gpointer)onNewSample, this);
-            LOG_DEBUG("GStreamerVideoPlayer: Disconnected new-sample signal from appsink (using stored ref).");
-        }
-        // All elements have their state set to NULL and signals disconnected.
-        // Now unref the elements we specifically took a ref for.
-        if (ctx_->volume_element) {
-            gst_object_unref(ctx_->volume_element);
-            ctx_->volume_element = nullptr;
-            LOG_DEBUG("GStreamerVideoPlayer: Volume element unreferenced.");
-        }
-        if (ctx_->audiosink_element) {
-            gst_object_unref(ctx_->audiosink_element);
-            ctx_->audiosink_element = nullptr;
-            LOG_DEBUG("GStreamerVideoPlayer: Stored audiosink_element unreferenced.");
-        }
-        if (ctx_->videosink_element) {
-            gst_object_unref(ctx_->videosink_element);
-            ctx_->videosink_element = nullptr;
-            LOG_DEBUG("GStreamerVideoPlayer: Stored videosink_element unreferenced.");
-        }
-
-        // Unref the pipeline itself
+        // Unref the pipeline, which will clean up its children
         gst_object_unref(ctx_->pipeline);
         ctx_->pipeline = nullptr;
         LOG_DEBUG("GStreamerVideoPlayer: Pipeline unreferenced.");
     }
 
-    // --- SDL and custom memory cleanup (these are independent of GStreamer pipeline state) ---
+    // SDL and custom memory cleanup
     if (ctx_->texture) {
         SDL_DestroyTexture(ctx_->texture);
         ctx_->texture = nullptr;
@@ -504,11 +493,15 @@ void GStreamerVideoPlayer::onPadAdded(GstElement* decodebin, GstPad* pad, gpoint
         caps = gst_pad_query_caps(pad, nullptr);
     }
     if (caps) {
-        std::string caps_str = gst_caps_to_string(caps);
-        if (g_str_has_prefix(caps_str.c_str(), "video/")) {
-            player->linkVideoPad(pad);
-        } else if (g_str_has_prefix(caps_str.c_str(), "audio/")) {
-            player->linkAudioPad(pad); // Keep this for now, if audio test passes, it's not the culprit.
+        gchar* caps_raw = gst_caps_to_string(caps); // Get raw string
+        if (caps_raw) {
+            std::string caps_str = caps_raw; // Convert to std::string
+            g_free(caps_raw); // Free the allocated string
+            if (g_str_has_prefix(caps_str.c_str(), "video/")) {
+                player->linkVideoPad(pad);
+            } else if (g_str_has_prefix(caps_str.c_str(), "audio/")) {
+                player->linkAudioPad(pad);
+            }
         }
         gst_caps_unref(caps);
     }

@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
     // Create and run the application
     App app(configPath);
-    app.run(); // This is where your main application loop runs
+    app.run();
 
     return 0;
 }
