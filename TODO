@@ -1,7 +1,7 @@
 TODO
 
 FIX:
-- crash when live switching to gstreamer on certain conditions
+- various gstreamer quirks and leaks...
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start
 - metadata year/manufacturer better parsing

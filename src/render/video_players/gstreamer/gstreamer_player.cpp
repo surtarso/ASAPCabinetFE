@@ -5,20 +5,22 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include <sstream>
-#include <glib.h>
+#include <glib.h> // Ensure glib is included for Glib functions
 
-// Static counter and mutex for GStreamer initialization
+// Static counter and mutex for GStreamer instance management
 static int gstreamer_instance_count = 0;
 static SDL_mutex* gstreamer_init_mutex = nullptr;
-static bool gstreamer_initialized = false; // Track if GStreamer was successfully initialized
-static bool g_main_loop_running = false;  // Track if GMainLoop is running
+static bool gstreamer_initialized = false; // This now indicates if gst_init has been called globally (in main.cpp)
 
-// Static GLib objects for the GStreamer event loop thread
-static GMainLoop* g_main_loop = nullptr;
-static GThread* g_main_loop_thread = nullptr;
+// REMOVED: Static GLib objects for the GStreamer event loop thread
+// These are now managed globally in main.cpp.
+// static GMainLoop* g_main_loop = nullptr;
+// static GThread* g_main_loop_thread = nullptr;
+// static bool g_main_loop_running = false;
 
-// Forward declaration of the event thread function
-static gpointer gstreamer_event_thread_func(gpointer data);
+// REMOVED: Forward declaration AND definition of the event thread function
+// static gpointer gstreamer_event_thread_func(gpointer data);
+
 
 GStreamerVideoPlayer::GStreamerVideoPlayer() : ctx_(nullptr) {
     if (!gstreamer_init_mutex) {
@@ -33,36 +35,10 @@ GStreamerVideoPlayer::GStreamerVideoPlayer() : ctx_(nullptr) {
         if (gstreamer_instance_count == 0 && !gstreamer_initialized) {
             setenv("GST_DEBUG", "4", 1);
             setenv("GST_DEBUG_FILE", "logs/gstreamer.log", 1);
-            gst_init(nullptr, nullptr);
-            LOG_DEBUG("GStreamerVideoPlayer: GStreamer initialized with GST_DEBUG=4");
+            LOG_DEBUG("GStreamerVideoPlayer: GStreamer debug level set.");
+            // We assume gst_init() has been called globally in main.cpp
             gstreamer_initialized = true;
-            LOG_DEBUG("GStreamerVideoPlayer: Initialized GStreamer");
-
-            if (!g_main_loop_thread) {
-                g_main_loop = g_main_loop_new(NULL, FALSE);
-                if (!g_main_loop) {
-                    LOG_ERROR("GStreamerVideoPlayer: Failed to create GMainLoop");
-                    gst_deinit();
-                    gstreamer_initialized = false;
-                    SDL_UnlockMutex(gstreamer_init_mutex);
-                    return;
-                }
-                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event loop created.");
-                g_main_loop_running = true;
-
-                g_main_loop_thread = g_thread_new("gstreamer-events", gstreamer_event_thread_func, nullptr);
-                if (!g_main_loop_thread) {
-                    LOG_ERROR("GStreamerVideoPlayer: Failed to create GStreamer event thread");
-                    g_main_loop_unref(g_main_loop);
-                    g_main_loop = nullptr;
-                    g_main_loop_running = false;
-                    gst_deinit();
-                    gstreamer_initialized = false;
-                    SDL_UnlockMutex(gstreamer_init_mutex);
-                    return;
-                }
-                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread created.");
-            }
+            LOG_DEBUG("GStreamerVideoPlayer: Global GStreamer environment marked as ready for GStreamerVideoPlayer instances.");
         }
         gstreamer_instance_count++;
         SDL_UnlockMutex(gstreamer_init_mutex);
@@ -72,78 +48,28 @@ GStreamerVideoPlayer::GStreamerVideoPlayer() : ctx_(nullptr) {
 }
 
 GStreamerVideoPlayer::~GStreamerVideoPlayer() {
-    cleanupContext();
+    cleanupContext(); // Call cleanupContext first to tear down pipeline resources
 
-    static bool deinit_in_progress = false; // Prevent recursive deinit
     if (SDL_LockMutex(gstreamer_init_mutex) == 0) {
         gstreamer_instance_count--;
         LOG_DEBUG("GStreamerVideoPlayer: Destructor, instance count: " + std::to_string(gstreamer_instance_count));
 
-        if (gstreamer_instance_count == 0 && gstreamer_initialized && !deinit_in_progress) {
-            deinit_in_progress = true; // Mark deinit started
-
-            // Clean up GStreamer resources
-            if (g_main_loop && g_main_loop_running) {
-                g_main_loop_quit(g_main_loop);
-                LOG_DEBUG("GStreamerVideoPlayer: GMainLoop quit requested in destructor.");
+        // Only destroy the mutex if no more instances are active
+        if (gstreamer_instance_count == 0) {
+            if (gstreamer_init_mutex) {
+                SDL_DestroyMutex(gstreamer_init_mutex);
+                gstreamer_init_mutex = nullptr;
+                LOG_DEBUG("GStreamerVideoPlayer: Destroyed init mutex.");
             }
-
-            if (g_main_loop_thread) {
-                g_thread_join(g_main_loop_thread);
-                g_thread_unref(g_main_loop_thread);
-                g_main_loop_thread = nullptr;
-                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread joined and unref’d.");
-            }
-
-            if (g_main_loop) {
-                if (g_main_loop_running) {
-                    g_main_loop_unref(g_main_loop);
-                    LOG_DEBUG("GStreamerVideoPlayer: GMainLoop unref’d in destructor.");
-                }
-                g_main_loop = nullptr;
-            }
-            g_main_loop_running = false;
-
-            if (gstreamer_initialized) {
-                gst_deinit();
-                gstreamer_initialized = false;
-                LOG_DEBUG("GStreamerVideoPlayer: Deinitialized GStreamer");
-            }
-
-            deinit_in_progress = false; // Reset after completion
+            gstreamer_initialized = false; // Reset for next potential run of the entire app
         }
-
         SDL_UnlockMutex(gstreamer_init_mutex);
-
-        if (gstreamer_instance_count == 0 && gstreamer_init_mutex) {
-            SDL_DestroyMutex(gstreamer_init_mutex);
-            gstreamer_init_mutex = nullptr;
-            LOG_DEBUG("GStreamerVideoPlayer: Destroyed init mutex");
-        }
     } else {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to lock init mutex for deinit");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to lock init mutex for deinit in destructor.");
     }
 }
 
-static gpointer gstreamer_event_thread_func(gpointer data) {
-    (void)data;
-    g_main_loop = g_main_loop_new(NULL, FALSE);
-    if (!g_main_loop) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create GMainLoop");
-        g_main_loop_running = false;
-        return NULL;
-    }
-    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event loop created.");
-    g_main_loop_running = true;
-    g_main_loop_run(g_main_loop);
-    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread stopped.");
-    g_main_loop_unref(g_main_loop);
-    g_main_loop = nullptr;
-    g_main_loop_running = false;
-    LOG_DEBUG("GStreamerVideoPlayer: GMainLoop unref'd in thread.");
-    return NULL;
-}
-
+// bus_call (no changes needed)
 static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
     (void)bus;
     GstElement* pipeline = static_cast<GstElement*>(data);
@@ -208,6 +134,45 @@ void GStreamerVideoPlayer::cleanupContext() {
     if (!ctx_) return;
 
     if (ctx_->pipeline) {
+        // Get decodebin, set to NULL, and unref it first
+        GstElement* decodebin_temp = gst_bin_get_by_name(GST_BIN(ctx_->pipeline), "decodebin");
+        if (decodebin_temp) {
+            LOG_DEBUG("GStreamerVideoPlayer: Setting decodebin to NULL for cleanup.");
+            gst_element_set_state(decodebin_temp, GST_STATE_NULL);
+            gst_element_get_state(decodebin_temp, nullptr, nullptr, GST_CLOCK_TIME_NONE); // Wait for it
+            g_signal_handlers_disconnect_by_func(decodebin_temp, (gpointer)onPadAdded, this); // Disconnect signal early
+            gst_object_unref(decodebin_temp); // Release the temporary reference
+            LOG_DEBUG("GStreamerVideoPlayer: Decodebin unref'd.");
+        }
+
+        // Explicitly set stored sinks to NULL (already there, but confirm order)
+        if (ctx_->videosink_element) {
+            LOG_DEBUG("GStreamerVideoPlayer: Setting stored videosink_element to NULL.");
+            gst_element_set_state(ctx_->videosink_element, GST_STATE_NULL);
+            gst_element_get_state(ctx_->videosink_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+        }
+        if (ctx_->audiosink_element) {
+            LOG_DEBUG("GStreamerVideoPlayer: Setting stored audiosink_element to NULL.");
+            gst_element_set_state(ctx_->audiosink_element, GST_STATE_NULL);
+            gst_element_get_state(ctx_->audiosink_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+        }
+        if (ctx_->volume_element) {
+             LOG_DEBUG("GStreamerVideoPlayer: Setting stored volume_element to NULL (if applicable).");
+             gst_element_set_state(ctx_->volume_element, GST_STATE_NULL);
+             gst_element_get_state(ctx_->volume_element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+        }
+
+
+        // Set the main pipeline to NULL (this will further propagate state changes)
+        LOG_DEBUG("GStreamerVideoPlayer: Setting main pipeline to NULL for cleanup.");
+        GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        if (ret == GST_STATE_CHANGE_FAILURE) {
+            LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to NULL during cleanup");
+        }
+        gst_element_get_state(ctx_->pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+        LOG_DEBUG("GStreamerVideoPlayer: Pipeline reached NULL state.");
+
+        // Remove bus watch
         GstBus* bus = gst_element_get_bus(ctx_->pipeline);
         if (bus) {
             if (ctx_->bus_watch_id) {
@@ -215,17 +180,39 @@ void GStreamerVideoPlayer::cleanupContext() {
                 ctx_->bus_watch_id = 0;
                 LOG_DEBUG("GStreamerVideoPlayer: Bus watch removed.");
             }
-            gst_bus_set_flushing(bus, TRUE);
             gst_object_unref(bus);
         }
-        GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
-        if (ret == GST_STATE_CHANGE_FAILURE) {
-            LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to NULL during cleanup");
+
+        // Disconnect signals from *stored* appsink
+        if (ctx_->videosink_element) { // Use the stored reference
+            g_signal_handlers_disconnect_by_func(ctx_->videosink_element, (gpointer)onNewSample, this);
+            LOG_DEBUG("GStreamerVideoPlayer: Disconnected new-sample signal from appsink (using stored ref).");
         }
+        // All elements have their state set to NULL and signals disconnected.
+        // Now unref the elements we specifically took a ref for.
+        if (ctx_->volume_element) {
+            gst_object_unref(ctx_->volume_element);
+            ctx_->volume_element = nullptr;
+            LOG_DEBUG("GStreamerVideoPlayer: Volume element unreferenced.");
+        }
+        if (ctx_->audiosink_element) {
+            gst_object_unref(ctx_->audiosink_element);
+            ctx_->audiosink_element = nullptr;
+            LOG_DEBUG("GStreamerVideoPlayer: Stored audiosink_element unreferenced.");
+        }
+        if (ctx_->videosink_element) {
+            gst_object_unref(ctx_->videosink_element);
+            ctx_->videosink_element = nullptr;
+            LOG_DEBUG("GStreamerVideoPlayer: Stored videosink_element unreferenced.");
+        }
+
+        // Unref the pipeline itself
         gst_object_unref(ctx_->pipeline);
         ctx_->pipeline = nullptr;
+        LOG_DEBUG("GStreamerVideoPlayer: Pipeline unreferenced.");
     }
 
+    // --- SDL and custom memory cleanup (these are independent of GStreamer pipeline state) ---
     if (ctx_->texture) {
         SDL_DestroyTexture(ctx_->texture);
         ctx_->texture = nullptr;
@@ -241,6 +228,7 @@ void GStreamerVideoPlayer::cleanupContext() {
 
     delete ctx_;
     ctx_ = nullptr;
+    LOG_DEBUG("GStreamerVideoPlayer: VideoContext cleaned up.");
 }
 
 bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
@@ -254,6 +242,10 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     ctx_->mutex = SDL_CreateMutex();
     ctx_->current_path = path;
     ctx_->bus_watch_id = 0;
+    ctx_->volume_element = nullptr; // Initialize volume element to nullptr
+    ctx_->audiosink_element = nullptr; // Initialize new member
+    ctx_->videosink_element = nullptr; // Initialize new member
+
     if (!ctx_->mutex) {
         LOG_ERROR("GStreamerVideoPlayer: Failed to create mutex");
         cleanupContext();
@@ -268,7 +260,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     GError* error = nullptr;
     ctx_->pipeline = gst_pipeline_new("video-pipeline");
     if (!ctx_->pipeline) {
-        std::string error_msg = error && error->message ? error->message : "Unknown error";
+        std::string error_msg = error && error->message ? error->message : "Unknown error (gst_pipeline_new)";
         LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline: " + error_msg);
         if (error) g_error_free(error);
         cleanupContext();
@@ -280,7 +272,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     GstElement* decodebin = gst_element_factory_make("decodebin", "decodebin");
     if (!filesrc || !decodebin) {
         LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline elements: filesrc=" + std::to_string(filesrc != nullptr) + ", decodebin=" + std::to_string(decodebin != nullptr));
-        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base is installed");
+        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base is installed.");
         if (filesrc) gst_object_unref(filesrc);
         if (decodebin) gst_object_unref(decodebin);
         cleanupContext();
@@ -290,12 +282,13 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
 
     // Add elements to pipeline
     gst_bin_add_many(GST_BIN(ctx_->pipeline), filesrc, decodebin, nullptr);
+    
+    // Debug dot file dump - only if GST_DEBUG_DUMP_DOT_DIR env var is set
+    // GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS(GST_BIN(ctx_->pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-initial");
 
     // Link filesrc to decodebin
     if (!gst_element_link(filesrc, decodebin)) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to link filesrc to decodebin");
-        gst_object_unref(filesrc);
-        gst_object_unref(decodebin);
+        LOG_ERROR("GStreamerVideoPlayer: Failed to link filesrc to decodebin.");
         cleanupContext();
         return false;
     }
@@ -308,9 +301,9 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     if (bus) {
         ctx_->bus_watch_id = gst_bus_add_watch(bus, bus_call, ctx_->pipeline);
         if (ctx_->bus_watch_id == 0) {
-            LOG_ERROR("GStreamerVideoPlayer: Failed to add bus watch");
+            LOG_ERROR("GStreamerVideoPlayer: Failed to add bus watch.");
         } else {
-            LOG_DEBUG("GStreamerVideoPlayer: Bus watch added successfully");
+            LOG_DEBUG("GStreamerVideoPlayer: Bus watch added successfully.");
         }
         gst_object_unref(bus);
     }
@@ -318,54 +311,48 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     // Set pipeline to PAUSED
     GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_PAUSED);
     if (ret == GST_STATE_CHANGE_FAILURE) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to PAUSED");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to PAUSED.");
         cleanupContext();
         return false;
     }
 
-    // Wait for state change
+    // Wait for state change to ensure it's truly paused
     GstState state;
     ret = gst_element_get_state(ctx_->pipeline, &state, nullptr, 3 * GST_SECOND);
     if (ret == GST_STATE_CHANGE_FAILURE || state != GST_STATE_PAUSED) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to reach PAUSED state");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to reach PAUSED state (returned " + std::to_string(ret) + ", current state " + std::string(gst_element_state_get_name(state)) + ").");
         cleanupContext();
         return false;
     }
 
-    // Get appsink
     GstElement* videosink = gst_bin_get_by_name(GST_BIN(ctx_->pipeline), "videosink");
     if (!videosink) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to get appsink");
-        cleanupContext();
-        return false;
+        LOG_DEBUG("GStreamerVideoPlayer: Could not get appsink 'videosink' at setup. This is expected if 'onPadAdded' hasn't run yet for video, but might indicate an issue if video is expected.");
+    } else {
+        int video_width = width;
+        int video_height = height;
+        GstPad* pad = gst_element_get_static_pad(videosink, "sink");
+        if (pad) {
+            GstCaps* pad_caps = gst_pad_get_current_caps(pad);
+            if (pad_caps) {
+                GstStructure* structure = gst_caps_get_structure(pad_caps, 0);
+                (void)gst_structure_get_string(structure, "format");
+                LOG_DEBUG("GStreamerVideoPlayer: Caps format found.");
+                if (gst_structure_get_int(structure, "width", &video_width) &&
+                    gst_structure_get_int(structure, "height", &video_height)) {
+                    LOG_DEBUG("GStreamerVideoPlayer: Video dimensions from caps: width=" + std::to_string(video_width) + ", height=" + std::to_string(video_height));
+                    ctx_->width = video_width;
+                    ctx_->height = video_height;
+                }
+                gst_caps_unref(pad_caps);
+            }
+            gst_object_unref(pad);
+        } else {
+            LOG_ERROR("GStreamerVideoPlayer: Failed to get appsink pad (even if sink exists).");
+        }
+        gst_object_unref(videosink);
     }
 
-    // Query video dimensions
-    int video_width = width;
-    int video_height = height;
-    GstPad* pad = gst_element_get_static_pad(videosink, "sink");
-    if (pad) {
-        GstCaps* pad_caps = gst_pad_get_current_caps(pad);
-        if (pad_caps) {
-            GstStructure* structure = gst_caps_get_structure(pad_caps, 0);
-            (void)gst_structure_get_string(structure, "format");
-            LOG_DEBUG("GStreamerVideoPlayer: Caps format found");
-            if (gst_structure_get_int(structure, "width", &video_width) &&
-                gst_structure_get_int(structure, "height", &video_height)) {
-                LOG_DEBUG("GStreamerVideoPlayer: Video dimensions from caps: width=" + std::to_string(video_width) + ", height=" + std::to_string(video_height));
-                ctx_->width = video_width;
-                ctx_->height = video_height;
-            }
-            gst_caps_unref(pad_caps);
-        }
-        gst_object_unref(pad);
-    } else {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to get appsink pad");
-        gst_object_unref(videosink);
-        cleanupContext();
-        return false;
-    }
-    gst_object_unref(videosink);
 
     // Create SDL texture
     ctx_->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
@@ -381,7 +368,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     ctx_->pixels = malloc(ctx_->pitch * ctx_->height);
     ctx_->frame_buffer.resize(ctx_->pitch * ctx_->height);
     if (!ctx_->pixels) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to allocate pixel buffer");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to allocate pixel buffer.");
         cleanupContext();
         return false;
     }
@@ -465,9 +452,12 @@ std::string GStreamerVideoPlayer::getCurrentPath() const {
 
 GstFlowReturn GStreamerVideoPlayer::onNewSample(GstAppSink* appsink, void* data) {
     GStreamerVideoPlayer* player = static_cast<GStreamerVideoPlayer*>(data);
+    if (!player || !player->ctx_ || !player->ctx_->mutex || !player->ctx_->pixels) {
+        LOG_ERROR("GStreamerVideoPlayer: onNewSample called with invalid player context.");
+        return GST_FLOW_ERROR;
+    }
     GstSample* sample = gst_app_sink_pull_sample(appsink);
     if (!sample) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to pull sample from appsink");
         return GST_FLOW_OK;
     }
 
@@ -481,7 +471,7 @@ GstFlowReturn GStreamerVideoPlayer::onNewSample(GstAppSink* appsink, void* data)
     GstMapInfo map;
     if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
         size_t expected_size = player->ctx_->pitch * player->ctx_->height;
-        if (map.size >= expected_size) {
+        if (map.size >= expected_size && map.data) {
             if (player->ctx_->first_frame) {
                 LOG_DEBUG("GStreamerVideoPlayer: First frame received");
                 player->ctx_->first_frame = false;
@@ -491,8 +481,12 @@ GstFlowReturn GStreamerVideoPlayer::onNewSample(GstAppSink* appsink, void* data)
                 player->ctx_->frame_ready = true;
                 SDL_UnlockMutex(player->ctx_->mutex);
             }
+        } else {
+             LOG_DEBUG("GStreamerVideoPlayer: Mapped buffer size (" + std::to_string(map.size) + ") less than expected (" + std::to_string(expected_size) + ") or data is null.");
         }
         gst_buffer_unmap(buffer, &map);
+    } else {
+        LOG_ERROR("GStreamerVideoPlayer: Failed to map buffer.");
     }
     gst_sample_unref(sample);
     return GST_FLOW_OK;
@@ -501,6 +495,10 @@ GstFlowReturn GStreamerVideoPlayer::onNewSample(GstAppSink* appsink, void* data)
 void GStreamerVideoPlayer::onPadAdded(GstElement* decodebin, GstPad* pad, gpointer data) {
     (void)decodebin;
     GStreamerVideoPlayer* player = static_cast<GStreamerVideoPlayer*>(data);
+    if (!player) {
+        LOG_ERROR("GStreamerVideoPlayer: onPadAdded called with null player data.");
+        return;
+    }
     GstCaps* caps = gst_pad_get_current_caps(pad);
     if (!caps) {
         caps = gst_pad_query_caps(pad, nullptr);
@@ -510,7 +508,7 @@ void GStreamerVideoPlayer::onPadAdded(GstElement* decodebin, GstPad* pad, gpoint
         if (g_str_has_prefix(caps_str.c_str(), "video/")) {
             player->linkVideoPad(pad);
         } else if (g_str_has_prefix(caps_str.c_str(), "audio/")) {
-            player->linkAudioPad(pad);
+            player->linkAudioPad(pad); // Keep this for now, if audio test passes, it's not the culprit.
         }
         gst_caps_unref(caps);
     }
@@ -524,12 +522,7 @@ void GStreamerVideoPlayer::linkVideoPad(GstPad* pad) {
     GstElement* appsink = gst_element_factory_make("appsink", "videosink");
 
     if (!videoconvert || !videorate || !videoscale || !capsfilter || !appsink) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create video elements: videoconvert=" + std::to_string(videoconvert != nullptr) +
-                  ", videorate=" + std::to_string(videorate != nullptr) +
-                  ", videoscale=" + std::to_string(videoscale != nullptr) +
-                  ", capsfilter=" + std::to_string(capsfilter != nullptr) +
-                  ", appsink=" + std::to_string(appsink != nullptr));
-        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create video elements. Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed.");
         if (videoconvert) gst_object_unref(videoconvert);
         if (videorate) gst_object_unref(videorate);
         if (videoscale) gst_object_unref(videoscale);
@@ -544,19 +537,9 @@ void GStreamerVideoPlayer::linkVideoPad(GstPad* pad) {
 
     gst_bin_add_many(GST_BIN(ctx_->pipeline), videoconvert, videorate, videoscale, capsfilter, appsink, nullptr);
 
-    if (!gst_element_link_many(videoconvert, videorate, videoscale, capsfilter, appsink, nullptr)) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to link video elements");
-        gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
-        return;
-    }
-
-    GstPad* sink_pad = gst_element_get_static_pad(videoconvert, "sink");
-    if (sink_pad) {
-        if (gst_pad_link(pad, sink_pad) != GST_PAD_LINK_OK) {
-            LOG_ERROR("GStreamerVideoPlayer: Failed to link decodebin pad to videoconvert");
-        }
-        gst_object_unref(sink_pad);
-    }
+    g_object_set(G_OBJECT(appsink), "emit-signals", TRUE, "sync", TRUE, nullptr);
+    g_signal_connect(appsink, "new-sample", G_CALLBACK(onNewSample), this);
+    ctx_->videosink_element = GST_ELEMENT(gst_object_ref(appsink)); // Cast added here
 
     gst_element_sync_state_with_parent(videoconvert);
     gst_element_sync_state_with_parent(videorate);
@@ -564,8 +547,18 @@ void GStreamerVideoPlayer::linkVideoPad(GstPad* pad) {
     gst_element_sync_state_with_parent(capsfilter);
     gst_element_sync_state_with_parent(appsink);
 
-    g_object_set(G_OBJECT(appsink), "emit-signals", TRUE, "sync", TRUE, nullptr);
-    g_signal_connect(appsink, "new-sample", G_CALLBACK(onNewSample), this);
+    if (!gst_element_link_many(videoconvert, videorate, videoscale, capsfilter, appsink, nullptr)) {
+        LOG_ERROR("GStreamerVideoPlayer: Failed to link video elements.");
+        return;
+    }
+
+    GstPad* sink_pad = gst_element_get_static_pad(videoconvert, "sink");
+    if (sink_pad) {
+        if (gst_pad_link(pad, sink_pad) != GST_PAD_LINK_OK) {
+            LOG_ERROR("GStreamerVideoPlayer: Failed to link decodebin pad to videoconvert.");
+        }
+        gst_object_unref(sink_pad);
+    }
 }
 
 void GStreamerVideoPlayer::linkAudioPad(GstPad* pad) {
@@ -574,10 +567,7 @@ void GStreamerVideoPlayer::linkAudioPad(GstPad* pad) {
     GstElement* audiosink = gst_element_factory_make("autoaudiosink", "audiosink");
 
     if (!audioconvert || !volume || !audiosink) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create audio elements: audioconvert=" + std::to_string(audioconvert != nullptr) +
-                  ", volume=" + std::to_string(volume != nullptr) +
-                  ", audiosink=" + std::to_string(audiosink != nullptr));
-        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create audio elements. Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed.");
         if (audioconvert) gst_object_unref(audioconvert);
         if (volume) gst_object_unref(volume);
         if (audiosink) gst_object_unref(audiosink);
@@ -586,23 +576,23 @@ void GStreamerVideoPlayer::linkAudioPad(GstPad* pad) {
 
     gst_bin_add_many(GST_BIN(ctx_->pipeline), audioconvert, volume, audiosink, nullptr);
 
+    ctx_->volume_element = volume;
+    ctx_->audiosink_element = GST_ELEMENT(gst_object_ref(audiosink)); // Cast added here
+
+    gst_element_sync_state_with_parent(audioconvert);
+    gst_element_sync_state_with_parent(volume);
+    gst_element_sync_state_with_parent(audiosink);
+
     if (!gst_element_link_many(audioconvert, volume, audiosink, nullptr)) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to link audio elements");
-        gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        LOG_ERROR("GStreamerVideoPlayer: Failed to link audio elements.");
         return;
     }
 
     GstPad* sink_pad = gst_element_get_static_pad(audioconvert, "sink");
     if (sink_pad) {
         if (gst_pad_link(pad, sink_pad) != GST_PAD_LINK_OK) {
-            LOG_ERROR("GStreamerVideoPlayer: Failed to link decodebin pad to audioconvert");
+            LOG_ERROR("GStreamerVideoPlayer: Failed to link decodebin pad to audioconvert.");
         }
         gst_object_unref(sink_pad);
     }
-
-    gst_element_sync_state_with_parent(audioconvert);
-    gst_element_sync_state_with_parent(volume);
-    gst_element_sync_state_with_parent(audiosink);
-
-    ctx_->volume_element = volume;
 }

@@ -16,30 +16,45 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <gst/gst.h>
+#include <glib.h>    // Include for GMainLoop
 #include <iostream>
 #include <string>
 #include <filesystem>
+
+// Global GStreamer event loop and thread
+static GMainLoop* g_main_loop_global = nullptr;
+static GThread* g_main_loop_thread_global = nullptr;
+
+// Function to run the GStreamer event loop
+static gpointer run_gstreamer_event_loop(gpointer data) {
+    (void)data; // Cast to void to suppress unused parameter warning
+    g_main_loop_run(g_main_loop_global);
+    LOG_DEBUG("Main: GStreamer event loop stopped.");
+    return NULL;
+}
 
 /**
  * @struct SDLBootstrap
  * @brief RAII struct for initializing and cleaning up SDL subsystems.
  *
- * This struct initializes SDL, SDL_ttf, and SDL_image with required subsystems
+ * This struct initializes GST, SDL, SDL_ttf, and SDL_image with required subsystems
  * (video, events, joystick, audio) and configures DPI awareness. It logs errors
  * using LOG_ERROR and throws exceptions on failure. Cleanup is performed
  * automatically on destruction.
  */
 struct SDLBootstrap {
-    std::string configPath; ///< Configuration file path (currently unused in struct).
+    std::string configPath; ///< Configuration file path
 
     /**
-     * @brief Constructs an SDLBootstrap and initializes SDL subsystems.
+     * @brief Constructs an SDLBootstrap and initializes GST and SDL subsystems.
      *
      * Initializes SDL with video, events, joystick, and audio subsystems, retrieves
-     * system DPI, sets DPI awareness hints, and initializes SDL_ttf and SDL_image.
+     * system DPI, sets DPI awareness hints, and initializes SDL_ttf and SDL_image and
+     * initializes gstreamer.
      * Logs errors and throws runtime_error on failure.
      *
-     * @throws std::runtime_error If SDL, SDL_ttf, or SDL_image initialization fails.
+     * @throws std::runtime_error If GST, SDL, SDL_ttf, or SDL_image initialization fails.
      */
     SDLBootstrap() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0) {
@@ -70,6 +85,25 @@ struct SDLBootstrap {
             SDL_Quit();
             throw std::runtime_error("Main: IMG initialization failed");
         }
+        // Create and start the global GStreamer event loop thread
+        g_main_loop_global = g_main_loop_new(NULL, FALSE);
+        if (!g_main_loop_global) {
+            LOG_ERROR("Main: Failed to create global GMainLoop for GStreamer events.");
+            gst_deinit(); // Deinit GStreamer if GMainLoop creation fails
+            throw std::runtime_error("Main: GST initialization failed");
+        }
+        g_main_loop_thread_global = g_thread_new("gstreamer-event-thread", run_gstreamer_event_loop, nullptr);
+        if (!g_main_loop_thread_global) {
+            LOG_ERROR("Main: Failed to create global GStreamer event thread.");
+            g_main_loop_unref(g_main_loop_global);
+            g_main_loop_global = nullptr;
+            gst_deinit();
+            throw std::runtime_error("Main: IMG initialization failed");
+        }
+        LOG_DEBUG("Main: Global GStreamer event loop thread started.");
+
+        // Initialize GStreamer globally
+        gst_init(nullptr, nullptr);
         LOG_DEBUG("Main: SDL subsystems initialized");
     }
 
@@ -83,7 +117,26 @@ struct SDLBootstrap {
         TTF_Quit();
         SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
         SDL_Quit();
-        LOG_DEBUG("Main: SDL subsystems cleaned up");
+
+        // Quit and join the global GStreamer event loop thread gracefully
+        if (g_main_loop_global && g_main_loop_is_running(g_main_loop_global)) { // Corrected function call [cite: 1]
+            g_main_loop_quit(g_main_loop_global);
+            LOG_DEBUG("Main: GStreamer global GMainLoop quit requested.");
+        }
+        if (g_main_loop_thread_global) {
+            g_thread_join(g_main_loop_thread_global);
+            g_thread_unref(g_main_loop_thread_global); // Unref the thread
+            g_main_loop_thread_global = nullptr;
+            LOG_DEBUG("Main: GStreamer global event thread joined and unref'd.");
+        }
+        if (g_main_loop_global) {
+            g_main_loop_unref(g_main_loop_global); // Unref the loop
+            g_main_loop_global = nullptr;
+            LOG_DEBUG("Main: GStreamer global GMainLoop unref'd.");
+        }
+        gst_deinit();
+
+        LOG_DEBUG("Main: Subsystems cleaned up");
     }
 };
 
@@ -117,6 +170,7 @@ int main(int argc, char* argv[]) {
 
     // Create and run the application
     App app(configPath);
-    app.run();
+    app.run(); // This is where your main application loop runs
+
     return 0;
 }

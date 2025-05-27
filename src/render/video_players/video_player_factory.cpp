@@ -15,12 +15,48 @@
 #include "config/iconfig_service.h"
 #include "config/settings.h"
 #include "utils/logging.h"
+#include <map> // Required for backend string to enum mapping
+
+// ---
+
+// Helper enum to represent video backend types
+enum class VideoBackendType {
+    VLC,
+    FFMPEG,
+    GSTREAMER,
+    NOVIDEO,
+    UNKNOWN // For unsupported or default
+};
+
+// ---
+
+/**
+ * @brief Converts a string backend name to its corresponding enum type.
+ * @param backendName The string name of the video backend.
+ * @return The corresponding VideoBackendType enum value.
+ */
+VideoBackendType getVideoBackendType(const std::string& backendName) {
+    static const std::map<std::string, VideoBackendType> backendMap = {
+        {"vlc", VideoBackendType::VLC},
+        {"ffmpeg", VideoBackendType::FFMPEG},
+        {"gstreamer", VideoBackendType::GSTREAMER},
+        {"novideo", VideoBackendType::NOVIDEO}
+    };
+
+    auto it = backendMap.find(backendName);
+    if (it != backendMap.end()) {
+        return it->second;
+    }
+    return VideoBackendType::UNKNOWN;
+}
+
+// ---
 
 /**
  * @brief Creates a video player instance based on the configured backend.
  *
- * Constructs a video player (either VlcVideoPlayer or FFmpegPlayer) depending on the
- * video backend specified in the configuration settings. If the backend is unsupported
+ * Constructs a video player (e.g., VlcVideoPlayer, FFmpegPlayer, GStreamerVideoPlayer, or DummyVideoPlayer)
+ * depending on the video backend specified in the configuration settings. If the backend is unsupported
  * or initialization fails, it falls back to VLC. Returns nullptr if all attempts fail
  * or if invalid parameters are provided.
  *
@@ -37,6 +73,7 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
     int width,
     int height,
     IConfigService* configService) {
+
     // Validate input parameters
     if (!renderer || path.empty() || width <= 0 || height <= 0) {
         LOG_ERROR("VideoPlayerFactory: Invalid parameters - renderer=" << renderer
@@ -45,63 +82,68 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
     }
 
     // Determine video backend from configuration
-    std::string videoBackend = "vlc"; // Default
+    std::string videoBackendStr = "vlc"; // Default
     if (configService) {
         const Settings& settings = configService->getSettings();
-        videoBackend = settings.videoBackend.empty() ? "vlc" : settings.videoBackend;
-        LOG_DEBUG("VideoPlayerFactory: Requested videoBackend=" << videoBackend);
+        videoBackendStr = settings.videoBackend.empty() ? "vlc" : settings.videoBackend;
+        LOG_DEBUG("VideoPlayerFactory: Requested videoBackend=" << videoBackendStr);
     } else {
         LOG_DEBUG("VideoPlayerFactory: No configService provided, defaulting to vlc");
     }
 
-    // Create DUMMY player if specified
-    if (videoBackend == "novideo") {
-        auto player = std::make_unique<DummyVideoPlayer>();
-        if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
-            return player;
+    // Convert string backend to enum for switch-case
+    VideoBackendType backendType = getVideoBackendType(videoBackendStr);
+
+    std::unique_ptr<IVideoPlayer> player = nullptr;
+
+    // ---
+    switch (backendType) {
+        case VideoBackendType::NOVIDEO: {
+            player = std::make_unique<DummyVideoPlayer>();
+            if (player->setup(renderer, path, width, height)) {
+                LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
+                return player;
+            }
+            LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
+            return nullptr; // No fallback for novideo
         }
-        LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
-        return nullptr;
-    } 
-    // Create VLC player if specified
-    if (videoBackend == "vlc") {
-        auto player = std::make_unique<VlcVideoPlayer>();
-        if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created VlcVideoPlayer for path=" << path);
-            return player;
+        case VideoBackendType::VLC: {
+            player = std::make_unique<VlcVideoPlayer>();
+            break; // Try to setup VLC
         }
-        LOG_ERROR("VideoPlayerFactory: Failed to setup VLC video player for path=" << path);
-        return nullptr;
-    } 
-    // Create FFmpeg player if specified
-    else if (videoBackend == "ffmpeg") {
-        auto player = std::make_unique<FFmpegPlayer>();
-        if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created FFmpegPlayer for path=" << path);
-            return player;
+        case VideoBackendType::FFMPEG: {
+            player = std::make_unique<FFmpegPlayer>();
+            break; // Try to setup FFmpeg
         }
-        LOG_ERROR("VideoPlayerFactory: Failed to setup FFmpeg video player for path=" << path);
-        return nullptr;
-    }
-    // Create DUMMY player if specified
-    else if (videoBackend == "gstreamer") {
-        auto player = std::make_unique<GStreamerVideoPlayer>();
-        if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created GStreamerVideoPlayer for path=" << path);
-            return player;
+        case VideoBackendType::GSTREAMER: {
+            player = std::make_unique<GStreamerVideoPlayer>();
+            break; // Try to setup GStreamer
         }
-        LOG_ERROR("VideoPlayerFactory: Failed to setup GStreamer video player for path=" << path);
-        return nullptr;
+        case VideoBackendType::UNKNOWN:
+        default: {
+            LOG_DEBUG("VideoPlayerFactory: Unsupported videoBackend=" << videoBackendStr << ", attempting VLC fallback.");
+            player = std::make_unique<VlcVideoPlayer>(); // Default/fallback to VLC
+            break;
+        }
     }
 
-    // Fallback to VLC for unsupported backends
-    LOG_DEBUG("VideoPlayerFactory: Unsupported videoBackend=" << videoBackend << ", falling back to vlc");
-    auto player = std::make_unique<VlcVideoPlayer>();
-    if (player->setup(renderer, path, width, height)) {
-        LOG_DEBUG("VideoPlayerFactory: Created VlcVideoPlayer (fallback) for path=" << path);
+    // Attempt to setup the selected player (or fallback VLC)
+    if (player && player->setup(renderer, path, width, height)) {
+        LOG_DEBUG("VideoPlayerFactory: Successfully created player for path=" << path << " with backend=" << videoBackendStr);
         return player;
     }
-    LOG_ERROR("VideoPlayerFactory: Failed to setup VLC video player (fallback) for path=" << path);
+
+    // If initial player setup failed, and it wasn't already VLC, try VLC as a last resort fallback.
+    // This handles cases where FFmpeg, GStreamer, or an unknown backend failed to initialize.
+    if (backendType != VideoBackendType::VLC && backendType != VideoBackendType::NOVIDEO) {
+        LOG_ERROR("VideoPlayerFactory: Failed to setup " << videoBackendStr << " player for path=" << path << ", attempting VLC fallback.");
+        player = std::make_unique<VlcVideoPlayer>();
+        if (player->setup(renderer, path, width, height)) {
+            LOG_DEBUG("VideoPlayerFactory: Created VlcVideoPlayer (fallback) for path=" << path);
+            return player;
+        }
+    }
+
+    LOG_ERROR("VideoPlayerFactory: Failed to setup any video player for path=" << path);
     return nullptr;
 }

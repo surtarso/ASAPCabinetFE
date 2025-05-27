@@ -38,6 +38,8 @@ private:
         std::string current_path;
         guint bus_watch_id = 0;
         GstElement* volume_element = nullptr; // Added for volume control
+        GstElement* audiosink_element = nullptr; // To hold a ref to the autoaudiosink
+        GstElement* videosink_element = nullptr; // To hold a ref to the appsink
     };
 
     VideoContext* ctx_;
