@@ -7,9 +7,10 @@
  * It handles parameter validation, backend selection, and fallback logic.
  */
 
-#include "render/video_player_factory.h"
-#include "render/vlc_player.h"
-#include "render/ffmpeg_player.h"
+#include "video_player_factory.h"
+#include "render/video_players/vlc/vlc_player.h"
+#include "render/video_players/ffmpeg/ffmpeg_player.h"
+#include "render/video_players/gstreamer/gstreamer_player.h"
 #include "config/iconfig_service.h"
 #include "config/settings.h"
 #include "utils/logging.h"
@@ -52,6 +53,16 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
         LOG_DEBUG("VideoPlayerFactory: No configService provided, defaulting to vlc");
     }
 
+    // Create DUMMY player if specified
+    // if (videoBackend == "novideo") {
+    //     auto player = std::make_unique<DummyVideoPlayer>();
+    //     if (player->setup(renderer, path, width, height)) {
+    //         LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
+    //         return player;
+    //     }
+    //     LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
+    //     return nullptr;
+    // } 
     // Create VLC player if specified
     if (videoBackend == "vlc") {
         auto player = std::make_unique<VlcVideoPlayer>();
@@ -70,6 +81,16 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             return player;
         }
         LOG_ERROR("VideoPlayerFactory: Failed to setup FFmpeg video player for path=" << path);
+        return nullptr;
+    }
+    // Create DUMMY player if specified
+    else if (videoBackend == "gstreamer") {
+        auto player = std::make_unique<GStreamerVideoPlayer>();
+        if (player->setup(renderer, path, width, height)) {
+            LOG_DEBUG("VideoPlayerFactory: Created GStreamerVideoPlayer for path=" << path);
+            return player;
+        }
+        LOG_ERROR("VideoPlayerFactory: Failed to setup GStreamer video player for path=" << path);
         return nullptr;
     }
 

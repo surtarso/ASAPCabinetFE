@@ -17,19 +17,19 @@
  * ambience music (Mix_Music), and table-specific music (Mix_Music).
  * It handles SDL_mixer initialization and resource management.
  */
-class SoundManager : public ISoundManager {
+class PulseAudioPlayer : public ISoundManager {
 public:
     /**
-     * @brief Constructs a SoundManager instance.
+     * @brief Constructs a PulseAudioPlayer instance.
      * @param exeDir The executable directory, used for resolving relative sound paths.
      * @param settings Initial application settings, including sound paths and volumes.
      */
-    SoundManager(const std::string& exeDir, const Settings& settings);
+    PulseAudioPlayer(const std::string& exeDir, const Settings& settings);
 
     /**
-     * @brief Destroys the SoundManager instance and cleans up all SDL_mixer resources.
+     * @brief Destroys the PulseAudioPlayer instance and cleans up all SDL_mixer resources.
      */
-    ~SoundManager() override;
+    ~PulseAudioPlayer() override;
 
     /**
      * @brief Loads all necessary sound resources based on current settings.

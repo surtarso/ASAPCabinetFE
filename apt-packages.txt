@@ -12,5 +12,7 @@ libavformat-dev
 libavutil-dev
 libswscale-dev
 libswresample-dev
+libgstreamer1.0-dev
+libgstreamer-plugins-base1.0-dev
 xdotool
 imagemagick

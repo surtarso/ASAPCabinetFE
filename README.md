@@ -38,7 +38,7 @@ cd ~/ASAPCabinetFE
 > [!NOTE]
 > You can **download already compiled builds** directly from the [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page.
 > This is the quickest way to get started.
-> Make sure you have runtime dependencies installed _(vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0)_.
+> Make sure you have runtime dependencies installed _(vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 gstreamer1.0-plugins-good gstreamer1.0-libav)_.
 
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.

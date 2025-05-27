@@ -1,33 +1,40 @@
-#include "sound/sound_manager.h"
+#include "sound/pulseaudio_player.h"
 #include "utils/logging.h"
 #include <algorithm> // For std::find_if
 #include <iostream>
 #include <filesystem> // For std::filesystem::exists and is_regular_file
 #include <cctype>     // For std::isspace
+#include <thread> // Add for std::this_thread::sleep_for
+#include <chrono> // Add for std::chrono::milliseconds
 
-SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
+// Flag to track audio initialization
+static bool audio_initialized = false;
+
+PulseAudioPlayer::PulseAudioPlayer(const std::string& exeDir, const Settings& settings)
     : exeDir_(exeDir),
-      settings_(settings), // Initialize settings_ with passed settings
-      currentPlayingMusicType_(MusicType::None), // Initialize the new state variable
-      ambienceMusic_(nullptr, Mix_FreeMusic), // Initialize smart pointers for music
-      tableMusic_(nullptr, Mix_FreeMusic), // Initialize smart pointers for music
-      rng_(std::chrono::steady_clock::now().time_since_epoch().count()), // Seed the RNG
-      dist_(0.0, 1.0) // Initialize with dummy range, actual range set in playAmbienceMusic
-{
-    // Initialize SDL_mixer
-    // Support MP3 and OGG (commonly used for music)
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        LOG_ERROR("SoundManager: Mix_OpenAudio failed: " << Mix_GetError());
-        throw std::runtime_error("Failed to initialize audio");
+      settings_(settings),
+      currentPlayingMusicType_(MusicType::None),
+      ambienceMusic_(nullptr, Mix_FreeMusic),
+      tableMusic_(nullptr, Mix_FreeMusic),
+      rng_(std::chrono::steady_clock::now().time_since_epoch().count()),
+      dist_(0.0, 1.0) {
+    if (!audio_initialized) {
+        // Initialize SDL_mixer
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+            LOG_ERROR("PulseAudioPlayer: Mix_OpenAudio failed: " << Mix_GetError());
+            throw std::runtime_error("Failed to initialize audio");
+        }
+        int flags = MIX_INIT_MP3 | MIX_INIT_OGG;
+        if (Mix_Init(flags) != flags) {
+            LOG_ERROR("PulseAudioPlayer: Mix_Init failed: " << Mix_GetError());
+            Mix_CloseAudio();
+            throw std::runtime_error("PulseAudioPlayer: Failed to initialize MP3/OGG support");
+        }
+        audio_initialized = true;
+        LOG_DEBUG("PulseAudioPlayer: SDL_mixer initialized with MP3 and OGG support");
+    } else {
+        LOG_DEBUG("PulseAudioPlayer: SDL_mixer already initialized");
     }
-    int flags = MIX_INIT_MP3 | MIX_INIT_OGG; // Add OGG support
-    if (Mix_Init(flags) != flags) {
-        LOG_ERROR("SoundManager: Mix_Init failed: " << Mix_GetError());
-        Mix_CloseAudio();
-        throw std::runtime_error("SoundManager: Failed to initialize MP3/OGG support");
-    }
-    LOG_DEBUG("SoundManager: SDL_mixer initialized with MP3 and OGG support");
-
     // Initialize the UI sounds map with placeholders (will be loaded in loadSounds)
     // Using Mix_Chunk for UI sounds as they are short effects and can play concurrently
     uiSounds_.emplace("config_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
@@ -45,26 +52,35 @@ SoundManager::SoundManager(const std::string& exeDir, const Settings& settings)
     uiSounds_.emplace("screenshot_quit", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
 }
 
-SoundManager::~SoundManager() {
-    uiSounds_.clear();  // unique_ptr handles Mix_FreeChunk
+PulseAudioPlayer::~PulseAudioPlayer() {
+    stopMusic(); // Stop any playing music
+    Mix_HaltChannel(-1); // Stop all channels for UI sounds
+    uiSounds_.clear(); // unique_ptr handles Mix_FreeChunk
     ambienceMusic_.reset(); // unique_ptr handles Mix_FreeMusic
     tableMusic_.reset(); // unique_ptr handles Mix_FreeMusic
-    Mix_CloseAudio();
-    Mix_Quit();
-    LOG_DEBUG("SoundManager: SoundManager destroyed and SDL_mixer quit");
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Allow PulseAudio to process
+    if (audio_initialized) {
+        while (Mix_Init(0)) { // Close any additional SDL_mixer initializations
+            Mix_Quit();
+        }
+        Mix_CloseAudio(); // Close the audio device
+        Mix_Quit(); // Final cleanup of SDL_mixer
+        audio_initialized = false;
+        LOG_DEBUG("PulseAudioPlayer: PulseAudioPlayer destroyed and SDL_mixer quit");
+    }
 }
 
 /**
  * @brief Loads all necessary sound resources based on current settings.
  * This includes UI sound effects and the ambience music file.
  */
-void SoundManager::loadSounds() {
-    LOG_DEBUG("SoundManager: Loading sounds...");
+void PulseAudioPlayer::loadSounds() {
+    LOG_DEBUG("PulseAudioPlayer: Loading sounds...");
 
     // Helper to load UI sounds (Mix_Chunk)
     auto loadUiSound = [&](const std::string& key, const std::string& path) {
         if (path.empty()) {
-            LOG_DEBUG("SoundManager: UI sound path is empty for key: " << key);
+            LOG_DEBUG("PulseAudioPlayer: UI sound path is empty for key: " << key);
             uiSounds_.at(key).reset(); // Ensure it's null if path is empty
             return;
         }
@@ -72,13 +88,13 @@ void SoundManager::loadSounds() {
         if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
             uiSounds_.at(key).reset(Mix_LoadWAV(fullPath.c_str()));
             if (!uiSounds_.at(key)) {
-                LOG_ERROR("SoundManager: Mix_LoadWAV Error for " << key << " at " << fullPath << ": " << Mix_GetError());
+                LOG_ERROR("PulseAudioPlayer: Mix_LoadWAV Error for " << key << " at " << fullPath << ": " << Mix_GetError());
             }
             // else {
-            //     LOG_DEBUG("SoundManager: UI sound '" << key << "' loaded successfully from " << fullPath);
+            //     LOG_DEBUG("PulseAudioPlayer: UI sound '" << key << "' loaded successfully from " << fullPath);
             // }
         } else {
-            LOG_ERROR("SoundManager: UI sound file not found or not a regular file for " << key << " at " << fullPath);
+            LOG_ERROR("PulseAudioPlayer: UI sound file not found or not a regular file for " << key << " at " << fullPath);
             uiSounds_.at(key).reset(); // Ensure it's null if file is not found/invalid
         }
     };
@@ -100,19 +116,19 @@ void SoundManager::loadSounds() {
 
     // Load ambience sound (only if path is valid and not empty)
     if (settings_.ambienceSound.empty()) {
-        LOG_INFO("SoundManager: Ambience sound path is empty in settings. Ambience will not play.");
+        LOG_INFO("PulseAudioPlayer: Ambience sound path is empty in settings. Ambience will not play.");
         ambienceMusic_.reset(); // Ensure it's null
     } else {
         std::string ambienceFullPath = exeDir_ + settings_.ambienceSound;
         if (std::filesystem::exists(ambienceFullPath) && std::filesystem::is_regular_file(ambienceFullPath)) {
             ambienceMusic_.reset(Mix_LoadMUS(ambienceFullPath.c_str()));
             if (!ambienceMusic_) {
-                LOG_ERROR("SoundManager: Mix_LoadMUS Error for ambience at " << ambienceFullPath << ": " << Mix_GetError());
+                LOG_ERROR("PulseAudioPlayer: Mix_LoadMUS Error for ambience at " << ambienceFullPath << ": " << Mix_GetError());
             } else {
-                LOG_DEBUG("SoundManager: Ambience sound loaded successfully from " << ambienceFullPath);
+                LOG_DEBUG("PulseAudioPlayer: Ambience sound loaded successfully from " << ambienceFullPath);
             }
         } else {
-            LOG_INFO("SoundManager: Ambience sound file not found or is not a regular file at " << ambienceFullPath << ". Ambience will not play.");
+            LOG_INFO("PulseAudioPlayer: Ambience sound file not found or is not a regular file at " << ambienceFullPath << ". Ambience will not play.");
             ambienceMusic_.reset(); // Ensure it's null if file doesn't exist or is a directory
         }
     }
@@ -122,16 +138,16 @@ void SoundManager::loadSounds() {
  * @brief Plays a specific UI sound effect.
  * @param key The unique identifier for the UI sound.
  */
-void SoundManager::playUISound(const std::string& key) {
+void PulseAudioPlayer::playUISound(const std::string& key) {
     if (uiSounds_.count(key) && uiSounds_.at(key)) {
         // Play Mix_Chunk on an available channel (-1 for first available), 0 times (play once)
         if (Mix_PlayChannel(-1, uiSounds_.at(key).get(), 0) == -1) {
-            LOG_ERROR("SoundManager: Mix_PlayChannel Error for " << key << ": " << Mix_GetError());
+            LOG_ERROR("PulseAudioPlayer: Mix_PlayChannel Error for " << key << ": " << Mix_GetError());
         } else {
-            LOG_DEBUG("SoundManager: Playing UI sound: " << key);
+            LOG_DEBUG("PulseAudioPlayer: Playing UI sound: " << key);
         }
     } else {
-        LOG_ERROR("SoundManager: UI Sound '" << key << "' not found or not loaded");
+        LOG_ERROR("PulseAudioPlayer: UI Sound '" << key << "' not found or not loaded");
     }
 }
 
@@ -139,13 +155,13 @@ void SoundManager::playUISound(const std::string& key) {
  * @brief Plays the background ambience music.
  * @param path The full path to the ambience music file.
  */
-void SoundManager::playAmbienceMusic(const std::string& path) {
-    LOG_DEBUG("SoundManager: Attempting to play ambience music: " << path);
+void PulseAudioPlayer::playAmbienceMusic(const std::string& path) {
+    LOG_DEBUG("PulseAudioPlayer: Attempting to play ambience music: " << path);
 
     stopMusic(); // Stop any currently playing music (table or previous ambience)
 
     if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        LOG_INFO("SoundManager: No ambience music path provided, file not found, or not a regular file: " << path);
+        LOG_INFO("PulseAudioPlayer: No ambience music path provided, file not found, or not a regular file: " << path);
         ambienceMusic_.reset(); // Ensure it's null if path is invalid
         currentPlayingMusicType_ = MusicType::None; // Update state
         return; // Nothing to play
@@ -161,19 +177,19 @@ void SoundManager::playAmbienceMusic(const std::string& path) {
     if (needsReload) {
         ambienceMusic_.reset(Mix_LoadMUS(path.c_str()));
         if (!ambienceMusic_) {
-            LOG_ERROR("SoundManager: Mix_LoadMUS Error for ambience music " << path << ": " << Mix_GetError());
+            LOG_ERROR("PulseAudioPlayer: Mix_LoadMUS Error for ambience music " << path << ": " << Mix_GetError());
             currentPlayingMusicType_ = MusicType::None; // Update state
             return;
         }
-        LOG_DEBUG("SoundManager: Ambience music loaded successfully from " << path);
+        LOG_DEBUG("PulseAudioPlayer: Ambience music loaded successfully from " << path);
     }
 
     // Play ambience on loop (-1)
     if (Mix_PlayMusic(ambienceMusic_.get(), -1) == -1) {
-        LOG_ERROR("SoundManager: Mix_PlayMusic Error for ambience music " << path << ": " << Mix_GetError());
+        LOG_ERROR("PulseAudioPlayer: Mix_PlayMusic Error for ambience music " << path << ": " << Mix_GetError());
         currentPlayingMusicType_ = MusicType::None; // Update state on failure
     } else {
-        LOG_INFO("SoundManager: Playing ambience music: " << path);
+        LOG_INFO("PulseAudioPlayer: Playing ambience music: " << path);
         currentPlayingMusicType_ = MusicType::Ambience; // Update state on success
     }
 
@@ -185,12 +201,13 @@ void SoundManager::playAmbienceMusic(const std::string& path) {
             double randomPosition = dist_(rng_); // Generate random position within duration
 
             if (Mix_SetMusicPosition(randomPosition) == -1) {
-                LOG_ERROR("SoundManager: Mix_SetMusicPosition Error for ambience music " << path << ": " << Mix_GetError());
-            } else {
-                LOG_DEBUG("SoundManager: Ambience music set to random position: " << randomPosition << " seconds.");
-            }
+                LOG_ERROR("PulseAudioPlayer: Mix_SetMusicPosition Error for ambience music " << path << ": " << Mix_GetError());
+            } 
+            // else {
+                // LOG_DEBUG("PulseAudioPlayer: Ambience music set to random position: " << randomPosition << " seconds.");
+            // }
         } else {
-            LOG_ERROR("SoundManager: Could not get duration for ambience music " << path << ". Playing from beginning.");
+            LOG_ERROR("PulseAudioPlayer: Could not get duration for ambience music " << path << ". Playing from beginning.");
         }
     }
 
@@ -201,13 +218,13 @@ void SoundManager::playAmbienceMusic(const std::string& path) {
  * @brief Plays the table-specific music.
  * @param path The full path to the table music file.
  */
-void SoundManager::playTableMusic(const std::string& path) {
-    LOG_DEBUG("SoundManager: Attempting to play table music: " << path);
+void PulseAudioPlayer::playTableMusic(const std::string& path) {
+    LOG_DEBUG("PulseAudioPlayer: Attempting to play table music: " << path);
 
     stopMusic(); // Stop any currently playing music (ambience or previous table)
 
     if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        LOG_INFO("SoundManager: No table music path provided, file not found, or not a regular file: " << path);
+        LOG_INFO("PulseAudioPlayer: No table music path provided, file not found, or not a regular file: " << path);
         tableMusic_.reset(); // Ensure it's null if path is invalid
         currentPlayingMusicType_ = MusicType::None; // Update state
         // If no table music, try to resume ambience
@@ -225,19 +242,19 @@ void SoundManager::playTableMusic(const std::string& path) {
     if (needsReload) {
         tableMusic_.reset(Mix_LoadMUS(path.c_str()));
         if (!tableMusic_) {
-            LOG_ERROR("SoundManager: Mix_LoadMUS Error for table music " << path << ": " << Mix_GetError());
+            LOG_ERROR("PulseAudioPlayer: Mix_LoadMUS Error for table music " << path << ": " << Mix_GetError());
             currentPlayingMusicType_ = MusicType::None; // Update state
             return;
         }
-        LOG_DEBUG("SoundManager: Table music loaded successfully from " << path);
+        LOG_DEBUG("PulseAudioPlayer: Table music loaded successfully from " << path);
     }
 
     // Play table music on loop (-1)
     if (Mix_PlayMusic(tableMusic_.get(), -1) == -1) {
-        LOG_ERROR("SoundManager: Mix_PlayMusic Error for table music " << path << ": " << Mix_GetError());
+        LOG_ERROR("PulseAudioPlayer: Mix_PlayMusic Error for table music " << path << ": " << Mix_GetError());
         currentPlayingMusicType_ = MusicType::None; // Update state on failure
     } else {
-        LOG_INFO("SoundManager: Playing table music: " << path);
+        LOG_INFO("PulseAudioPlayer: Playing table music: " << path);
         currentPlayingMusicType_ = MusicType::Table; // Update state on success
     }
     applyAudioSettings(); // Reapply volume after playing
@@ -246,10 +263,10 @@ void SoundManager::playTableMusic(const std::string& path) {
 /**
  * @brief Stops any currently playing background music (ambience or table music).
  */
-void SoundManager::stopMusic() {
+void PulseAudioPlayer::stopMusic() {
     if (Mix_PlayingMusic()) {
         Mix_HaltMusic(); // Stops any playing music on the music channel
-        LOG_DEBUG("SoundManager: Halted current background music.");
+        LOG_DEBUG("PulseAudioPlayer: Halted current background music.");
     }
     currentPlayingMusicType_ = MusicType::None; // Update state
 }
@@ -257,50 +274,50 @@ void SoundManager::stopMusic() {
 /**
  * @brief Applies the current audio settings (volumes, mute states) to all active sound types.
  */
-void SoundManager::applyAudioSettings() {
+void PulseAudioPlayer::applyAudioSettings() {
     // UI Sounds (Mix_Chunk)
-    LOG_DEBUG("SoundManager: Applying UI audio settings. Mute: " << settings_.interfaceAudioMute << ", Volume: " << settings_.interfaceAudioVol);
+    //LOG_DEBUG("PulseAudioPlayer: Applying UI audio settings. Mute: " << settings_.interfaceAudioMute << ", Volume: " << settings_.interfaceAudioVol);
     int uiVolume = static_cast<int>(settings_.interfaceAudioVol * MIX_MAX_VOLUME / 100.0f);
     if (settings_.interfaceAudioMute) {
         Mix_Volume(-1, 0); // Mute all channels for UI sounds
-        LOG_DEBUG("SoundManager: UI sounds muted.");
+        LOG_DEBUG("PulseAudioPlayer: UI sounds muted.");
     } else {
         Mix_Volume(-1, uiVolume); // Set global volume for all channels
-        LOG_DEBUG("SoundManager: UI sounds volume set to " << settings_.interfaceAudioVol << "% (SDL_mixer: " << uiVolume << ")");
+        LOG_DEBUG("PulseAudioPlayer: UI sounds volume set to " << settings_.interfaceAudioVol << "% (SDL_mixer: " << uiVolume << ")");
     }
 
     // Ambience/Table Music (Mix_Music) - controlled by a single channel
-    LOG_DEBUG("SoundManager: Applying music audio settings (Ambience/Table).");
+    //LOG_DEBUG("PulseAudioPlayer: Applying music audio settings (Ambience/Table).");
     if (Mix_PlayingMusic()) { // Only apply if music is actually playing
         if (currentPlayingMusicType_ == MusicType::Ambience) {
-            LOG_DEBUG("SoundManager: Ambience music is currently playing (tracked state).");
+            //LOG_DEBUG("PulseAudioPlayer: Ambience music is currently playing (tracked state).");
             int ambienceVolume = static_cast<int>(settings_.interfaceAmbienceVol * MIX_MAX_VOLUME / 100.0f);
             if (settings_.interfaceAmbienceMute) {
                 Mix_VolumeMusic(0);
-                LOG_DEBUG("SoundManager: Ambience music muted.");
+                LOG_DEBUG("PulseAudioPlayer: Ambience music muted.");
             } else {
                 Mix_VolumeMusic(ambienceVolume);
-                LOG_DEBUG("SoundManager: Ambience music volume set to " << settings_.interfaceAmbienceVol << "% (SDL_mixer: " << ambienceVolume << ")");
+                LOG_DEBUG("PulseAudioPlayer: Ambience music volume set to " << settings_.interfaceAmbienceVol << "% (SDL_mixer: " << ambienceVolume << ")");
             }
         } else if (currentPlayingMusicType_ == MusicType::Table) {
-            LOG_DEBUG("SoundManager: Table music is currently playing (tracked state).");
+            LOG_DEBUG("PulseAudioPlayer: Table music is currently playing (tracked state).");
             int tableVolume = static_cast<int>(settings_.tableMusicVol * MIX_MAX_VOLUME / 100.0f);
             if (settings_.tableMusicMute) {
                 Mix_VolumeMusic(0);
-                LOG_DEBUG("SoundManager: Table music muted.");
+                LOG_DEBUG("PulseAudioPlayer: Table music muted.");
             } else {
                 Mix_VolumeMusic(tableVolume);
-                LOG_DEBUG("SoundManager: Table music volume set to " << settings_.tableMusicVol << "% (SDL_mixer: " << tableVolume << ")");
+                LOG_DEBUG("PulseAudioPlayer: Table music volume set to " << settings_.tableMusicVol << "% (SDL_mixer: " << tableVolume << ")");
             }
         } else {
             // This case should ideally not be hit if currentPlayingMusicType_ is correctly managed,
             // but as a fallback, mute if we don't know what's playing.
             Mix_VolumeMusic(0);
-            LOG_DEBUG("SoundManager: Unknown music playing, setting music volume to 0.");
+            LOG_DEBUG("PulseAudioPlayer: Unknown music playing, setting music volume to 0.");
         }
     } else {
         Mix_VolumeMusic(0); // No music playing, ensure volume is 0
-        LOG_DEBUG("SoundManager: No music playing, setting music volume to 0.");
+        LOG_DEBUG("PulseAudioPlayer: No music playing, setting music volume to 0.");
     }
 }
 
@@ -308,8 +325,8 @@ void SoundManager::applyAudioSettings() {
  * @brief Updates the internal settings and reloads sounds if necessary.
  * @param newSettings The new settings to apply.
  */
-void SoundManager::updateSettings(const Settings& newSettings) {
-    LOG_DEBUG("SoundManager: Updating SoundManager settings.");
+void PulseAudioPlayer::updateSettings(const Settings& newSettings) {
+    LOG_DEBUG("PulseAudioPlayer: Updating PulseAudioPlayer settings.");
 
     // Check if UI sound paths have changed to trigger a reload of Mix_Chunk assets
     bool uiSoundPathsChanged = (settings_.configToggleSound != newSettings.configToggleSound) ||
@@ -333,7 +350,7 @@ void SoundManager::updateSettings(const Settings& newSettings) {
     settings_ = newSettings;
 
     if (uiSoundPathsChanged) {
-        LOG_DEBUG("SoundManager: UI sound paths changed, reloading UI sounds.");
+        LOG_DEBUG("PulseAudioPlayer: UI sound paths changed, reloading UI sounds.");
         // Reload all UI sounds (Mix_Chunk)
         loadSounds();
     }
@@ -341,7 +358,7 @@ void SoundManager::updateSettings(const Settings& newSettings) {
     // Handle ambience music: if path changed, restart it. If it was playing and path didn't change,
     // just re-apply settings. If it wasn't playing but now has a valid path, start it.
     if (ambiencePathChanged) {
-        LOG_DEBUG("SoundManager: Ambience music path changed, attempting to restart ambience.");
+        LOG_DEBUG("PulseAudioPlayer: Ambience music path changed, attempting to restart ambience.");
         playAmbienceMusic(exeDir_ + settings_.ambienceSound);
     } else if (currentPlayingMusicType_ == MusicType::Ambience) {
         // Ambience was playing and path didn't change, just re-apply volume/mute
@@ -349,7 +366,7 @@ void SoundManager::updateSettings(const Settings& newSettings) {
     } else if (currentPlayingMusicType_ == MusicType::None && !settings_.ambienceSound.empty() &&
                std::filesystem::exists(exeDir_ + settings_.ambienceSound) &&
                std::filesystem::is_regular_file(exeDir_ + settings_.ambienceSound)) {
-        LOG_DEBUG("SoundManager: Ambience music was not playing but has a valid path, attempting to start.");
+        LOG_DEBUG("PulseAudioPlayer: Ambience music was not playing but has a valid path, attempting to start.");
         playAmbienceMusic(exeDir_ + settings_.ambienceSound);
     } else {
         // If ambience path is empty or invalid, and it was previously playing ambience, ensure it's stopped
@@ -368,7 +385,7 @@ void SoundManager::updateSettings(const Settings& newSettings) {
  * @param str The string to trim.
  * @return The trimmed string.
  */
-std::string SoundManager::trim(const std::string& str) {
+std::string PulseAudioPlayer::trim(const std::string& str) {
     // Find the first non-whitespace character
     size_t first = str.find_first_not_of(" \t\n\r\f\v");
     if (std::string::npos == first) {

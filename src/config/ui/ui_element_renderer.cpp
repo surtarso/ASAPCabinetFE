@@ -221,8 +221,16 @@ static void openUrl(const std::string& url) {
 }
 
 void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
-    const char* options[] = {"vlc", "ffmpeg"};
-    int videoBackend = (value == "ffmpeg") ? 1 : 0;
+    const char* options[] = {"vlc", "ffmpeg", "gstreamer"};
+    int videoBackend = 0; // Default to the first option (vlc)
+
+    // Find the index of the current 'value' in the 'options' array
+    for (int i = 0; i < IM_ARRAYSIZE(options); ++i) {
+        if (value == options[i]) {
+            videoBackend = i;
+            break; // Found the match, no need to continue
+        }
+    }
 
     ImGui::SetNextItemWidth(150);
     if (ImGui::Combo("##videoBackend", &videoBackend, options, IM_ARRAYSIZE(options))) {

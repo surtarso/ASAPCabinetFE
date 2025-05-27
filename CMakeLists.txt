@@ -135,7 +135,7 @@ set(SOURCES
     src/core/joystick_manager.cpp
     src/core/playfield_overlay.cpp
     src/core/window_manager.cpp
-    src/sound/sound_manager.cpp
+    src/sound/pulseaudio_player.cpp
     src/capture/process_handler.cpp
     src/capture/screenshot_capture.cpp
     src/capture/screenshot_manager.cpp
@@ -156,9 +156,10 @@ set(SOURCES
     src/render/asset_manager.cpp
     src/render/table_loader.cpp
     src/render/renderer.cpp
-    src/render/ffmpeg_player.cpp
-    src/render/vlc_player.cpp
-    src/render/video_player_factory.cpp
+    src/render/video_players/video_player_factory.cpp
+    src/render/video_players/ffmpeg/ffmpeg_player.cpp
+    src/render/video_players/gstreamer/gstreamer_player.cpp
+    src/render/video_players/vlc/vlc_player.cpp
     src/utils/logger.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources
@@ -187,6 +188,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/config/ui
     ${CMAKE_SOURCE_DIR}/src/keybinds
     ${CMAKE_SOURCE_DIR}/src/render
+    ${CMAKE_SOURCE_DIR}/src/render/video_players
+    ${CMAKE_SOURCE_DIR}/src/render/video_players/ffmpeg
+    ${CMAKE_SOURCE_DIR}/src/render/video_players/vlc
     ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils
     # Dear ImGui
@@ -207,6 +211,7 @@ pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
+pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
@@ -215,6 +220,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
+    ${GSTREAMER_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -224,6 +230,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_LIBRARIES}
     ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
+    ${GSTREAMER_LIBRARIES}
 )
 # --- Dependencies End ---
 

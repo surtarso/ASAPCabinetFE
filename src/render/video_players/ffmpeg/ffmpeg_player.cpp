@@ -1,4 +1,4 @@
-#include "render/ffmpeg_player.h"
+#include "ffmpeg_player.h"
 #include "utils/logging.h"
 #include <SDL.h>
 #include <chrono>
@@ -745,7 +745,7 @@ void FFmpegPlayer::SDLAudioCallback(void* userdata, Uint8* stream, int len) {
 
 
     int volume_for_sdl_mixer = static_cast<int>(player->currentVolume_ * SDL_MIX_MAXVOLUME);
-    LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: currentVolume_=" << player->currentVolume_ << ", SDL_MIX_MAXVOLUME=" << SDL_MIX_MAXVOLUME << ", volume_for_sdl_mixer=" << volume_for_sdl_mixer);
+    //LOG_DEBUG("FFmpegPlayer: SDLAudioCallback: currentVolume_=" << player->currentVolume_ << ", SDL_MIX_MAXVOLUME=" << SDL_MIX_MAXVOLUME << ", volume_for_sdl_mixer=" << volume_for_sdl_mixer);
 
     SDL_MixAudioFormat(stream, stream, player->audioSpec_.format, audio_len_bytes, volume_for_sdl_mixer);
 

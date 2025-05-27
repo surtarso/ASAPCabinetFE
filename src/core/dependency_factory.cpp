@@ -13,7 +13,7 @@
 #include "config/config_service.h"
 #include "core/window_manager.h"
 #include "render/asset_manager.h"
-#include "sound/sound_manager.h"
+#include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"
 #include "utils/logging.h"
 
@@ -91,7 +91,7 @@ std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* wind
 /**
  * @brief Creates a sound manager instance.
  *
- * Initializes a SoundManager with the executable directory and settings, then loads
+ * Initializes a PulseAudioPlayer with the executable directory and settings, then loads
  * sound resources.
  *
  * @param exeDir The executable directory for resolving sound file paths.
@@ -99,7 +99,7 @@ std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* wind
  * @return A unique pointer to an ISoundManager instance.
  */
 std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {
-    auto sound = std::make_unique<SoundManager>(exeDir, settings);
+    auto sound = std::make_unique<PulseAudioPlayer>(exeDir, settings);
     sound->loadSounds();
     return sound;
 }

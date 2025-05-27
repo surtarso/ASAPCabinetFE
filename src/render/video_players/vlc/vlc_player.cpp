@@ -1,4 +1,4 @@
-#include "render/vlc_player.h"
+#include "vlc_player.h"
 #include "utils/logging.h"
 
 VlcVideoPlayer::VlcVideoPlayer() : ctx_(nullptr) {}
