@@ -90,7 +90,7 @@ struct SDLBootstrap {
         if (!g_main_loop_global) {
             LOG_ERROR("Main: Failed to create global GMainLoop for GStreamer events.");
             gst_deinit(); // Deinit GStreamer if GMainLoop creation fails
-            throw std::runtime_error("Main: GST initialization failed");
+            throw std::runtime_error("Main: GStreamer MainLoop initialization failed");
         }
         g_main_loop_thread_global = g_thread_new("gstreamer-event-thread", run_gstreamer_event_loop, nullptr);
         if (!g_main_loop_thread_global) {
@@ -98,7 +98,7 @@ struct SDLBootstrap {
             g_main_loop_unref(g_main_loop_global);
             g_main_loop_global = nullptr;
             gst_deinit();
-            throw std::runtime_error("Main: IMG initialization failed");
+            throw std::runtime_error("Main: GStreamer Thread initialization failed");
         }
         LOG_DEBUG("Main: Global GStreamer event loop thread started.");
 
