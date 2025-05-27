@@ -59,7 +59,7 @@ bool ConfigUIState::hasSectionChanged(const std::string& sectionName, const std:
             return true;
         }
     }
-    LOG_DEBUG("ConfigUIState: No changes detected in " << sectionName);
+    //LOG_DEBUG("ConfigUIState: No changes detected in " << sectionName);
     return false;
 }
 
@@ -109,7 +109,7 @@ bool ConfigUIState::hasVisibilitySettingsChanged(const std::map<std::string, Set
             }
         }
     }
-    LOG_DEBUG("ConfigUIState: No visibility settings changed to true");
+    //LOG_DEBUG("ConfigUIState: No visibility settings changed to true");
     return false;
 }
 
@@ -152,7 +152,7 @@ bool ConfigUIState::hasFontSettingsChanged(const std::map<std::string, SettingsS
             }
         }
     }
-    LOG_DEBUG("ConfigUIState: No font settings changed");
+    //LOG_DEBUG("ConfigUIState: No font settings changed");
     return false;
 }
 
@@ -181,7 +181,7 @@ bool ConfigUIState::hasTitleDataSourceChanged(const std::map<std::string, Settin
         LOG_DEBUG("ConfigUIState: TitleSource changed from " << lastPairIt->second << " to " << currentPairIt->second);
         return true;
     }
-    LOG_DEBUG("ConfigUIState: No TitleSource changes");
+    //LOG_DEBUG("ConfigUIState: No TitleSource changes");
     return false;
 }
 
@@ -210,7 +210,7 @@ bool ConfigUIState::hasVideoBackendChanged(const std::map<std::string, SettingsS
         LOG_DEBUG("ConfigUIState: VideoBackend changed from " << lastPairIt->second << " to " << currentPairIt->second);
         return true;
     }
-    LOG_DEBUG("ConfigUIState: No VideoBackend changes");
+    //LOG_DEBUG("ConfigUIState: No VideoBackend changes");
     return false;
 }
 
@@ -239,7 +239,7 @@ bool ConfigUIState::hasForceImagesOnlyChanged(const std::map<std::string, Settin
         LOG_DEBUG("ConfigUIState: ForceImagesOnly changed from " << lastPairIt->second << " to " << currentPairIt->second);
         return true;
     }
-    LOG_DEBUG("ConfigUIState: No ForceImagesOnly changes");
+    //LOG_DEBUG("ConfigUIState: No ForceImagesOnly changes");
     return false;
 }
 
@@ -268,6 +268,6 @@ bool ConfigUIState::hasMetadataSettingsChanged(const std::map<std::string, Setti
         LOG_DEBUG("ConfigUIState: ShowMetadata changed from " << lastPairIt->second << " to " << currentPairIt->second);
         return true;
     }
-    LOG_DEBUG("ConfigUIState: No ShowMetadata changes");
+    //LOG_DEBUG("ConfigUIState: No ShowMetadata changes");
     return false;
 }

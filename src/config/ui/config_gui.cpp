@@ -147,15 +147,15 @@ void ConfigUI::saveConfig() {
     bool audioSettingsChanged = state_.hasSectionChanged("AudioSettings", oldIniData);
 
     // Log change detection results
-    LOG_DEBUG("ConfigUI: Change detection: "
-              << "windowSettings=" << windowSettingsChanged
-              << ", visibility=" << visibilitySettingsChanged
-              << ", font=" << fontSettingsChanged
-              << ", titleDataSource=" << titleDataSourceChanged
-              << ", videoBackend=" << videoBackendChanged
-              << ", forceImagesOnly=" << forceImagesOnlyChanged
-              << ", metadata=" << metadataSettingsChanged
-              << ", audioSettings=" << audioSettingsChanged);
+    // LOG_DEBUG("ConfigUI: Change detection: "
+    //           << "windowSettings=" << windowSettingsChanged
+    //           << ", visibility=" << visibilitySettingsChanged
+    //           << ", font=" << fontSettingsChanged
+    //           << ", titleDataSource=" << titleDataSourceChanged
+    //           << ", videoBackend=" << videoBackendChanged
+    //           << ", forceImagesOnly=" << forceImagesOnlyChanged
+    //           << ", metadata=" << metadataSettingsChanged
+    //           << ", audioSettings=" << audioSettingsChanged);
 
     // Update lastSavedIniData
     state_.lastSavedIniData = currentIniData;
@@ -164,7 +164,7 @@ void ConfigUI::saveConfig() {
     if (assets_ && assets_->getTitleTexture()) {
         const Settings& settings = configService_->getSettings();
         assets_->setTitlePosition(settings.titleX, settings.titleY);
-        LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
+        //LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
 
     // Update audio settings in ISoundManager and AssetManager if AudioSettings changed

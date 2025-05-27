@@ -221,7 +221,7 @@ static void openUrl(const std::string& url) {
 }
 
 void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
-    const char* options[] = {"vlc", "ffmpeg", "gstreamer"};
+    const char* options[] = {"vlc", "ffmpeg", "gstreamer", "novideo"};
     int videoBackend = 0; // Default to the first option (vlc)
 
     // Find the index of the current 'value' in the 'options' array

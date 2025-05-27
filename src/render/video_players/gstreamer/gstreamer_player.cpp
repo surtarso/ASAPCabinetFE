@@ -10,38 +10,57 @@
 // Static counter and mutex for GStreamer initialization
 static int gstreamer_instance_count = 0;
 static SDL_mutex* gstreamer_init_mutex = nullptr;
+static bool gstreamer_initialized = false; // Track if GStreamer was successfully initialized
+static bool g_main_loop_running = false;  // Track if GMainLoop is running
 
 // Static GLib objects for the GStreamer event loop thread
 static GMainLoop* g_main_loop = nullptr;
 static GThread* g_main_loop_thread = nullptr;
 
-// GStreamer event thread function
-static gpointer gstreamer_event_thread_func(gpointer data) {
-    (void)data;
-    g_main_loop = g_main_loop_new(NULL, FALSE);
-    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread started.");
-    g_main_loop_run(g_main_loop);
-    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread stopped.");
-    return NULL;
-}
+// Forward declaration of the event thread function
+static gpointer gstreamer_event_thread_func(gpointer data);
 
 GStreamerVideoPlayer::GStreamerVideoPlayer() : ctx_(nullptr) {
     if (!gstreamer_init_mutex) {
         gstreamer_init_mutex = SDL_CreateMutex();
         if (!gstreamer_init_mutex) {
             LOG_ERROR("GStreamerVideoPlayer: Failed to create init mutex");
+            return;
         }
     }
 
     if (SDL_LockMutex(gstreamer_init_mutex) == 0) {
-        if (gstreamer_instance_count == 0) {
+        if (gstreamer_instance_count == 0 && !gstreamer_initialized) {
             setenv("GST_DEBUG", "4", 1);
             setenv("GST_DEBUG_FILE", "logs/gstreamer.log", 1);
             gst_init(nullptr, nullptr);
+            LOG_DEBUG("GStreamerVideoPlayer: GStreamer initialized with GST_DEBUG=4");
+            gstreamer_initialized = true;
             LOG_DEBUG("GStreamerVideoPlayer: Initialized GStreamer");
 
             if (!g_main_loop_thread) {
-                g_main_loop_thread = g_thread_new("gstreamer-events", gstreamer_event_thread_func, NULL);
+                g_main_loop = g_main_loop_new(NULL, FALSE);
+                if (!g_main_loop) {
+                    LOG_ERROR("GStreamerVideoPlayer: Failed to create GMainLoop");
+                    gst_deinit();
+                    gstreamer_initialized = false;
+                    SDL_UnlockMutex(gstreamer_init_mutex);
+                    return;
+                }
+                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event loop created.");
+                g_main_loop_running = true;
+
+                g_main_loop_thread = g_thread_new("gstreamer-events", gstreamer_event_thread_func, nullptr);
+                if (!g_main_loop_thread) {
+                    LOG_ERROR("GStreamerVideoPlayer: Failed to create GStreamer event thread");
+                    g_main_loop_unref(g_main_loop);
+                    g_main_loop = nullptr;
+                    g_main_loop_running = false;
+                    gst_deinit();
+                    gstreamer_initialized = false;
+                    SDL_UnlockMutex(gstreamer_init_mutex);
+                    return;
+                }
                 LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread created.");
             }
         }
@@ -54,26 +73,75 @@ GStreamerVideoPlayer::GStreamerVideoPlayer() : ctx_(nullptr) {
 
 GStreamerVideoPlayer::~GStreamerVideoPlayer() {
     cleanupContext();
+
+    static bool deinit_in_progress = false; // Prevent recursive deinit
     if (SDL_LockMutex(gstreamer_init_mutex) == 0) {
         gstreamer_instance_count--;
-        if (gstreamer_instance_count == 0) {
-            if (g_main_loop) {
+        LOG_DEBUG("GStreamerVideoPlayer: Destructor, instance count: " + std::to_string(gstreamer_instance_count));
+
+        if (gstreamer_instance_count == 0 && gstreamer_initialized && !deinit_in_progress) {
+            deinit_in_progress = true; // Mark deinit started
+
+            // Clean up GStreamer resources
+            if (g_main_loop && g_main_loop_running) {
                 g_main_loop_quit(g_main_loop);
-                g_main_loop = nullptr;
+                LOG_DEBUG("GStreamerVideoPlayer: GMainLoop quit requested in destructor.");
             }
+
             if (g_main_loop_thread) {
                 g_thread_join(g_main_loop_thread);
                 g_thread_unref(g_main_loop_thread);
                 g_main_loop_thread = nullptr;
-                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread joined and unref'd.");
+                LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread joined and unref’d.");
             }
-            gst_deinit();
-            LOG_DEBUG("GStreamerVideoPlayer: Deinitialized GStreamer");
+
+            if (g_main_loop) {
+                if (g_main_loop_running) {
+                    g_main_loop_unref(g_main_loop);
+                    LOG_DEBUG("GStreamerVideoPlayer: GMainLoop unref’d in destructor.");
+                }
+                g_main_loop = nullptr;
+            }
+            g_main_loop_running = false;
+
+            if (gstreamer_initialized) {
+                gst_deinit();
+                gstreamer_initialized = false;
+                LOG_DEBUG("GStreamerVideoPlayer: Deinitialized GStreamer");
+            }
+
+            deinit_in_progress = false; // Reset after completion
         }
+
         SDL_UnlockMutex(gstreamer_init_mutex);
+
+        if (gstreamer_instance_count == 0 && gstreamer_init_mutex) {
+            SDL_DestroyMutex(gstreamer_init_mutex);
+            gstreamer_init_mutex = nullptr;
+            LOG_DEBUG("GStreamerVideoPlayer: Destroyed init mutex");
+        }
     } else {
         LOG_ERROR("GStreamerVideoPlayer: Failed to lock init mutex for deinit");
     }
+}
+
+static gpointer gstreamer_event_thread_func(gpointer data) {
+    (void)data;
+    g_main_loop = g_main_loop_new(NULL, FALSE);
+    if (!g_main_loop) {
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create GMainLoop");
+        g_main_loop_running = false;
+        return NULL;
+    }
+    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event loop created.");
+    g_main_loop_running = true;
+    g_main_loop_run(g_main_loop);
+    LOG_DEBUG("GStreamerVideoPlayer: GStreamer event thread stopped.");
+    g_main_loop_unref(g_main_loop);
+    g_main_loop = nullptr;
+    g_main_loop_running = false;
+    LOG_DEBUG("GStreamerVideoPlayer: GMainLoop unref'd in thread.");
+    return NULL;
 }
 
 static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
@@ -85,7 +153,7 @@ static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
             GError* err = nullptr;
             gchar* debug = nullptr;
             gst_message_parse_error(msg, &err, &debug);
-            LOG_ERROR("GStreamerVideoPlayer: Error received from pipeline");
+            LOG_ERROR("GStreamerVideoPlayer: Error received from pipeline: " + std::string(err ? err->message : "unknown"));
             if (err) g_error_free(err);
             if (debug) g_free(debug);
             if (pipeline) {
@@ -119,16 +187,13 @@ static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
         case GST_MESSAGE_STATE_CHANGED: {
             GstState old_state, new_state, pending_state;
             gst_message_parse_state_changed(msg, &old_state, &new_state, &pending_state);
-            if (GST_MESSAGE_SRC(msg) == GST_OBJECT(pipeline)) {
-                LOG_DEBUG("GStreamerVideoPlayer: Pipeline state changed.");
-            }
             break;
         }
         case GST_MESSAGE_WARNING: {
             GError* err = nullptr;
             gchar* debug = nullptr;
             gst_message_parse_warning(msg, &err, &debug);
-            LOG_DEBUG("GStreamerVideoPlayer: Warning received from pipeline.");
+            LOG_DEBUG("GStreamerVideoPlayer: Warning received from pipeline: " + std::string(err ? err->message : "unknown"));
             if (err) g_error_free(err);
             if (debug) g_free(debug);
             break;
@@ -148,11 +213,15 @@ void GStreamerVideoPlayer::cleanupContext() {
             if (ctx_->bus_watch_id) {
                 g_source_remove(ctx_->bus_watch_id);
                 ctx_->bus_watch_id = 0;
+                LOG_DEBUG("GStreamerVideoPlayer: Bus watch removed.");
             }
             gst_bus_set_flushing(bus, TRUE);
             gst_object_unref(bus);
         }
-        gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        if (ret == GST_STATE_CHANGE_FAILURE) {
+            LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to NULL during cleanup");
+        }
         gst_object_unref(ctx_->pipeline);
         ctx_->pipeline = nullptr;
     }
@@ -191,10 +260,17 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
         return false;
     }
 
-    // Create pipeline
+    // Debug GStreamer version and plugin availability
+    LOG_DEBUG("GStreamerVideoPlayer: GStreamer version: " + std::to_string(GST_VERSION_MAJOR) + "." +
+              std::to_string(GST_VERSION_MINOR) + "." + std::to_string(GST_VERSION_MICRO));
+
+    // Create pipeline with detailed error handling
+    GError* error = nullptr;
     ctx_->pipeline = gst_pipeline_new("video-pipeline");
     if (!ctx_->pipeline) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline");
+        std::string error_msg = error && error->message ? error->message : "Unknown error";
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline: " + error_msg);
+        if (error) g_error_free(error);
         cleanupContext();
         return false;
     }
@@ -203,7 +279,8 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     GstElement* filesrc = gst_element_factory_make("filesrc", "filesrc");
     GstElement* decodebin = gst_element_factory_make("decodebin", "decodebin");
     if (!filesrc || !decodebin) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline elements");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create pipeline elements: filesrc=" + std::to_string(filesrc != nullptr) + ", decodebin=" + std::to_string(decodebin != nullptr));
+        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base is installed");
         if (filesrc) gst_object_unref(filesrc);
         if (decodebin) gst_object_unref(decodebin);
         cleanupContext();
@@ -275,7 +352,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
             LOG_DEBUG("GStreamerVideoPlayer: Caps format found");
             if (gst_structure_get_int(structure, "width", &video_width) &&
                 gst_structure_get_int(structure, "height", &video_height)) {
-                LOG_DEBUG("GStreamerVideoPlayer: Video dimensions from caps");
+                LOG_DEBUG("GStreamerVideoPlayer: Video dimensions from caps: width=" + std::to_string(video_width) + ", height=" + std::to_string(video_height));
                 ctx_->width = video_width;
                 ctx_->height = video_height;
             }
@@ -294,7 +371,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
     ctx_->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
                                       SDL_TEXTUREACCESS_STREAMING, ctx_->width, ctx_->height);
     if (!ctx_->texture) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create video texture");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create video texture: " + std::string(SDL_GetError()));
         cleanupContext();
         return false;
     }
@@ -309,7 +386,7 @@ bool GStreamerVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path
         return false;
     }
 
-    LOG_DEBUG("GStreamerVideoPlayer: Setup complete for path");
+    LOG_DEBUG("GStreamerVideoPlayer: Setup complete for path: " + path);
     return true;
 }
 
@@ -327,7 +404,10 @@ void GStreamerVideoPlayer::play() {
 
 void GStreamerVideoPlayer::stop() {
     if (ctx_ && ctx_->pipeline) {
-        gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        GstStateChangeReturn ret = gst_element_set_state(ctx_->pipeline, GST_STATE_NULL);
+        if (ret == GST_STATE_CHANGE_FAILURE) {
+            LOG_ERROR("GStreamerVideoPlayer: Failed to set pipeline to NULL in stop");
+        }
         ctx_->isPlaying = false;
         ctx_->frame_ready = false;
         ctx_->first_frame = true;
@@ -344,7 +424,7 @@ void GStreamerVideoPlayer::update() {
         if (ctx_->frame_ready) {
             memcpy(ctx_->pixels, ctx_->frame_buffer.data(), ctx_->pitch * ctx_->height);
             if (SDL_UpdateTexture(ctx_->texture, nullptr, ctx_->pixels, ctx_->pitch) != 0) {
-                LOG_ERROR("GStreamerVideoPlayer: SDL_UpdateTexture failed");
+                LOG_ERROR("GStreamerVideoPlayer: SDL_UpdateTexture failed: " + std::string(SDL_GetError()));
             }
             ctx_->frame_ready = false;
         }
@@ -444,7 +524,12 @@ void GStreamerVideoPlayer::linkVideoPad(GstPad* pad) {
     GstElement* appsink = gst_element_factory_make("appsink", "videosink");
 
     if (!videoconvert || !videorate || !videoscale || !capsfilter || !appsink) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create video elements");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create video elements: videoconvert=" + std::to_string(videoconvert != nullptr) +
+                  ", videorate=" + std::to_string(videorate != nullptr) +
+                  ", videoscale=" + std::to_string(videoscale != nullptr) +
+                  ", capsfilter=" + std::to_string(capsfilter != nullptr) +
+                  ", appsink=" + std::to_string(appsink != nullptr));
+        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed");
         if (videoconvert) gst_object_unref(videoconvert);
         if (videorate) gst_object_unref(videorate);
         if (videoscale) gst_object_unref(videoscale);
@@ -473,7 +558,6 @@ void GStreamerVideoPlayer::linkVideoPad(GstPad* pad) {
         gst_object_unref(sink_pad);
     }
 
-    // Synchronize state with parent pipeline
     gst_element_sync_state_with_parent(videoconvert);
     gst_element_sync_state_with_parent(videorate);
     gst_element_sync_state_with_parent(videoscale);
@@ -490,7 +574,10 @@ void GStreamerVideoPlayer::linkAudioPad(GstPad* pad) {
     GstElement* audiosink = gst_element_factory_make("autoaudiosink", "audiosink");
 
     if (!audioconvert || !volume || !audiosink) {
-        LOG_ERROR("GStreamerVideoPlayer: Failed to create audio elements");
+        LOG_ERROR("GStreamerVideoPlayer: Failed to create audio elements: audioconvert=" + std::to_string(audioconvert != nullptr) +
+                  ", volume=" + std::to_string(volume != nullptr) +
+                  ", audiosink=" + std::to_string(audiosink != nullptr));
+        LOG_ERROR("GStreamerVideoPlayer: Check if gstreamer1.0-plugins-base and gstreamer1.0-plugins-good are installed");
         if (audioconvert) gst_object_unref(audioconvert);
         if (volume) gst_object_unref(volume);
         if (audiosink) gst_object_unref(audiosink);
@@ -513,7 +600,6 @@ void GStreamerVideoPlayer::linkAudioPad(GstPad* pad) {
         gst_object_unref(sink_pad);
     }
 
-    // Synchronize state with parent pipeline
     gst_element_sync_state_with_parent(audioconvert);
     gst_element_sync_state_with_parent(volume);
     gst_element_sync_state_with_parent(audiosink);
