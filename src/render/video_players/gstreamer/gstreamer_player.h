@@ -8,13 +8,6 @@
 #include <string>
 #include <vector>
 
-/**
- * @brief Concrete implementation of IVideoPlayer using GStreamer.
- *
- * This class provides video playback capabilities by integrating with the GStreamer library.
- * It handles video decoding, rendering to an SDL_Texture, and basic playback controls,
- * including volume and mute for the video's audio track.
- */
 class GStreamerVideoPlayer : public IVideoPlayer {
 public:
     GStreamerVideoPlayer();
@@ -30,26 +23,30 @@ public:
 
 private:
     struct VideoContext {
-    SDL_Renderer* renderer = nullptr;
-    GstElement* pipeline = nullptr;
-    SDL_Texture* texture = nullptr;
-    void* pixels = nullptr;
-    int pitch = 0;
-    int width = 0;
-    int height = 0;
-    SDL_mutex* mutex = nullptr;
-    std::vector<uint8_t> frame_buffer;
-    bool isPlaying = false;
-    bool frame_ready = false;
-    bool first_frame = true;
-    std::string current_path; // Added for error logging
-    guint bus_watch_id = 0;   // Added for bus watch cleanup
+        SDL_Renderer* renderer = nullptr;
+        GstElement* pipeline = nullptr;
+        SDL_Texture* texture = nullptr;
+        void* pixels = nullptr;
+        int pitch = 0;
+        int width = 0;
+        int height = 0;
+        SDL_mutex* mutex = nullptr;
+        std::vector<uint8_t> frame_buffer;
+        bool isPlaying = false;
+        bool frame_ready = false;
+        bool first_frame = true;
+        std::string current_path;
+        guint bus_watch_id = 0;
+        GstElement* volume_element = nullptr; // Added for volume control
     };
 
     VideoContext* ctx_;
     static GstFlowReturn onNewSample(GstAppSink* appsink, void* data);
     void cleanupContext();
     std::string getCurrentPath() const;
+    static void onPadAdded(GstElement* decodebin, GstPad* pad, gpointer data);
+    void linkVideoPad(GstPad* pad);
+    void linkAudioPad(GstPad* pad);
 };
 
 #endif // GSTREAMER_PLAYER_H
