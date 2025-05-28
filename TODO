@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- pause FE music/videos on vpx launch
 - various gstreamer quirks and leaks...
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start

@@ -167,12 +167,49 @@ void InputManager::registerActions() {
                             settings.vpxEndArgs;
 
         LOG_DEBUG("InputManager: Launching: " << command);
+
+        //stop ambience/table music
+        soundManager_->stopMusic();
+        LOG_DEBUG("All music stopped.");
+        //stop video players
+        if (IVideoPlayer* player = assets_->getPlayfieldVideoPlayer()) {
+            player->stop();
+            LOG_DEBUG("InputManager: Stopped playfield video player");
+        }
+        if (IVideoPlayer* player = assets_->getBackglassVideoPlayer()) {
+            player->stop();
+            LOG_DEBUG("InputManager: Stopped backglass video player");
+        }
+        if (IVideoPlayer* player = assets_->getDmdVideoPlayer()) {
+            player->stop();
+            LOG_DEBUG("InputManager: Stopped DMD video player");
+        }
+        //keep ambience on background while playing
+        //TODO: this should be optional.
+        //soundManager_->playAmbienceMusic(settings.ambienceSound);
+
         //int result = std::system(command.c_str()); // This call blocks until VPX exits
         int result = std::system((command + " > /dev/null 2>&1").c_str());
         
         inExternalAppMode_ = false; // Reset flag after VPX exits
         lastExternalAppReturnTime_ = SDL_GetTicks(); // Record the time VPX returned for debouncing
         
+        //play table music on return, fallback to ambience
+        soundManager_->playTableMusic(tables_->at(*currentIndex_).music);
+        LOG_DEBUG("Music resumed.");
+        //resume video players
+        if (IVideoPlayer* player = assets_->getPlayfieldVideoPlayer()) {
+            player->play();
+            LOG_DEBUG("InputManager: Resumed playfield video player");
+        }
+        if (IVideoPlayer* player = assets_->getBackglassVideoPlayer()) {
+            player->play();
+            LOG_DEBUG("InputManager: Resumed backglass video player");
+        }
+        if (IVideoPlayer* player = assets_->getDmdVideoPlayer()) {
+            player->play();
+            LOG_DEBUG("InputManager: Resumed DMD video player");
+        }
         if (result != 0) {
             LOG_ERROR("InputManager: Warning: VPX launch failed with exit code " << result);
         }
