@@ -134,9 +134,12 @@ ConfigSchema::ConfigSchema() {
         {"puPFullDmdVideo", "CustomMedia", "PuPFullDmdVideo", std::string("NYI"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "puPFullDmdVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "puPFullDmdVideo"); }},
-        {"tableMusic", "CustomMedia", "TableMusic", std::string("music/music.mp3"), Type::String, false, PostProcess::None,
+        {"tableMusic", "CustomMedia", "TableMusic", std::string("audio/music.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "tableMusic"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "tableMusic"); }},
+        {"customLaunchSound", "CustomMedia", "CustomLaunchSound", std::string("audio/launch.mp3"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "customLaunchSound"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "customLaunchSound"); }},
 
         // Window settings
         {"videoBackend", "WindowSettings", "VideoBackend", std::string("vlc"), Type::String, false, PostProcess::None,
@@ -401,6 +404,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "puPDmdVideo") s.puPDmdVideo = val;
     else if (field == "puPFullDmdVideo") s.puPFullDmdVideo = val;
     else if (field == "tableMusic") s.tableMusic = val;
+    else if (field == "customLaunchSound") s.customLaunchSound = val;
     else if (field == "fontPath") s.fontPath = val;
     else if (field == "titleSource") s.titleSource = val;
     else if (field == "scrollPrevSound") s.scrollPrevSound = val;

@@ -53,6 +53,7 @@ struct Settings {
     std::string puPDmdVideo;
     std::string puPFullDmdVideo;
     std::string tableMusic;
+    std::string customLaunchSound;
 
     // [WindowSettings]
     std::string videoBackend;

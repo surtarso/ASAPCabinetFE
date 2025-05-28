@@ -165,8 +165,8 @@ void VlcVideoPlayer::setVolume(float volume) {
     LOG_DEBUG("VlcVideoPlayer: Setting volume to " << clampedVolume << " (VLC: " << vlcVolume << ")");
     libvlc_audio_set_volume(ctx_->player, vlcVolume);
     // Verify VLC state
-    int currentVolume = libvlc_audio_get_volume(ctx_->player);
-    LOG_DEBUG("VlcVideoPlayer: VLC reported volume: " << currentVolume);
+    // int currentVolume = libvlc_audio_get_volume(ctx_->player);
+    // LOG_DEBUG("VlcVideoPlayer: VLC reported volume: " << currentVolume);
 }
 
 void VlcVideoPlayer::setMute(bool mute) {
@@ -177,6 +177,6 @@ void VlcVideoPlayer::setMute(bool mute) {
     LOG_DEBUG("VlcVideoPlayer: Setting mute to " << (mute ? "true" : "false"));
     libvlc_audio_set_mute(ctx_->player, mute ? 1 : 0);
     // Verify VLC state
-    int muteState = libvlc_audio_get_mute(ctx_->player);
-    LOG_DEBUG("VlcVideoPlayer: VLC reported mute state: " << (muteState ? "true" : "false"));
+    // int muteState = libvlc_audio_get_mute(ctx_->player);
+    // LOG_DEBUG("VlcVideoPlayer: VLC reported mute state: " << (muteState ? "true" : "false"));
 }

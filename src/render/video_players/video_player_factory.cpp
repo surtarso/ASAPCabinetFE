@@ -133,13 +133,13 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
         return player;
     }
 
-    // If initial player setup failed, and it wasn't already VLC, try VLC as a last resort fallback.
-    // This handles cases where FFmpeg, GStreamer, or an unknown backend failed to initialize.
-    if (backendType != VideoBackendType::VLC && backendType != VideoBackendType::NOVIDEO) {
-        LOG_ERROR("VideoPlayerFactory: Failed to setup " << videoBackendStr << " player for path=" << path << ", attempting VLC fallback.");
+    // If initial player setup failed, try NOVIDEO as a last resort fallback.
+    // This handles cases where VLC, FFmpeg, GStreamer, or an unknown backend failed to initialize.
+    if (backendType != VideoBackendType::NOVIDEO) {
+        LOG_ERROR("VideoPlayerFactory: Failed to setup " << videoBackendStr << " player for path=" << path << ", attempting NOVIDEO fallback.");
         player = std::make_unique<VlcVideoPlayer>();
         if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Created VlcVideoPlayer (fallback) for path=" << path);
+            LOG_DEBUG("VideoPlayerFactory: Created NOVIDEO (fallback) for path=" << path);
             return player;
         }
     }

@@ -10,6 +10,7 @@
 #   --playfield           List tables missing 'table.mp4' video and exit
 #   --b2s                 List tables missing 'backglass.mp4' video and exit
 #   --dmd                 List tables missing 'marquee.mp4' video and exit
+#   --music               List tables missing 'music.mp3' music and exit
 #   -h, --help            Show this help message and exit
 # ----------------------------------------------------------
 # Tarso Galvão Feb/2025
@@ -45,7 +46,7 @@ get_ini_value() {
 echo -e "${GREEN}Initializing variables...${NC}"
 echo -e "${RED}-------------------------------------------------------------${NC}"
 if [[ -f "$CONFIG_FILE" ]]; then
-    ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
+    ROOT_FOLDER=$(get_ini_value "VPX" "VPXTablesPath")
     echo -e "${YELLOW}ROOT_FOLDER: $ROOT_FOLDER${NC}"
 
     WHEEL_IMAGE=$(get_ini_value "CustomMedia" "WheelImage")
@@ -57,10 +58,10 @@ if [[ -f "$CONFIG_FILE" ]]; then
     BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
     echo -e "${YELLOW}BACKGLASS_IMAGE: $BACKGLASS_IMAGE${NC}"
     
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "PlayfieldImage")
     echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
 
-    TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
+    TABLE_VIDEO=$(get_ini_value "CustomMedia" "PlayfieldVideo")
     echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
 
     BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
@@ -68,6 +69,9 @@ if [[ -f "$CONFIG_FILE" ]]; then
 
     DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
     echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
+
+    TABLE_MUSIC=$(get_ini_value "CustomMedia" "TableMusic")
+    echo -e "${YELLOW}TABLE_MUSIC: $TABLE_MUSIC${NC}"
 
     echo -e "${RED}-------------------------------------------------------------${NC}"
 else
@@ -88,6 +92,7 @@ show_help() {
   echo -e "  ${GREEN}--playfield              ${NC}List tables missing playfield ${GREEN}videos${NC} and exit"
   echo -e "  ${GREEN}--b2s                    ${NC}List tables missing backglass ${GREEN}videos${NC} and exit"
   echo -e "  ${GREEN}--dmd                    ${NC}List tables missing dmd ${GREEN}videos${NC} and exit"
+  echo -e "  ${GREEN}--music                  ${NC}List tables missing ${GREEN}music${NC} and exit"
   echo -e "\n  ${NC}-h, --help               Show this help message and exit"
   echo -e "\n${YELLOW}Note:${NC} No args shows this help."
   exit 0
@@ -163,6 +168,32 @@ while [ "$#" -gt 0 ]; do
                 echo -e "\n${BLUE}Missing ${RED}$missing_count${BLUE} video(s).${NC}"
                 echo -e "${BLUE}These tables have ${RED}no <table_folder>/$VIDEO_TYPE${BLUE} videos.${NC}"
                 echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$VIDEO_TYPE${NC}"
+            fi
+            exit 0
+            ;;
+        --music)
+            echo -e "${BLUE}Using tables directory: ${GREEN}$ROOT_FOLDER"
+            echo -e "${BLUE}Checking for tables missing ${GREEN}<table_folder>/$TABLE_MUSIC...${NC}\n"
+
+            missing_count=0
+
+            for vpx_file in "$ROOT_FOLDER"/*/*.vpx; do
+                if [ -f "$vpx_file" ]; then
+                    table_dir=$(dirname "$vpx_file")
+                    music_file="$table_dir/$TABLE_MUSIC"
+                    if [ ! -f "$music_file" ]; then
+                        echo -e "${GREEN}->${YELLOW} '$(basename "$table_dir")'${NC}"
+                        ((missing_count++))
+                    fi
+                fi
+            done
+
+            if [ $missing_count == 0 ]; then
+                echo -e "\n${BLUE}Woot! Missing ${GREEN}$missing_count${BLUE} music files!${NC}"
+            else
+                echo -e "\n${BLUE}Missing ${RED}$missing_count${BLUE} music file(s).${NC}"
+                echo -e "${BLUE}These tables have ${RED}no <table_folder>/$TABLE_MUSIC${BLUE} music files.${NC}"
+                echo -e "${BLUE}Place them in ${YELLOW}$ROOT_FOLDER<table_folder>/$TABLE_MUSIC${NC}"
             fi
             exit 0
             ;;

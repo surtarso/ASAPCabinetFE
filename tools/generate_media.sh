@@ -35,6 +35,7 @@ FRAME_INTERVAL=0.1        # Seconds between screenshots (approx 10 FPS, adjusted
 WINDOW_TITLE_VPX="Visual Pinball Player"
 WINDOW_TITLE_BACKGLASS="B2SBackglass"
 WINDOW_TITLE_DMD=("FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
+NODMDFOUND_FILE="noDMDfound.txt"
 
 # Reads a value from the specified section and key in the INI file
 get_ini_value() {
@@ -49,10 +50,10 @@ get_ini_value() {
 
 # **Load Configuration from config.ini**
 if [[ -f "$CONFIG_FILE" ]]; then
-    ROOT_FOLDER=$(get_ini_value "VPX" "TablesPath")
-    VPX_EXECUTABLE=$(get_ini_value "VPX" "ExecutableCmd")
-    TABLE_VIDEO=$(get_ini_value "CustomMedia" "TableVideo")
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "TableImage")
+    ROOT_FOLDER=$(get_ini_value "VPX" "VPXTablesPath")
+    VPX_EXECUTABLE=$(get_ini_value "VPX" "VPinballXPath")
+    TABLE_VIDEO=$(get_ini_value "CustomMedia" "PlayfieldVideo")
+    TABLE_IMAGE=$(get_ini_value "CustomMedia" "PlayfieldImage")
     BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
     BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
     DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
@@ -118,7 +119,7 @@ capture_vpx_window() {
 # Function to check if .vbs indicates a DMD
 has_dmd_from_vbs() {
     local vbs_file="$1"
-    if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD|UltraDMD" "$vbs_file"; then
+    if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD|UltraDMD|ShowDMDOnly=1" "$vbs_file"; then
         return 0  # DMD present
     else
         return 1  # No DMD
@@ -222,9 +223,14 @@ while IFS= read -r VPX_PATH <&3; do
     echo -e "${BLUE}Processing: $(basename "$TABLE_DIR")${NC}"
 
     # Skip if media exists and not forcing
+    NODMD_FILE_IMAGE_DIR="${TABLE_DIR}/images/${NODMDFOUND_FILE}"
+    NODMD_FILE_VIDEO_DIR="${TABLE_DIR}/video/${NODMDFOUND_FILE}"
     if [[ "$NO_VIDEO" == "false" ]]; then
         [[ "$MODE" == "now" && -f "$TABLE_VIDEO_FILE" && -f "$BACKGLASS_VIDEO_FILE" && -f "$DMD_VIDEO_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}All MP4s exist, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "now" && -f "$TABLE_VIDEO_FILE" && -f "$BACKGLASS_VIDEO_FILE" && (-f "$NODMD_FILE_IMAGE_DIR" || -f "$NODMD_FILE_VIDEO_DIR") && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}All MP4s exist and no DMD (noDMDfound.txt found), skipping.${NC}"; continue
         }
         [[ "$MODE" == "tables-only" && -f "$TABLE_VIDEO_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}Table MP4 exists, skipping.${NC}"; continue
@@ -232,12 +238,15 @@ while IFS= read -r VPX_PATH <&3; do
         [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_VIDEO_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}Backglass MP4 exists, skipping.${NC}"; continue
         }
-        [[ "$MODE" == "dmd-only" && -f "$DMD_VIDEO_FILE" && "$FORCE" != "true" ]] && {
-            echo -e "${YELLOW}DMD MP4 exists, skipping.${NC}"; continue
+        [[ "$MODE" == "dmd-only" && (-f "$DMD_VIDEO_FILE" || -f "$NODMD_FILE_IMAGE_DIR" || -f "$NODMD_FILE_VIDEO_DIR") && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}DMD MP4 exists or no DMD (noDMDfound.txt found), skipping.${NC}"; continue
         }
     else
         [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && -f "$DMD_IMAGE_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}All PNGs exist, skipping.${NC}"; continue
+        }
+        [[ "$MODE" == "now" && -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && (-f "$NODMD_FILE_IMAGE_DIR" || -f "$NODMD_FILE_VIDEO_DIR") && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}All PNGs exist and no DMD (noDMDfound.txt found), skipping.${NC}"; continue
         }
         [[ "$MODE" == "tables-only" && -f "$TABLE_IMAGE_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}Table PNG exists, skipping.${NC}"; continue
@@ -245,8 +254,8 @@ while IFS= read -r VPX_PATH <&3; do
         [[ "$MODE" == "backglass-only" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]] && {
             echo -e "${YELLOW}Backglass PNG exists, skipping.${NC}"; continue
         }
-        [[ "$MODE" == "dmd-only" && -f "$DMD_IMAGE_FILE" && "$FORCE" != "true" ]] && {
-            echo -e "${YELLOW}DMD PNG exists, skipping.${NC}"; continue
+        [[ "$MODE" == "dmd-only" && (-f "$DMD_IMAGE_FILE" || -f "$NODMD_FILE_IMAGE_DIR" || -f "$NODMD_FILE_VIDEO_DIR") && "$FORCE" != "true" ]] && {
+            echo -e "${YELLOW}DMD PNG exists or no DMD (noDMDfound.txt found), skipping.${NC}"; continue
         }
     fi
 
@@ -256,7 +265,7 @@ while IFS= read -r VPX_PATH <&3; do
             echo "DMD detected in $TABLE_NAME via .vbs"
             CAPTURE_DMD="true"
         else
-            echo "No DMD detected in $TABLE_NAME via .vbs"
+            #echo "No DMD detected in $TABLE_NAME via .vbs"
             CAPTURE_DMD="false"
         fi
     else
@@ -264,7 +273,26 @@ while IFS= read -r VPX_PATH <&3; do
         CAPTURE_DMD="check_later"
     fi
 
-    # in DMD-only mode, skip launching vpx if there was no DMD detected in VBScript
+    # In missing mode, skip DMD capture if noDMDfound.txt exists
+    if [[ "$MODE" == "now" && (-f "$NODMD_FILE_IMAGE_DIR" || -f "$NODMD_FILE_VIDEO_DIR") ]]; then
+        echo -e "${YELLOW}Skipping DMD capture for $TABLE_NAME (noDMDfound.txt found)${NC}"
+        CAPTURE_DMD="false"
+    fi
+
+    # In missing mode, skip launching VPX if all table/backglass media exists and no DMD capture needed
+    if [[ "$MODE" == "now" && "$CAPTURE_DMD" == "false" ]]; then
+        if [[ "$NO_VIDEO" == "false" ]]; then
+            [[ -f "$TABLE_VIDEO_FILE" && -f "$BACKGLASS_VIDEO_FILE" && "$FORCE" != "true" ]] && {
+                echo -e "${YELLOW}All MP4s exist and no DMD (.vbs), skipping.${NC}"; continue
+            }
+        else
+            [[ -f "$TABLE_IMAGE_FILE" && -f "$BACKGLASS_IMAGE_FILE" && "$FORCE" != "true" ]] && {
+                echo -e "${YELLOW}All PNGs exist and no DMD (.vbs), skipping.${NC}"; continue
+            }
+        fi
+    fi
+
+    # In DMD-only mode, skip launching VPX if no DMD detected in VBScript
     if [[ "$MODE" != "dmd-only" || "$CAPTURE_DMD" != "false" ]]; then
         # Launch VPX
         echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
@@ -275,7 +303,7 @@ while IFS= read -r VPX_PATH <&3; do
         continue  # Skip to next table
     fi
 
-    sleep 3 # check for some start error on vpinballx side
+    sleep 5 # check for some start error on vpinballx side
     if ! kill -0 "$VPINBALLX_PID" 2>/dev/null; then
         echo "$(date +"%Y-%m-%d %H:%M:%S") - VPX failed to start" >> "$ERROR_LOG_FILE"
         echo -e "${RED}Error: VPX failed to start. Check $ERROR_LOG_FILE${NC}"
@@ -374,8 +402,15 @@ while IFS= read -r VPX_PATH <&3; do
                         done
                     fi
                 done
-                if [[ "$CAPTURE_DMD" == "check_later" && $dmd_count -eq 0 ]]; then
+                if [[ $dmd_count -eq 0 ]]; then
                     echo -e "${YELLOW}No visible DMD windows found for $TABLE_NAME${NC}"
+                    # Create noDMDfound.txt in both image and video directories
+                    NODMD_FILE_IMAGE_DIR="${TABLE_DIR}/images/${NODMDFOUND_FILE}"
+                    NODMD_FILE_VIDEO_DIR="${TABLE_DIR}/video/${NODMDFOUND_FILE}"
+                    mkdir -p "${TABLE_DIR}/images" "${TABLE_DIR}/video"
+                    echo -e "Table: $TABLE_NAME\nPath: $VPX_PATH\nThis table was tagged as a NO-DMD table, dmd capture will be skipped unless this file is deleted." > "$NODMD_FILE_IMAGE_DIR"
+                    echo -e "Table: $TABLE_NAME\nPath: $VPX_PATH\nThis table was tagged as a NO-DMD table, dmd capture will be skipped unless this file is deleted." > "$NODMD_FILE_VIDEO_DIR"
+                    echo -e "${YELLOW}Created $NODMDFOUND_FILE for $TABLE_NAME in images/ and video/ directories${NC}"
                     CAPTURE_DMD="false"  # No DMDs found after checking
                 fi
             fi
