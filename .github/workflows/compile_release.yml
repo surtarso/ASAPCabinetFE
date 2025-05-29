@@ -171,7 +171,8 @@ jobs:
           - FFmpeg (libavcodec): ${{ env.FFMPEG_VERSION }}
           - VLC (libvlc): ${{ env.VLC_VERSION }}
 
-          Unpack and run ./ASAPCabinetFE
+          Unpack and run `./ASAPCabinetFE` 
+          Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md)
 
           **Changes**:
             - This is an automated release, this will be filled soon.
