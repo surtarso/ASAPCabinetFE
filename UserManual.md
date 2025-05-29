@@ -50,9 +50,6 @@ No complicated setup—just fun pinball action!
 >[!IMPORTANT]
 > This app expects you to organize your VPX tables in their own unique separate folders.
 
->[!NOTE]
-> If you want to know more about setting up the propper folder structure for VPX, please read my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux#Structure).
-
 By default, the app looks for media files (images, audio and video) inside each table's folder:
 
 ![image](https://github.com/user-attachments/assets/e78f6296-c7fa-42cb-a966-93815370aafd)
@@ -60,6 +57,9 @@ By default, the app looks for media files (images, audio and video) inside each 
   - `myVPXtablesDir/myVPXtable/images/`
   - `myVPXtablesDir/myVPXtable/video/`
   - `myVPXtablesDir/myVPXtable/audio/`
+
+>[!NOTE]
+> If you want to know more about setting up the propper folder structure for VPX, please read my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux#Structure).
 
 You can set these paths using the in-app configuration menu. You can use your own media or generate it with the `generate_media.sh` tool (see "Taking Screenshots" section).
 
