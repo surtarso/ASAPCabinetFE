@@ -47,9 +47,12 @@ No complicated setup—just fun pinball action!
 ## Getting Started
 
 ### First Things First: Table Structure
+>[!IMPORTANT]
+> This app expects you to organize your VPX tables in their own unique separate folders.
 
-This app expects you to organize your VPX tables in their own unique separate folders.
-If you want to know more about setting up the propper folder structure for VPX, please read my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux#Structure).
+>[!NOTE]
+> If you want to know more about setting up the propper folder structure for VPX, please read my [wiki](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux#Structure).
+
 By default, the app looks for media files (images, audio and video) inside each table's folder:
 
 ![image](https://github.com/user-attachments/assets/e78f6296-c7fa-42cb-a966-93815370aafd)
@@ -58,13 +61,15 @@ By default, the app looks for media files (images, audio and video) inside each 
   - `myVPXtablesDir/myVPXtable/video/`
   - `myVPXtablesDir/myVPXtable/audio/`
 
-You can set these paths using the in-app configuration menu. You can use your own media or generate it with the `generator.sh` tool (see "Taking Screenshots" section).
+You can set these paths using the in-app configuration menu. You can use your own media or generate it with the `generate_media.sh` tool (see "Taking Screenshots" section).
 
 ### Starting the App for the First Time
 
 Simply double-click the ASAPCabinetFE icon (or start it as you would any other app). The first time you run it, a setup window will appear, asking you to point to your main VPX tables folder and the VPinballX program itself. Select these locations, save your choices, and close the menu. If everything is found correctly, the main app will then open.
 
 ![image](https://github.com/user-attachments/assets/35b13475-c0a2-4e4c-b20c-5ae21f13051c)
+>[!NOTE]
+> Optional args are for launching Visual Pinball X, not the front-end.
 
 ## Windows Positions
 The first time the app opens you might see all windows on top of each other on the corner of a single monitor.
@@ -77,6 +82,8 @@ You can freely drag and place any of the app's windows wherever you prefer on yo
 ### Automatic Positioning
 
 If you've already set up your window positions within VPinballX, and your `VPinballX.ini` file is in its default location (`~/.vpinball`), ASAPCabinetFE can automatically adopt those positions and sizes when it loads. This feature is enabled by default but can be toggled in the configuration menu.
+>[!IMPORTANT]
+>While this feature is enabled, manual positioning is disabled.
 
 ## Adding Your Own Previews
 
@@ -104,6 +111,11 @@ Use the default keys (**Left Shift** and **Right Shift**) to navigate through yo
 ### Playing a Table
 
 Found a table you want to play? Just hit **Enter** to launch it directly in Visual Pinball X.
+>[!NOTE]
+>If a table fails to launch, the related log will be saved in the logs/ folder for inspection.
+
+>[!IMPORTANT]
+>This front-end has no relation to Visual Pinball X, please redirect any issues related to table launch to their maintainers.
 
 ## Taking Screenshots
 
@@ -147,6 +159,9 @@ Here’s a glimpse of what you can tweak:
   - **Controls**: Customize the keyboard keys for various actions, and configure joystick support.
   - **Display**: Increase DPI scaling if elements appear too small on your screen.
 
+>[!IMPORTANT]
+>To use **metadata** you need to download and run [`vpxtool`](https://github.com/francisdb/vpxtool) to create `vpxtool_index.json` in your tables folder.
+
 ### Saving Your Changes
 
 Satisfied with your adjustments? Hit **Save**. If you change your mind and want to discard your modifications, press **Close** to exit the menu without saving.
@@ -166,7 +181,7 @@ Here’s how you control the app using your keyboard to set things up:
 
 ### Changing Keys
 
-Want to use your joystick? But of'course! This front-end is intended for cabinets ;)
+Want to use your joystick? But of'course! We have **cabinet** in the name, right? ;)
 
 ![image](https://github.com/user-attachments/assets/125f34f3-22c3-4f2e-9478-9f6cc6fc0f5e)
 
@@ -205,4 +220,5 @@ Open the configuration menu (press **C**), go to “Audio Settings,” and check
 
 Try changing the video backend setting in the configuration menu to one that might be better suited for your system.
 
-Still encountering issues? Check the project's discussion page for solutions or open an issue on the project's repository for assistance.
+>[!NOTE]
+> Still encountering issues? Check the [project's discussion page](https://github.com/surtarso/ASAPCabinetFE/discussions) for solutions or open an [issue](https://github.com/surtarso/ASAPCabinetFE/issues) on the [project's repository](https://github.com/surtarso/ASAPCabinetFE) for assistance.
