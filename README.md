@@ -60,6 +60,7 @@ cd ~/ASAPCabinetFE
 - Loads default or custom images and/or videos for the playfield, wheel, backglass, and DMD for each table.
 - Launches tables with desired VPX executable.
 
+Check the [User's Manual](UserManual.md) for more details.
 ## Compiling and Running
 
 Make sure you have `git` and `xargs` available
