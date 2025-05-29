@@ -44,7 +44,7 @@ cd ~/ASAPCabinetFE
 ## Features
 - Full screen multi monitor display of table playfield, backglass and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
-- Use VPinballX.ini values for size and position auto configuration.
+- Use `~/.vpinball/VPinballX.ini` values for size and position auto-configuration.
 - Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata. _(optional)_
 - Navigate tables with titles and/or wheels.
 - Support for ambience and per-table music.
