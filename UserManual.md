@@ -140,7 +140,7 @@ If still images aren't enough, you can use the `generate_media.sh` tool to recor
 
 ## Tweaking Stuff with the Configuration Menu
 
-You don't need to manually edit any config files; everything you want to change is accessible through the in-app configuration menu. The idea is for you to have a freedom to tweak anything you like to the frontend your own.
+You don't need to manually edit any config files; everything you want to change is accessible through the in-app configuration menu. The idea is for you to have the freedom to tweak anything you'd like to make the frontend your own.
 
 ### Opening the Menu
 
