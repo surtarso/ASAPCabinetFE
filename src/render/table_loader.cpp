@@ -71,7 +71,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
 
     // Load vpxtool and VPS metadata if titleSource=metadata
     if (settings.titleSource == "metadata") {
-        std::string jsonPath = settings.VPXTablesPath + "/vpxtool_index.json";
+        std::string jsonPath = settings.VPXTablesPath + settings.vpxtoolIndex;
         if (fs::exists(jsonPath)) {
             try {
                 std::ifstream file(jsonPath);

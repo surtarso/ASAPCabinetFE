@@ -35,7 +35,6 @@ Later:
 - support animated png for wheel/marquee
 - dynamic window creation
 - table settings overrides
-- add pup windows to screenshot capture
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
 - adapt to be crossplatform?

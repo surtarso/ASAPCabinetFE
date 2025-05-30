@@ -253,23 +253,38 @@ void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& v
         LOG_DEBUG("UiElementRenderer::renderTitleDropdown: " << section << "." << key << " = " << value);
         
         if (value == "metadata" && oldValue != "metadata") {
-            LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
+            LOG_DEBUG("UiElementRenderer: Checking for metadata index file");
             const auto& iniData = configService->getIniData();
             auto vpxIt = iniData.find("VPX");
             if (vpxIt != iniData.end()) {
                 LOG_DEBUG("UiElementRenderer: VPX section found");
                 auto pathIt = std::find_if(vpxIt->second.keyValues.begin(), vpxIt->second.keyValues.end(),
-                                           [](const auto& pair) { return pair.first == "VPXTablesPath"; });
+                                        [](const auto& pair) { return pair.first == "VPXTablesPath"; });
                 if (pathIt != vpxIt->second.keyValues.end()) {
                     LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
                     if (!pathIt->second.empty()) {
-                        std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
-                        LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
-                        if (!std::filesystem::exists(jsonPath)) {
-                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
-                            ImGui::OpenPopup("Metadata Error");
+                        auto internalIt = iniData.find("Internal");
+                        if (internalIt != iniData.end()) {
+                            auto indexIt = std::find_if(internalIt->second.keyValues.begin(), internalIt->second.keyValues.end(),
+                                                        [](const auto& pair) { return pair.first == "vpxtoolIndex"; });
+                            if (indexIt != internalIt->second.keyValues.end()) {
+                                if (!indexIt->second.empty()) {
+                                    std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / indexIt->second;
+                                    LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
+                                    if (!std::filesystem::exists(jsonPath)) {
+                                        LOG_DEBUG("UiElementRenderer: " << indexIt->second << " not found, opening popup");
+                                        ImGui::OpenPopup("Metadata Error");
+                                    } else {
+                                        LOG_DEBUG("UiElementRenderer: " << indexIt->second << " exists");
+                                    }
+                                } else {
+                                    LOG_DEBUG("UiElementRenderer: vpxtoolIndex is empty");
+                                }
+                            } else {
+                                LOG_DEBUG("UiElementRenderer: vpxtoolIndex not found in Internal section");
+                            }
                         } else {
-                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                            LOG_DEBUG("UiElementRenderer: Internal section not found in iniData");
                         }
                     } else {
                         LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
@@ -343,7 +358,7 @@ void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string
         
         // Only perform the check and open popup if the checkbox is being set to true
         if (boolValue) { 
-            LOG_DEBUG("UiElementRenderer: Checking for vpxtool_index.json");
+            LOG_DEBUG("UiElementRenderer: Checking for metadata index file");
             const auto& iniData = configService->getIniData();
             auto vpxIt = iniData.find("VPX");
             if (vpxIt != iniData.end()) {
@@ -353,13 +368,28 @@ void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string
                 if (pathIt != vpxIt->second.keyValues.end()) {
                     LOG_DEBUG("UiElementRenderer: VPXTablesPath found: " << pathIt->second);
                     if (!pathIt->second.empty()) {
-                        std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / "vpxtool_index.json";
-                        LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
-                        if (!std::filesystem::exists(jsonPath)) {
-                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json not found, opening popup");
-                            ImGui::OpenPopup("Metadata Error");
+                        auto internalIt = iniData.find("Internal");
+                        if (internalIt != iniData.end()) {
+                            auto indexIt = std::find_if(internalIt->second.keyValues.begin(), internalIt->second.keyValues.end(),
+                                                        [](const auto& pair) { return pair.first == "vpxtoolIndex"; });
+                            if (indexIt != internalIt->second.keyValues.end()) {
+                                if (!indexIt->second.empty()) {
+                                    std::filesystem::path jsonPath = std::filesystem::path(pathIt->second) / indexIt->second;
+                                    LOG_DEBUG("UiElementRenderer: Checking path: " << jsonPath.string());
+                                    if (!std::filesystem::exists(jsonPath)) {
+                                        LOG_DEBUG("UiElementRenderer: " << indexIt->second << " not found, opening popup");
+                                        ImGui::OpenPopup("Metadata Error");
+                                    } else {
+                                        LOG_DEBUG("UiElementRenderer: " << indexIt->second << " exists");
+                                    }
+                                } else {
+                                    LOG_DEBUG("UiElementRenderer: vpxtoolIndex is empty");
+                                }
+                            } else {
+                                LOG_DEBUG("UiElementRenderer: vpxtoolIndex not found in Internal section");
+                            }
                         } else {
-                            LOG_DEBUG("UiElementRenderer: vpxtool_index.json exists");
+                            LOG_DEBUG("UiElementRenderer: Internal section not found in iniData");
                         }
                     } else {
                         LOG_DEBUG("UiElementRenderer: VPXTablesPath is empty");
@@ -367,6 +397,8 @@ void renderMetadataCheckbox([[maybe_unused]] const std::string& key, std::string
                 } else {
                     LOG_DEBUG("UiElementRenderer: VPXTablesPath not found in VPX section");
                 }
+            } else {
+                LOG_DEBUG("UiElementRenderer: VPX section not found in iniData");
             }
         }
     }
@@ -608,6 +640,7 @@ void renderAudioSettingsMixer([[maybe_unused]] const std::string& key, [[maybe_u
     using namespace ImGui;
 
     std::vector<std::string> audioKeyPrefixes = {
+        "Master",
         "MediaAudio",
         "TableMusic",
         "InterfaceAudio",
@@ -615,6 +648,7 @@ void renderAudioSettingsMixer([[maybe_unused]] const std::string& key, [[maybe_u
     };
 
     static const std::map<std::string, std::string> channelDisplayNames = {
+        {"Master", "Master"},
         {"MediaAudio", "Media"},
         {"TableMusic", "Music"},
         {"InterfaceAudio", "UI FX"},

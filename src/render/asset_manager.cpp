@@ -135,26 +135,35 @@ void AssetManager::applyVideoAudioSettings() {
         return;
     }
     const Settings& settings = configManager_->getSettings();
+    
+    // Compute effective mute and volume with master settings
+    bool effective_mute = settings.masterMute || settings.mediaAudioMute;
+    float effective_volume = (settings.mediaAudioVol / 100.0f) * (settings.masterVol / 100.0f);
+    
     LOG_DEBUG("AssetManager: Applying video audio settings: mediaAudioVol=" << settings.mediaAudioVol 
-              << ", mediaAudioMute=" << settings.mediaAudioMute);
+              << ", mediaAudioMute=" << settings.mediaAudioMute 
+              << ", masterVol=" << settings.masterVol 
+              << ", masterMute=" << settings.masterMute 
+              << ", effective volume=" << effective_volume * 100.0f << "%, effective mute=" << effective_mute);
+
     if (playfieldVideoPlayer) {
-        playfieldVideoPlayer->setVolume(settings.mediaAudioVol);
-        playfieldVideoPlayer->setMute(settings.mediaAudioMute);
-        LOG_DEBUG("AssetManager: Applied audio settings to playfield video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+        playfieldVideoPlayer->setVolume(effective_volume * 100.0f);
+        playfieldVideoPlayer->setMute(effective_mute);
+        LOG_DEBUG("AssetManager: Applied audio settings to playfield video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
     } else {
         LOG_DEBUG("AssetManager: No playfield video player to apply audio settings");
     }
     if (backglassVideoPlayer) {
-        backglassVideoPlayer->setVolume(settings.mediaAudioVol);
-        backglassVideoPlayer->setMute(settings.mediaAudioMute);
-        LOG_DEBUG("AssetManager: Applied audio settings to backglass video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+        backglassVideoPlayer->setVolume(effective_volume * 100.0f);
+        backglassVideoPlayer->setMute(effective_mute);
+        LOG_DEBUG("AssetManager: Applied audio settings to backglass video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
     } else {
         LOG_DEBUG("AssetManager: No backglass video player to apply audio settings");
     }
     if (dmdVideoPlayer) {
-        dmdVideoPlayer->setVolume(settings.mediaAudioVol);
-        dmdVideoPlayer->setMute(settings.mediaAudioMute);
-        LOG_DEBUG("AssetManager: Applied audio settings to DMD video player: volume=" << settings.mediaAudioVol << ", mute=" << settings.mediaAudioMute);
+        dmdVideoPlayer->setVolume(effective_volume * 100.0f);
+        dmdVideoPlayer->setMute(effective_mute);
+        LOG_DEBUG("AssetManager: Applied audio settings to DMD video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
     } else {
         LOG_DEBUG("AssetManager: No DMD video player to apply audio settings");
     }

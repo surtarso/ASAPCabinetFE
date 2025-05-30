@@ -115,6 +115,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["InterfaceAmbienceMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["MasterMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["MediaAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
     };
@@ -127,6 +130,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["InterfaceAmbienceVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
     };
+    keyRenderers_["MasterVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
+    };
 }
 
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {
@@ -135,7 +141,7 @@ void SectionRenderer::renderKeyValue(const std::string& key, std::string& value,
         renderKeybind(key, value, inputHandler_, hasChanges_, currentSection_);
     } else if (keyRenderers_.count(key)) {
         keyRenderers_[key](key, value, section); // Check dispatcher first
-    } else if (key.find("Path") != std::string::npos || key.find("VPinballXPath") != std::string::npos) {
+    } else if (key.find("VPXTablesPath") != std::string::npos || key.find("VPinballXPath") != std::string::npos) {
         renderPathOrExecutable(key, value, hasChanges_, currentSection_); // Only for non-FontPath "Path" keys
     } else if (key.back() == 'X' || key.back() == 'Y' ||
                key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {

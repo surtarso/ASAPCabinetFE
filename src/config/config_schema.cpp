@@ -51,36 +51,6 @@ ConfigSchema::ConfigSchema() {
         {"defaultDmdVideo", "DefaultMedia", "DefaultDmdVideo", std::string("img/default_dmd.mp4"), Type::String, true, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "defaultDmdVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "defaultDmdVideo"); }},
-        {"defaultPuPPlayfieldImage", "DefaultMedia", "DefaultPuPPlayfieldImage", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPPlayfieldImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPPlayfieldImage"); }},
-        {"defaultPuPBackglassImage", "DefaultMedia", "DefaultPuPBackglassImage", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPBackglassImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPBackglassImage"); }},
-        {"defaultPuPDmdImage", "DefaultMedia", "DefaultPuPDmdImage", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPDmdImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPDmdImage"); }},
-        {"defaultPuPFullDmdImage", "DefaultMedia", "DefaultPuPFullDmdImage", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPFullDmdImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPFullDmdImage"); }},
-        {"defaultPupTopperImage", "DefaultMedia", "DefaultPupTopperImage", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPupTopperImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPupTopperImage"); }},
-        {"defaultPuPPlayfieldVideo", "DefaultMedia", "DefaultPuPPlayfieldVideo", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPPlayfieldVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPPlayfieldVideo"); }},
-        {"defaultPuPBackglassVideo", "DefaultMedia", "DefaultPuPBackglassVideo", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPBackglassVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPBackglassVideo"); }},
-        {"defaultPuPDmdVideo", "DefaultMedia", "DefaultPuPDmdVideo", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPDmdVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPDmdVideo"); }},
-        {"defaultPuPFullDmdVideo", "DefaultMedia", "DefaultPuPFullDmdVideo", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPFullDmdVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPFullDmdVideo"); }},
-        {"defaultPuPTopperVideo", "DefaultMedia", "DefaultPuPTopperVideo", std::string("NYI"), Type::String, true, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPuPTopperVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPuPTopperVideo"); }},
 
         // Custom media paths
         {"customPlayfieldImage", "CustomMedia", "PlayfieldImage", std::string("images/table.png"), Type::String, false, PostProcess::None,
@@ -104,36 +74,6 @@ ConfigSchema::ConfigSchema() {
         {"customDmdVideo", "CustomMedia", "DmdVideo", std::string("video/dmd.mp4"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customDmdVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customDmdVideo"); }},
-        {"puPTopperImage", "CustomMedia", "PuPTopperImage", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPTopperImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPTopperImage"); }},
-        {"puPPlayfieldImage", "CustomMedia", "PuPPlayfieldImage", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPPlayfieldImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPPlayfieldImage"); }},
-        {"puPBackglassImage", "CustomMedia", "PuPBackglassImage", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPBackglassImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPBackglassImage"); }},
-        {"puPDmdImage", "CustomMedia", "PuPDmdImage", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPDmdImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPDmdImage"); }},
-        {"puPFullDmdImage", "CustomMedia", "PuPFullDmdImage", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPFullDmdImage"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPFullDmdImage"); }},
-        {"puPTopperVideo", "CustomMedia", "PuPTopperVideo", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPTopperVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPTopperVideo"); }},
-        {"puPPlayfieldVideo", "CustomMedia", "PuPPlayfieldVideo", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPPlayfieldVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPPlayfieldVideo"); }},
-        {"puPBackglassVideo", "CustomMedia", "PuPBackglassVideo", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPBackglassVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPBackglassVideo"); }},
-        {"puPDmdVideo", "CustomMedia", "PuPDmdVideo", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPDmdVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPDmdVideo"); }},
-        {"puPFullDmdVideo", "CustomMedia", "PuPFullDmdVideo", std::string("NYI"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "puPFullDmdVideo"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "puPFullDmdVideo"); }},
         {"tableMusic", "CustomMedia", "TableMusic", std::string("audio/music.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "tableMusic"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "tableMusic"); }},
@@ -286,6 +226,9 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "titleY"); }},
         
         // sound settings
+        {"masterVol", "AudioSettings", "MasterVol", 100.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "masterVol"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "masterVol"); }},
         {"mediaAudioVol", "AudioSettings", "MediaAudioVol", 60.0f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "mediaAudioVol"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "mediaAudioVol"); }},
@@ -298,6 +241,9 @@ ConfigSchema::ConfigSchema() {
         {"interfaceAmbienceVol", "AudioSettings", "InterfaceAmbienceVol", 60.0f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "interfaceAmbienceVol"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "interfaceAmbienceVol"); }},
+        {"masterMute", "AudioSettings", "MasterMute", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "masterMute"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "masterMute"); }},
         {"mediaAudioMute", "AudioSettings", "MediaAudioMute", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "mediaAudioMute"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "mediaAudioMute"); }},
@@ -372,6 +318,9 @@ ConfigSchema::ConfigSchema() {
          {"indexPath", "Internal", "IndexPath", std::string("data/asapcabinetfe_index.json"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "indexPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "indexPath"); }},
+        {"vpxtoolIndex", "Internal", "VpxtoolIndex", std::string("data/vpxtool_index.json"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "vpxtoolIndex"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "vpxtoolIndex"); }}
     };
 }
 
@@ -388,16 +337,6 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "defaultPlayfieldVideo") s.defaultPlayfieldVideo = val;
     else if (field == "defaultBackglassVideo") s.defaultBackglassVideo = val;
     else if (field == "defaultDmdVideo") s.defaultDmdVideo = val;
-    else if (field == "defaultPuPPlayfieldImage") s.defaultPuPPlayfieldImage = val;
-    else if (field == "defaultPuPBackglassImage") s.defaultPuPBackglassImage = val;
-    else if (field == "defaultPuPDmdImage") s.defaultPuPDmdImage = val;
-    else if (field == "defaultPuPFullDmdImage") s.defaultPuPFullDmdImage = val;
-    else if (field == "defaultPupTopperImage") s.defaultPupTopperImage = val;
-    else if (field == "defaultPuPPlayfieldVideo") s.defaultPuPPlayfieldVideo = val;
-    else if (field == "defaultPuPBackglassVideo") s.defaultPuPBackglassVideo = val;
-    else if (field == "defaultPuPDmdVideo") s.defaultPuPDmdVideo = val;
-    else if (field == "defaultPuPFullDmdVideo") s.defaultPuPFullDmdVideo = val;
-    else if (field == "defaultPuPTopperVideo") s.defaultPuPTopperVideo = val;
     else if (field == "customPlayfieldImage") s.customPlayfieldImage = val;
     else if (field == "customBackglassImage") s.customBackglassImage = val;
     else if (field == "customDmdImage") s.customDmdImage = val;
@@ -405,16 +344,6 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "customPlayfieldVideo") s.customPlayfieldVideo = val;
     else if (field == "customBackglassVideo") s.customBackglassVideo = val;
     else if (field == "customDmdVideo") s.customDmdVideo = val;
-    else if (field == "puPTopperImage") s.puPTopperImage = val;
-    else if (field == "puPPlayfieldImage") s.puPPlayfieldImage = val;
-    else if (field == "puPBackglassImage") s.puPBackglassImage = val;
-    else if (field == "puPDmdImage") s.puPDmdImage = val;
-    else if (field == "puPFullDmdImage") s.puPFullDmdImage = val;
-    else if (field == "puPTopperVideo") s.puPTopperVideo = val;
-    else if (field == "puPPlayfieldVideo") s.puPPlayfieldVideo = val;
-    else if (field == "puPBackglassVideo") s.puPBackglassVideo = val;
-    else if (field == "puPDmdVideo") s.puPDmdVideo = val;
-    else if (field == "puPFullDmdVideo") s.puPFullDmdVideo = val;
     else if (field == "tableMusic") s.tableMusic = val;
     else if (field == "customLaunchSound") s.customLaunchSound = val;
     else if (field == "fontPath") s.fontPath = val;
@@ -439,6 +368,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "vpsDbUpdateFrequency") s.vpsDbUpdateFrequency = val;
     else if (field == "vpsDbLastUpdated") s.vpsDbLastUpdated = val;
     else if (field == "indexPath") s.indexPath = val;
+    else if (field == "vpxtoolIndex") s.vpxtoolIndex = val;
     else LOG_ERROR("ConfigSchema: Unknown string field: " << field);
 }
 
@@ -492,6 +422,7 @@ void ConfigSchema::defaultInt(Settings& s, const std::variant<std::string, int, 
 void ConfigSchema::parseFloat(Settings& s, const std::string& val, const std::string& field) const {
     float v = std::stof(val);
     if (field == "dpiScale") s.dpiScale = v;
+    else if (field == "masterVol") s.masterVol = v;
     else if (field == "mediaAudioVol") s.mediaAudioVol = v;
     else if (field == "tableMusicVol") s.tableMusicVol = v;
     else if (field == "interfaceAudioVol") s.interfaceAudioVol = v;
@@ -513,6 +444,7 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else if (field == "forceImagesOnly") s.forceImagesOnly = v;
     else if (field == "showMetadata") s.showMetadata = v;
+    else if (field == "masterMute") s.masterMute = v;
     else if (field == "mediaAudioMute") s.mediaAudioMute = v;
     else if (field == "tableMusicMute") s.tableMusicMute = v;
     else if (field == "interfaceAudioMute") s.interfaceAudioMute = v;

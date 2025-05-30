@@ -275,48 +275,33 @@ void PulseAudioPlayer::stopMusic() {
  * @brief Applies the current audio settings (volumes, mute states) to all active sound types.
  */
 void PulseAudioPlayer::applyAudioSettings() {
-    // UI Sounds (Mix_Chunk)
-    //LOG_DEBUG("PulseAudioPlayer: Applying UI audio settings. Mute: " << settings_.interfaceAudioMute << ", Volume: " << settings_.interfaceAudioVol);
-    int uiVolume = static_cast<int>(settings_.interfaceAudioVol * MIX_MAX_VOLUME / 100.0f);
-    if (settings_.interfaceAudioMute) {
-        Mix_Volume(-1, 0); // Mute all channels for UI sounds
-        LOG_DEBUG("PulseAudioPlayer: UI sounds muted.");
-    } else {
-        Mix_Volume(-1, uiVolume); // Set global volume for all channels
-        LOG_DEBUG("PulseAudioPlayer: UI sounds volume set to " << settings_.interfaceAudioVol << "% (SDL_mixer: " << uiVolume << ")");
-    }
+    // Apply master mute and volume to UI sounds
+    bool effective_ui_mute = settings_.masterMute || settings_.interfaceAudioMute;
+    float effective_ui_vol = (settings_.interfaceAudioVol / 100.0f) * (settings_.masterVol / 100.0f);
+    int uiVolume = effective_ui_mute ? 0 : static_cast<int>(effective_ui_vol * MIX_MAX_VOLUME);
+    Mix_Volume(-1, uiVolume);
+    LOG_DEBUG("PulseAudioPlayer: UI sounds volume set to " << (effective_ui_mute ? "muted" : std::to_string(effective_ui_vol * 100.0f) + "%") << " (SDL_mixer: " << uiVolume << ")");
 
-    // Ambience/Table Music (Mix_Music) - controlled by a single channel
-    //LOG_DEBUG("PulseAudioPlayer: Applying music audio settings (Ambience/Table).");
-    if (Mix_PlayingMusic()) { // Only apply if music is actually playing
+    // Apply master mute and volume to music
+    if (Mix_PlayingMusic()) {
         if (currentPlayingMusicType_ == MusicType::Ambience) {
-            //LOG_DEBUG("PulseAudioPlayer: Ambience music is currently playing (tracked state).");
-            int ambienceVolume = static_cast<int>(settings_.interfaceAmbienceVol * MIX_MAX_VOLUME / 100.0f);
-            if (settings_.interfaceAmbienceMute) {
-                Mix_VolumeMusic(0);
-                LOG_DEBUG("PulseAudioPlayer: Ambience music muted.");
-            } else {
-                Mix_VolumeMusic(ambienceVolume);
-                LOG_DEBUG("PulseAudioPlayer: Ambience music volume set to " << settings_.interfaceAmbienceVol << "% (SDL_mixer: " << ambienceVolume << ")");
-            }
+            bool effective_ambience_mute = settings_.masterMute || settings_.interfaceAmbienceMute;
+            float effective_ambience_vol = (settings_.interfaceAmbienceVol / 100.0f) * (settings_.masterVol / 100.0f);
+            int musicVolume = effective_ambience_mute ? 0 : static_cast<int>(effective_ambience_vol * MIX_MAX_VOLUME);
+            Mix_VolumeMusic(musicVolume);
+            LOG_DEBUG("PulseAudioPlayer: Ambience music volume set to " << (effective_ambience_mute ? "muted" : std::to_string(effective_ambience_vol * 100.0f) + "%") << " (SDL_mixer: " << musicVolume << ")");
         } else if (currentPlayingMusicType_ == MusicType::Table) {
-            LOG_DEBUG("PulseAudioPlayer: Table music is currently playing (tracked state).");
-            int tableVolume = static_cast<int>(settings_.tableMusicVol * MIX_MAX_VOLUME / 100.0f);
-            if (settings_.tableMusicMute) {
-                Mix_VolumeMusic(0);
-                LOG_DEBUG("PulseAudioPlayer: Table music muted.");
-            } else {
-                Mix_VolumeMusic(tableVolume);
-                LOG_DEBUG("PulseAudioPlayer: Table music volume set to " << settings_.tableMusicVol << "% (SDL_mixer: " << tableVolume << ")");
-            }
+            bool effective_table_mute = settings_.masterMute || settings_.tableMusicMute;
+            float effective_table_vol = (settings_.tableMusicVol / 100.0f) * (settings_.masterVol / 100.0f);
+            int musicVolume = effective_table_mute ? 0 : static_cast<int>(effective_table_vol * MIX_MAX_VOLUME);
+            Mix_VolumeMusic(musicVolume);
+            LOG_DEBUG("PulseAudioPlayer: Table music volume set to " << (effective_table_mute ? "muted" : std::to_string(effective_table_vol * 100.0f) + "%") << " (SDL_mixer: " << musicVolume << ")");
         } else {
-            // This case should ideally not be hit if currentPlayingMusicType_ is correctly managed,
-            // but as a fallback, mute if we don't know what's playing.
             Mix_VolumeMusic(0);
             LOG_DEBUG("PulseAudioPlayer: Unknown music playing, setting music volume to 0.");
         }
     } else {
-        Mix_VolumeMusic(0); // No music playing, ensure volume is 0
+        Mix_VolumeMusic(0);
         LOG_DEBUG("PulseAudioPlayer: No music playing, setting music volume to 0.");
     }
 }

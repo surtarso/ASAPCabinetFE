@@ -23,16 +23,6 @@ struct Settings {
     std::string defaultPlayfieldVideo;
     std::string defaultBackglassVideo;
     std::string defaultDmdVideo;
-    std::string defaultPuPPlayfieldImage;
-    std::string defaultPuPBackglassImage;
-    std::string defaultPuPDmdImage;
-    std::string defaultPuPFullDmdImage;
-    std::string defaultPupTopperImage;
-    std::string defaultPuPPlayfieldVideo;
-    std::string defaultPuPBackglassVideo;
-    std::string defaultPuPDmdVideo;
-    std::string defaultPuPFullDmdVideo;
-    std::string defaultPuPTopperVideo;
 
     // [CustomMedia]
     std::string customPlayfieldImage;
@@ -42,16 +32,6 @@ struct Settings {
     std::string customPlayfieldVideo;
     std::string customBackglassVideo;
     std::string customDmdVideo;
-    std::string puPTopperImage;
-    std::string puPPlayfieldImage;
-    std::string puPBackglassImage;
-    std::string puPDmdImage;
-    std::string puPFullDmdImage;
-    std::string puPTopperVideo;
-    std::string puPPlayfieldVideo;
-    std::string puPBackglassVideo;
-    std::string puPDmdVideo;
-    std::string puPFullDmdVideo;
     std::string tableMusic;
     std::string customLaunchSound;
 
@@ -114,6 +94,8 @@ struct Settings {
     int dmdRotation;
 
     // [AudioSettings]
+    bool masterMute;
+    float masterVol;
     bool mediaAudioMute;
     float mediaAudioVol;
     bool tableMusicMute;
@@ -145,6 +127,7 @@ struct Settings {
     std::string vpsDbPath;
     std::string vpsDbUpdateFrequency;
     std::string vpsDbLastUpdated;
+    std::string vpxtoolIndex;
     std::string indexPath;
 };
 
