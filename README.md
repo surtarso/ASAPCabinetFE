@@ -14,7 +14,7 @@
 
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-<p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
+<p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your Linux virtual pinball cabinet.</p>
 <p align="center">Crafted for pinball lovers, by a pinball lover.</p>
 
 <div align="center">
@@ -42,7 +42,7 @@ cd ~/ASAPCabinetFE
 > Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
 
 ## Features
-ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for.
+ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for, and here is why:
 
 - Full screen multi monitor display of table playfield, backglass and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
