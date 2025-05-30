@@ -133,7 +133,7 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | Save window pos.   | left doubleclick | Saves current window positions in config. |
 
 ## Generator Tools
-> [!WARNING]
+> [!IMPORTANT]
 > Make sure your paths are properly configured before generating media.
 
 **1.** Use the screenshot tool to take planned screenshots
@@ -149,7 +149,7 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ```sh
 ./missing_media.sh --help
 ```
->[!IMPORTANT]
+>[!WARNING]
 >Generator tools will only work with VPX up to version 10.8.0, as 10.8.1 made breaking changes to windows names that are not yet addressed.
 
 ## Planned Features:
