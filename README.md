@@ -84,23 +84,36 @@ Install Dependencies (Debian based)
 ```sh
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
+<details>
+<summary>🐞 Build and Run (Debug)</summary>
 
-Build and install it (Release)
+For debugging, build with the `Debug` configuration to include symbols and run directly from the build folder.
+
+```sh
+cmake -DCMAKE_BUILD_TYPE=Debug -B build -S .
+cmake --build build -j$(nproc)
+cd build
+./ASAPCabinetFE
+```
+</details>
+
+<details>
+<summary>🕹️ Build and Install (Release)</summary>
+  
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build -j$(nproc)
 cmake --install build
 ```
 
-Run it and configure your paths:
+Run and configure your paths:
 ```sh
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
-Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!
+</details>
 
-> [!IMPORTANT]
-> The `Debug` type has no `--install` target. Run it in build/ folder.
+Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!
 
 ## Default Keymap
 Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
