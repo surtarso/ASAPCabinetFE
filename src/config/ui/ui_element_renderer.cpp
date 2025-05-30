@@ -19,10 +19,17 @@ void renderKeybind(const std::string& key, std::string& value, InputHandler& inp
     const float buttonOffset = 300.0f;
     ImGui::SameLine(buttonOffset); // Position after the label
     
+    // Apply gray-green color styling to the button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 0.3f, 1.0f)); // Gray-green
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.47f, 0.67f, 0.47f, 1.0f)); // Brighter gray-green on hover
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.31f, 0.51f, 0.31f, 1.0f)); // Darker gray-green when pressed
+    
     if (ImGui::Button("Set", ImVec2(60, 0))) {
         inputHandler.startCapturing(key);
         hasChanges = true;
     }
+    
+    ImGui::PopStyleColor(3); // Pop all three color styles
 }
 
 void renderColorPicker([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
@@ -115,11 +122,27 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
 
 void renderCheckbox([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section) {
     bool boolValue = (value == "true");
+
+    // Push custom checkbox styling
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f); // Slightly rounded corners
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f)); // Slightly larger padding
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 0.5f)); // Dark, semi-transparent background when unchecked
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f)); // Lighter on hover
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.0f, 0.5f, 0.5f, 0.5f)); // Cyan tint when checked
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.0f, 0.8f, 0.8f, 1.0f)); // Bright cyan checkmark
+
+    // Render checkbox with custom ID
+    ImGui::PushID(("##checkbox_" + key).c_str());
     if (ImGui::Checkbox("##checkbox", &boolValue)) {
         value = boolValue ? "true" : "false";
         hasChanges = true;
         LOG_DEBUG("UiElementRenderer::renderCheckbox: " << section << "." << key << " = " << value);
     }
+    ImGui::PopID();
+
+    // Pop styling
+    ImGui::PopStyleColor(4); // Pop all four color styles
+    ImGui::PopStyleVar(2); // Pop both style variables
 }
 
 void renderDpiScale([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, SettingsSection& sectionData) {
