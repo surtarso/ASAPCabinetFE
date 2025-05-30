@@ -57,7 +57,7 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - No need to download artpacks, generate your own. (See [tools](#generator-tools))
 - Just what it takes to make your cabinet look good!
 
-_ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pinball experience. Join us and make it yours!
+_ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pinball experience for Linux. Join us and make it yours!
 
 ### How it works
 - Scans recursively for `.vpx` files.
