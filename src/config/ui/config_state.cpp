@@ -156,7 +156,7 @@ bool ConfigUIState::hasFontSettingsChanged(const std::map<std::string, SettingsS
     return false;
 }
 
-bool ConfigUIState::hasTitleDataSourceChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
     auto currentIt = currentIniData.find("TitleDisplay");
     auto lastIt = lastSavedIniData.find("TitleDisplay");
 
@@ -167,21 +167,56 @@ bool ConfigUIState::hasTitleDataSourceChanged(const std::map<std::string, Settin
 
     const auto& currentSection = currentIt->second;
     const auto& lastSection = lastIt->second;
-    const std::string key = "TitleSource";
-    auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
-                                      [key](const auto& pair) { return pair.first == key; });
-    auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
-                                   [key](const auto& pair) { return pair.first == key; });
 
-    if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+    // Check TitleSource
+    const std::string titleSourceKey = "TitleSource";
+    auto currentTitleSourceIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                             [titleSourceKey](const auto& pair) { return pair.first == titleSourceKey; });
+    auto lastTitleSourceIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                          [titleSourceKey](const auto& pair) { return pair.first == titleSourceKey; });
+
+    if (currentTitleSourceIt == currentSection.keyValues.end() || lastTitleSourceIt == lastSection.keyValues.end()) {
         LOG_DEBUG("ConfigUIState: TitleSource key missing in current or last state");
         return true;
     }
-    if (currentPairIt->second != lastPairIt->second) {
-        LOG_DEBUG("ConfigUIState: TitleSource changed from " << lastPairIt->second << " to " << currentPairIt->second);
+    if (currentTitleSourceIt->second != lastTitleSourceIt->second) {
+        LOG_DEBUG("ConfigUIState: TitleSource changed from " << lastTitleSourceIt->second << " to " << currentTitleSourceIt->second);
         return true;
     }
-    //LOG_DEBUG("ConfigUIState: No TitleSource changes");
+
+    // Check wheelWindow
+    const std::string wheelWindowKey = "WheelWindow";
+    auto currentWheelWindowIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                             [wheelWindowKey](const auto& pair) { return pair.first == wheelWindowKey; });
+    auto lastWheelWindowIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                          [wheelWindowKey](const auto& pair) { return pair.first == wheelWindowKey; });
+
+    if (currentWheelWindowIt == currentSection.keyValues.end() || lastWheelWindowIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUIState: wheelWindow key missing in current or last state");
+        return true;
+    }
+    if (currentWheelWindowIt->second != lastWheelWindowIt->second) {
+        LOG_DEBUG("ConfigUIState: wheelWindow changed from " << lastWheelWindowIt->second << " to " << currentWheelWindowIt->second);
+        return true;
+    }
+
+    // Check titleWindow
+    const std::string titleWindowKey = "TitleWindow";
+    auto currentTitleWindowIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                             [titleWindowKey](const auto& pair) { return pair.first == titleWindowKey; });
+    auto lastTitleWindowIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                          [titleWindowKey](const auto& pair) { return pair.first == titleWindowKey; });
+
+    if (currentTitleWindowIt == currentSection.keyValues.end() || lastTitleWindowIt == lastSection.keyValues.end()) {
+        LOG_DEBUG("ConfigUIState: titleWindow key missing in current or last state");
+        return true;
+    }
+    if (currentTitleWindowIt->second != lastTitleWindowIt->second) {
+        LOG_DEBUG("ConfigUIState: titleWindow changed from " << lastTitleWindowIt->second << " to " << currentTitleWindowIt->second);
+        return true;
+    }
+
+    //LOG_DEBUG("ConfigUIState: No TitleDisplay changes");
     return false;
 }
 

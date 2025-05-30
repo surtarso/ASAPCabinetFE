@@ -10,10 +10,14 @@
 // Constructor: Initializes renderers, font, and nulls out pointers
 AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f, ISoundManager* soundManager)
     : playfieldTexture(nullptr, SDL_DestroyTexture),
-      wheelTexture(nullptr, SDL_DestroyTexture),
+      playfieldWheelTexture(nullptr, SDL_DestroyTexture),
+      playfieldTitleTexture(nullptr, SDL_DestroyTexture),
       backglassTexture(nullptr, SDL_DestroyTexture),
+      backglassWheelTexture(nullptr, SDL_DestroyTexture),
+      backglassTitleTexture(nullptr, SDL_DestroyTexture),
       dmdTexture(nullptr, SDL_DestroyTexture),
-      titleTexture(nullptr, SDL_DestroyTexture),
+      dmdWheelTexture(nullptr, SDL_DestroyTexture),
+      dmdTitleTexture(nullptr, SDL_DestroyTexture),
       titleRect{0, 0, 0, 0},
       playfieldVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
@@ -28,9 +32,11 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       font(f),
       configManager_(nullptr),
       currentPlayfieldImagePath_(),
-      currentWheelImagePath_(),
+      currentPlayfieldWheelImagePath_(),
       currentBackglassImagePath_(),
+      currentBackglassWheelImagePath_(),
       currentDmdImagePath_(),
+      currentDmdWheelImagePath_(),
       currentPlayfieldMediaWidth_(0),
       currentPlayfieldMediaHeight_(0),
       currentBackglassMediaWidth_(0),
@@ -62,11 +68,9 @@ void AssetManager::setSettingsManager(IConfigService* configService) {
 }
 
 void AssetManager::setTitlePosition(int x, int y) {
-    if (titleTexture) {
         titleRect.x = x;
         titleRect.y = y;
         LOG_DEBUG("AssetManager: Updated title position to x=" << x << ", y=" << y);
-    }
 }
 
 void AssetManager::setFont(TTF_Font* font) {
@@ -75,27 +79,57 @@ void AssetManager::setFont(TTF_Font* font) {
 }
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
-    if (playfieldRenderer && font) {
-        titleTexture.reset();
+    const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
+    if (playfieldRenderer && font && settings.showTitle && settings.titleWindow == "playfield") {
+        playfieldTitleTexture.reset();
         this->titleRect.x = titleRect.x;
         this->titleRect.y = titleRect.y;
         this->titleRect.w = 0;
         this->titleRect.h = 0;
-        titleTexture.reset(renderText(playfieldRenderer, font, title, color, this->titleRect));
+        playfieldTitleTexture.reset(renderText(playfieldRenderer, font, title, color, this->titleRect));
         int texWidth = 0, texHeight = 0;
-        if (titleTexture) {
-            SDL_QueryTexture(titleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
+        if (playfieldTitleTexture) {
+            SDL_QueryTexture(playfieldTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
             titleRect = this->titleRect;
         }
-        LOG_DEBUG("AssetManager: Title texture reloaded, font=" << font << ", font_height=" 
+        LOG_DEBUG("AssetManager: Playfield title texture reloaded, font=" << font << ", font_height=" 
                   << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
     } else {
-        LOG_DEBUG("AssetManager: Skipping title texture reload: no renderer or font");
-        titleTexture.reset();
+        playfieldTitleTexture.reset();
+    }
+    if (backglassRenderer && font && settings.showTitle && settings.titleWindow == "backglass") {
+        backglassTitleTexture.reset();
+        this->titleRect.x = titleRect.x;
+        this->titleRect.y = titleRect.y;
         this->titleRect.w = 0;
         this->titleRect.h = 0;
-        titleRect.w = 0;
-        titleRect.h = 0;
+        backglassTitleTexture.reset(renderText(backglassRenderer, font, title, color, this->titleRect));
+        int texWidth = 0, texHeight = 0;
+        if (backglassTitleTexture) {
+            SDL_QueryTexture(backglassTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
+            titleRect = this->titleRect;
+        }
+        LOG_DEBUG("AssetManager: Backglass title texture reloaded, font=" << font << ", font_height=" 
+                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
+    } else {
+        backglassTitleTexture.reset();
+    }
+    if (dmdRenderer && font && settings.showTitle && settings.titleWindow == "dmd") {
+        dmdTitleTexture.reset();
+        this->titleRect.x = titleRect.x;
+        this->titleRect.y = titleRect.y;
+        this->titleRect.w = 0;
+        this->titleRect.h = 0;
+        dmdTitleTexture.reset(renderText(dmdRenderer, font, title, color, this->titleRect));
+        int texWidth = 0, texHeight = 0;
+        if (dmdTitleTexture) {
+            SDL_QueryTexture(dmdTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
+            titleRect = this->titleRect;
+        }
+        LOG_DEBUG("AssetManager: DMD title texture reloaded, font=" << font << ", font_height=" 
+                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
+    } else {
+        dmdTitleTexture.reset();
     }
 }
 
@@ -195,48 +229,91 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
               << ", dmdImage: " << table.dmdImage
               << ", wheelImage: " << table.wheelImage);
 
+    // Playfield
     if (playfieldRenderer) {
         if (table.playfieldImage != currentPlayfieldImagePath_ || !playfieldTexture) {
             playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
             currentPlayfieldImagePath_ = table.playfieldImage;
         }
-        if (table.wheelImage != currentWheelImagePath_ || !wheelTexture) {
-            wheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
-            currentWheelImagePath_ = table.wheelImage;
+        if (settings.showWheel && settings.wheelWindow == "playfield" && 
+            (table.wheelImage != currentPlayfieldWheelImagePath_ || !playfieldWheelTexture)) {
+            playfieldWheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
+            currentPlayfieldWheelImagePath_ = table.wheelImage;
+        } else if (settings.wheelWindow != "playfield") {
+            playfieldWheelTexture.reset();
+            currentPlayfieldWheelImagePath_.clear();
         }
-        if (font) {
+        if (font && settings.showTitle && settings.titleWindow == "playfield") {
             titleRect = {settings.titleX, settings.titleY, 0, 0};
             std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            titleTexture.reset(renderText(playfieldRenderer, font, title, settings.fontColor, titleRect));
+            playfieldTitleTexture.reset(renderText(playfieldRenderer, font, title, settings.fontColor, titleRect));
         } else {
-            titleTexture.reset();
+            playfieldTitleTexture.reset();
         }
     } else {
         playfieldTexture.reset();
-        wheelTexture.reset();
-        titleTexture.reset();
+        playfieldWheelTexture.reset();
+        playfieldTitleTexture.reset();
         currentPlayfieldImagePath_.clear();
-        currentWheelImagePath_.clear();
+        currentPlayfieldWheelImagePath_.clear();
     }
 
+    // Backglass
     if (backglassRenderer && settings.showBackglass) {
         if (table.backglassImage != currentBackglassImagePath_ || !backglassTexture) {
             backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
             currentBackglassImagePath_ = table.backglassImage;
         }
+        if (settings.showWheel && settings.wheelWindow == "backglass" && 
+            (table.wheelImage != currentBackglassWheelImagePath_ || !backglassWheelTexture)) {
+            backglassWheelTexture.reset(loadTexture(backglassRenderer, table.wheelImage));
+            currentBackglassWheelImagePath_ = table.wheelImage;
+        } else if (settings.wheelWindow != "backglass") {
+            backglassWheelTexture.reset();
+            currentBackglassWheelImagePath_.clear();
+        }
+        if (font && settings.showTitle && settings.titleWindow == "backglass") {
+            titleRect = {settings.titleX, settings.titleY, 0, 0};
+            std::string title = table.title.empty() ? "Unknown Title" : table.title;
+            backglassTitleTexture.reset(renderText(backglassRenderer, font, title, settings.fontColor, titleRect));
+        } else {
+            backglassTitleTexture.reset();
+        }
     } else {
         backglassTexture.reset();
+        backglassWheelTexture.reset();
+        backglassTitleTexture.reset();
         currentBackglassImagePath_.clear();
+        currentBackglassWheelImagePath_.clear();
     }
 
+    // DMD
     if (dmdRenderer && settings.showDMD) {
         if (table.dmdImage != currentDmdImagePath_ || !dmdTexture) {
             dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
             currentDmdImagePath_ = table.dmdImage;
         }
+        if (settings.showWheel && settings.wheelWindow == "dmd" && 
+            (table.wheelImage != currentDmdWheelImagePath_ || !dmdWheelTexture)) {
+            dmdWheelTexture.reset(loadTexture(dmdRenderer, table.wheelImage));
+            currentDmdWheelImagePath_ = table.wheelImage;
+        } else if (settings.wheelWindow != "dmd") {
+            dmdWheelTexture.reset();
+            currentDmdWheelImagePath_.clear();
+        }
+        if (font && settings.showTitle && settings.titleWindow == "dmd") {
+            titleRect = {settings.titleX, settings.titleY, 0, 0};
+            std::string title = table.title.empty() ? "Unknown Title" : table.title;
+            dmdTitleTexture.reset(renderText(dmdRenderer, font, title, settings.fontColor, titleRect));
+        } else {
+            dmdTitleTexture.reset();
+        }
     } else {
         dmdTexture.reset();
+        dmdWheelTexture.reset();
+        dmdTitleTexture.reset();
         currentDmdImagePath_.clear();
+        currentDmdWheelImagePath_.clear();
     }
 
     auto stopAndMove = [this](std::unique_ptr<IVideoPlayer>& current, std::string& currentPath) {
@@ -248,6 +325,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         }
     };
 
+    // Playfield video
     if (playfieldRenderer && !table.playfieldVideo.empty() &&
         settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
         if (table.playfieldVideo != currentPlayfieldVideoPath_ ||
@@ -278,6 +356,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         currentPlayfieldMediaHeight_ = 0;
     }
 
+    // Backglass video
     if (backglassRenderer && !table.backglassVideo.empty() &&
         settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0 &&
         settings.showBackglass) {
@@ -314,6 +393,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         }
     }
 
+    // DMD video
     if (dmdRenderer && !table.dmdVideo.empty() &&
         settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0 &&
         settings.showDMD) {
@@ -362,32 +442,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     LOG_INFO("Loaded " << table.title << " in " << duration << "ms");
-}
-
-void AssetManager::cleanupVideoPlayers() {
-    LOG_DEBUG("AssetManager: Cleaning up video players");
-    if (playfieldVideoPlayer) {
-        playfieldVideoPlayer->stop();
-        playfieldVideoPlayer.reset();
-        currentPlayfieldVideoPath_.clear();
-        currentPlayfieldMediaWidth_ = 0;
-        currentPlayfieldMediaHeight_ = 0;
-    }
-    if (backglassVideoPlayer) {
-        backglassVideoPlayer->stop();
-        backglassVideoPlayer.reset();
-        currentBackglassVideoPath_.clear();
-        currentBackglassMediaWidth_ = 0;
-        currentBackglassMediaHeight_ = 0;
-    }
-    if (dmdVideoPlayer) {
-        dmdVideoPlayer->stop();
-        dmdVideoPlayer.reset();
-        currentDmdVideoPath_.clear();
-        currentDmdMediaWidth_ = 0;
-        currentDmdMediaHeight_ = 0;
-    }
-    clearOldVideoPlayers();
 }
 
 void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
@@ -456,4 +510,40 @@ SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, co
 
     SDL_FreeSurface(surf);
     return texture;
+}
+
+void AssetManager::cleanupVideoPlayers() {
+    LOG_DEBUG("AssetManager: Cleaning up video players");
+
+    // Stop and reset playfield video player
+    if (playfieldVideoPlayer) {
+        playfieldVideoPlayer->stop();
+        playfieldVideoPlayer.reset();
+        currentPlayfieldVideoPath_.clear();
+        currentPlayfieldMediaWidth_ = 0;
+        currentPlayfieldMediaHeight_ = 0;
+    }
+
+    // Stop and reset backglass video player
+    if (backglassVideoPlayer) {
+        backglassVideoPlayer->stop();
+        backglassVideoPlayer.reset();
+        currentBackglassVideoPath_.clear();
+        currentBackglassMediaWidth_ = 0;
+        currentBackglassMediaHeight_ = 0;
+    }
+
+    // Stop and reset DMD video player
+    if (dmdVideoPlayer) {
+        dmdVideoPlayer->stop();
+        dmdVideoPlayer.reset();
+        currentDmdVideoPath_.clear();
+        currentDmdMediaWidth_ = 0;
+        currentDmdMediaHeight_ = 0;
+    }
+
+    // Clear old video players cache
+    oldVideoPlayers_.clear();
+
+    LOG_DEBUG("AssetManager: Video players cleaned up");
 }

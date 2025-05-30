@@ -215,9 +215,15 @@ ConfigSchema::ConfigSchema() {
         {"showWheel", "TitleDisplay", "ShowWheel", true, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showWheel"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showWheel"); }},
+        {"wheelWindow", "TitleDisplay", "WheelWindow", std::string("playfield"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "wheelWindow"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "wheelWindow"); }},
         {"showTitle", "TitleDisplay", "ShowTitle", true, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showTitle"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showTitle"); }},
+        {"titleWindow", "TitleDisplay", "TitleWindow", std::string("playfield"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "titleWindow"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "titleWindow"); }},
         {"titleX", "TitleDisplay", "TitleX", 30, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "titleX"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "titleX"); }},
@@ -369,6 +375,8 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "vpsDbLastUpdated") s.vpsDbLastUpdated = val;
     else if (field == "indexPath") s.indexPath = val;
     else if (field == "vpxtoolIndex") s.vpxtoolIndex = val;
+    else if (field == "wheelWindow") s.wheelWindow = val;
+    else if (field == "titleWindow") s.titleWindow = val;
     else LOG_ERROR("ConfigSchema: Unknown string field: " << field);
 }
 

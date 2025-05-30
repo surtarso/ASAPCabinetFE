@@ -95,7 +95,7 @@ public:
      * @param currentIniData The current INI data.
      * @return True if the title data source has changed, false otherwise.
      */
-    bool hasTitleDataSourceChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
+    bool hasTitleDataChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
 
     /**
      * @brief Checks if the video backend has changed.

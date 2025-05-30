@@ -140,7 +140,7 @@ void ConfigUI::saveConfig() {
     bool windowSettingsChanged = state_.hasWindowSettingsChanged(oldIniData);
     bool visibilitySettingsChanged = state_.hasVisibilitySettingsChanged(oldIniData);
     bool fontSettingsChanged = state_.hasFontSettingsChanged(oldIniData);
-    bool titleDataSourceChanged = state_.hasTitleDataSourceChanged(oldIniData);
+    bool titleDataSourceChanged = state_.hasTitleDataChanged(oldIniData);
     bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
     bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
@@ -161,10 +161,10 @@ void ConfigUI::saveConfig() {
     state_.lastSavedIniData = currentIniData;
 
     // Update title position if needed
-    if (assets_ && assets_->getTitleTexture()) {
+    if (assets_) {
         const Settings& settings = configService_->getSettings();
         assets_->setTitlePosition(settings.titleX, settings.titleY);
-        //LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
+        LOG_DEBUG("ConfigUI: Updated title position to x=" << settings.titleX << ", y=" << settings.titleY);
     }
 
     // Update audio settings in ISoundManager and AssetManager if AudioSettings changed
@@ -183,7 +183,7 @@ void ConfigUI::saveConfig() {
             LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated AssetManager video audio settings");
         }
     }
-
+    
     // Trigger callbacks for relevant changes
     if (appCallbacks_ && !standaloneMode_) {
         bool anyCallbackTriggered = false;

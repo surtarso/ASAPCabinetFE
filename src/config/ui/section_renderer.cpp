@@ -133,6 +133,12 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["MasterVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
     };
+    keyRenderers_["TitleWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["WheelWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
+    };
 }
 
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {

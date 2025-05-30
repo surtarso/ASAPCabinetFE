@@ -56,14 +56,16 @@ struct Settings {
     int dmdY;
 
     // [TitleDisplay]
+    std::string titleSource;
+    bool showMetadata;
+    bool showWheel;
+    std::string wheelWindow;
+    bool showTitle;
+    std::string titleWindow;
     std::string fontPath;
     SDL_Color fontColor;
     SDL_Color fontBgColor;
     int fontSize;
-    std::string titleSource;
-    bool showMetadata;
-    bool showWheel;
-    bool showTitle;
     int titleX;
     int titleY;
 

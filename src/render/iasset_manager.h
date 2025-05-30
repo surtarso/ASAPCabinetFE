@@ -48,10 +48,11 @@ public:
     virtual SDL_Texture* getPlayfieldTexture() = 0;
 
     /**
-     * @brief Retrieves the texture used for the wheel.
+     * @brief Retrieves the texture used for the wheel for a specific renderer.
+     * @param renderer The SDL renderer to get the texture for.
      * @return SDL_Texture* Pointer to the wheel texture.
      */
-    virtual SDL_Texture* getWheelTexture() = 0;
+    virtual SDL_Texture* getWheelTexture(SDL_Renderer* renderer) = 0;
 
     /**
      * @brief Retrieves the texture used for the backglass.
@@ -66,10 +67,11 @@ public:
     virtual SDL_Texture* getDmdTexture() = 0;
 
     /**
-     * @brief Retrieves the texture used for the title.
+     * @brief Retrieves the texture used for the title for a specific renderer.
+     * @param renderer The SDL renderer to get the texture for.
      * @return SDL_Texture* Pointer to the title texture.
      */
-    virtual SDL_Texture* getTitleTexture() = 0;
+    virtual SDL_Texture* getTitleTexture(SDL_Renderer* renderer) = 0;
     
     // Video player accessors
     /**

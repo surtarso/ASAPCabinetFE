@@ -264,6 +264,27 @@ void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::st
     }
 }
 
+void renderWheelTitleWindowDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
+    const char* options[] = {"playfield", "backglass", "dmd"};
+    int videoBackend = 0; // Default to the first option (playfield)
+
+    // Find the index of the current 'value' in the 'options' array
+    for (int i = 0; i < IM_ARRAYSIZE(options); ++i) {
+        if (value == options[i]) {
+            videoBackend = i;
+            break; // Found the match, no need to continue
+        }
+    }
+
+    ImGui::SetNextItemWidth(150);
+    if (ImGui::Combo("##videoBackend", &videoBackend, options, IM_ARRAYSIZE(options))) {
+        std::string oldValue = value;
+        value = options[videoBackend];
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer::renderVideoBackendDropdown: " << section << "." << key << " = " << value);
+    }
+}
+
 void renderTitleDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section, IConfigService* configService) {
     const char* options[] = {"filename", "metadata"};
     int titleSource = (value == "metadata") ? 1 : 0;
