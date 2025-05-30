@@ -61,7 +61,7 @@ _ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pi
 
 ### How it works
 - Scans recursively for `.vpx` files.
-- Creates up to three windows for playfield, backglass and DMD.
+- Creates **up to three** windows for playfield, backglass and DMD.
 - Loads default or custom media for each table.
 - Launches tables with desired VPX executable.
 
