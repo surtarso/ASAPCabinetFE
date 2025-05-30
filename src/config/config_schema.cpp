@@ -360,6 +360,18 @@ ConfigSchema::ConfigSchema() {
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
+        {"vpsDbPath", "Internal", "VpsDbPath", std::string("data/vpsdb.json"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "vpsDbPath"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "vpsDbPath"); }},
+        {"vpsDbUpdateFrequency", "Internal", "VpsDbUpdateFrequency", std::string("startup"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "vpsDbUpdateFrequency"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "vpsDbUpdateFrequency"); }},
+         {"vpsDbLastUpdated", "Internal", "VpsDbLastUpdated", std::string("data/vpsdb_last_updated.txt"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "vpsDbLastUpdated"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "vpsDbLastUpdated"); }},
+         {"indexPath", "Internal", "IndexPath", std::string("data/asapcabinetfe_index.json"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "indexPath"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "indexPath"); }},
     };
 }
 
@@ -423,6 +435,10 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "ambienceSound") s.ambienceSound = val;
     else if (field == "logFile") s.logFile = val;
     else if (field == "videoBackend") s.videoBackend = val;
+    else if (field == "vpsDbPath") s.vpsDbPath = val;
+    else if (field == "vpsDbUpdateFrequency") s.vpsDbUpdateFrequency = val;
+    else if (field == "vpsDbLastUpdated") s.vpsDbLastUpdated = val;
+    else if (field == "indexPath") s.indexPath = val;
     else LOG_ERROR("ConfigSchema: Unknown string field: " << field);
 }
 

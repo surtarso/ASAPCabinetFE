@@ -4,8 +4,8 @@
  *
  * This header provides the TableData struct, which encapsulates metadata and file paths
  * for Visual Pinball X (VPX) tables, including media assets (images, videos, music) and
- * vpxtool-extracted metadata. It is used by the TableLoader and rendering components
- * in ASAPCabinetFE to manage table information.
+ * metadata from vpxtool or VPS database (vpsdb). It is used by the TableLoader and
+ * rendering components in ASAPCabinetFE to manage table information.
  */
 
 #ifndef TABLE_DATA_H
@@ -18,38 +18,51 @@
  * @brief Stores metadata and media paths for a VPX table.
  *
  * This struct holds information about a Visual Pinball X (VPX) table, including paths
- * to media assets (images, videos, music) and metadata extracted via vpxtool. It supports
- * rendering and sorting of tables in the ASAPCabinetFE application.
+ * to media assets (images, videos, music) and metadata from vpxtool or vpsdb.json.
+ * It supports rendering and sorting of tables in the ASAPCabinetFE application.
  */
 struct TableData {
     // Standard paths
-    std::string title;           ///< Filename or title of the table.
+    std::string title;           ///< Table title (from vpxtool, vpsdb, or filename).
     std::string vpxFile;         ///< Full path to the .vpx file.
     std::string folder;          ///< Directory containing the .vpx file.
     std::string playfieldImage;  ///< Path to the static playfield image.
     std::string wheelImage;      ///< Path to the static wheel image.
     std::string backglassImage;  ///< Path to the static backglass image.
-    std::string dmdImage;        ///< Path to the static DMD (Dot Matrix Display) image.
+    std::string dmdImage;        ///< Path to the static DMD image.
     std::string playfieldVideo;  ///< Path to the playfield video, if available.
     std::string backglassVideo;  ///< Path to the backglass video, if available.
     std::string dmdVideo;        ///< Path to the DMD video, if available.
     std::string music;           ///< Path to the music file, if available.
 
     // vpxtool metadata
-    std::string tableName;       ///< Metadata representing the table's name.
-    std::string authorName;      ///< Metadata representing the author's name.
-    std::string gameName;        ///< Metadata representing the game name.
-    std::string romPath;         ///< Metadata representing the ROM path.
-    std::string tableDescription; ///< Metadata describing the table.
-    std::string tableSaveDate;   ///< Metadata indicating when the table was saved.
-    std::string lastModified;    ///< Metadata indicating the last modification date.
-    std::string releaseDate;     ///< Metadata indicating the table's release date.
-    std::string tableVersion;    ///< Metadata indicating the table's version.
-    std::string tableRevision;   ///< Metadata indicating the table's revision.
+    std::string tableName;       ///< Table name from vpxtool metadata.
+    std::string authorName;      ///< Author(s) from vpxtool metadata.
+    std::string gameName;        ///< Game name from vpxtool metadata.
+    std::string romPath;         ///< ROM path from vpxtool metadata.
+    std::string tableDescription; ///< Description from vpxtool or vpsdb comment.
+    std::string tableSaveDate;   ///< Save date from vpxtool metadata.
+    std::string lastModified;    ///< Last modified date from vpxtool metadata.
+    std::string releaseDate;     ///< Release date from vpxtool metadata.
+    std::string tableVersion;    ///< Table version from vpxtool or vpsdb.
+    std::string tableRevision;   ///< Table revision from vpxtool metadata.
+
+    // vpsdb metadata
+    std::string vpsId;           ///< Unique ID from vpsdb.json.
+    std::string vpsName;         ///< Table name from vpsdb.json.
+    std::string type;            ///< Table type (e.g., SS, EM) from vpsdb.json.
+    std::string themes;          ///< Comma-separated themes from vpsdb.json.
+    std::string designers;       ///< Comma-separated designers from vpsdb.json.
+    std::string players;         ///< Number of players from vpsdb.json.
+    std::string ipdbUrl;         ///< IPDB URL from vpsdb.json.
+    std::string vpsVersion;      ///< Table version from vpsdb.json tableFiles.
+    std::string vpsAuthors;      ///< Comma-separated authors from vpsdb.json tableFiles.
+    std::string features;        ///< Comma-separated features from vpsdb.json tableFiles.
+    std::string vpsComment;      ///< Comment from vpsdb.json tableFiles.
 
     // Sorting metadata
-    std::string manufacturer;    ///< Metadata indicating the table's manufacturer, used for sorting.
-    std::string year;            ///< Metadata indicating the table's year, used for sorting.
+    std::string manufacturer;    ///< Manufacturer from vpxtool or vpsdb, used for sorting.
+    std::string year;            ///< Year from vpxtool or vpsdb, used for sorting.
 };
 
 #endif // TABLE_DATA_H

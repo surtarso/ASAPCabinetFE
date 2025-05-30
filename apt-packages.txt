@@ -14,5 +14,6 @@ libswscale-dev
 libswresample-dev
 libgstreamer1.0-dev
 libgstreamer-plugins-base1.0-dev
+libcurl4-openssl-dev
 xdotool
 imagemagick

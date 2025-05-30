@@ -1,31 +1,48 @@
 TODO
 
 FIX:
-- various gstreamer quirks and leaks...
+- year parsing (release date should be last resort)
+- name parsing (its ok, could be better like vpxguitools)
+- small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start
-- metadata year/manufacturer better parsing
 
 QOL:
+- add vpinballx.ini to settings so its not hardcoded w/ default
 - sort by year/manufacturer
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
 UI:
+- loading feedback when parsing/fetching files
 - overall polish on config ui (imgui)
 - add blinking arrows on sides to indicate table flow/keys?
 - show a couple of prev/next table wheels?
 
 On hold:
+- add metadata panel to settings (size/pos, visible fields etc)
+- refactor the monoliths...
+- thread table_loader
+- implement custom launch sound
+- implement db update frequency
 - abstract linux commands with an interface for crossplat later
-- use json instead of memory for standart info (besides vpxtool)
-- sound config for UI volume/music
+- use json instead of memory for standart info
 - attract mode (random table on a timer if idle) (optional)
-- create a make install target
 - create default videos?
 
 Later:
+- support animated png for wheel/marquee
+- dynamic window creation
+- table settings overrides
 - add pup windows to screenshot capture
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
 - adapt to be crossplatform?
+
+
+Cooking:
+fetch vpxtool binary on metadata toggle select (button/popup) if needed.
+download, run, use paths from settings all auto w/ feedback.
+Add enrich layer from vpsdb someway thats optional and intuitive (checkbox 'add online metadata' or something).
+If possible, skip vpxtool entirely (no metadata to start with)
+to have 3 options (filename, file metadata(vpxtool), online metadata(vpsdb)) that can work independently. (in case vpxtool is not available for some reason, or vpsdb) but keeping current behavior of 'full metadata' with all fallbacks already implemented. this need to be on settings and easy to understand.

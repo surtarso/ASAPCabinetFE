@@ -3,15 +3,15 @@
  * @brief Defines the TableLoader class for loading table data in ASAPCabinetFE.
  *
  * This header provides the TableLoader class, which implements the ITableLoader interface
- * to load metadata and media paths for Visual Pinball X (VPX) tables. It processes table
- * directories and settings to populate TableData instances and maintains a letter index
- * for table navigation.
+ * to load metadata and media paths for Visual Pinball X (VPX) tables, with optional VPS
+ * metadata enrichment via VpsDatabaseClient.
  */
 
 #ifndef TABLE_LOADER_H
 #define TABLE_LOADER_H
 
 #include "render/itable_loader.h"
+#include "vps_database_client.h"
 #include <filesystem>
 
 /**
@@ -23,75 +23,84 @@ namespace fs = std::filesystem;
  * @class TableLoader
  * @brief Loads table data and metadata for VPX tables.
  *
- * This class implements the ITableLoader interface to scan table directories, load
- * VPX table metadata, and associate media assets (images, videos, music) based on
- * the provided settings. It also maintains a letter-based index for table navigation.
+ * Implements ITableLoader to scan VPX table directories, load vpxtool metadata, and enrich
+ * tables with VPS metadata. Maintains a letter index for navigation.
  */
 class TableLoader : public ITableLoader {
 public:
+    TableLoader() = default; // Empty constructor
+
     /**
-     * @brief Loads a list of table data based on the provided settings.
+     * @brief Loads a list of table data based on settings.
      *
-     * Scans the table directories specified in the settings, extracts metadata using
-     * vpxtool, and populates TableData instances with paths to VPX files and associated
-     * media assets (images, videos, music).
+     * Scans VPXTablesPath for .vpx files, loads vpxtool metadata if titleSource="metadata",
+     * and enriches with VPS data. Caches results in asapcabinetfe_index.json.
      *
-     * @param settings The application settings containing table paths and media directories.
-     * @return A vector of TableData instances representing the loaded tables.
+     * @param settings Application settings.
+     * @return Vector of TableData objects.
      */
     std::vector<TableData> loadTableList(const Settings& settings) override;
 
     /**
-     * @brief Retrieves the letter index for table navigation.
+     * @brief Retrieves the letter index for navigation.
      *
-     * Returns a map associating each letter (e.g., 'A', 'B') with the index of the first
-     * table starting with that letter in the loaded table list.
+     * Maps each letter (e.g., 'A', 'B') to the index of the first table starting with that letter.
      *
-     * @return A const reference to the letter index map.
+     * @return Const reference to the letter index map.
      */
     const std::map<char, int>& getLetterIndex() const override { return letterIndex; }
 
 private:
-    std::map<char, int> letterIndex; ///< Map of letters to table indices for navigation.
+    std::map<char, int> letterIndex; ///< Map of letters to table indices.
 
     /**
-     * @brief Resolves the path to an image asset.
+     * @brief Resolves image asset path.
      *
-     * Constructs the full path to an image file, falling back to a default path if the
-     * specified image path is invalid or empty.
-     *
-     * @param root The root directory for resolving relative paths.
-     * @param imagePath The specific image path to resolve.
-     * @param defaultImagePath The default image path to use if imagePath is invalid.
-     * @return The resolved image file path.
+     * @param root Root directory.
+     * @param imagePath Specific image path.
+     * @param defaultImagePath Default image path.
+     * @return Resolved image path.
      */
     std::string getImagePath(const std::string& root, const std::string& imagePath,
                              const std::string& defaultImagePath);
 
     /**
-     * @brief Resolves the path to a video asset.
+     * @brief Resolves video asset path.
      *
-     * Constructs the full path to a video file, falling back to a default path if the
-     * specified video path is invalid or empty.
-     *
-     * @param root The root directory for resolving relative paths.
-     * @param videoPath The specific video path to resolve.
-     * @param defaultVideoPath The default video path to use if videoPath is invalid.
-     * @return The resolved video file path.
+     * @param root Root directory.
+     * @param videoPath Specific video path.
+     * @param defaultVideoPath Default video path.
+     * @return Resolved video path.
      */
     std::string getVideoPath(const std::string& root, const std::string& videoPath,
                              const std::string& defaultVideoPath);
 
     /**
-     * @brief Resolves the path to a music asset.
+     * @brief Resolves music asset path.
      *
-     * Constructs the full path to a music file associated with a table.
-     *
-     * @param root The root directory for resolving relative paths.
-     * @param musicPath The specific music path to resolve.
-     * @return The resolved music file path.
+     * @param root Root directory.
+     * @param musicPath Specific music path.
+     * @return Resolved music path.
      */
     std::string getMusicPath(const std::string& root, const std::string& musicPath);
+
+    /**
+     * @brief Loads ASAP index file.
+     *
+     * @param settings Application settings.
+     * @param tables Vector to store loaded TableData.
+     * @return True if successful, false otherwise.
+     */
+    bool loadAsapIndex(const Settings& settings, std::vector<TableData>& tables);
+
+    /**
+     * @brief Saves table list to ASAP index file.
+     *
+     * @param settings Application settings.
+     * @param tables Vector of TableData to save.
+     * @return True if successful, false otherwise.
+     */
+    bool saveAsapIndex(const Settings& settings, const std::vector<TableData>& tables);
 };
 
 #endif // TABLE_LOADER_H

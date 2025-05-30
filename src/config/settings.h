@@ -142,6 +142,10 @@ struct Settings {
     // [Internal]
     std::string vpxSubCmd;
     std::string logFile;
+    std::string vpsDbPath;
+    std::string vpsDbUpdateFrequency;
+    std::string vpsDbLastUpdated;
+    std::string indexPath;
 };
 
 #endif // SETTINGS_H

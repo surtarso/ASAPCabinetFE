@@ -156,6 +156,7 @@ set(SOURCES
     src/render/asset_manager.cpp
     src/render/table_loader.cpp
     src/render/renderer.cpp
+    src/render/vps_database_client.cpp
     src/render/video_players/video_player_factory.cpp
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/gstreamer/gstreamer_player.cpp
@@ -213,6 +214,7 @@ pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
+find_package(CURL REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
@@ -222,6 +224,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${GSTREAMER_INCLUDE_DIRS}
+    ${CURL_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -232,6 +235,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${GSTREAMER_LIBRARIES}
+    CURL::libcurl
 )
 # --- Dependencies End ---
 
