@@ -68,13 +68,13 @@ _ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pi
 Check the [User's Manual](UserManual.md) for more details.
 ## Compiling and Running
 
-💏 Make sure you have `git` and `xargs` available
+👫 Make sure you have `git` and `xargs` available
 ```sh
 sudo apt-get update
 sudo apt-get install git findutils -y
 ```
 
-👫 Clone the Repository
+💏 Clone the Repository
 ```sh
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
