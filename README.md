@@ -24,7 +24,7 @@
 <p align="center"><i>"As Simple As Possible".</i></p>
 
 ## TL:DR
-Get up and running in minutes—whether you’re a casual player or a code tinkerer.
+Get up and running in minutes—whether you’re a player or a code tinkerer.
 ```sh
 sudo apt-get install git findutils -y -qq
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -39,7 +39,7 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
+> :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
 
 ## Features
 ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for, and here is why:
@@ -97,7 +97,7 @@ cd build
 ```
 </details>
 
-<details>
+<details open>
 <summary>🕹️ Build and Install (Release)</summary>
   
 ```sh
@@ -113,7 +113,7 @@ cd ~/ASAPCabinetFE
 ```
 </details>
 
-Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!
+_Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!_
 
 ## Default Keymap
 Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
