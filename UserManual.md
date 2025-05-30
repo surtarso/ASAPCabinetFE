@@ -32,7 +32,7 @@ No complicated setup—just fun pinball action!
       * [Generate Videos](#generate-videos)
   * [Tweaking Stuff with the Configuration Menu](#tweaking-stuff-with-the-configuration-menu)
       * [Opening the Menu](#opening-the-menu)
-      * [What You Can Change? (Everything!)](#what-you-can-change-everything)
+      * [What Can You Change? (Everything!)](#what-can-you-change-everything)
       * [Saving Your Changes](#saving-your-changes)
   * [Controls (Key Bindings)](#controls-key-bindings)
       * [Basic Default Keys](#basic-default-keys)
