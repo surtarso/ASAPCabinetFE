@@ -8,7 +8,7 @@ ConfigSchema::ConfigSchema() {
         {"VPXTablesPath", "VPX", "VPXTablesPath", std::string("/home/$USER/VPX_Tables/"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "VPXTablesPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "VPXTablesPath"); }},
-        {"VPinballXPath", "VPX", "VPinballXPath", std::string("/home/$USER/VPinballX_GL"), Type::String, false, PostProcess::None,
+        {"VPinballXPath", "VPX", "VPinballXPath", std::string("/home/$USER/VPinballX_BGFX"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "VPinballXPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "VPinballXPath"); }},
         {"vpxSubCmd", "Internal", "SubCmd", std::string("-Play"), Type::String, false, PostProcess::None,

@@ -35,7 +35,8 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
         }
 
         // Parse key-value pairs in relevant sections
-        if (currentSection == "Standalone" || currentSection == "Player") {
+        if (currentSection == "Standalone" || currentSection == "Player"
+            || currentSection == "Backglass" || currentSection == "ScoreView") {
             size_t eq = trimmed.find('=');
             if (eq == std::string::npos) continue;
 
@@ -44,9 +45,10 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
             key.erase(key.find_last_not_of(" \t") + 1);
             value.erase(0, value.find_first_not_of(" \t"));
             value.erase(value.find_last_not_of(" \t") + 1);
-
-            // Parse playfield settings
+              
+            // 10.8.0 ini settings
             if (currentSection == "Player") {
+            // Parse playfield settings
                 if (key == "PlayfieldWndX") settings.playfieldX = std::stoi(value);
                 else if (key == "PlayfieldWndY") settings.playfieldY = std::stoi(value);
                 else if (key == "PlayfieldWidth") settings.playfieldWidth = std::stoi(value);
@@ -58,26 +60,46 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
                 else if (key == "PUPPlayfieldWindowHeight") settings.playfieldHeight = std::stoi(value);
 
                 // Parse backglass settings
-                else if (key == "B2SBackglassX" || key == "PUPBackglassWindowX") {
+                else if (key == "B2SBackglassX" || key == "PUPBackglassWindowX" || key == "BackglassWndX") {
                     if (!settings.backglassX) settings.backglassX = std::stoi(value);
-                } else if (key == "B2SBackglassY" || key == "PUPBackglassWindowY") {
+                } else if (key == "B2SBackglassY" || key == "PUPBackglassWindowY" || key == "BackglassWndY") {
                     if (!settings.backglassY) settings.backglassY = std::stoi(value);
-                } else if (key == "B2SBackglassWidth" || key == "PUPBackglassWindowWidth") {
+                } else if (key == "B2SBackglassWidth" || key == "PUPBackglassWindowWidth" || key == "BackglassWidth") {
                     if (!settings.backglassWidth) settings.backglassWidth = std::stoi(value);
-                } else if (key == "B2SBackglassHeight" || key == "PUPBackglassWindowHeight") {
+                } else if (key == "B2SBackglassHeight" || key == "PUPBackglassWindowHeight" || key == "BackglassHeight") {
                     if (!settings.backglassHeight) settings.backglassHeight = std::stoi(value);
                 }
 
                 // Parse DMD settings
-                else if (key == "PinMAMEWindowX" || key == "FlexDMDWindowX" || key == "B2SDMDX" || key == "PUPDMDWindowX") {
+                else if (key == "PinMAMEWindowX" || key == "FlexDMDWindowX" || key == "B2SDMDX" || key == "PUPDMDWindowX" || key == "ScoreViewWndX") {
                     if (!settings.dmdX) settings.dmdX = std::stoi(value);
-                } else if (key == "PinMAMEWindowY" || key == "FlexDMDWindowY" || key == "B2SDMDY" || key == "PUPDMDWindowY") {
+                } else if (key == "PinMAMEWindowY" || key == "FlexDMDWindowY" || key == "B2SDMDY" || key == "PUPDMDWindowY" || key == "ScoreViewWndY") {
                     if (!settings.dmdY) settings.dmdY = std::stoi(value);
-                } else if (key == "PinMAMEWindowWidth" || key == "FlexDMDWindowWidth" || key == "B2SDMDWidth" || key == "PUPDMDWindowWidth") {
+                } else if (key == "PinMAMEWindowWidth" || key == "FlexDMDWindowWidth" || key == "B2SDMDWidth" || key == "PUPDMDWindowWidth" || key == "ScoreViewWidth") {
                     if (!settings.dmdWidth) settings.dmdWidth = std::stoi(value);
-                } else if (key == "PinMAMEWindowHeight" || key == "FlexDMDWindowHeight" || key == "B2SDMDHeight" || key == "PUPDMDWindowHeight") {
+                } else if (key == "PinMAMEWindowHeight" || key == "FlexDMDWindowHeight" || key == "B2SDMDHeight" || key == "PUPDMDWindowHeight" || key == "ScoreViewHeight") {
                     if (!settings.dmdHeight) settings.dmdHeight = std::stoi(value);
                 }
+            }
+            // 10.8.1 ini settings
+            if (currentSection == "Player") {
+                // Parse Playfield settings
+                if (key == "PlayfieldWndX") settings.playfieldX = std::stoi(value);
+                else if (key == "PlayfieldWndY") settings.playfieldY = std::stoi(value);
+                else if (key == "PlayfieldWidth") settings.playfieldWidth = std::stoi(value);
+                else if (key == "PlayfieldHeight") settings.playfieldHeight = std::stoi(value);
+            } else if (currentSection == "Backglass") {
+                // Parse backglass settings
+                if (key == "BackglassWndX") settings.backglassX = std::stoi(value);
+                else if (key == "BackglassWndY") settings.backglassY = std::stoi(value);
+                else if (key == "BackglassWidth") settings.backglassWidth = std::stoi(value);
+                else if (key == "BackglassHeight") settings.backglassHeight = std::stoi(value);
+            } else if (currentSection == "ScoreView") {
+                // Parse DMD settings
+                if (key == "ScoreViewWndX") settings.dmdX = std::stoi(value);
+                else if (key == "ScoreViewWndY") settings.dmdY = std::stoi(value);
+                else if (key == "ScoreViewWidth") settings.dmdWidth = std::stoi(value);
+                else if (key == "ScoreViewHeight") settings.dmdHeight = std::stoi(value);
             }
         }
     }
