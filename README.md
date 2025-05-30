@@ -15,6 +15,7 @@
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
 <p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your virtual pinball cabinet.</p>
+<p align="center">Crafted for pinball lovers, by a pinball lover.</p>
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/019e4170-94f2-464c-9209-4754ba87a029" width="400" />
@@ -23,6 +24,7 @@
 <p align="center"><i>"As Simple As Possible".</i></p>
 
 ## TL:DR
+Get up and running in minutes—whether you’re a casual player or a code tinkerer.
 ```sh
 sudo apt-get install git findutils -y -qq
 git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -37,27 +39,30 @@ cd ~/ASAPCabinetFE
 ```
 
 > [!NOTE]
-> You can **download already compiled builds** directly from the [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page.
-> This is the quickest way to get started.
-> Make sure you have runtime dependencies installed _(vlc ffmpeg xdotool imagemagick libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 libsdl2-mixer-2.0-0 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 gstreamer1.0-plugins-good gstreamer1.0-libav)_.
+> Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
 
 ## Features
+ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for.
+
 - Full screen multi monitor display of table playfield, backglass and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
 - Use `~/.vpinball/VPinballX.ini` values for size and position auto-configuration.
-- Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata. _(optional)_
-- Navigate tables with titles and/or wheels.
-- Support for ambience and per-table music.
+- Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata.
+- Enrich metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
+- Navigate tables with titles and/or wheels and marquees.
+- Support for ambience, per-table music and launch sounds.
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
-- Extremely lightweight and customizable.
+- Extremely lightweight and fully customizable.
 - No need to download artpacks, generate your own. (See [tools](#generator-tools))
 - Just what it takes to make your cabinet look good!
+
+_ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pinball experience. Join us and make it yours!
 
 ### How it works
 - Scans recursively for `.vpx` files.
 - Creates up to three windows for playfield, backglass and DMD.
-- Loads default or custom images and/or videos for the playfield, wheel, backglass, and DMD for each table.
+- Loads default or custom media for each table.
 - Launches tables with desired VPX executable.
 
 Check the [User's Manual](UserManual.md) for more details.
@@ -92,10 +97,14 @@ Run it and configure your paths:
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!
+
 > [!IMPORTANT]
 > The `Debug` type has no `--install` target. Run it in build/ folder.
 
 ## Default Keymap
+Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
+
 | Action             |        Key       | Description                               |
 |--------------------|------------------|-------------------------------------------|
 | Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
@@ -127,14 +136,19 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ```sh
 ./missing_media.sh --help
 ```
+>[!IMPORTANT]
+>Generator tools will only work with VPX up to version 10.8.0, as 10.8.1 made breaking changes to windows names that are not yet addressed.
 
 ## Planned Features:
+We’re dreaming big! Help us bring these features to life:
+
 - Dynamic custom window creation for PuP, Toppers etc.
 - Single table overrides for settings.
+- In-game video recording.
 - Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
 ## Contribute
-Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app.
+Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
 You can find the [documentation here](surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ### FOOTNOTE
