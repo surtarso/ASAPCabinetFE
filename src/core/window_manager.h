@@ -3,8 +3,8 @@
  * @brief Defines the WindowManager class for managing SDL windows and renderers in ASAPCabinetFE.
  *
  * This header provides the WindowManager class, which implements the IWindowManager
- * interface to manage SDL windows and renderers for the playfield, backglass, and DMD
- * displays. It initializes and updates display resources based on application settings.
+ * interface to manage SDL windows and renderers for the playfield, backglass, DMD,
+ * and topper displays. It initializes and updates display resources based on application settings.
  */
 
 #ifndef WINDOW_MANAGER_H
@@ -20,16 +20,16 @@
  * @brief Manages SDL windows and renderers for VPX displays.
  *
  * This class implements the IWindowManager interface to create, manage, and update
- * SDL windows and renderers for the playfield, backglass, and DMD displays. It uses
- * application settings to configure window properties and supports DPI scaling.
+ * SDL windows and renderers for the playfield, backglass, DMD, and topper displays.
+ * It uses application settings to configure window properties and supports DPI scaling.
  */
 class WindowManager : public IWindowManager {
 public:
     /**
      * @brief Constructs a WindowManager instance.
      *
-     * Initializes SDL windows and renderers for the playfield, backglass, and DMD
-     * displays based on the provided settings.
+     * Initializes SDL windows and renderers for the playfield, backglass, DMD,
+     * and topper displays based on the provided settings.
      *
      * @param settings The application settings for window configuration.
      */
@@ -64,9 +64,9 @@ public:
     SDL_Window* getDMDWindow() override { return dmdWindow_.get(); }
 
     /**
-     * @brief Gets the Topper window.
+     * @brief Gets the topper window.
      *
-     * @return The SDL window for the Topper, or nullptr if not available.
+     * @return The SDL window for the topper, or nullptr if not available.
      */
     SDL_Window* getTopperWindow() override { return topperWindow_.get(); }
 
@@ -92,17 +92,17 @@ public:
     SDL_Renderer* getDMDRenderer() override { return dmdRenderer_.get(); }
 
     /**
-     * @brief Gets the Topper renderer.
+     * @brief Gets the topper renderer.
      *
-     * @return The SDL renderer for the Topper, or nullptr if not available.
+     * @return The SDL renderer for the topper, or nullptr if not available.
      */
     SDL_Renderer* getTopperRenderer() override { return topperRenderer_.get(); }
 
     /**
      * @brief Updates windows with new settings.
      *
-     * Reconfigures the playfield, backglass, and DMD windows and renderers based on
-     * the provided application settings.
+     * Reconfigures the playfield, backglass, DMD, and topper windows and renderers
+     * based on the provided application settings.
      *
      * @param settings The application settings to apply.
      */
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Gets the positions of all windows.
      *
-     * Retrieves the x and y coordinates of the playfield, backglass, and DMD windows.
+     * Retrieves the x and y coordinates of the playfield, backglass, DMD, and topper windows.
      *
      * @param playfieldX The x-coordinate of the playfield window.
      * @param playfieldY The y-coordinate of the playfield window.
@@ -119,13 +119,27 @@ public:
      * @param backglassY The y-coordinate of the backglass window.
      * @param dmdX The x-coordinate of the DMD window.
      * @param dmdY The y-coordinate of the DMD window.
-     * @param topperX The x-coordinate of the Topper window.
-     * @param topperY The y-coordinate of the Topper window.
+     * @param topperX The x-coordinate of the topper window.
+     * @param topperY The y-coordinate of the topper window.
      */
     void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
                             int& dmdX, int& dmdY, int& topperX, int& topperY) override;
 
 private:
+    /**
+     * @brief Struct to group window-specific data for updates.
+     */
+    struct WindowInfo {
+        std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>& window;
+        std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>& renderer;
+        const char* title;
+        bool show;
+        int width;
+        int height;
+        int x;
+        int y;
+    };
+
     /**
      * @brief Creates or updates an SDL window and renderer.
      *
@@ -151,11 +165,11 @@ private:
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> playfieldWindow_;   ///< Window for the playfield display.
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> backglassWindow_;   ///< Window for the backglass display.
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> dmdWindow_;         ///< Window for the DMD display.
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> topperWindow_;         ///< Window for the topper display.
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> topperWindow_;      ///< Window for the topper display.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> playfieldRenderer_; ///< Renderer for the playfield window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> backglassRenderer_; ///< Renderer for the backglass window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> dmdRenderer_;      ///< Renderer for the DMD window.
-    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> topperRenderer_;      ///< Renderer for the topper window.
+    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> topperRenderer_;    ///< Renderer for the topper window.
 };
 
 #endif // WINDOW_MANAGER_H

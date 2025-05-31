@@ -15,151 +15,57 @@ WindowManager::WindowManager(const Settings& settings)
 }
 
 void WindowManager::updateWindows(const Settings& settings) {
-    // Check if Playfield settings changed
-    bool updatePlayfield = false;
-    if (playfieldWindow_) {
-        int currentWidth, currentHeight, currentX, currentY;
-        SDL_GetWindowSize(playfieldWindow_.get(), &currentWidth, &currentHeight);
-        SDL_GetWindowPosition(playfieldWindow_.get(), &currentX, &currentY);
-        int scaledWidth = settings.enableDpiScaling ? static_cast<int>(settings.playfieldWindowWidth * settings.dpiScale) : settings.playfieldWindowWidth;
-        int scaledHeight = settings.enableDpiScaling ? static_cast<int>(settings.playfieldWindowHeight * settings.dpiScale) : settings.playfieldWindowHeight;
-        int targetX = settings.playfieldX; // Use direct position
-        int targetY = settings.playfieldY;
-        if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
-            currentX != targetX || currentY != targetY) {
-            updatePlayfield = true;
-            LOG_DEBUG("WindowManager: Playfield needs update - width: " << currentWidth << "->" << scaledWidth
-                      << ", height: " << currentHeight << "->" << scaledHeight
-                      << ", x: " << currentX << "->" << targetX
-                      << ", y: " << currentY << "->" << targetY);
-        }
-    } else {
-        updatePlayfield = true;
-    }
+    WindowInfo windows[] = {
+        {playfieldWindow_, playfieldRenderer_, "Playfield", true,
+         settings.playfieldWindowWidth, settings.playfieldWindowHeight,
+         settings.playfieldX, settings.playfieldY},
+        {backglassWindow_, backglassRenderer_, "Backglass", settings.showBackglass,
+         settings.backglassWindowWidth, settings.backglassWindowHeight,
+         settings.backglassX, settings.backglassY},
+        {dmdWindow_, dmdRenderer_, "DMD", settings.showDMD,
+         settings.dmdWindowWidth, settings.dmdWindowHeight,
+         settings.dmdX, settings.dmdY},
+        {topperWindow_, topperRenderer_, "Topper", settings.showTopper,
+         settings.topperWindowWidth, settings.topperWindowHeight,
+         settings.topperWindowX, settings.topperWindowY}
+    };
 
-    // Check if Backglass settings changed
-    bool updateBackglass = false;
-    if (settings.showBackglass != !!backglassWindow_) {
-        updateBackglass = true;
-    } else if (backglassWindow_) {
-        int currentWidth, currentHeight, currentX, currentY;
-        SDL_GetWindowSize(backglassWindow_.get(), &currentWidth, &currentHeight);
-        SDL_GetWindowPosition(backglassWindow_.get(), &currentX, &currentY);
-        int scaledWidth = settings.enableDpiScaling ? static_cast<int>(settings.backglassWindowWidth * settings.dpiScale) : settings.backglassWindowWidth;
-        int scaledHeight = settings.enableDpiScaling ? static_cast<int>(settings.backglassWindowHeight * settings.dpiScale) : settings.backglassWindowHeight;
-        int targetX = settings.backglassX;
-        int targetY = settings.backglassY;
-        if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
-            currentX != targetX || currentY != targetY) {
-            updateBackglass = true;
-            LOG_DEBUG("WindowManager: Backglass needs update - width: " << currentWidth << "->" << scaledWidth
-                      << ", height: " << currentHeight << "->" << scaledHeight
-                      << ", x: " << currentX << "->" << targetX
-                      << ", y: " << currentY << "->" << targetY);
-        }
-    }
-
-    // Check if DMD settings changed
-    bool updateDMD = false;
-    if (settings.showDMD != !!dmdWindow_) {
-        updateDMD = true;
-    } else if (dmdWindow_) {
-        int currentWidth, currentHeight, currentX, currentY;
-        SDL_GetWindowSize(dmdWindow_.get(), &currentWidth, &currentHeight);
-        SDL_GetWindowPosition(dmdWindow_.get(), &currentX, &currentY);
-        int scaledWidth = settings.enableDpiScaling ? static_cast<int>(settings.dmdWindowWidth * settings.dpiScale) : settings.dmdWindowWidth;
-        int scaledHeight = settings.enableDpiScaling ? static_cast<int>(settings.dmdWindowHeight * settings.dpiScale) : settings.dmdWindowHeight;
-        int targetX = settings.dmdX;
-        int targetY = settings.dmdY;
-        if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
-            currentX != targetX || currentY != targetY) {
-            updateDMD = true;
-            LOG_DEBUG("WindowManager: DMD needs update - width: " << currentWidth << "->" << scaledWidth
-                      << ", height: " << currentHeight << "->" << scaledHeight
-                      << ", x: " << currentX << "->" << targetX
-                      << ", y: " << currentY << "->" << targetY);
-        }
-    }
-
-    // Check if Topper settings changed
-    bool updateTopper = false;
-    if (settings.showTopper != !!topperWindow_) {
-        updateTopper = true;
-    } else if (topperWindow_) {
-        int currentWidth, currentHeight, currentX, currentY;
-        SDL_GetWindowSize(topperWindow_.get(), &currentWidth, &currentHeight);
-        SDL_GetWindowPosition(topperWindow_.get(), &currentX, &currentY);
-        int scaledWidth = settings.enableDpiScaling ? static_cast<int>(settings.topperWindowWidth * settings.dpiScale) : settings.topperWindowWidth;
-        int scaledHeight = settings.enableDpiScaling ? static_cast<int>(settings.topperWindowHeight * settings.dpiScale) : settings.topperWindowHeight;
-        int targetX = settings.topperWindowX;
-        int targetY = settings.topperWindowY;
-        if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
-            currentX != targetX || currentY != targetY) {
-            updateTopper = true;
-            LOG_DEBUG("WindowManager: Topper needs update - width: " << currentWidth << "->" << scaledWidth
-                      << ", height: " << currentHeight << "->" << scaledHeight
-                      << ", x: " << currentX << "->" << targetX
-                      << ", y: " << currentY << "->" << targetY);
-        }
-    }
-
-    // Update only the necessary windows
-    if (updatePlayfield) {
-        //LOG_DEBUG("WindowsManager: Updating Playfield window");
-        createOrUpdateWindow(playfieldWindow_, playfieldRenderer_, "Playfield",
-                             settings.playfieldWindowWidth,
-                             settings.playfieldWindowHeight,
-                             settings.playfieldX,
-                             settings.playfieldY,
-                             settings.dpiScale,
-                             settings.enableDpiScaling);
-    }
-
-    if (updateBackglass) {
-        //LOG_DEBUG("WindowsManager: Updating Backglass window");
-        if (settings.showBackglass) {
-            createOrUpdateWindow(backglassWindow_, backglassRenderer_, "Backglass",
-                                 settings.backglassWindowWidth,
-                                 settings.backglassWindowHeight,
-                                 settings.backglassX,
-                                 settings.backglassY,
-                                 settings.dpiScale,
-                                 settings.enableDpiScaling);
+    for (auto& w : windows) {
+        bool update = false;
+        if (w.show != !!w.window) {
+            update = true;
+            // LOG_DEBUG("WindowManager: " << w.title << " needs update due to visibility change: " << w.show);
+        } else if (w.window) {
+            int currentWidth, currentHeight, currentX, currentY;
+            SDL_GetWindowSize(w.window.get(), &currentWidth, &currentHeight);
+            SDL_GetWindowPosition(w.window.get(), &currentX, &currentY);
+            int scaledWidth = settings.enableDpiScaling ? static_cast<int>(w.width * settings.dpiScale) : w.width;
+            int scaledHeight = settings.enableDpiScaling ? static_cast<int>(w.height * settings.dpiScale) : w.height;
+            if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
+                currentX != w.x || currentY != w.y) {
+                update = true;
+                LOG_DEBUG("WindowManager: " << w.title << " needs update - "
+                          << "width: " << currentWidth << "->" << scaledWidth
+                          << ", height: " << currentHeight << "->" << scaledHeight
+                          << ", x: " << currentX << "->" << w.x
+                          << ", y: " << currentY << "->" << w.y);
+            }
         } else {
-            backglassRenderer_.reset();
-            backglassWindow_.reset();
+            update = w.show;
         }
-    }
 
-    if (updateDMD) {
-        //LOG_DEBUG("WindowsManager: Updating DMD window");
-        if (settings.showDMD) {
-            createOrUpdateWindow(dmdWindow_, dmdRenderer_, "DMD",
-                                 settings.dmdWindowWidth,
-                                 settings.dmdWindowHeight,
-                                 settings.dmdX,
-                                 settings.dmdY,
-                                 settings.dpiScale,
-                                 settings.enableDpiScaling);
-        } else {
-            dmdRenderer_.reset();
-            dmdWindow_.reset();
-        }
-    }
-
-    if (updateTopper) {
-        //LOG_DEBUG("WindowsManager: Updating Topper window");
-        if (settings.showTopper) {
-            createOrUpdateWindow(topperWindow_, topperRenderer_, "Topper",
-                                 settings.topperWindowWidth,
-                                 settings.topperWindowHeight,
-                                 settings.topperWindowX,
-                                 settings.topperWindowY,
-                                 settings.dpiScale,
-                                 settings.enableDpiScaling);
-        } else {
-            topperRenderer_.reset();
-            topperWindow_.reset();
+        if (update) {
+            // LOG_DEBUG("WindowManager: Updating " << w.title << " window");
+            if (w.show) {
+                createOrUpdateWindow(w.window, w.renderer, w.title,
+                                     w.width, w.height,
+                                     w.x, w.y,
+                                     settings.dpiScale,
+                                     settings.enableDpiScaling);
+            } else {
+                w.renderer.reset();
+                w.window.reset();
+            }
         }
     }
 }
@@ -201,23 +107,24 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
 
     if (!window) {
         window.reset(SDL_CreateWindow(title, posX, posY, scaledWidth, scaledHeight,
-                                      SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
+                                      SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
         if (!window) {
-            LOG_ERROR("WindowsManager: Failed to create " << title << " window: " << SDL_GetError());
+            LOG_ERROR("WindowManager: Failed to create " << title << " window: " << SDL_GetError());
             exit(1);
         }
 
         renderer.reset(SDL_CreateRenderer(window.get(), -1,
                                          SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
         if (!renderer) {
-            LOG_ERROR("WindowsManager: Failed to create " << title << " renderer: " << SDL_GetError());
+            LOG_ERROR("WindowManager: Failed to create renderer for " << title << ": " << SDL_GetError());
             exit(1);
         }
         SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
     }
 }
 
-void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, int& dmdX, int& dmdY, int& topperX, int& topperY) {
+void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY,
+                                       int& dmdX, int& dmdY, int& topperX, int& topperY) {
     if (playfieldWindow_) {
         SDL_GetWindowPosition(playfieldWindow_.get(), &playfieldX, &playfieldY);
     }
