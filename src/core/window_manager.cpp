@@ -6,9 +6,11 @@ WindowManager::WindowManager(const Settings& settings)
     : playfieldWindow_(nullptr, SDL_DestroyWindow),
       backglassWindow_(nullptr, SDL_DestroyWindow),
       dmdWindow_(nullptr, SDL_DestroyWindow),
+      topperWindow_(nullptr, SDL_DestroyWindow),
       playfieldRenderer_(nullptr, SDL_DestroyRenderer),
       backglassRenderer_(nullptr, SDL_DestroyRenderer),
-      dmdRenderer_(nullptr, SDL_DestroyRenderer) {
+      dmdRenderer_(nullptr, SDL_DestroyRenderer),
+      topperRenderer_(nullptr, SDL_DestroyRenderer) {
     updateWindows(settings);
 }
 
@@ -79,6 +81,28 @@ void WindowManager::updateWindows(const Settings& settings) {
         }
     }
 
+    // Check if Topper settings changed
+    bool updateTopper = false;
+    if (settings.showTopper != !!topperWindow_) {
+        updateTopper = true;
+    } else if (topperWindow_) {
+        int currentWidth, currentHeight, currentX, currentY;
+        SDL_GetWindowSize(topperWindow_.get(), &currentWidth, &currentHeight);
+        SDL_GetWindowPosition(topperWindow_.get(), &currentX, &currentY);
+        int scaledWidth = settings.enableDpiScaling ? static_cast<int>(settings.topperWindowWidth * settings.dpiScale) : settings.topperWindowWidth;
+        int scaledHeight = settings.enableDpiScaling ? static_cast<int>(settings.topperWindowHeight * settings.dpiScale) : settings.topperWindowHeight;
+        int targetX = settings.topperWindowX;
+        int targetY = settings.topperWindowY;
+        if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
+            currentX != targetX || currentY != targetY) {
+            updateTopper = true;
+            LOG_DEBUG("WindowManager: Topper needs update - width: " << currentWidth << "->" << scaledWidth
+                      << ", height: " << currentHeight << "->" << scaledHeight
+                      << ", x: " << currentX << "->" << targetX
+                      << ", y: " << currentY << "->" << targetY);
+        }
+    }
+
     // Update only the necessary windows
     if (updatePlayfield) {
         //LOG_DEBUG("WindowsManager: Updating Playfield window");
@@ -120,6 +144,22 @@ void WindowManager::updateWindows(const Settings& settings) {
         } else {
             dmdRenderer_.reset();
             dmdWindow_.reset();
+        }
+    }
+
+    if (updateTopper) {
+        //LOG_DEBUG("WindowsManager: Updating Topper window");
+        if (settings.showTopper) {
+            createOrUpdateWindow(topperWindow_, topperRenderer_, "Topper",
+                                 settings.topperWindowWidth,
+                                 settings.topperWindowHeight,
+                                 settings.topperWindowX,
+                                 settings.topperWindowY,
+                                 settings.dpiScale,
+                                 settings.enableDpiScaling);
+        } else {
+            topperRenderer_.reset();
+            topperWindow_.reset();
         }
     }
 }
@@ -177,7 +217,7 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
     }
 }
 
-void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, int& dmdX, int& dmdY) {
+void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, int& dmdX, int& dmdY, int& topperX, int& topperY) {
     if (playfieldWindow_) {
         SDL_GetWindowPosition(playfieldWindow_.get(), &playfieldX, &playfieldY);
     }
@@ -186,5 +226,8 @@ void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& ba
     }
     if (dmdWindow_) {
         SDL_GetWindowPosition(dmdWindow_.get(), &dmdX, &dmdY);
+    }
+    if (topperWindow_) {
+        SDL_GetWindowPosition(topperWindow_.get(), &topperX, &topperY);
     }
 }

@@ -40,6 +40,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ShowDMD"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["ShowTopper"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderMetadataCheckbox(key, value, hasChanges_, currentSection_, configService_);
     };
@@ -98,6 +101,21 @@ void SectionRenderer::initializeKeyRenderers() {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["TopperWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TopperHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TopperMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TopperMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderResolution(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TopperRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
     keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {

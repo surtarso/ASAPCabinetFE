@@ -20,18 +20,22 @@ struct Settings {
     std::string defaultBackglassImage;
     std::string defaultDmdImage;
     std::string defaultWheelImage;
+    std::string defaultTopperImage;
     std::string defaultPlayfieldVideo;
     std::string defaultBackglassVideo;
     std::string defaultDmdVideo;
+    std::string defaultTopperVideo;
 
     // [CustomMedia]
     std::string customPlayfieldImage;
     std::string customBackglassImage;
     std::string customDmdImage;
     std::string customWheelImage;
+    std::string customTopperImage;
     std::string customPlayfieldVideo;
     std::string customBackglassVideo;
     std::string customDmdVideo;
+    std::string customTopperVideo;
     std::string tableMusic;
     std::string customLaunchSound;
 
@@ -54,6 +58,12 @@ struct Settings {
     int dmdWindowHeight;
     int dmdX;
     int dmdY;
+
+    bool showTopper;
+    int topperWindowWidth;
+    int topperWindowHeight;
+    int topperWindowX;
+    int topperWindowY;
 
     // [TitleDisplay]
     std::string titleSource;
@@ -94,6 +104,12 @@ struct Settings {
     int dmdMediaX;
     int dmdMediaY;
     int dmdRotation;
+
+    int topperMediaWidth;
+    int topperMediaHeight;
+    int topperMediaX;
+    int topperMediaY;
+    int topperRotation;
 
     // [AudioSettings]
     bool masterMute;

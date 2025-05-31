@@ -265,7 +265,7 @@ void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::st
 }
 
 void renderWheelTitleWindowDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
-    const char* options[] = {"playfield", "backglass", "dmd"};
+    const char* options[] = {"playfield", "backglass", "dmd", "topper"};
     int videoBackend = 0; // Default to the first option (playfield)
 
     // Find the index of the current 'value' in the 'options' array

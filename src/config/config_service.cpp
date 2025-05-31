@@ -70,6 +70,12 @@ void ConfigService::loadConfig() {
             if (iniSettings->dmdWidth) settings_.dmdWindowWidth = *iniSettings->dmdWidth;
             if (iniSettings->dmdHeight) settings_.dmdWindowHeight = *iniSettings->dmdHeight;
 
+            // Topper settings
+            if (iniSettings->topperX) settings_.topperWindowX = *iniSettings->topperX;
+            if (iniSettings->topperY) settings_.topperWindowY = *iniSettings->topperY;
+            if (iniSettings->topperWidth) settings_.topperWindowWidth = *iniSettings->topperWidth;
+            if (iniSettings->topperHeight) settings_.topperWindowHeight = *iniSettings->topperHeight;
+
             // Update iniData_ to reflect INI values
             auto& windowSettings = iniData_["WindowSettings"];
             auto updateKeyValue = [&](const std::string& key, const std::string& value) {
@@ -96,6 +102,11 @@ void ConfigService::loadConfig() {
             if (iniSettings->dmdY) updateKeyValue("DMDY", std::to_string(*iniSettings->dmdY));
             if (iniSettings->dmdWidth) updateKeyValue("DMDWidth", std::to_string(*iniSettings->dmdWidth));
             if (iniSettings->dmdHeight) updateKeyValue("DMDHeight", std::to_string(*iniSettings->dmdHeight));
+
+            if (iniSettings->topperX) updateKeyValue("TopperX", std::to_string(*iniSettings->topperX));
+            if (iniSettings->topperY) updateKeyValue("TopperY", std::to_string(*iniSettings->topperY));
+            if (iniSettings->topperWidth) updateKeyValue("TopperWidth", std::to_string(*iniSettings->topperWidth));
+            if (iniSettings->topperHeight) updateKeyValue("TopperHeight", std::to_string(*iniSettings->topperHeight));
 
             fileHandler_.writeConfig(iniData_);
             LOG_DEBUG("ConfigService: Updated iniData_ and saved config with VPinballX.ini values");
@@ -148,6 +159,12 @@ void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& ini
             if (iniSettings->dmdWidth) settings_.dmdWindowWidth = *iniSettings->dmdWidth;
             if (iniSettings->dmdHeight) settings_.dmdWindowHeight = *iniSettings->dmdHeight;
 
+            // Topper settings
+            if (iniSettings->topperX) settings_.topperWindowX = *iniSettings->topperX;
+            if (iniSettings->topperY) settings_.topperWindowY = *iniSettings->topperY;
+            if (iniSettings->topperWidth) settings_.topperWindowWidth = *iniSettings->topperWidth;
+            if (iniSettings->topperHeight) settings_.topperWindowHeight = *iniSettings->topperHeight;
+
             // Update iniData_ to reflect INI values
             auto& windowSettings = iniData_["WindowSettings"];
             auto updateKeyValue = [&](const std::string& key, const std::string& value) {
@@ -174,6 +191,10 @@ void ConfigService::saveConfig(const std::map<std::string, SettingsSection>& ini
             if (iniSettings->dmdY) updateKeyValue("DMDY", std::to_string(*iniSettings->dmdY));
             if (iniSettings->dmdWidth) updateKeyValue("DMDWidth", std::to_string(*iniSettings->dmdWidth));
             if (iniSettings->dmdHeight) updateKeyValue("DMDHeight", std::to_string(*iniSettings->dmdHeight));
+            if (iniSettings->topperX) updateKeyValue("TopperX", std::to_string(*iniSettings->topperX));
+            if (iniSettings->topperY) updateKeyValue("TopperY", std::to_string(*iniSettings->topperY));
+            if (iniSettings->topperWidth) updateKeyValue("TopperWidth", std::to_string(*iniSettings->topperWidth));
+            if (iniSettings->topperHeight) updateKeyValue("TopperHeight", std::to_string(*iniSettings->topperHeight));
 
             fileHandler_.writeConfig(iniData_);
             LOG_DEBUG("ConfigService: Updated iniData_ and saved config with VPinballX.ini values after save");
@@ -203,7 +224,7 @@ void ConfigService::setIniData(const std::map<std::string, SettingsSection>& ini
     parser_.parse(iniData_, settings_, keybindManager_);
 }
 
-void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) {
+void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY, int topperX, int topperY) {
     auto& windowSettings = iniData_["WindowSettings"];
     auto updateKeyValue = [&](const std::string& key, const std::string& value) {
         auto& kv = windowSettings.keyValues;
@@ -223,10 +244,12 @@ void ConfigService::updateWindowPositions(int playfieldX, int playfieldY, int ba
     updateKeyValue("BackglassY", std::to_string(backglassY));
     updateKeyValue("DMDX", std::to_string(dmdX));
     updateKeyValue("DMDY", std::to_string(dmdY));
+    updateKeyValue("TopperX", std::to_string(topperX));
+    updateKeyValue("TopperY", std::to_string(topperY));
 
     saveConfig(iniData_);
-    LOG_INFO("ConfigService: Window positions saved: P(" << playfieldX << "," << playfieldY << "), B("
-                 << backglassX << "," << backglassY << "), D(" << dmdX << "," << dmdY << ")");
+    LOG_INFO("ConfigService: Window positions saved: T(" << topperX << "," << topperY << "), P(" << playfieldX << "," << playfieldY << "), B("
+                 << backglassX << "," << backglassY << "), D(" << dmdX << "," << dmdY << "),");
 }
 
 void ConfigService::setDefaultSettings() {

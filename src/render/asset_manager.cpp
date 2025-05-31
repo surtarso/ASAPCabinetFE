@@ -8,7 +8,7 @@
 #include <chrono>
 
 // Constructor: Initializes renderers, font, and nulls out pointers
-AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f, ISoundManager* soundManager)
+AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager)
     : playfieldTexture(nullptr, SDL_DestroyTexture),
       playfieldWheelTexture(nullptr, SDL_DestroyTexture),
       playfieldTitleTexture(nullptr, SDL_DestroyTexture),
@@ -18,17 +18,23 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       dmdTexture(nullptr, SDL_DestroyTexture),
       dmdWheelTexture(nullptr, SDL_DestroyTexture),
       dmdTitleTexture(nullptr, SDL_DestroyTexture),
+      topperTexture(nullptr, SDL_DestroyTexture),
+      topperWheelTexture(nullptr, SDL_DestroyTexture),
+      topperTitleTexture(nullptr, SDL_DestroyTexture),
       titleRect{0, 0, 0, 0},
       playfieldVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
       dmdVideoPlayer(nullptr),
+      topperVideoPlayer(nullptr),
       playfieldRenderer(playfield),
       backglassRenderer(backglass),
       dmdRenderer(dmd),
+      topperRenderer(topper),
       soundManager_(soundManager),
       currentPlayfieldVideoPath_(),
       currentBackglassVideoPath_(),
       currentDmdVideoPath_(),
+      currentTopperVideoPath_(),
       font(f),
       configManager_(nullptr),
       currentPlayfieldImagePath_(),
@@ -37,12 +43,16 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       currentBackglassWheelImagePath_(),
       currentDmdImagePath_(),
       currentDmdWheelImagePath_(),
+      currentTopperImagePath_(),
+      currentTopperWheelImagePath_(),
       currentPlayfieldMediaWidth_(0),
       currentPlayfieldMediaHeight_(0),
       currentBackglassMediaWidth_(0),
       currentBackglassMediaHeight_(0),
       currentDmdMediaWidth_(0),
-      currentDmdMediaHeight_(0) {}
+      currentDmdMediaHeight_(0),
+      currentTopperMediaWidth_(0),
+      currentTopperMediaHeight_(0) {}
 
 void AssetManager::setSoundManager(ISoundManager* soundManager) {
     soundManager_ = soundManager;
@@ -131,6 +141,23 @@ void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color,
     } else {
         dmdTitleTexture.reset();
     }
+    if (topperRenderer && font && settings.showTitle && settings.titleWindow == "topper") {
+        topperTitleTexture.reset();
+        this->titleRect.x = titleRect.x;
+        this->titleRect.y = titleRect.y;
+        this->titleRect.w = 0;
+        this->titleRect.h = 0;
+        topperTitleTexture.reset(renderText(topperRenderer, font, title, color, this->titleRect));
+        int texWidth = 0, texHeight = 0;
+        if (topperTitleTexture) {
+            SDL_QueryTexture(topperTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
+            titleRect = this->titleRect;
+        }
+        LOG_DEBUG("AssetManager: topper title texture reloaded, font=" << font << ", font_height=" 
+                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
+    } else {
+        topperTitleTexture.reset();
+    }
 }
 
 void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) {
@@ -143,6 +170,7 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     playfieldRenderer = windowManager->getPlayfieldRenderer();
     backglassRenderer = windowManager->getBackglassRenderer();
     dmdRenderer = windowManager->getDMDRenderer();
+    topperRenderer = windowManager->getTopperRenderer();
     this->font = font;
 
     cleanupVideoPlayers();
@@ -155,12 +183,15 @@ void AssetManager::clearVideoCache() {
     currentPlayfieldVideoPath_.clear();
     currentBackglassVideoPath_.clear();
     currentDmdVideoPath_.clear();
+    currentTopperVideoPath_.clear();
     currentPlayfieldMediaWidth_ = 0;
     currentPlayfieldMediaHeight_ = 0;
     currentBackglassMediaWidth_ = 0;
     currentBackglassMediaHeight_ = 0;
     currentDmdMediaWidth_ = 0;
     currentDmdMediaHeight_ = 0;
+    currentTopperMediaWidth_ = 0;
+    currentTopperMediaHeight_ = 0;
 }
 
 void AssetManager::applyVideoAudioSettings() {
@@ -201,6 +232,13 @@ void AssetManager::applyVideoAudioSettings() {
     } else {
         LOG_DEBUG("AssetManager: No DMD video player to apply audio settings");
     }
+    if (topperVideoPlayer) {
+        topperVideoPlayer->setVolume(effective_volume * 100.0f);
+        topperVideoPlayer->setMute(effective_mute);
+        LOG_DEBUG("AssetManager: Applied audio settings to topper video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
+    } else {
+        LOG_DEBUG("AssetManager: No topper video player to apply audio settings");
+    }
 }
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& tables) {
@@ -213,6 +251,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
     static bool lastShowBackglass = settings.showBackglass;
     static bool lastShowDMD = settings.showDMD;
+    static bool lastShowTopper = settings.showTopper;
     static size_t lastIndex = -1;
 
     if (index != lastIndex) {
@@ -224,9 +263,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
               << ", playfieldVideo: " << table.playfieldVideo
               << ", backglassVideo: " << table.backglassVideo
               << ", dmdVideo: " << table.dmdVideo
+              << ", topperVideo: " << table.topperVideo
               << ", playfieldImage: " << table.playfieldImage
               << ", backglassImage: " << table.backglassImage
               << ", dmdImage: " << table.dmdImage
+              << ", topperImage: " << table.topperImage
               << ", wheelImage: " << table.wheelImage);
 
     // Playfield
@@ -314,6 +355,35 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         dmdTitleTexture.reset();
         currentDmdImagePath_.clear();
         currentDmdWheelImagePath_.clear();
+    }
+
+    // Topper
+    if (topperRenderer && settings.showTopper) {
+        if (table.topperImage != currentTopperImagePath_ || !topperTexture) {
+            topperTexture.reset(loadTexture(topperRenderer, table.topperImage));
+            currentTopperImagePath_ = table.topperImage;
+        }
+        if (settings.showWheel && settings.wheelWindow == "topper" && 
+            (table.wheelImage != currentTopperWheelImagePath_ || !dmdWheelTexture)) {
+            topperWheelTexture.reset(loadTexture(topperRenderer, table.wheelImage));
+            currentTopperWheelImagePath_ = table.wheelImage;
+        } else if (settings.wheelWindow != "topper") {
+            topperWheelTexture.reset();
+            currentTopperWheelImagePath_.clear();
+        }
+        if (font && settings.showTitle && settings.titleWindow == "topper") {
+            titleRect = {settings.titleX, settings.titleY, 0, 0};
+            std::string title = table.title.empty() ? "Unknown Title" : table.title;
+            topperTitleTexture.reset(renderText(topperRenderer, font, title, settings.fontColor, titleRect));
+        } else {
+            topperTitleTexture.reset();
+        }
+    } else {
+        topperTexture.reset();
+        topperWheelTexture.reset();
+        topperTitleTexture.reset();
+        currentTopperImagePath_.clear();
+        currentTopperWheelImagePath_.clear();
     }
 
     auto stopAndMove = [this](std::unique_ptr<IVideoPlayer>& current, std::string& currentPath) {
@@ -430,11 +500,49 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         }
     }
 
+    // Topper video
+    if (topperRenderer && !table.topperVideo.empty() &&
+        settings.topperMediaWidth > 0 && settings.topperMediaHeight > 0 &&
+        settings.showTopper) {
+        if (table.topperVideo != currentTopperVideoPath_ ||
+            settings.topperMediaWidth != currentTopperMediaWidth_ ||
+            settings.topperMediaHeight != currentTopperMediaHeight_ ||
+            settings.showTopper != lastShowTopper) {
+            auto newPlayer = VideoPlayerFactory::createVideoPlayer(
+                topperRenderer,
+                table.topperVideo,
+                settings.topperMediaWidth,
+                settings.topperMediaHeight,
+                configManager_);
+            if (newPlayer) {
+                stopAndMove(topperVideoPlayer, currentTopperVideoPath_);
+                topperVideoPlayer = std::move(newPlayer);
+                topperVideoPlayer->play();
+                currentTopperVideoPath_ = table.topperVideo;
+                currentTopperMediaWidth_ = settings.topperMediaWidth;
+                currentTopperMediaHeight_ = settings.topperMediaHeight;
+            } else {
+                LOG_DEBUG("AssetManager: Failed to setup topper video: " << table.topperVideo << ", keeping existing player");
+            }
+        } else if (topperVideoPlayer && !topperVideoPlayer->isPlaying()) {
+            topperVideoPlayer->play();
+        }
+    } else if (topperVideoPlayer) {
+        if (!settings.showTopper) {
+            topperVideoPlayer->stop();
+        } else {
+            stopAndMove(topperVideoPlayer, currentTopperVideoPath_);
+            currentTopperMediaWidth_ = 0;
+            currentTopperMediaHeight_ = 0;
+        }
+    }
+
     // Apply audio settings to all video players
     applyVideoAudioSettings();
 
     lastShowBackglass = settings.showBackglass;
     lastShowDMD = settings.showDMD;
+    lastShowTopper = settings.showTopper;
 
     // Play table music
     playTableMusic(index, tables);
@@ -540,6 +648,15 @@ void AssetManager::cleanupVideoPlayers() {
         currentDmdVideoPath_.clear();
         currentDmdMediaWidth_ = 0;
         currentDmdMediaHeight_ = 0;
+    }
+
+    // Stop and reset topper video player
+    if (topperVideoPlayer) {
+        topperVideoPlayer->stop();
+        topperVideoPlayer.reset();
+        currentTopperVideoPath_.clear();
+        currentTopperMediaWidth_ = 0;
+        currentTopperMediaHeight_ = 0;
     }
 
     // Clear old video players cache

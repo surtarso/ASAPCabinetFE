@@ -59,7 +59,7 @@ namespace Tooltips {
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"DmdImage",
-                "Relative path to the DMD or marquee image.\n"
+                "Relative path to the DMD image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"PuPDmdImage",
@@ -257,7 +257,7 @@ namespace Tooltips {
                 "Relative path to the default backglass image.\n"
                 "Used when a table has no custom backglass."},
             {"DefaultDmdImage",
-                "Relative path to the default DMD/marquee image.\n"
+                "Relative path to the default DMD image.\n"
                 "Used when a table has no custom DMD image."},
             {"DefaultWheelImage",
                 "Relative path to the default wheel image.\n"

@@ -33,10 +33,12 @@ public:
      * @param playfieldRenderer The SDL renderer for the playfield display.
      * @param backglassRenderer The SDL renderer for the backglass display.
      * @param dmdRenderer The SDL renderer for the DMD display.
+     * @param topperRenderer The SDL renderer for the topper display.
      */
     Renderer(SDL_Renderer* playfieldRenderer, 
              SDL_Renderer* backglassRenderer,
-             SDL_Renderer* dmdRenderer);
+             SDL_Renderer* dmdRenderer,
+             SDL_Renderer* topperRenderer);
 
     /**
      * @brief Renders assets to all display windows.
@@ -62,6 +64,7 @@ private:
     SDL_Renderer* playfieldRenderer_; ///< SDL renderer for the playfield display.
     SDL_Renderer* backglassRenderer_; ///< SDL renderer for the backglass display.
     SDL_Renderer* dmdRenderer_;       ///< SDL renderer for the DMD display.
+    SDL_Renderer* topperRenderer_;    ///< SDL renderer for the topper display.
 
     /**
      * @brief Renders assets to the playfield window.
@@ -91,6 +94,16 @@ private:
      * @param assets The asset manager providing the DMD texture or video player.
      */
     void renderDMDWindow(IAssetManager& assets);
+
+
+    /**
+     * @brief Renders assets to the topper window.
+     *
+     * Renders the topper texture or video frame from the asset manager to the topper renderer.
+     *
+     * @param assets The asset manager providing the topper texture or video player.
+     */
+    void renderTopperWindow(IAssetManager& assets);
 };
 
 #endif // RENDERER_H

@@ -30,9 +30,11 @@ struct TableData {
     std::string wheelImage;      ///< Path to the static wheel image.
     std::string backglassImage;  ///< Path to the static backglass image.
     std::string dmdImage;        ///< Path to the static DMD image.
+    std::string topperImage;     ///< Path to the static topper image.
     std::string playfieldVideo;  ///< Path to the playfield video, if available.
     std::string backglassVideo;  ///< Path to the backglass video, if available.
     std::string dmdVideo;        ///< Path to the DMD video, if available.
+    std::string topperVideo;        ///< Path to the topper video, if available.
     std::string music;           ///< Path to the music file, if available.
 
     // vpxtool metadata

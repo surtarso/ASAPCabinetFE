@@ -42,25 +42,29 @@ class IWindowManager;
  */
 class AssetManager : public IAssetManager {
 public:
-    AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, TTF_Font* f, ISoundManager* soundManager);
+    AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager);
     SDL_Texture* getPlayfieldTexture() override { return playfieldTexture.get(); }
     SDL_Texture* getWheelTexture(SDL_Renderer* renderer) override {
         if (renderer == playfieldRenderer) return playfieldWheelTexture.get();
         if (renderer == backglassRenderer) return backglassWheelTexture.get();
         if (renderer == dmdRenderer) return dmdWheelTexture.get();
+        if (renderer == topperRenderer) return topperWheelTexture.get();
         return nullptr;
     }
     SDL_Texture* getBackglassTexture() override { return backglassTexture.get(); }
     SDL_Texture* getDmdTexture() override { return dmdTexture.get(); }
+    SDL_Texture* getTopperTexture() override { return topperTexture.get(); }
     SDL_Texture* getTitleTexture(SDL_Renderer* renderer) override {
         if (renderer == playfieldRenderer) return playfieldTitleTexture.get();
         if (renderer == backglassRenderer) return backglassTitleTexture.get();
         if (renderer == dmdRenderer) return dmdTitleTexture.get();
+        if (renderer == topperRenderer) return topperTitleTexture.get();
         return nullptr;
     }
     IVideoPlayer* getPlayfieldVideoPlayer() override { return playfieldVideoPlayer.get(); }
     IVideoPlayer* getBackglassVideoPlayer() override { return backglassVideoPlayer.get(); }
     IVideoPlayer* getDmdVideoPlayer() override { return dmdVideoPlayer.get(); }
+    IVideoPlayer* getTopperVideoPlayer() override { return topperVideoPlayer.get(); }
     IConfigService* getSettingsManager() override { return configManager_; }
     SDL_Rect getTitleRect() override { return titleRect; }
     void setTitlePosition(int x, int y) override;
@@ -82,9 +86,11 @@ public:
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     SDL_Renderer* getDMDRenderer() { return dmdRenderer; }
+    SDL_Renderer* getTopperRenderer() { return topperRenderer; }
     void setPlayfieldRenderer(SDL_Renderer* renderer) { playfieldRenderer = renderer; }
     void setBackglassRenderer(SDL_Renderer* renderer) { backglassRenderer = renderer; }
     void setDMDRenderer(SDL_Renderer* renderer) { dmdRenderer = renderer; }
+    void setTopperRenderer(SDL_Renderer* renderer) { topperRenderer = renderer; }
 
 private:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
@@ -96,17 +102,23 @@ private:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdWheelTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTitleTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperWheelTexture;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperTitleTexture;
     SDL_Rect titleRect;
     std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
     std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
     std::unique_ptr<IVideoPlayer> dmdVideoPlayer;
+    std::unique_ptr<IVideoPlayer> topperVideoPlayer;
     SDL_Renderer* playfieldRenderer;
     SDL_Renderer* backglassRenderer;
     SDL_Renderer* dmdRenderer;
+    SDL_Renderer* topperRenderer;
     ISoundManager* soundManager_;
     std::string currentPlayfieldVideoPath_;
     std::string currentBackglassVideoPath_;
     std::string currentDmdVideoPath_;
+    std::string currentTopperVideoPath_;
     TTF_Font* font;
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
@@ -117,12 +129,16 @@ private:
     std::string currentBackglassWheelImagePath_;
     std::string currentDmdImagePath_;
     std::string currentDmdWheelImagePath_;
+    std::string currentTopperImagePath_;
+    std::string currentTopperWheelImagePath_;
     int currentPlayfieldMediaWidth_ = 0;
     int currentPlayfieldMediaHeight_ = 0;
     int currentBackglassMediaWidth_ = 0;
     int currentBackglassMediaHeight_ = 0;
     int currentDmdMediaWidth_ = 0;
     int currentDmdMediaHeight_ = 0;
+    int currentTopperMediaWidth_ = 0;
+    int currentTopperMediaHeight_ = 0;
 };
 
 #endif // ASSET_MANAGER_H

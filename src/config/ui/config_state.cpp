@@ -78,7 +78,7 @@ bool ConfigUIState::hasVisibilitySettingsChanged(const std::map<std::string, Set
     if (currentIt != currentIniData.end() && lastIt == lastSavedIniData.end()) {
         const auto& currentSection = currentIt->second;
         for (const auto& [key, value] : currentSection.keyValues) {
-            if ((key == "ShowDMD" || key == "ShowBackglass") && value == "true") {
+            if ((key == "ShowDMD" || key == "ShowBackglass" || key == "ShowTopper") && value == "true") {
                 LOG_DEBUG("ConfigUIState: Visibility setting added: " << key << "=true");
                 return true;
             }
@@ -94,7 +94,7 @@ bool ConfigUIState::hasVisibilitySettingsChanged(const std::map<std::string, Set
     const auto& currentSection = currentIt->second;
     const auto& lastSection = lastIt->second;
     for (const auto& [key, value] : currentSection.keyValues) {
-        if (key == "ShowDMD" || key == "ShowBackglass") {
+        if (key == "ShowDMD" || key == "ShowBackglass" || key == "ShowTopper") {
             const std::string currentKey = key;
             auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
                                            [currentKey](const auto& pair) { return pair.first == currentKey; });

@@ -66,8 +66,9 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
                                                                     ISoundManager* soundManager) {
     auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
                                                  windowManager->getBackglassRenderer(),
-                                                 windowManager->getDMDRenderer(), font,
-                                                 soundManager);
+                                                 windowManager->getDMDRenderer(),
+                                                 windowManager->getTopperRenderer(),
+                                                 font, soundManager);
     assets->setSettingsManager(configService);
     assets->loadTableAssets(index, tables);
     return assets;
@@ -85,7 +86,8 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
 std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {
     return std::make_unique<Renderer>(windowManager->getPlayfieldRenderer(), 
                                       windowManager->getBackglassRenderer(),
-                                      windowManager->getDMDRenderer());
+                                      windowManager->getDMDRenderer(),
+                                      windowManager->getTopperRenderer());
 }
 
 /**

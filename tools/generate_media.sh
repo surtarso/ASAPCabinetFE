@@ -365,7 +365,7 @@ while IFS= read -r VPX_PATH <&3; do
             if [[ "$NO_VIDEO" == "false" ]]; then
                 base_file="$DMD_VIDEO_FILE"  # e.g., video/dmd.mp4
             else
-                base_file="$DMD_IMAGE_FILE"  # e.g., images/marquee.png
+                base_file="$DMD_IMAGE_FILE"  # e.g., images/dmd.png
             fi
             if [[ "$CAPTURE_DMD" == "true" || "$CAPTURE_DMD" == "check_later" ]]; then
                 dmd_count=0  # Counter for naming additional DMDs

@@ -64,6 +64,13 @@ public:
     SDL_Window* getDMDWindow() override { return dmdWindow_.get(); }
 
     /**
+     * @brief Gets the Topper window.
+     *
+     * @return The SDL window for the Topper, or nullptr if not available.
+     */
+    SDL_Window* getTopperWindow() override { return topperWindow_.get(); }
+
+    /**
      * @brief Gets the playfield renderer.
      *
      * @return The SDL renderer for the playfield, or nullptr if not available.
@@ -83,6 +90,13 @@ public:
      * @return The SDL renderer for the DMD, or nullptr if not available.
      */
     SDL_Renderer* getDMDRenderer() override { return dmdRenderer_.get(); }
+
+    /**
+     * @brief Gets the Topper renderer.
+     *
+     * @return The SDL renderer for the Topper, or nullptr if not available.
+     */
+    SDL_Renderer* getTopperRenderer() override { return topperRenderer_.get(); }
 
     /**
      * @brief Updates windows with new settings.
@@ -105,9 +119,11 @@ public:
      * @param backglassY The y-coordinate of the backglass window.
      * @param dmdX The x-coordinate of the DMD window.
      * @param dmdY The y-coordinate of the DMD window.
+     * @param topperX The x-coordinate of the Topper window.
+     * @param topperY The y-coordinate of the Topper window.
      */
     void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
-                            int& dmdX, int& dmdY) override;
+                            int& dmdX, int& dmdY, int& topperX, int& topperY) override;
 
 private:
     /**
@@ -135,9 +151,11 @@ private:
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> playfieldWindow_;   ///< Window for the playfield display.
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> backglassWindow_;   ///< Window for the backglass display.
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> dmdWindow_;         ///< Window for the DMD display.
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> topperWindow_;         ///< Window for the topper display.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> playfieldRenderer_; ///< Renderer for the playfield window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> backglassRenderer_; ///< Renderer for the backglass window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> dmdRenderer_;      ///< Renderer for the DMD window.
+    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> topperRenderer_;      ///< Renderer for the topper window.
 };
 
 #endif // WINDOW_MANAGER_H

@@ -94,8 +94,10 @@ public:
      * @param backglassY The y-coordinate of the backglass window.
      * @param dmdX The x-coordinate of the DMD window.
      * @param dmdY The y-coordinate of the DMD window.
+     * @param topperX The x-coordinate of the topper window.
+     * @param topperY The y-coordinate of the topper window.
      */
-    virtual void updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY) = 0;
+    virtual void updateWindowPositions(int playfieldX, int playfieldY, int backglassX, int backglassY, int dmdX, int dmdY, int topperX, int topperY) = 0;
 };
 
 #endif // ICONFIG_SERVICE_H

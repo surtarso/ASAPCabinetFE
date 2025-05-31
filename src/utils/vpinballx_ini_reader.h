@@ -38,6 +38,12 @@ struct VPinballXIniSettings {
     std::optional<int> dmdY;            ///< Y-coordinate of the DMD window.
     std::optional<int> dmdWidth;        ///< Width of the DMD window.
     std::optional<int> dmdHeight;       ///< Height of the DMD window.
+
+    // Topper settings
+    std::optional<int> topperX;            ///< X-coordinate of the topper window.
+    std::optional<int> topperY;            ///< Y-coordinate of the topper window.
+    std::optional<int> topperWidth;        ///< Width of the topper window.
+    std::optional<int> topperHeight;       ///< Height of the topper window.
 };
 
 /**

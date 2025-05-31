@@ -67,6 +67,12 @@ public:
     virtual SDL_Texture* getDmdTexture() = 0;
 
     /**
+     * @brief Retrieves the texture used for the topper display.
+     * @return SDL_Texture* Pointer to the topper texture.
+     */
+    virtual SDL_Texture* getTopperTexture() = 0;
+
+    /**
      * @brief Retrieves the texture used for the title for a specific renderer.
      * @param renderer The SDL renderer to get the texture for.
      * @return SDL_Texture* Pointer to the title texture.
@@ -94,6 +100,13 @@ public:
      * @see IVideoPlayer
      */
     virtual IVideoPlayer* getDmdVideoPlayer() = 0;
+
+    /**
+     * @brief Retrieves the video player associated with the topper display.
+     * @return IVideoPlayer* Pointer to the topper video player.
+     * @see IVideoPlayer
+     */
+    virtual IVideoPlayer* getTopperVideoPlayer() = 0;
     
     // Settings and positioning
     /**

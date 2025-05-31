@@ -4,7 +4,7 @@
 
 ConfigSchema::ConfigSchema() {
     variables_ = {
-        // VPX settings
+        // [VPX]
         {"VPXTablesPath", "VPX", "VPXTablesPath", std::string("/home/$USER/VPX_Tables/"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "VPXTablesPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "VPXTablesPath"); }},
@@ -21,7 +21,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseString(s, val, "vpxEndArgs"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "vpxEndArgs"); }},
 
-        // DPI settings
+        // [DpiScale]
         {"dpiScale", "DPISettings", "DpiScale", 1.0f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "dpiScale"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "dpiScale"); }},
@@ -29,7 +29,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseBool(s, val, "enableDpiScaling"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "enableDpiScaling"); }},
 
-        // Default media paths
+        // [DefaultMedia]
         {"defaultPlayfieldImage", "DefaultMedia", "DefaultPlayfieldImage", std::string("img/default_table.png"), Type::String, true, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPlayfieldImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPlayfieldImage"); }},
@@ -42,6 +42,9 @@ ConfigSchema::ConfigSchema() {
         {"defaultWheelImage", "DefaultMedia", "DefaultWheelImage", std::string("img/default_wheel.png"), Type::String, true, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "defaultWheelImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "defaultWheelImage"); }},
+        {"defaultTopperImage", "DefaultMedia", "DefaultTopperImage", std::string("img/default_topper.png"), Type::String, true, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultTopperImage"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultTopperImage"); }},
         {"defaultPlayfieldVideo", "DefaultMedia", "DefaultPlayfieldVideo", std::string("img/default_table.mp4"), Type::String, true, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "defaultPlayfieldVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "defaultPlayfieldVideo"); }},
@@ -51,20 +54,26 @@ ConfigSchema::ConfigSchema() {
         {"defaultDmdVideo", "DefaultMedia", "DefaultDmdVideo", std::string("img/default_dmd.mp4"), Type::String, true, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "defaultDmdVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "defaultDmdVideo"); }},
-
-        // Custom media paths
+        {"defaultTopperVideo", "DefaultMedia", "DefaultTopperVideo", std::string("img/default_topper.mp4"), Type::String, true, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "defaultTopperVideo"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "defaultTopperVideo"); }},
+        
+        // [CustomMedia]
         {"customPlayfieldImage", "CustomMedia", "PlayfieldImage", std::string("images/table.png"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customPlayfieldImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customPlayfieldImage"); }},
         {"customBackglassImage", "CustomMedia", "BackglassImage", std::string("images/backglass.png"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customBackglassImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customBackglassImage"); }},
-        {"customDmdImage", "CustomMedia", "DmdImage", std::string("images/marquee.png"), Type::String, false, PostProcess::None,
+        {"customDmdImage", "CustomMedia", "DmdImage", std::string("images/dmd.png"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customDmdImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customDmdImage"); }},
         {"customWheelImage", "CustomMedia", "WheelImage", std::string("images/wheel.png"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customWheelImage"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customWheelImage"); }},
+        {"customTopperImage", "CustomMedia", "TopperImage", std::string("images/topper.png"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "customTopperImage"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "customTopperImage"); }},
         {"customPlayfieldVideo", "CustomMedia", "PlayfieldVideo", std::string("video/table.mp4"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customPlayfieldVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customPlayfieldVideo"); }},
@@ -74,6 +83,9 @@ ConfigSchema::ConfigSchema() {
         {"customDmdVideo", "CustomMedia", "DmdVideo", std::string("video/dmd.mp4"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "customDmdVideo"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customDmdVideo"); }},
+        {"customTopperVideo", "CustomMedia", "TopperVideo", std::string("images/topper.mp4"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "customTopperVideo"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "customTopperVideo"); }},
         {"tableMusic", "CustomMedia", "TableMusic", std::string("audio/music.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "tableMusic"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "tableMusic"); }},
@@ -81,7 +93,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseString(s, val, "customLaunchSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "customLaunchSound"); }},
 
-        // Window settings
+        // [WindowSettings]
         {"videoBackend", "WindowSettings", "VideoBackend", std::string("vlc"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "videoBackend"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "videoBackend"); }},
@@ -130,8 +142,23 @@ ConfigSchema::ConfigSchema() {
         {"dmdY", "WindowSettings", "DMDY", -1, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "dmdY"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdY"); }},
+        {"showTopper", "WindowSettings", "ShowTopper", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "showTopper"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "showTopper"); }},
+        {"topperWindowWidth", "WindowSettings", "TopperWidth", 512, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperWindowWidth"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperWindowWidth"); }},
+        {"topperWindowHeight", "WindowSettings", "TopperHeight", 128, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperWindowHeight"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperWindowHeight"); }},
+        {"topperWindowX", "WindowSettings", "TopperX", -1, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperWindowX"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperWindowX"); }},
+        {"topperWindowY", "WindowSettings", "TopperY", -1, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperWindowY"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperWindowY"); }},
 
-        // Media sizes/positions
+        // [MediaDimensions]
         {"forceImagesOnly", "MediaDimensions", "ForceImagesOnly", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "forceImagesOnly"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "forceImagesOnly"); }},
@@ -147,6 +174,7 @@ ConfigSchema::ConfigSchema() {
         {"wheelMediaY", "MediaDimensions", "WheelMediaY", 1550, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "wheelMediaY"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "wheelMediaY"); }},
+        // Playfield media
         {"playfieldMediaWidth", "MediaDimensions", "PlayfieldMediaWidth", 1080, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "playfieldMediaWidth"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "playfieldMediaWidth"); }},
@@ -162,6 +190,7 @@ ConfigSchema::ConfigSchema() {
         {"playfieldRotation", "MediaDimensions", "PlayfieldRotation", 0, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "playfieldRotation"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "playfieldRotation"); }},
+        // Backglass media
         {"backglassMediaWidth", "MediaDimensions", "BackglassMediaWidth", 1024, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "backglassMediaWidth"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "backglassMediaWidth"); }},
@@ -177,6 +206,7 @@ ConfigSchema::ConfigSchema() {
         {"backglassRotation", "MediaDimensions", "BackglassRotation", 0, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "backglassRotation"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "backglassRotation"); }},
+        // DMD media
         {"dmdMediaWidth", "MediaDimensions", "DMDMediaWidth", 1024, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "dmdMediaWidth"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdMediaWidth"); }},
@@ -192,8 +222,24 @@ ConfigSchema::ConfigSchema() {
         {"dmdRotation", "MediaDimensions", "DMDRotation", 0, Type::Int, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "dmdRotation"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "dmdRotation"); }},
+        // Topper media
+        {"topperMediaWidth", "MediaDimensions", "TopperMediaWidth", 512, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperMediaWidth"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperMediaWidth"); }},
+        {"topperMediaHeight", "MediaDimensions", "TopperMediaHeight", 128, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperMediaHeight"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperMediaHeight"); }},
+        {"topperMediaX", "MediaDimensions", "TopperMediaX", 0, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperMediaX"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperMediaX"); }},
+        {"topperMediaY", "MediaDimensions", "TopperMediaY", 0, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperMediaY"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperMediaY"); }},
+        {"topperRotation", "MediaDimensions", "TopperRotation", 0, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "topperRotation"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "topperRotation"); }},
 
-        // Title display
+        // [TitleDisplay]
         {"showMetadata", "TitleDisplay", "ShowMetadata", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showMetadata"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showMetadata"); }},
@@ -231,7 +277,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseInt(s, val, "titleY"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "titleY"); }},
         
-        // sound settings
+        // [AudioSettings]
         {"masterVol", "AudioSettings", "MasterVol", 100.0f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "masterVol"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "masterVol"); }},
@@ -264,7 +310,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultBool(s, val, "interfaceAmbienceMute"); }},
 
 
-        // ui settings
+        // [UISounds]
         {"scrollPrevSound", "UISounds", "ScrollPrevSound", std::string("snd/scroll_prev.mp3"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "scrollPrevSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "scrollPrevSound"); }},
@@ -308,7 +354,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseString(s, val, "ambienceSound"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "ambienceSound"); }},
         
-         // Internal
+         // [Internal]
         {"logFile", "Internal", "LogFile", std::string("logs/debug.log"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "logFile"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "logFile"); }},
@@ -340,16 +386,20 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "defaultBackglassImage") s.defaultBackglassImage = val;
     else if (field == "defaultDmdImage") s.defaultDmdImage = val;
     else if (field == "defaultWheelImage") s.defaultWheelImage = val;
+    else if (field == "defaultTopperImage") s.defaultTopperImage = val;
     else if (field == "defaultPlayfieldVideo") s.defaultPlayfieldVideo = val;
     else if (field == "defaultBackglassVideo") s.defaultBackglassVideo = val;
     else if (field == "defaultDmdVideo") s.defaultDmdVideo = val;
+    else if (field == "defaultTopperVideo") s.defaultTopperVideo = val;
     else if (field == "customPlayfieldImage") s.customPlayfieldImage = val;
     else if (field == "customBackglassImage") s.customBackglassImage = val;
     else if (field == "customDmdImage") s.customDmdImage = val;
+    else if (field == "customTopperImage") s.customTopperImage = val;
     else if (field == "customWheelImage") s.customWheelImage = val;
     else if (field == "customPlayfieldVideo") s.customPlayfieldVideo = val;
     else if (field == "customBackglassVideo") s.customBackglassVideo = val;
     else if (field == "customDmdVideo") s.customDmdVideo = val;
+    else if (field == "customTopperVideo") s.customTopperVideo = val;
     else if (field == "tableMusic") s.tableMusic = val;
     else if (field == "customLaunchSound") s.customLaunchSound = val;
     else if (field == "fontPath") s.fontPath = val;
@@ -383,7 +433,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
 void ConfigSchema::defaultString(Settings& s, const std::variant<std::string, int, float, bool, SDL_Color>& val, const std::string& field) const {
     parseString(s, std::get<std::string>(val), field);
 }
-
+   
 void ConfigSchema::parseInt(Settings& s, const std::string& val, const std::string& field) const {
     int v = std::stoi(val);
     if (field == "playfieldWindowWidth") s.playfieldWindowWidth = v;
@@ -398,6 +448,10 @@ void ConfigSchema::parseInt(Settings& s, const std::string& val, const std::stri
     else if (field == "dmdWindowHeight") s.dmdWindowHeight = v;
     else if (field == "dmdX") s.dmdX = v;
     else if (field == "dmdY") s.dmdY = v;
+    else if (field == "topperWindowWidth") s.topperWindowWidth = v;
+    else if (field == "topperWindowHeight") s.topperWindowHeight = v;
+    else if (field == "topperWindowX") s.topperWindowX = v;
+    else if (field == "topperWindowY") s.topperWindowY = v;
     else if (field == "wheelMediaHeight") s.wheelMediaHeight = v;
     else if (field == "wheelMediaWidth") s.wheelMediaWidth = v;
     else if (field == "wheelMediaX") s.wheelMediaX = v;
@@ -417,6 +471,11 @@ void ConfigSchema::parseInt(Settings& s, const std::string& val, const std::stri
     else if (field == "dmdMediaX") s.dmdMediaX = v;
     else if (field == "dmdMediaY") s.dmdMediaY = v;
     else if (field == "dmdRotation") s.dmdRotation = v;
+    else if (field == "topperMediaWidth") s.topperMediaWidth = v;
+    else if (field == "topperMediaHeight") s.topperMediaHeight = v;
+    else if (field == "topperMediaX") s.topperMediaX = v;
+    else if (field == "topperMediaY") s.topperMediaY = v;
+    else if (field == "topperRotation") s.topperRotation = v;
     else if (field == "fontSize") s.fontSize = v;
     else if (field == "titleX") s.titleX = v;
     else if (field == "titleY") s.titleY = v;
@@ -449,6 +508,7 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "showDMD") s.showDMD = v;
     else if (field == "showWheel") s.showWheel = v;
     else if (field == "showTitle") s.showTitle = v;
+    else if (field == "showTopper") s.showTopper = v;
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else if (field == "forceImagesOnly") s.forceImagesOnly = v;
     else if (field == "showMetadata") s.showMetadata = v;

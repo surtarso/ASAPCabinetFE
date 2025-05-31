@@ -236,6 +236,7 @@ void App::render() {
     SDL_Renderer* playfieldRenderer = windowManager_->getPlayfieldRenderer();
     SDL_Renderer* backglassRenderer = settings.showBackglass ? windowManager_->getBackglassRenderer() : nullptr;
     SDL_Renderer* dmdRenderer = settings.showDMD ? windowManager_->getDMDRenderer() : nullptr;
+    SDL_Renderer* topperRenderer = settings.showTopper ? windowManager_->getTopperRenderer() : nullptr;
 
     if (!playfieldRenderer) {
         LOG_ERROR("App::render: playfieldRenderer is null");
@@ -260,6 +261,13 @@ void App::render() {
         LOG_DEBUG("App::render: dmdRenderer is null but showDMD is true");
     }
 
+    if (settings.showTopper && topperRenderer) {
+        SDL_SetRenderDrawColor(topperRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(topperRenderer);
+    } else if (settings.showTopper) {
+        LOG_DEBUG("App::render: topperRenderer is null but showTopper is true");
+    }
+
     guiManager_->newFrame();
     renderer_->render(*assets_);
     if (playfieldOverlay_) {
@@ -276,6 +284,9 @@ void App::render() {
     }
     if (settings.showDMD && dmdRenderer) {
         SDL_RenderPresent(dmdRenderer);
+    }
+    if (settings.showTopper && topperRenderer) {
+        SDL_RenderPresent(topperRenderer);
     }
     //LOG_DEBUG("App::render: Render cycle completed");
 }

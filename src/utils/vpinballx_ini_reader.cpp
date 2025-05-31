@@ -36,7 +36,8 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
 
         // Parse key-value pairs in relevant sections
         if (currentSection == "Standalone" || currentSection == "Player"
-            || currentSection == "Backglass" || currentSection == "ScoreView") {
+            || currentSection == "Backglass" || currentSection == "ScoreView"
+            || currentSection == "Topper") {
             size_t eq = trimmed.find('=');
             if (eq == std::string::npos) continue;
 
@@ -60,24 +61,24 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
                 else if (key == "PUPPlayfieldWindowHeight") settings.playfieldHeight = std::stoi(value);
 
                 // Parse backglass settings
-                else if (key == "B2SBackglassX" || key == "PUPBackglassWindowX" || key == "BackglassWndX") {
+                else if (key == "B2SBackglassX" || key == "PUPBackglassWindowX") {
                     if (!settings.backglassX) settings.backglassX = std::stoi(value);
-                } else if (key == "B2SBackglassY" || key == "PUPBackglassWindowY" || key == "BackglassWndY") {
+                } else if (key == "B2SBackglassY" || key == "PUPBackglassWindowY") {
                     if (!settings.backglassY) settings.backglassY = std::stoi(value);
-                } else if (key == "B2SBackglassWidth" || key == "PUPBackglassWindowWidth" || key == "BackglassWidth") {
+                } else if (key == "B2SBackglassWidth" || key == "PUPBackglassWindowWidth") {
                     if (!settings.backglassWidth) settings.backglassWidth = std::stoi(value);
-                } else if (key == "B2SBackglassHeight" || key == "PUPBackglassWindowHeight" || key == "BackglassHeight") {
+                } else if (key == "B2SBackglassHeight" || key == "PUPBackglassWindowHeight") {
                     if (!settings.backglassHeight) settings.backglassHeight = std::stoi(value);
                 }
 
                 // Parse DMD settings
-                else if (key == "PinMAMEWindowX" || key == "FlexDMDWindowX" || key == "B2SDMDX" || key == "PUPDMDWindowX" || key == "ScoreViewWndX") {
+                else if (key == "PinMAMEWindowX" || key == "FlexDMDWindowX" || key == "B2SDMDX" || key == "PUPDMDWindowX") {
                     if (!settings.dmdX) settings.dmdX = std::stoi(value);
-                } else if (key == "PinMAMEWindowY" || key == "FlexDMDWindowY" || key == "B2SDMDY" || key == "PUPDMDWindowY" || key == "ScoreViewWndY") {
+                } else if (key == "PinMAMEWindowY" || key == "FlexDMDWindowY" || key == "B2SDMDY" || key == "PUPDMDWindowY") {
                     if (!settings.dmdY) settings.dmdY = std::stoi(value);
-                } else if (key == "PinMAMEWindowWidth" || key == "FlexDMDWindowWidth" || key == "B2SDMDWidth" || key == "PUPDMDWindowWidth" || key == "ScoreViewWidth") {
+                } else if (key == "PinMAMEWindowWidth" || key == "FlexDMDWindowWidth" || key == "B2SDMDWidth" || key == "PUPDMDWindowWidth") {
                     if (!settings.dmdWidth) settings.dmdWidth = std::stoi(value);
-                } else if (key == "PinMAMEWindowHeight" || key == "FlexDMDWindowHeight" || key == "B2SDMDHeight" || key == "PUPDMDWindowHeight" || key == "ScoreViewHeight") {
+                } else if (key == "PinMAMEWindowHeight" || key == "FlexDMDWindowHeight" || key == "B2SDMDHeight" || key == "PUPDMDWindowHeight") {
                     if (!settings.dmdHeight) settings.dmdHeight = std::stoi(value);
                 }
             }
@@ -100,6 +101,12 @@ std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const 
                 else if (key == "ScoreViewWndY") settings.dmdY = std::stoi(value);
                 else if (key == "ScoreViewWidth") settings.dmdWidth = std::stoi(value);
                 else if (key == "ScoreViewHeight") settings.dmdHeight = std::stoi(value);
+            } else if (currentSection == "Topper") {
+                // Parse DMD settings
+                if (key == "TopperWndX") settings.topperX = std::stoi(value);
+                else if (key == "TopperWndY") settings.topperY = std::stoi(value);
+                else if (key == "TopperWidth") settings.topperWidth = std::stoi(value);
+                else if (key == "TopperHeight") settings.topperHeight = std::stoi(value);
             }
         }
     }

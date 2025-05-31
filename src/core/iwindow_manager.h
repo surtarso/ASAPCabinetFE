@@ -59,6 +59,15 @@ public:
     virtual SDL_Window* getDMDWindow() = 0;
 
     /**
+     * @brief Gets the DMD window.
+     *
+     * Retrieves the SDL window used for the topper display.
+     *
+     * @return The SDL window for the topper display, or nullptr if not available.
+     */
+    virtual SDL_Window* getTopperWindow() = 0;
+
+    /**
      * @brief Gets the playfield renderer.
      *
      * Retrieves the SDL renderer for the playfield window.
@@ -86,6 +95,15 @@ public:
     virtual SDL_Renderer* getDMDRenderer() = 0;
 
     /**
+     * @brief Gets the Topper renderer.
+     *
+     * Retrieves the SDL renderer for the Topper window.
+     *
+     * @return The SDL renderer for the Topper, or nullptr if not available.
+     */
+    virtual SDL_Renderer* getTopperRenderer() = 0;
+
+    /**
      * @brief Updates windows with new settings.
      *
      * Reconfigures the playfield, backglass, and DMD windows based on the provided
@@ -106,9 +124,11 @@ public:
      * @param backglassY The y-coordinate of the backglass window.
      * @param dmdX The x-coordinate of the DMD window.
      * @param dmdY The y-coordinate of the DMD window.
+     * @param topperX The x-coordinate of the Topper window.
+     * @param topperY The y-coordinate of the Topper window.
      */
     virtual void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
-                                    int& dmdX, int& dmdY) = 0;
+                                    int& dmdX, int& dmdY, int& topperX, int& topperY) = 0;
 };
 
 #endif // IWINDOW_MANAGER_H
