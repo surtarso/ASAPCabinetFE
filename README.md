@@ -61,7 +61,7 @@ _ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pi
 
 ### How it works
 - Scans recursively for `.vpx` files.
-- Creates **up to three** windows for playfield, backglass and DMD.
+- Creates **up to four** windows for playfield, backglass, topper and DMD.
 - Loads default or custom media for each table.
 - Launches tables with desired VPX executable.
 
@@ -155,7 +155,7 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ## Planned Features:
 We’re dreaming big! Help us bring these features to life:
 
-- Dynamic custom window creation for PuP, Toppers etc.
+- Dynamic custom window creation.
 - Single table overrides for settings.
 - In-game video recording.
 - Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
