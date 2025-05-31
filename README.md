@@ -44,7 +44,7 @@ cd ~/ASAPCabinetFE
 ## Features
 ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for, and here is why:
 
-- Full screen multi monitor display of table playfield, backglass and DMD.
+- Full screen multi monitor display of table playfield, backglass, topper and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
 - Use `VPinballX.ini` for size and position auto-configuration.
 - Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata.
