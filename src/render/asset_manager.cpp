@@ -270,270 +270,108 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
               << ", topperImage: " << table.topperImage
               << ", wheelImage: " << table.wheelImage);
 
-    // Playfield
-    if (playfieldRenderer) {
-        if (table.playfieldImage != currentPlayfieldImagePath_ || !playfieldTexture) {
-            playfieldTexture.reset(loadTexture(playfieldRenderer, table.playfieldImage));
-            currentPlayfieldImagePath_ = table.playfieldImage;
-        }
-        if (settings.showWheel && settings.wheelWindow == "playfield" && 
-            (table.wheelImage != currentPlayfieldWheelImagePath_ || !playfieldWheelTexture)) {
-            playfieldWheelTexture.reset(loadTexture(playfieldRenderer, table.wheelImage));
-            currentPlayfieldWheelImagePath_ = table.wheelImage;
-        } else if (settings.wheelWindow != "playfield") {
-            playfieldWheelTexture.reset();
-            currentPlayfieldWheelImagePath_.clear();
-        }
-        if (font && settings.showTitle && settings.titleWindow == "playfield") {
-            titleRect = {settings.titleX, settings.titleY, 0, 0};
-            std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            playfieldTitleTexture.reset(renderText(playfieldRenderer, font, title, settings.fontColor, titleRect));
-        } else {
-            playfieldTitleTexture.reset();
-        }
-    } else {
-        playfieldTexture.reset();
-        playfieldWheelTexture.reset();
-        playfieldTitleTexture.reset();
-        currentPlayfieldImagePath_.clear();
-        currentPlayfieldWheelImagePath_.clear();
-    }
-
-    // Backglass
-    if (backglassRenderer && settings.showBackglass) {
-        if (table.backglassImage != currentBackglassImagePath_ || !backglassTexture) {
-            backglassTexture.reset(loadTexture(backglassRenderer, table.backglassImage));
-            currentBackglassImagePath_ = table.backglassImage;
-        }
-        if (settings.showWheel && settings.wheelWindow == "backglass" && 
-            (table.wheelImage != currentBackglassWheelImagePath_ || !backglassWheelTexture)) {
-            backglassWheelTexture.reset(loadTexture(backglassRenderer, table.wheelImage));
-            currentBackglassWheelImagePath_ = table.wheelImage;
-        } else if (settings.wheelWindow != "backglass") {
-            backglassWheelTexture.reset();
-            currentBackglassWheelImagePath_.clear();
-        }
-        if (font && settings.showTitle && settings.titleWindow == "backglass") {
-            titleRect = {settings.titleX, settings.titleY, 0, 0};
-            std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            backglassTitleTexture.reset(renderText(backglassRenderer, font, title, settings.fontColor, titleRect));
-        } else {
-            backglassTitleTexture.reset();
-        }
-    } else {
-        backglassTexture.reset();
-        backglassWheelTexture.reset();
-        backglassTitleTexture.reset();
-        currentBackglassImagePath_.clear();
-        currentBackglassWheelImagePath_.clear();
-    }
-
-    // DMD
-    if (dmdRenderer && settings.showDMD) {
-        if (table.dmdImage != currentDmdImagePath_ || !dmdTexture) {
-            dmdTexture.reset(loadTexture(dmdRenderer, table.dmdImage));
-            currentDmdImagePath_ = table.dmdImage;
-        }
-        if (settings.showWheel && settings.wheelWindow == "dmd" && 
-            (table.wheelImage != currentDmdWheelImagePath_ || !dmdWheelTexture)) {
-            dmdWheelTexture.reset(loadTexture(dmdRenderer, table.wheelImage));
-            currentDmdWheelImagePath_ = table.wheelImage;
-        } else if (settings.wheelWindow != "dmd") {
-            dmdWheelTexture.reset();
-            currentDmdWheelImagePath_.clear();
-        }
-        if (font && settings.showTitle && settings.titleWindow == "dmd") {
-            titleRect = {settings.titleX, settings.titleY, 0, 0};
-            std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            dmdTitleTexture.reset(renderText(dmdRenderer, font, title, settings.fontColor, titleRect));
-        } else {
-            dmdTitleTexture.reset();
-        }
-    } else {
-        dmdTexture.reset();
-        dmdWheelTexture.reset();
-        dmdTitleTexture.reset();
-        currentDmdImagePath_.clear();
-        currentDmdWheelImagePath_.clear();
-    }
-
-    // Topper
-    if (topperRenderer && settings.showTopper) {
-        if (table.topperImage != currentTopperImagePath_ || !topperTexture) {
-            topperTexture.reset(loadTexture(topperRenderer, table.topperImage));
-            currentTopperImagePath_ = table.topperImage;
-        }
-        if (settings.showWheel && settings.wheelWindow == "topper" && 
-            (table.wheelImage != currentTopperWheelImagePath_ || !dmdWheelTexture)) {
-            topperWheelTexture.reset(loadTexture(topperRenderer, table.wheelImage));
-            currentTopperWheelImagePath_ = table.wheelImage;
-        } else if (settings.wheelWindow != "topper") {
-            topperWheelTexture.reset();
-            currentTopperWheelImagePath_.clear();
-        }
-        if (font && settings.showTitle && settings.titleWindow == "topper") {
-            titleRect = {settings.titleX, settings.titleY, 0, 0};
-            std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            topperTitleTexture.reset(renderText(topperRenderer, font, title, settings.fontColor, titleRect));
-        } else {
-            topperTitleTexture.reset();
-        }
-    } else {
-        topperTexture.reset();
-        topperWheelTexture.reset();
-        topperTitleTexture.reset();
-        currentTopperImagePath_.clear();
-        currentTopperWheelImagePath_.clear();
-    }
-
-    auto stopAndMove = [this](std::unique_ptr<IVideoPlayer>& current, std::string& currentPath) {
-        if (current) {
-            current->stop();
-            addOldVideoPlayer(std::move(current));
-            current.reset();
-            currentPath.clear();
-        }
+    WindowAssetInfo windows[] = {
+        {playfieldRenderer, playfieldTexture, playfieldWheelTexture, playfieldTitleTexture, playfieldVideoPlayer,
+         currentPlayfieldImagePath_, currentPlayfieldWheelImagePath_, currentPlayfieldVideoPath_,
+         currentPlayfieldMediaWidth_, currentPlayfieldMediaHeight_, true, "playfield",
+         table.playfieldImage, table.playfieldVideo},
+        {backglassRenderer, backglassTexture, backglassWheelTexture, backglassTitleTexture, backglassVideoPlayer,
+         currentBackglassImagePath_, currentBackglassWheelImagePath_, currentBackglassVideoPath_,
+         currentBackglassMediaWidth_, currentBackglassMediaHeight_, settings.showBackglass, "backglass",
+         table.backglassImage, table.backglassVideo},
+        {dmdRenderer, dmdTexture, dmdWheelTexture, dmdTitleTexture, dmdVideoPlayer,
+         currentDmdImagePath_, currentDmdWheelImagePath_, currentDmdVideoPath_,
+         currentDmdMediaWidth_, currentDmdMediaHeight_, settings.showDMD, "dmd",
+         table.dmdImage, table.dmdVideo},
+        {topperRenderer, topperTexture, topperWheelTexture, topperTitleTexture, topperVideoPlayer,
+         currentTopperImagePath_, currentTopperWheelImagePath_, currentTopperVideoPath_,
+         currentTopperMediaWidth_, currentTopperMediaHeight_, settings.showTopper, "topper",
+         table.topperImage, table.topperVideo}
     };
 
-    // Playfield video
-    if (playfieldRenderer && !table.playfieldVideo.empty() &&
-        settings.playfieldMediaWidth > 0 && settings.playfieldMediaHeight > 0) {
-        if (table.playfieldVideo != currentPlayfieldVideoPath_ ||
-            settings.playfieldMediaWidth != currentPlayfieldMediaWidth_ ||
-            settings.playfieldMediaHeight != currentPlayfieldMediaHeight_) {
-            auto newPlayer = VideoPlayerFactory::createVideoPlayer(
-                playfieldRenderer,
-                table.playfieldVideo,
-                settings.playfieldMediaWidth,
-                settings.playfieldMediaHeight,
-                configManager_);
-            if (newPlayer) {
-                stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
-                playfieldVideoPlayer = std::move(newPlayer);
-                playfieldVideoPlayer->play();
-                currentPlayfieldVideoPath_ = table.playfieldVideo;
-                currentPlayfieldMediaWidth_ = settings.playfieldMediaWidth;
-                currentPlayfieldMediaHeight_ = settings.playfieldMediaHeight;
-            } else {
-                LOG_DEBUG("AssetManager: Failed to setup playfield video: " << table.playfieldVideo << ", keeping existing player");
+    for (auto& w : windows) {
+        if (!w.renderer || !w.show) {
+            w.texture.reset();
+            w.wheelTexture.reset();
+            w.titleTexture.reset();
+            if (w.videoPlayer) {
+                w.videoPlayer->stop();
+                addOldVideoPlayer(std::move(w.videoPlayer));
+                w.videoPlayer.reset();
+                w.videoPath.clear();
+                w.mediaWidth = 0;
+                w.mediaHeight = 0;
             }
-        } else if (playfieldVideoPlayer && !playfieldVideoPlayer->isPlaying()) {
-            playfieldVideoPlayer->play();
+            w.imagePath.clear();
+            w.wheelImagePath.clear();
+            continue;
         }
-    } else if (playfieldVideoPlayer) {
-        stopAndMove(playfieldVideoPlayer, currentPlayfieldVideoPath_);
-        currentPlayfieldMediaWidth_ = 0;
-        currentPlayfieldMediaHeight_ = 0;
-    }
 
-    // Backglass video
-    if (backglassRenderer && !table.backglassVideo.empty() &&
-        settings.backglassMediaWidth > 0 && settings.backglassMediaHeight > 0 &&
-        settings.showBackglass) {
-        if (table.backglassVideo != currentBackglassVideoPath_ ||
-            settings.backglassMediaWidth != currentBackglassMediaWidth_ ||
-            settings.backglassMediaHeight != currentBackglassMediaHeight_ ||
-            settings.showBackglass != lastShowBackglass) {
-            auto newPlayer = VideoPlayerFactory::createVideoPlayer(
-                backglassRenderer,
-                table.backglassVideo,
-                settings.backglassMediaWidth,
-                settings.backglassMediaHeight,
-                configManager_);
-            if (newPlayer) {
-                stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
-                backglassVideoPlayer = std::move(newPlayer);
-                backglassVideoPlayer->play();
-                currentBackglassVideoPath_ = table.backglassVideo;
-                currentBackglassMediaWidth_ = settings.backglassMediaWidth;
-                currentBackglassMediaHeight_ = settings.backglassMediaHeight;
-            } else {
-                LOG_DEBUG("AssetManager: Failed to setup backglass video: " << table.backglassVideo << ", keeping existing player");
-            }
-        } else if (backglassVideoPlayer && !backglassVideoPlayer->isPlaying()) {
-            backglassVideoPlayer->play();
+        // Texture
+        if (w.tableImage != w.imagePath || !w.texture) {
+            w.texture.reset(loadTexture(w.renderer, w.tableImage));
+            w.imagePath = w.tableImage;
         }
-    } else if (backglassVideoPlayer) {
-        if (!settings.showBackglass) {
-            backglassVideoPlayer->stop();
-        } else {
-            stopAndMove(backglassVideoPlayer, currentBackglassVideoPath_);
-            currentBackglassMediaWidth_ = 0;
-            currentBackglassMediaHeight_ = 0;
-        }
-    }
 
-    // DMD video
-    if (dmdRenderer && !table.dmdVideo.empty() &&
-        settings.dmdMediaWidth > 0 && settings.dmdMediaHeight > 0 &&
-        settings.showDMD) {
-        if (table.dmdVideo != currentDmdVideoPath_ ||
-            settings.dmdMediaWidth != currentDmdMediaWidth_ ||
-            settings.dmdMediaHeight != currentDmdMediaHeight_ ||
-            settings.showDMD != lastShowDMD) {
-            auto newPlayer = VideoPlayerFactory::createVideoPlayer(
-                dmdRenderer,
-                table.dmdVideo,
-                settings.dmdMediaWidth,
-                settings.dmdMediaHeight,
-                configManager_);
-            if (newPlayer) {
-                stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
-                dmdVideoPlayer = std::move(newPlayer);
-                dmdVideoPlayer->play();
-                currentDmdVideoPath_ = table.dmdVideo;
-                currentDmdMediaWidth_ = settings.dmdMediaWidth;
-                currentDmdMediaHeight_ = settings.dmdMediaHeight;
-            } else {
-                LOG_DEBUG("AssetManager: Failed to setup DMD video: " << table.dmdVideo << ", keeping existing player");
-            }
-        } else if (dmdVideoPlayer && !dmdVideoPlayer->isPlaying()) {
-            dmdVideoPlayer->play();
+        // Wheel
+        if (settings.showWheel && settings.wheelWindow == w.name &&
+            (table.wheelImage != w.wheelImagePath || !w.wheelTexture)) {
+            w.wheelTexture.reset(loadTexture(w.renderer, table.wheelImage));
+            w.wheelImagePath = table.wheelImage;
+        } else if (settings.wheelWindow != w.name) {
+            w.wheelTexture.reset();
+            w.wheelImagePath.clear();
         }
-    } else if (dmdVideoPlayer) {
-        if (!settings.showDMD) {
-            dmdVideoPlayer->stop();
-        } else {
-            stopAndMove(dmdVideoPlayer, currentDmdVideoPath_);
-            currentDmdMediaWidth_ = 0;
-            currentDmdMediaHeight_ = 0;
-        }
-    }
 
-    // Topper video
-    if (topperRenderer && !table.topperVideo.empty() &&
-        settings.topperMediaWidth > 0 && settings.topperMediaHeight > 0 &&
-        settings.showTopper) {
-        if (table.topperVideo != currentTopperVideoPath_ ||
-            settings.topperMediaWidth != currentTopperMediaWidth_ ||
-            settings.topperMediaHeight != currentTopperMediaHeight_ ||
-            settings.showTopper != lastShowTopper) {
-            auto newPlayer = VideoPlayerFactory::createVideoPlayer(
-                topperRenderer,
-                table.topperVideo,
-                settings.topperMediaWidth,
-                settings.topperMediaHeight,
-                configManager_);
-            if (newPlayer) {
-                stopAndMove(topperVideoPlayer, currentTopperVideoPath_);
-                topperVideoPlayer = std::move(newPlayer);
-                topperVideoPlayer->play();
-                currentTopperVideoPath_ = table.topperVideo;
-                currentTopperMediaWidth_ = settings.topperMediaWidth;
-                currentTopperMediaHeight_ = settings.topperMediaHeight;
-            } else {
-                LOG_DEBUG("AssetManager: Failed to setup topper video: " << table.topperVideo << ", keeping existing player");
-            }
-        } else if (topperVideoPlayer && !topperVideoPlayer->isPlaying()) {
-            topperVideoPlayer->play();
-        }
-    } else if (topperVideoPlayer) {
-        if (!settings.showTopper) {
-            topperVideoPlayer->stop();
+        // Title
+        if (font && settings.showTitle && settings.titleWindow == w.name) {
+            titleRect = {settings.titleX, settings.titleY, 0, 0};
+            std::string title = table.title.empty() ? "Unknown Title" : table.title;
+            w.titleTexture.reset(renderText(w.renderer, font, title, settings.fontColor, titleRect));
         } else {
-            stopAndMove(topperVideoPlayer, currentTopperVideoPath_);
-            currentTopperMediaWidth_ = 0;
-            currentTopperMediaHeight_ = 0;
+            w.titleTexture.reset();
+        }
+
+        // Video
+        int mediaWidth = (w.name == std::string("playfield")) ? settings.playfieldMediaWidth :
+                         (w.name == std::string("backglass")) ? settings.backglassMediaWidth :
+                         (w.name == std::string("dmd")) ? settings.dmdMediaWidth :
+                         settings.topperMediaWidth;
+        int mediaHeight = (w.name == std::string("playfield")) ? settings.playfieldMediaHeight :
+                          (w.name == std::string("backglass")) ? settings.backglassMediaHeight :
+                          (w.name == std::string("dmd")) ? settings.dmdMediaHeight :
+                          settings.topperMediaHeight;
+        bool showChanged = (w.name == std::string("backglass") && settings.showBackglass != lastShowBackglass) ||
+                           (w.name == std::string("dmd") && settings.showDMD != lastShowDMD) ||
+                           (w.name == std::string("topper") && settings.showTopper != lastShowTopper);
+
+        if (!w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
+            if (w.tableVideo != w.videoPath || mediaWidth != w.mediaWidth || mediaHeight != w.mediaHeight || showChanged) {
+                auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
+                if (newPlayer) {
+                    if (w.videoPlayer) {
+                        w.videoPlayer->stop();
+                        addOldVideoPlayer(std::move(w.videoPlayer));
+                        w.videoPlayer.reset();
+                    }
+                    w.videoPlayer = std::move(newPlayer);
+                    w.videoPlayer->play();
+                    w.videoPath = w.tableVideo;
+                    w.mediaWidth = mediaWidth;
+                    w.mediaHeight = mediaHeight;
+                } else {
+                    LOG_DEBUG("AssetManager: Failed to setup " << w.name << " video: " << w.tableVideo);
+                }
+            } else if (w.videoPlayer && !w.videoPlayer->isPlaying()) {
+                w.videoPlayer->play();
+            }
+        } else if (w.videoPlayer) {
+            w.videoPlayer->stop();
+            addOldVideoPlayer(std::move(w.videoPlayer));
+            w.videoPlayer.reset();
+            w.videoPath.clear();
+            w.mediaWidth = 0;
+            w.mediaHeight = 0;
         }
     }
 
@@ -551,6 +389,8 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     LOG_INFO("Loaded " << table.title << " in " << duration << "ms");
 }
+
+// Other methods unchanged...
 
 void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
     if (player) {

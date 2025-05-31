@@ -36,7 +36,7 @@ class IWindowManager;
  * @brief Manages textures, video players, audio, and table assets for VPX rendering.
  *
  * This class implements the IAssetManager interface to load, cache, and provide access
- * to textures, video players, music, and table data for playfield, backglass, and DMD displays.
+ * to textures, video players, music, and table data for playfield, backglass, DMD, and topper displays.
  * It interfaces with IConfigService for settings, ITableLoader for table data, ISoundManager
  * for audio, and SDL/TTF for rendering resources.
  */
@@ -93,6 +93,26 @@ public:
     void setTopperRenderer(SDL_Renderer* renderer) { topperRenderer = renderer; }
 
 private:
+    /**
+     * @brief Struct to group window-specific asset data.
+     */
+    struct WindowAssetInfo {
+        SDL_Renderer* renderer;
+        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& texture;
+        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& wheelTexture;
+        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& titleTexture;
+        std::unique_ptr<IVideoPlayer>& videoPlayer;
+        std::string& imagePath;
+        std::string& wheelImagePath;
+        std::string& videoPath;
+        int& mediaWidth;
+        int& mediaHeight;
+        bool show;
+        const char* name;
+        const std::string& tableImage;
+        const std::string& tableVideo;
+    };
+
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldWheelTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTitleTexture;
