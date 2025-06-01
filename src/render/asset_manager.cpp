@@ -90,73 +90,37 @@ void AssetManager::setFont(TTF_Font* font) {
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
     const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
-    if (playfieldRenderer && font && settings.showTitle && settings.titleWindow == "playfield") {
-        playfieldTitleTexture.reset();
-        this->titleRect.x = titleRect.x;
-        this->titleRect.y = titleRect.y;
-        this->titleRect.w = 0;
-        this->titleRect.h = 0;
-        playfieldTitleTexture.reset(renderText(playfieldRenderer, font, title, color, this->titleRect));
-        int texWidth = 0, texHeight = 0;
-        if (playfieldTitleTexture) {
-            SDL_QueryTexture(playfieldTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
-            titleRect = this->titleRect;
+
+    struct WindowTitleInfo {
+        SDL_Renderer* renderer;
+        std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>& texture;
+        const std::string& windowName;
+    };
+
+    WindowTitleInfo windows[] = {
+        {playfieldRenderer, playfieldTitleTexture, "playfield"},
+        {backglassRenderer, backglassTitleTexture, "backglass"},
+        {dmdRenderer, dmdTitleTexture, "dmd"},
+        {topperRenderer, topperTitleTexture, "topper"}
+    };
+
+    for (auto& w : windows) {
+        w.texture.reset();
+        if (w.renderer && font && settings.showTitle && settings.titleWindow == w.windowName) {
+            this->titleRect.x = titleRect.x;
+            this->titleRect.y = titleRect.y;
+            this->titleRect.w = 0;
+            this->titleRect.h = 0;
+            w.texture.reset(renderText(w.renderer, font, title, color, this->titleRect));
+            int texWidth = 0, texHeight = 0;
+            if (w.texture) {
+                SDL_QueryTexture(w.texture.get(), nullptr, nullptr, &texWidth, &texHeight);
+                titleRect = this->titleRect;
+            }
+            LOG_DEBUG("AssetManager: " << w.windowName << " title texture reloaded, font=" << font 
+                      << ", font_height=" << (font ? TTF_FontHeight(font) : 0) 
+                      << ", width=" << texWidth << ", height=" << texHeight);
         }
-        LOG_DEBUG("AssetManager: Playfield title texture reloaded, font=" << font << ", font_height=" 
-                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
-    } else {
-        playfieldTitleTexture.reset();
-    }
-    if (backglassRenderer && font && settings.showTitle && settings.titleWindow == "backglass") {
-        backglassTitleTexture.reset();
-        this->titleRect.x = titleRect.x;
-        this->titleRect.y = titleRect.y;
-        this->titleRect.w = 0;
-        this->titleRect.h = 0;
-        backglassTitleTexture.reset(renderText(backglassRenderer, font, title, color, this->titleRect));
-        int texWidth = 0, texHeight = 0;
-        if (backglassTitleTexture) {
-            SDL_QueryTexture(backglassTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
-            titleRect = this->titleRect;
-        }
-        LOG_DEBUG("AssetManager: Backglass title texture reloaded, font=" << font << ", font_height=" 
-                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
-    } else {
-        backglassTitleTexture.reset();
-    }
-    if (dmdRenderer && font && settings.showTitle && settings.titleWindow == "dmd") {
-        dmdTitleTexture.reset();
-        this->titleRect.x = titleRect.x;
-        this->titleRect.y = titleRect.y;
-        this->titleRect.w = 0;
-        this->titleRect.h = 0;
-        dmdTitleTexture.reset(renderText(dmdRenderer, font, title, color, this->titleRect));
-        int texWidth = 0, texHeight = 0;
-        if (dmdTitleTexture) {
-            SDL_QueryTexture(dmdTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
-            titleRect = this->titleRect;
-        }
-        LOG_DEBUG("AssetManager: DMD title texture reloaded, font=" << font << ", font_height=" 
-                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
-    } else {
-        dmdTitleTexture.reset();
-    }
-    if (topperRenderer && font && settings.showTitle && settings.titleWindow == "topper") {
-        topperTitleTexture.reset();
-        this->titleRect.x = titleRect.x;
-        this->titleRect.y = titleRect.y;
-        this->titleRect.w = 0;
-        this->titleRect.h = 0;
-        topperTitleTexture.reset(renderText(topperRenderer, font, title, color, this->titleRect));
-        int texWidth = 0, texHeight = 0;
-        if (topperTitleTexture) {
-            SDL_QueryTexture(topperTitleTexture.get(), nullptr, nullptr, &texWidth, &texHeight);
-            titleRect = this->titleRect;
-        }
-        LOG_DEBUG("AssetManager: topper title texture reloaded, font=" << font << ", font_height=" 
-                  << (font ? TTF_FontHeight(font) : 0) << ", width=" << texWidth << ", height=" << texHeight);
-    } else {
-        topperTitleTexture.reset();
     }
 }
 
@@ -211,33 +175,27 @@ void AssetManager::applyVideoAudioSettings() {
               << ", masterMute=" << settings.masterMute 
               << ", effective volume=" << effective_volume * 100.0f << "%, effective mute=" << effective_mute);
 
-    if (playfieldVideoPlayer) {
-        playfieldVideoPlayer->setVolume(effective_volume * 100.0f);
-        playfieldVideoPlayer->setMute(effective_mute);
-        LOG_DEBUG("AssetManager: Applied audio settings to playfield video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
-    } else {
-        LOG_DEBUG("AssetManager: No playfield video player to apply audio settings");
-    }
-    if (backglassVideoPlayer) {
-        backglassVideoPlayer->setVolume(effective_volume * 100.0f);
-        backglassVideoPlayer->setMute(effective_mute);
-        LOG_DEBUG("AssetManager: Applied audio settings to backglass video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
-    } else {
-        LOG_DEBUG("AssetManager: No backglass video player to apply audio settings");
-    }
-    if (dmdVideoPlayer) {
-        dmdVideoPlayer->setVolume(effective_volume * 100.0f);
-        dmdVideoPlayer->setMute(effective_mute);
-        LOG_DEBUG("AssetManager: Applied audio settings to DMD video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
-    } else {
-        LOG_DEBUG("AssetManager: No DMD video player to apply audio settings");
-    }
-    if (topperVideoPlayer) {
-        topperVideoPlayer->setVolume(effective_volume * 100.0f);
-        topperVideoPlayer->setMute(effective_mute);
-        LOG_DEBUG("AssetManager: Applied audio settings to topper video player: effective volume=" << effective_volume * 100.0f << ", effective mute=" << effective_mute);
-    } else {
-        LOG_DEBUG("AssetManager: No topper video player to apply audio settings");
+    struct VideoPlayerInfo {
+        std::unique_ptr<IVideoPlayer>& player;
+        const char* name;
+    };
+
+    VideoPlayerInfo players[] = {
+        {playfieldVideoPlayer, "playfield"},
+        {backglassVideoPlayer, "backglass"},
+        {dmdVideoPlayer, "DMD"},
+        {topperVideoPlayer, "topper"}
+    };
+
+    for (const auto& p : players) {
+        if (p.player) {
+            p.player->setVolume(effective_volume * 100.0f);
+            p.player->setMute(effective_mute);
+            LOG_DEBUG("AssetManager: Applied audio settings to " << p.name << " video player: effective volume=" 
+                      << effective_volume * 100.0f << ", effective mute=" << effective_mute);
+        } else {
+            LOG_DEBUG("AssetManager: No " << p.name << " video player to apply audio settings");
+        }
     }
 }
 
@@ -390,8 +348,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     LOG_INFO("Loaded " << table.title << " in " << duration << "ms");
 }
 
-// Other methods unchanged...
-
 void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
     if (player) {
         // Push the unique_ptr directly. The unique_ptr now owns the player.
@@ -463,44 +419,32 @@ SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, co
 void AssetManager::cleanupVideoPlayers() {
     LOG_DEBUG("AssetManager: Cleaning up video players");
 
-    // Stop and reset playfield video player
-    if (playfieldVideoPlayer) {
-        playfieldVideoPlayer->stop();
-        playfieldVideoPlayer.reset();
-        currentPlayfieldVideoPath_.clear();
-        currentPlayfieldMediaWidth_ = 0;
-        currentPlayfieldMediaHeight_ = 0;
+    struct VideoPlayerInfo {
+        std::unique_ptr<IVideoPlayer>& player;
+        std::string& videoPath;
+        int& mediaWidth;
+        int& mediaHeight;
+        const char* name;
+    };
+
+    VideoPlayerInfo players[] = {
+        {playfieldVideoPlayer, currentPlayfieldVideoPath_, currentPlayfieldMediaWidth_, currentPlayfieldMediaHeight_, "playfield"},
+        {backglassVideoPlayer, currentBackglassVideoPath_, currentBackglassMediaWidth_, currentBackglassMediaHeight_, "backglass"},
+        {dmdVideoPlayer, currentDmdVideoPath_, currentDmdMediaWidth_, currentDmdMediaHeight_, "DMD"},
+        {topperVideoPlayer, currentTopperVideoPath_, currentTopperMediaWidth_, currentTopperMediaHeight_, "topper"}
+    };
+
+    for (auto& p : players) {
+        if (p.player) {
+            p.player->stop();
+            p.player.reset();
+            p.videoPath.clear();
+            p.mediaWidth = 0;
+            p.mediaHeight = 0;
+            LOG_DEBUG("AssetManager: Cleaned up " << p.name << " video player");
+        }
     }
 
-    // Stop and reset backglass video player
-    if (backglassVideoPlayer) {
-        backglassVideoPlayer->stop();
-        backglassVideoPlayer.reset();
-        currentBackglassVideoPath_.clear();
-        currentBackglassMediaWidth_ = 0;
-        currentBackglassMediaHeight_ = 0;
-    }
-
-    // Stop and reset DMD video player
-    if (dmdVideoPlayer) {
-        dmdVideoPlayer->stop();
-        dmdVideoPlayer.reset();
-        currentDmdVideoPath_.clear();
-        currentDmdMediaWidth_ = 0;
-        currentDmdMediaHeight_ = 0;
-    }
-
-    // Stop and reset topper video player
-    if (topperVideoPlayer) {
-        topperVideoPlayer->stop();
-        topperVideoPlayer.reset();
-        currentTopperVideoPath_.clear();
-        currentTopperMediaWidth_ = 0;
-        currentTopperMediaHeight_ = 0;
-    }
-
-    // Clear old video players cache
-    oldVideoPlayers_.clear();
-
+    clearOldVideoPlayers();
     LOG_DEBUG("AssetManager: Video players cleaned up");
 }
