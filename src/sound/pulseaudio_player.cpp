@@ -16,6 +16,7 @@ PulseAudioPlayer::PulseAudioPlayer(const std::string& exeDir, const Settings& se
       currentPlayingMusicType_(MusicType::None),
       ambienceMusic_(nullptr, Mix_FreeMusic),
       tableMusic_(nullptr, Mix_FreeMusic),
+      launchAudio_(nullptr, Mix_FreeMusic),
       rng_(std::chrono::steady_clock::now().time_since_epoch().count()),
       dist_(0.0, 1.0) {
     if (!audio_initialized) {
@@ -58,6 +59,7 @@ PulseAudioPlayer::~PulseAudioPlayer() {
     uiSounds_.clear(); // unique_ptr handles Mix_FreeChunk
     ambienceMusic_.reset(); // unique_ptr handles Mix_FreeMusic
     tableMusic_.reset(); // unique_ptr handles Mix_FreeMusic
+    launchAudio_.reset(); // unique_ptr handles Mix_FreeMusic
     std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Allow PulseAudio to process
     if (audio_initialized) {
         while (Mix_Init(0)) { // Close any additional SDL_mixer initializations
@@ -261,6 +263,39 @@ void PulseAudioPlayer::playTableMusic(const std::string& path) {
 }
 
 /**
+ * @brief Plays the table-specific music.
+ * @param path The full path to the table music file.
+ */
+void PulseAudioPlayer::playCustomLaunch(const std::string& path) {
+    LOG_DEBUG("PulseAudioPlayer: Attempting to play table custom launch: " << path);
+
+    if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
+        LOG_INFO("PulseAudioPlayer: No custom launch path provided, file not found, or not a regular file: " << path);
+        launchAudio_.reset(); // Ensure it's null if path is invalid
+        currentPlayingMusicType_ = MusicType::None; // Update state
+        return;
+    }
+
+    // Load launch audio if not already loaded or if path changed
+    bool needsReload = !launchAudio_ ||
+                       (Mix_GetMusicTitle(launchAudio_.get()) == nullptr) ||
+                       (std::string(Mix_GetMusicTitle(launchAudio_.get())) != path);
+
+    if (needsReload) {
+        launchAudio_.reset(Mix_LoadMUS(path.c_str()));
+        if (!launchAudio_) {
+            LOG_ERROR("PulseAudioPlayer: Mix_LoadMUS Error for launch audio " << path << ": " << Mix_GetError());
+            currentPlayingMusicType_ = MusicType::None; // Update state
+            return;
+        }
+        LOG_DEBUG("PulseAudioPlayer: Launch audio (custom) loaded successfully from " << path);
+        currentPlayingMusicType_ = MusicType::Launch;
+    }
+    Mix_PlayMusic(launchAudio_.get(), 0);
+    applyAudioSettings(); // Reapply volume after playing
+}
+
+/**
  * @brief Stops any currently playing background music (ambience or table music).
  */
 void PulseAudioPlayer::stopMusic() {
@@ -296,6 +331,12 @@ void PulseAudioPlayer::applyAudioSettings() {
             int musicVolume = effective_table_mute ? 0 : static_cast<int>(effective_table_vol * MIX_MAX_VOLUME);
             Mix_VolumeMusic(musicVolume);
             LOG_DEBUG("PulseAudioPlayer: Table music volume set to " << (effective_table_mute ? "muted" : std::to_string(effective_table_vol * 100.0f) + "%") << " (SDL_mixer: " << musicVolume << ")");
+        } else if (currentPlayingMusicType_ == MusicType::Launch) {
+            bool effective_table_mute = settings_.masterMute || settings_.interfaceAudioMute;
+            float effective_table_vol = (settings_.interfaceAudioVol / 100.0f) * (settings_.masterVol / 100.0f);
+            int musicVolume = effective_table_mute ? 0 : static_cast<int>(effective_table_vol * MIX_MAX_VOLUME);
+            Mix_VolumeMusic(musicVolume);
+            LOG_DEBUG("PulseAudioPlayer: Launch Audio volume set to " << (effective_table_mute ? "muted" : std::to_string(effective_table_vol * 100.0f) + "%") << " (SDL_mixer: " << musicVolume << ")");
         } else {
             Mix_VolumeMusic(0);
             LOG_DEBUG("PulseAudioPlayer: Unknown music playing, setting music volume to 0.");

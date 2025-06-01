@@ -54,7 +54,7 @@ public:
      * @param path The full path to the table music file.
      */
     void playTableMusic(const std::string& path) override;
-
+    void playCustomLaunch(const std::string& path) override;
     /**
      * @brief Stops any currently playing background music (ambience or table music).
      */
@@ -79,7 +79,8 @@ private:
     enum class MusicType {
         None,
         Ambience,
-        Table
+        Table,
+        Launch
     };
     MusicType currentPlayingMusicType_; ///< Tracks the type of music currently playing (or intended to play).
 
@@ -87,6 +88,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>> uiSounds_; ///< Map of UI sound effects.
     std::unique_ptr<Mix_Music, void(*)(Mix_Music*)> ambienceMusic_; ///< Pointer to the loaded ambience music.
     std::unique_ptr<Mix_Music, void(*)(Mix_Music*)> tableMusic_;    ///< Pointer to the loaded table music.
+    std::unique_ptr<Mix_Music, void(*)(Mix_Music*)> launchAudio_;    ///< Pointer to the loaded launch audio (custom).
     std::mt19937 rng_; // Mersenne Twister engine
     std::uniform_real_distribution<double> dist_; // Distribution for random double
 

@@ -52,6 +52,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
             table.folder = entry.path().parent_path().string();
             table.title = entry.path().stem().string(); // Initial title from filename stem
             table.music = getMusicPath(table.folder, settings.tableMusic);
+            table.launchAudio = getMusicPath(table.folder, settings.customLaunchSound);
             table.playfieldImage = getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
             table.wheelImage = getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
             table.backglassImage = getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
@@ -330,6 +331,7 @@ bool TableLoader::loadAsapIndex(const Settings& settings, std::vector<TableData>
                 if (table.contains("tableRevision") && table["tableRevision"].is_string()) tableData.tableRevision = table["tableRevision"].get<std::string>();
                 // Load media paths
                 if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
+                if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.music = table["launchAudio"].get<std::string>();
                 if (table.contains("playfieldImage") && table["playfieldImage"].is_string()) tableData.playfieldImage = table["playfieldImage"].get<std::string>();
                 if (table.contains("wheelImage") && table["wheelImage"].is_string()) tableData.wheelImage = table["wheelImage"].get<std::string>();
                 if (table.contains("backglassImage") && table["backglassImage"].is_string()) tableData.backglassImage = table["backglassImage"].get<std::string>();
@@ -387,6 +389,7 @@ bool TableLoader::saveAsapIndex(const Settings& settings, const std::vector<Tabl
         tableJson["tableVersion"] = table.tableVersion;
         tableJson["tableRevision"] = table.tableRevision;
         // Add media paths
+        tableJson["launchAudio"] = table.launchAudio;
         tableJson["music"] = table.music;
         tableJson["playfieldImage"] = table.playfieldImage;
         tableJson["wheelImage"] = table.wheelImage;

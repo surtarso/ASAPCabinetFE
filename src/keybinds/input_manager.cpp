@@ -159,7 +159,6 @@ void InputManager::registerActions() {
 
         inExternalAppMode_ = true; // Set flag to indicate external app is launching
         LOG_DEBUG("InputManager: Launch table triggered");
-        soundManager_->playUISound("launch_table");
 
         const Settings& settings = settingsManager_->getSettings();
         std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
@@ -183,6 +182,16 @@ void InputManager::registerActions() {
         if (IVideoPlayer* player = assets_->getDmdVideoPlayer()) {
             player->stop();
             LOG_DEBUG("InputManager: Stopped DMD video player");
+        }
+        if (IVideoPlayer* player = assets_->getTopperVideoPlayer()) {
+            player->stop();
+            LOG_DEBUG("InputManager: Stopped topper video player");
+        }
+
+        if (tables_->at(*currentIndex_).launchAudio == "") {
+            soundManager_->playUISound("launch_table");
+        } else {
+            soundManager_->playCustomLaunch(tables_->at(*currentIndex_).launchAudio);
         }
         //keep ambience on background while playing
         //TODO: this should be optional.
@@ -209,6 +218,10 @@ void InputManager::registerActions() {
         if (IVideoPlayer* player = assets_->getDmdVideoPlayer()) {
             player->play();
             LOG_DEBUG("InputManager: Resumed DMD video player");
+        }
+        if (IVideoPlayer* player = assets_->getTopperVideoPlayer()) {
+            player->play();
+            LOG_DEBUG("InputManager: Resumed topper video player");
         }
         if (result != 0) {
             LOG_ERROR("InputManager: Warning: VPX launch failed with exit code " << result);

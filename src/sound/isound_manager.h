@@ -47,7 +47,7 @@ public:
      * @param path The full path to the table music file. If empty, stops current table music.
      */
     virtual void playTableMusic(const std::string& path) = 0;
-
+    virtual void playCustomLaunch(const std::string& path) = 0;
     /**
      * @brief Stops any currently playing background music (ambience or table music).
      */

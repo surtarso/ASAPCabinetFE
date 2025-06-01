@@ -36,6 +36,7 @@ struct TableData {
     std::string dmdVideo;        ///< Path to the DMD video, if available.
     std::string topperVideo;        ///< Path to the topper video, if available.
     std::string music;           ///< Path to the music file, if available.
+    std::string launchAudio;    ///< Path to the custom launch audio, if available.
 
     // vpxtool metadata
     std::string tableName;       ///< Table name from vpxtool metadata.
