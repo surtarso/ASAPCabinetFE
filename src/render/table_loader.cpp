@@ -334,11 +334,11 @@ bool TableLoader::loadAsapIndex(const Settings& settings, std::vector<TableData>
                 if (table.contains("wheelImage") && table["wheelImage"].is_string()) tableData.wheelImage = table["wheelImage"].get<std::string>();
                 if (table.contains("backglassImage") && table["backglassImage"].is_string()) tableData.backglassImage = table["backglassImage"].get<std::string>();
                 if (table.contains("dmdImage") && table["dmdImage"].is_string()) tableData.dmdImage = table["dmdImage"].get<std::string>();
-                if (table.contains("topperImage") && table["topperImage"].is_string()) tableData.dmdImage = table["topperImage"].get<std::string>();
+                if (table.contains("topperImage") && table["topperImage"].is_string()) tableData.topperImage = table["topperImage"].get<std::string>();
                 if (table.contains("playfieldVideo") && table["playfieldVideo"].is_string()) tableData.playfieldVideo = table["playfieldVideo"].get<std::string>();
                 if (table.contains("backglassVideo") && table["backglassVideo"].is_string()) tableData.backglassVideo = table["backglassVideo"].get<std::string>();
                 if (table.contains("dmdVideo") && table["dmdVideo"].is_string()) tableData.dmdVideo = table["dmdVideo"].get<std::string>();
-                if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.dmdVideo = table["topperVideo"].get<std::string>();
+                if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
 
                 tables.push_back(tableData);
             } catch (const std::exception& e) {

@@ -6,7 +6,7 @@
 #include <curl/curl.h>
 #include <filesystem>
 #include <json.hpp>
-#include "utils/logging.h" // Ensure this is correctly pointing to your logging header
+#include "utils/logging.h"
 #include "table_loader.h" // Include TableLoader.h to get TableData definition
 
 namespace fs = std::filesystem;
