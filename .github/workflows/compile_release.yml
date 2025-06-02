@@ -36,6 +36,7 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
+        lfs: true # Enable Git LFS to fetch actual files instead of links
 
     # --- System requirements ---
     - name: Install System Dependencies
