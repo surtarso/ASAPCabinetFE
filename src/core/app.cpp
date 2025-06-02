@@ -21,7 +21,7 @@ App::App(const std::string& configPath)
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
       tableLoader_(std::make_unique<TableLoader>()) {
-    LOG_INFO("App: Constructor started");
+    //LOG_INFO("App: Constructor started");
     exeDir_ = getExecutableDir();
     LOG_INFO("App: Executable directory set to " << exeDir_);
     configPath_ = exeDir_ + configPath_;
@@ -35,18 +35,18 @@ App::App(const std::string& configPath)
             false
     #endif
     );
-    LOG_INFO("App: Constructor completed");
+    //LOG_INFO("App: Constructor completed");
 }
 
 App::~App() {
-    LOG_INFO("App: Destructor started");
+    //LOG_INFO("App: Destructor started");
     cleanup();
-    LOG_INFO("App: Destructor completed");
+    //LOG_INFO("App: Destructor completed");
 }
 
 void App::run() {
     initializeDependencies();
-    LOG_INFO("App: Checking initial shouldQuit state: " << (inputManager_->shouldQuit() ? "true" : "false"));
+    //LOG_INFO("App: Checking initial shouldQuit state: " << (inputManager_->shouldQuit() ? "true" : "false"));
     while (!inputManager_->shouldQuit()) {
         handleEvents();
         if (!screenshotManager_->isActive()) {
@@ -54,7 +54,7 @@ void App::run() {
             render();
         }
     }
-    LOG_INFO("App: Run loop exited due to shouldQuit being true");
+    //LOG_INFO("App: Run loop exited due to shouldQuit being true");
 }
 
 void App::reloadWindows() {
@@ -206,7 +206,7 @@ void App::initializeDependencies() {
 }
 
 void App::handleEvents() {
-    LOG_INFO("App: handleEvents started");
+    //LOG_INFO("App: handleEvents started");
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (!screenshotManager_->isActive()) {
@@ -227,18 +227,18 @@ void App::handleEvents() {
             }
         }
     }
-    LOG_INFO("App: handleEvents ended");
+    //LOG_INFO("App: handleEvents ended");
 }
 
 void App::update() {
-    LOG_INFO("App: Update started");
+    //LOG_INFO("App: Update started");
     assets_->clearOldVideoPlayers();
     prevShowConfig_ = inputManager_->isConfigActive();
-    LOG_INFO("App: Update ended");
+    //LOG_INFO("App: Update ended");
 }
 
 void App::render() {
-    LOG_INFO("App: render started");
+    //LOG_INFO("App: render started");
     if (!renderer_ || !assets_) {
         LOG_ERROR("App::render: renderer_ or assets_ is null");
         return;
@@ -255,7 +255,7 @@ void App::render() {
         return;
     }
 
-    LOG_INFO("App::render: Starting render cycle");
+    //LOG_INFO("App::render: Starting render cycle");
     SDL_SetRenderDrawColor(playfieldRenderer, 0, 0, 0, 255);
     SDL_RenderClear(playfieldRenderer);
     
@@ -300,11 +300,11 @@ void App::render() {
     if (settings.showTopper && topperRenderer) {
         SDL_RenderPresent(topperRenderer);
     }
-    LOG_INFO("App::render: Render cycle completed");
+    //LOG_INFO("App::render: Render cycle completed");
 }
 
 void App::cleanup() {
-    LOG_INFO("App::cleanup: Cleaning up");
+    //LOG_INFO("App::cleanup: Cleaning up");
     assets_->cleanupVideoPlayers();
     assets_.reset();
     LOG_INFO("App::cleanup: Cleanup complete");

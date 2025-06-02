@@ -191,7 +191,7 @@ void PulseAudioPlayer::playAmbienceMusic(const std::string& path) {
         LOG_ERROR("PulseAudioPlayer: Mix_PlayMusic Error for ambience music " << path << ": " << Mix_GetError());
         currentPlayingMusicType_ = MusicType::None; // Update state on failure
     } else {
-        LOG_INFO("PulseAudioPlayer: Playing ambience music: " << path);
+        //LOG_INFO("PulseAudioPlayer: Playing ambience music: " << path);
         currentPlayingMusicType_ = MusicType::Ambience; // Update state on success
     }
 
@@ -226,7 +226,7 @@ void PulseAudioPlayer::playTableMusic(const std::string& path) {
     stopMusic(); // Stop any currently playing music (ambience or previous table)
 
     if (path.empty() || !std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        LOG_INFO("PulseAudioPlayer: No table music path provided, file not found, or not a regular file: " << path);
+        //LOG_INFO("PulseAudioPlayer: No table music path provided, file not found, or not a regular file: " << path);
         tableMusic_.reset(); // Ensure it's null if path is invalid
         currentPlayingMusicType_ = MusicType::None; // Update state
         // If no table music, try to resume ambience
@@ -256,7 +256,7 @@ void PulseAudioPlayer::playTableMusic(const std::string& path) {
         LOG_ERROR("PulseAudioPlayer: Mix_PlayMusic Error for table music " << path << ": " << Mix_GetError());
         currentPlayingMusicType_ = MusicType::None; // Update state on failure
     } else {
-        LOG_INFO("PulseAudioPlayer: Playing table music: " << path);
+        //LOG_INFO("PulseAudioPlayer: Playing table music: " << path);
         currentPlayingMusicType_ = MusicType::Table; // Update state on success
     }
     applyAudioSettings(); // Reapply volume after playing
