@@ -34,7 +34,7 @@ FRAME_INTERVAL=0.1        # Seconds between screenshots (approx 10 FPS, adjusted
 
 WINDOW_TITLE_VPX="Visual Pinball Player"
 WINDOW_TITLE_BACKGLASS="B2SBackglass"
-WINDOW_TITLE_DMD=("FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
+WINDOW_TITLE_DMD=("ScoreView" "FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
 NODMDFOUND_FILE="noDMDfound.txt"
 
 # Reads a value from the specified section and key in the INI file

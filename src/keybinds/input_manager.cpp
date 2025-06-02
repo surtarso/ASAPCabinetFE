@@ -11,15 +11,17 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
       settingsManager_(nullptr), windowManager_(nullptr), currentIndex_(nullptr),
       tables_(nullptr), showConfig_(nullptr), exeDir_(""), screenshotManager_(nullptr),
-      screenshotModeActive_(false),
-      inExternalAppMode_(false),
-      lastExternalAppReturnTime_(0) // Initialize new timestamp
-{}
+      runtimeEditor_(nullptr), actionHandlers_(), letterIndex_(), quit_(false),
+      screenshotModeActive_(false), lastClickTimes_(), inExternalAppMode_(false),
+      lastExternalAppReturnTime_(0) {
+    LOG_INFO("InputManager: Constructor started, quit_ = " << quit_);
+}
 
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableData>& tables,
                                    bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                    IWindowManager* windowManager) {
+    LOG_INFO("InputManager: setDependencies started, quit_ = " << quit_);
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
