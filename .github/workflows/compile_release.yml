@@ -123,7 +123,7 @@ jobs:
         # Change directory to make install target to ensure clean tarball contents
         cd "${HOME}/ASAPCabinetFE"
         # Create the tarball in the temporary directory
-        tar -czvf "${TARBALL_FULL_PATH}" ./*
+        tar -czvhf "${TARBALL_FULL_PATH}" ./*
         
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
