@@ -391,6 +391,7 @@ ConfigSchema::ConfigSchema() {
 void ConfigSchema::parseString(Settings& s, const std::string& val, const std::string& field) const {
     if (field == "VPXTablesPath") s.VPXTablesPath = val;
     else if (field == "VPinballXPath") s.VPinballXPath = val;
+    else if (field == "vpxIniPath") s.vpxIniPath = val;
     else if (field == "vpxSubCmd") s.vpxSubCmd = val;
     else if (field == "vpxStartArgs") s.vpxStartArgs = val;
     else if (field == "vpxEndArgs") s.vpxEndArgs = val;
