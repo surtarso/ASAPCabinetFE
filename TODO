@@ -8,7 +8,6 @@ FIX:
 - ffmpeg player video looping takes too long to start
 
 QOL:
-- tooltips need updates for new vars and improve old ones
 - sort by year/manufacturer
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
@@ -23,7 +22,7 @@ On hold:
 - add metadata panel to settings (size/pos, visible fields etc)
 - refactor the monoliths...
 - thread table_loader
-- implement db update frequency
+- implement db update frequency (not just startup)
 - abstract linux commands with an interface for crossplat later
 - use json instead of memory for standart info
 - attract mode (random table on a timer if idle) (optional)
