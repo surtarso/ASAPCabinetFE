@@ -9,8 +9,8 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
-#include "render/itable_loader.h"
-#include "render/table_data.h"
+#include "tables/itable_loader.h"
+#include "tables/table_data.h"
 #include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
 #include "sound/isound_manager.h"

@@ -14,7 +14,7 @@
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
 #include "render/iasset_manager.h"
-#include "render/table_data.h"
+#include "tables/table_data.h"
 #include "config/ui/section_renderer.h"
 #include "config/ui/button_handler.h"
 #include "config/ui/input_handler.h"

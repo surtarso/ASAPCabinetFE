@@ -16,7 +16,7 @@
 #include "core/iwindow_manager.h"
 #include "core/gui_manager.h"
 #include "render/iasset_manager.h"
-#include "render/table_data.h"
+#include "tables/table_data.h"
 #include "render/renderer.h"
 #include "keybinds/input_manager.h"
 #include "config/iconfig_service.h"

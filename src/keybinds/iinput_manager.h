@@ -11,7 +11,7 @@
 #ifndef IINPUT_MANAGER_H
 #define IINPUT_MANAGER_H
 
-#include "render/table_data.h"
+#include "tables/table_data.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <functional>

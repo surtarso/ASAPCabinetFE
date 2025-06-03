@@ -5,7 +5,7 @@
 #include "core/joystick_manager.h"
 #include "core/first_run.h"
 #include "core/playfield_overlay.h"
-#include "render/table_loader.h"
+#include "tables/table_loader.h"
 #include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>

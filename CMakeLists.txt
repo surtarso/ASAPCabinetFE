@@ -154,13 +154,13 @@ set(SOURCES
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/render/asset_manager.cpp
-    src/render/table_loader.cpp
     src/render/renderer.cpp
-    src/render/vps_database_client.cpp
     src/render/video_players/video_player_factory.cpp
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/gstreamer/gstreamer_player.cpp
     src/render/video_players/vlc/vlc_player.cpp
+    src/tables/table_loader.cpp
+    src/tables/vps_database_client.cpp
     src/utils/logger.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources

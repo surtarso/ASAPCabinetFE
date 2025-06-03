@@ -1,5 +1,5 @@
 #include "render/asset_manager.h"
-#include "render/table_loader.h"
+#include "tables/table_loader.h"
 #include "render/ivideo_player.h"
 #include "render/video_players/video_player_factory.h"
 #include "config/iconfig_service.h"

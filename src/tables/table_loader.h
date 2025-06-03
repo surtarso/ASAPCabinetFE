@@ -10,7 +10,7 @@
 #ifndef TABLE_LOADER_H
 #define TABLE_LOADER_H
 
-#include "render/itable_loader.h"
+#include "tables/itable_loader.h"
 #include "vps_database_client.h"
 #include <filesystem>
 
