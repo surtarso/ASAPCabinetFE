@@ -144,6 +144,29 @@ void App::loadFont() {
     }
 }
 
+void App::renderLoadingScreen() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Always);
+    ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+
+    ImGui::Text("ASAPCabinetFE tables are now loading.");
+    ImGui::NewLine();
+    ImGui::Text("Parsing Metadata. Please wait...");
+    ImGui::SameLine();
+    // Simple spinning animation using rotating characters
+    const char* spinner = "|/-\\";
+    static int spinnerIndex = 0;
+    static float lastUpdate = 0.0f;
+    float currentTime = ImGui::GetTime();
+    if (currentTime - lastUpdate > 0.1f) {
+        spinnerIndex = (spinnerIndex + 1) % 4;
+        lastUpdate = currentTime;
+    }
+    ImGui::Text("%c", spinner[spinnerIndex]);
+    ImGui::End();
+}
+
 void App::loadTables() {
     loadTablesThreaded(); // Use threaded loading
 }
@@ -296,13 +319,20 @@ void App::render() {
     }
 
     guiManager_->newFrame();
-    renderer_->render(*assets_);
-    if (playfieldOverlay_) {
-        playfieldOverlay_->render();
+    
+    // Render loading screen if tables are loading
+    if (isLoadingTables_) {
+        renderLoadingScreen();
+    } else {
+        renderer_->render(*assets_);
+        if (playfieldOverlay_) {
+            playfieldOverlay_->render();
+        }
+        if (showConfig_) {
+            configEditor_->drawGUI();
+        }
     }
-    if (showConfig_) {
-        configEditor_->drawGUI();
-    }
+    
     guiManager_->render(playfieldRenderer);
 
     SDL_RenderPresent(playfieldRenderer);

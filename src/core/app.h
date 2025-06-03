@@ -129,7 +129,7 @@ private:
     bool prevShowConfig_ = false;                        ///< Previous state of showConfig_ flag.
     std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
     std::mutex tablesMutex_;                            ///< Protects tables_ vector
-
+    std::atomic<float> tableLoadProgress_{0.0f};        ///< Progress tracking
     /**
      * @brief Gets the executable directory.
      *
@@ -196,7 +196,14 @@ private:
      * Creates and configures all components using DependencyFactory.
      */
     void initializeDependencies();
-    
+
+    /**
+     * @brief Renders a loading screen during table loading.
+     *
+     * Displays a centered ImGui window with a loading indicator when tables are being loaded.
+     */
+    void renderLoadingScreen();
+
     void loadTablesThreaded(size_t oldIndex = 0); // Helper for threaded loading
 };
 
