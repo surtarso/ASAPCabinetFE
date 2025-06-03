@@ -13,7 +13,6 @@ QOL:
 - make windows resizeable with mouse and pass to config
 
 UI:
-- loading feedback when parsing/fetching files
 - overall polish on config ui (imgui)
 - add blinking arrows on sides to indicate table flow/keys?
 - show a couple of prev/next table wheels?
