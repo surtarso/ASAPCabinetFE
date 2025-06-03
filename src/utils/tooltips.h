@@ -118,6 +118,11 @@ namespace Tooltips {
                 "1.0 = 100%, 1.5 = 150%, etc."},
 
             // WindowSettings
+            {"VideoBackend",
+                "Select video playback backend:\n"
+                "VLC: Reliable software-based playback with broad format support. Ideal for compatibility.\n"
+                "FFmpeg: Efficient software-based playback with extensive codec support. Suitable for most systems.\n"
+                "GStreamer: Flexible playback with plugin-based architecture. Good for customized setups."},
             {"UseVPinballXIni",
                 "Uses sizes and positions from ~/.vpinball/VPinballX.ini\n"
                 "Using this options will override options bellow."},
@@ -327,10 +332,6 @@ namespace Tooltips {
                 "Use VPinballX --help command line menu to see more."},
             {"LogFile",
                 "Path to the debug log file, relative to exec dir."},
-            {"VideoBackend",
-                "Select video playback backend:\n"
-                "VLC: Software Decoding\n"
-                "FFMpeg: Hardware Accelerated"},
 
             // UI Sounds
             {"ScrollPrevSound",

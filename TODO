@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- executable not showing in imguifiledialog! (regression)
 - year parsing (release date should be last resort)
 - name parsing (its ok, could be better like vpxguitools)
 - small static gstreamer and pulseaudio leak
@@ -9,8 +8,7 @@ FIX:
 - ffmpeg player video looping takes too long to start
 
 QOL:
-- add screenshot related variables to config UI
-- add a way to refresh metadata from scratch/edit current
+- tooltips need updates for new vars and improve old ones
 - add vpinballx.ini to settings so its not hardcoded w/ default
 - sort by year/manufacturer
 - make windows naturally draggable with mouse hold

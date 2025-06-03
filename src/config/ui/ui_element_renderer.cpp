@@ -92,15 +92,23 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         IGFD::FileDialogConfig config;
         config.path = (!value.empty() && std::filesystem::exists(value)) ? value : std::string(getenv("HOME"));
         config.flags = ImGuiFileDialogFlags_Modal;
-        if (key.find("Path") != std::string::npos) {
-            ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + key, "Select Folder", nullptr, config);
+        // color for folders
+        ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+        // color for .folders
+        ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, "((^\\.(\\.|[^/]+)?/?$))", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+        // color for .git* files
+        ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.1f, 0.5f, 0.5f, 0.9f));
+        
+        if (key.find("VPXTablesPath") != std::string::npos) {
+            ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + key, "Select VPX Tables Folder", nullptr, config);
         } else {
-            ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select Executable", "((.*))", config);
+            ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+            ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select VPinballX Executable", "((VPinballX))", config);
         }
     }
     ImVec2 maxSize = ImVec2(ImGui::GetIO().DisplaySize.x * 0.8f, ImGui::GetIO().DisplaySize.y * 0.8f);
     ImVec2 minSize = ImVec2(600, 400);
-    if (key.find("Path") != std::string::npos &&
+    if (key.find("VPXTablesPath") != std::string::npos &&
         ImGuiFileDialog::Instance()->Display("FolderDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             value = ImGuiFileDialog::Instance()->GetCurrentPath();
