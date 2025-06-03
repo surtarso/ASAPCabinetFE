@@ -174,7 +174,9 @@ void SectionRenderer::renderKeyValue(const std::string& key, std::string& value,
         renderKeybind(key, value, inputHandler_, hasChanges_, currentSection_);
     } else if (keyRenderers_.count(key)) {
         keyRenderers_[key](key, value, section); // Check dispatcher first
-    } else if (key.find("VPXTablesPath") != std::string::npos || key.find("VPinballXPath") != std::string::npos) {
+    } else if (key.find("VPXTablesPath") != std::string::npos || 
+                key.find("VPinballXPath") != std::string::npos ||
+                 key.find("VPXIniPath") != std::string::npos) {
         renderPathOrExecutable(key, value, hasChanges_, currentSection_); // Only for non-FontPath "Path" keys
     } else if (key.back() == 'X' || key.back() == 'Y' ||
                key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {

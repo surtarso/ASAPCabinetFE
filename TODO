@@ -9,7 +9,6 @@ FIX:
 
 QOL:
 - tooltips need updates for new vars and improve old ones
-- add vpinballx.ini to settings so its not hardcoded w/ default
 - sort by year/manufacturer
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config

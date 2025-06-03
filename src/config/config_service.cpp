@@ -47,7 +47,13 @@ void ConfigService::loadConfig() {
 
     // Apply VPinballX.ini settings if enabled
     if (settings_.useVPinballXIni) {
-        std::string iniPath = std::string(std::getenv("HOME")) + "/.vpinball/VPinballX.ini";
+        std::string iniPath;
+        if (settings_.vpxIniPath.empty()) {
+            // use vpx defaults if no custom path was given
+            iniPath = std::string(std::getenv("HOME")) + "/.vpinball/VPinballX.ini";
+        } else {
+            iniPath = settings_.vpxIniPath;
+        }
         VPinballXIniReader iniReader(iniPath);
         auto iniSettings = iniReader.readIniSettings();
         if (iniSettings) {

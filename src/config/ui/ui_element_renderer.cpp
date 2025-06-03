@@ -101,9 +101,12 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         
         if (key.find("VPXTablesPath") != std::string::npos) {
             ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_" + key, "Select VPX Tables Folder", nullptr, config);
-        } else {
+        } else if (key.find("VPinballXPath") != std::string::npos) {
             ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
             ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select VPinballX Executable", "((VPinballX))", config);
+        } else { //VPXIniPath
+            ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+            ImGuiFileDialog::Instance()->OpenDialog("FileDlg_" + key, "Select VPinballX Config File", ".ini", config);
         }
     }
     ImVec2 maxSize = ImVec2(ImGui::GetIO().DisplaySize.x * 0.8f, ImGui::GetIO().DisplaySize.y * 0.8f);
@@ -118,6 +121,15 @@ void renderPathOrExecutable([[maybe_unused]] const std::string& key, std::string
         ImGuiFileDialog::Instance()->Close();
     }
     if (key.find("VPinballXPath") != std::string::npos &&
+        ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            value = ImGuiFileDialog::Instance()->GetFilePathName();
+            LOG_INFO("UiElementRenderer: Executable picked: " << section << "." << key << " = " << value);
+            hasChanges = true;
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
+    if (key.find("VPXIniPath") != std::string::npos &&
         ImGuiFileDialog::Instance()->Display("FileDlg_" + key, ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             value = ImGuiFileDialog::Instance()->GetFilePathName();
