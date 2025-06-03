@@ -58,16 +58,22 @@ jobs:
         SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
         FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
         VLC_VER=$(pkg-config --modversion libvlc || echo "N/A")
+        GSTREAMER_VER=$(pkg-config --modversion gstreamer-1.0 || echo "N/A")
+        CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
         # Get GLIBC version
         GLIBC_VER=$(ldd --version 2>&1 | head -n 1 | awk '{print $NF}' || echo "N/A")
 
         echo "SDL2_VERSION=$SDL2_VER" >> $GITHUB_ENV
         echo "FFMPEG_VERSION=$FFMPEG_VER" >> $GITHUB_ENV
         echo "VLC_VERSION=$VLC_VER" >> $GITHUB_ENV
+        echo "GSTREAMER_VERSION=$GSTREAMER_VER" >> $GITHUB_ENV
+        echo "CURL_VERSION=$CURL_VER" >> $GITHUB_ENV
         echo "GLIBC_VERSION=$GLIBC_VER" >> $GITHUB_ENV # Set GLIBC version as env var
         echo "Detected SDL2 Version: $SDL2_VER"
         echo "Detected FFmpeg Version: $FFMPEG_VER"
         echo "Detected VLC Version: $VLC_VER"
+        echo "Detected GStreamer Version: $GSTREAMER_VER"
+        echo "Detected cURL Version: $CURL_VER"
         echo "Detected GLIBC Version: $GLIBC_VER"
 
     # --- Doxygen Documentation Steps ---
@@ -171,6 +177,8 @@ jobs:
           - SDL2: ${{ env.SDL2_VERSION }}
           - FFmpeg (libavcodec): ${{ env.FFMPEG_VERSION }}
           - VLC (libvlc): ${{ env.VLC_VERSION }}
+          - GStreamer: ${{ env.GSTREAMER_VERSION }}
+          - cURL: ${{ env.CURL_VERSION }}
 
           Unpack and run `./ASAPCabinetFE` 
           Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md)
