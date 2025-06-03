@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <unistd.h>
 #include <limits.h>
+#include <thread> // Added for std::thread
 
 namespace fs = std::filesystem;
 
@@ -21,7 +22,6 @@ App::App(const std::string& configPath)
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
       tableLoader_(std::make_unique<TableLoader>()) {
-    //LOG_INFO("App: Constructor started");
     exeDir_ = getExecutableDir();
     LOG_INFO("App: Executable directory set to " << exeDir_);
     configPath_ = exeDir_ + configPath_;
@@ -29,24 +29,20 @@ App::App(const std::string& configPath)
     std::string logFile = exeDir_ + "logs/debug.log";
     LOG_INFO("App: Initializing logger with file " << logFile);
     Logger::getInstance().initialize(logFile,
-    #ifdef DEBUG_LOGGING
+#ifdef DEBUG_LOGGING
             true
-    #else
+#else
             false
-    #endif
+#endif
     );
-    //LOG_INFO("App: Constructor completed");
 }
 
 App::~App() {
-    //LOG_INFO("App: Destructor started");
     cleanup();
-    //LOG_INFO("App: Destructor completed");
 }
 
 void App::run() {
     initializeDependencies();
-    //LOG_INFO("App: Checking initial shouldQuit state: " << (inputManager_->shouldQuit() ? "true" : "false"));
     while (!inputManager_->shouldQuit()) {
         handleEvents();
         if (!screenshotManager_->isActive()) {
@@ -54,7 +50,6 @@ void App::run() {
             render();
         }
     }
-    //LOG_INFO("App: Run loop exited due to shouldQuit being true");
 }
 
 void App::reloadWindows() {
@@ -74,7 +69,7 @@ void App::reloadFont(bool isStandalone) {
             assets_->setFont(font_.get());
             const TableData& table = tables_[currentIndex_];
             SDL_Rect titleRect = assets_->getTitleRect();
-            titleRect.w = 0; // Reset dimensions to allow recalculation
+            titleRect.w = 0;
             titleRect.h = 0;
             assets_->reloadTitleTexture(table.title, settings.fontColor, titleRect);
         }
@@ -85,7 +80,7 @@ void App::reloadFont(bool isStandalone) {
 }
 
 ISoundManager* App::getSoundManager() {
-    return soundManager_.get(); // Return raw pointer from unique_ptr
+    return soundManager_.get();
 }
 
 void App::reloadAssetsAndRenderers() {
@@ -111,22 +106,7 @@ void App::reloadTablesAndTitle() {
     }
 
     LOG_DEBUG("App: Reloading tables and title texture for TitleSource change");
-    size_t oldIndex = currentIndex_;
-    tables_ = tableLoader_->loadTableList(configManager_->getSettings());
-    if (tables_.empty()) {
-        LOG_ERROR("App: No .vpx files found in " << configManager_->getSettings().VPXTablesPath);
-        exit(1);
-    }
-    // Preserve currentIndex_ if possible
-    if (oldIndex >= tables_.size()) {
-        currentIndex_ = tables_.size() - 1;
-    } else {
-        currentIndex_ = oldIndex;
-    }
-    LOG_INFO("App: Reloaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
-    
-    assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
-    LOG_DEBUG("App: Title texture reloaded for table " << tables_[currentIndex_].title);
+    loadTablesThreaded(currentIndex_); // Use threaded loading, preserve currentIndex_
 }
 
 void App::reloadOverlaySettings() {
@@ -165,12 +145,39 @@ void App::loadFont() {
 }
 
 void App::loadTables() {
-    tables_ = tableLoader_->loadTableList(configManager_->getSettings());
-    if (tables_.empty()) {
-        LOG_ERROR("App: Edit config.ini, no .vpx files found in " << configManager_->getSettings().VPXTablesPath);
-        exit(1);
+    loadTablesThreaded(); // Use threaded loading
+}
+
+void App::loadTablesThreaded(size_t oldIndex) {
+    if (isLoadingTables_) {
+        LOG_INFO("App: Table loading already in progress, skipping");
+        return;
     }
-    LOG_INFO("Found " << tables_.size() << " tables");
+
+    isLoadingTables_ = true;
+    std::thread loadingThread([this, oldIndex]() {
+        auto loadedTables = tableLoader_->loadTableList(configManager_->getSettings());
+        if (loadedTables.empty()) {
+            LOG_ERROR("App: No .vpx files found in " << configManager_->getSettings().VPXTablesPath);
+            isLoadingTables_ = false;
+            return; // Don't update tables_ if empty
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(tablesMutex_);
+            tables_ = std::move(loadedTables);
+            currentIndex_ = (oldIndex >= tables_.size()) ? tables_.size() - 1 : oldIndex;
+        }
+
+        // Reload assets on the main thread after loading
+        SDL_Event event;
+        event.type = SDL_USEREVENT;
+        SDL_PushEvent(&event);
+
+        isLoadingTables_ = false;
+        LOG_INFO("App: Loaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
+    });
+    loadingThread.detach(); // Detach for simplicity; could join in destructor if needed
 }
 
 void App::initializeDependencies() {
@@ -188,7 +195,6 @@ void App::initializeDependencies() {
     guiManager_ = DependencyFactory::createGuiManager(windowManager_.get(), configManager_.get());
     soundManager_ = DependencyFactory::createSoundManager(exeDir_, configManager_->getSettings());
 
-    // Play ambience music on startup
     if (!configManager_->getSettings().ambienceSound.empty()) {
         soundManager_->playAmbienceMusic(configManager_->getSettings().ambienceSound);
     }
@@ -203,11 +209,7 @@ void App::initializeDependencies() {
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     playfieldOverlay_ = std::make_unique<PlayfieldOverlay>(
-        &tables_,           // Pass pointer to tables vector
-        &currentIndex_,     // Pass pointer to currentIndex
-        configManager_.get(),
-        windowManager_.get(),
-        assets_.get()
+        &tables_, &currentIndex_, configManager_.get(), windowManager_.get(), assets_.get()
     );
 
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
@@ -220,7 +222,6 @@ void App::initializeDependencies() {
 }
 
 void App::handleEvents() {
-    //LOG_INFO("App: handleEvents started");
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (!screenshotManager_->isActive()) {
@@ -228,7 +229,7 @@ void App::handleEvents() {
             ImGuiIO& io = ImGui::GetIO();
             if (event.type == SDL_TEXTINPUT && io.WantCaptureKeyboard) {
                 LOG_DEBUG("App: Consuming SDL_TEXTINPUT event due to ImGui WantCaptureKeyboard");
-                continue; // Skip further processing
+                continue;
             }
             inputManager_->handleEvent(event);
             if (showConfig_) {
@@ -239,20 +240,21 @@ void App::handleEvents() {
             } else if (event.type == SDL_JOYDEVICEREMOVED) {
                 joystickManager_->removeJoystick(event.jdevice.which);
             }
+            // Handle custom event for asset reloading
+            if (event.type == SDL_USEREVENT) {
+                assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
+                LOG_DEBUG("App: Assets reloaded after table loading");
+            }
         }
     }
-    //LOG_INFO("App: handleEvents ended");
 }
 
 void App::update() {
-    //LOG_INFO("App: Update started");
     assets_->clearOldVideoPlayers();
     prevShowConfig_ = inputManager_->isConfigActive();
-    //LOG_INFO("App: Update ended");
 }
 
 void App::render() {
-    //LOG_INFO("App: render started");
     if (!renderer_ || !assets_) {
         LOG_ERROR("App::render: renderer_ or assets_ is null");
         return;
@@ -269,7 +271,6 @@ void App::render() {
         return;
     }
 
-    //LOG_INFO("App::render: Starting render cycle");
     SDL_SetRenderDrawColor(playfieldRenderer, 0, 0, 0, 255);
     SDL_RenderClear(playfieldRenderer);
     
@@ -314,11 +315,9 @@ void App::render() {
     if (settings.showTopper && topperRenderer) {
         SDL_RenderPresent(topperRenderer);
     }
-    //LOG_INFO("App::render: Render cycle completed");
 }
 
 void App::cleanup() {
-    //LOG_INFO("App::cleanup: Cleaning up");
     assets_->cleanupVideoPlayers();
     assets_.reset();
     LOG_INFO("App::cleanup: Cleanup complete");

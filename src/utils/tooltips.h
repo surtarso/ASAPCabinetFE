@@ -172,7 +172,8 @@ namespace Tooltips {
             {"ForceRebuild",
                 "Forces re-building metadata.\n"
                 "Saving with this checked will DELETE asapcabinetfe_index.json\n"
-                "and re-create it from scratch"},
+                "and re-create it from scratch. You need to modify a title metadata setting for this to trigger.\n"
+                "It is save to leave this checked if you are done with your table index."},
             {"ShowMetadata",
                 "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
                 "TitleSource must be set to 'metadata' for the panel to display something."},

@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <mutex>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "config/iconfig_service.h"
@@ -125,6 +127,8 @@ private:
     std::vector<TableData> tables_;                      ///< List of table data.
     std::unique_ptr<PlayfieldOverlay> playfieldOverlay_; ///< Overlay for ImGui UI elements.
     bool prevShowConfig_ = false;                        ///< Previous state of showConfig_ flag.
+    std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
+    std::mutex tablesMutex_;                            ///< Protects tables_ vector
 
     /**
      * @brief Gets the executable directory.
@@ -192,6 +196,8 @@ private:
      * Creates and configures all components using DependencyFactory.
      */
     void initializeDependencies();
+    
+    void loadTablesThreaded(size_t oldIndex = 0); // Helper for threaded loading
 };
 
 #endif // APP_H
