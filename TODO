@@ -6,8 +6,10 @@ FIX:
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start
+- refactor the monoliths...
 
 QOL:
+- thread vps parser
 - sort by year/manufacturer
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
@@ -19,8 +21,6 @@ UI:
 
 On hold:
 - add metadata panel to settings (size/pos, visible fields etc)
-- refactor the monoliths...
-- thread vps parser
 - implement db update frequency (not just startup)
 - abstract linux commands with an interface for crossplat later
 - use json instead of memory for standart info
