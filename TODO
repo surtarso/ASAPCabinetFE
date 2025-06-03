@@ -8,6 +8,7 @@ FIX:
 - ffmpeg player video looping takes too long to start
 
 QOL:
+- add screenshot related variables to config UI
 - add a way to refresh metadata from scratch/edit current
 - add vpinballx.ini to settings so its not hardcoded w/ default
 - sort by year/manufacturer
