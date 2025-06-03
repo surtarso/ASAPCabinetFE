@@ -8,7 +8,7 @@ ButtonHandler::ButtonHandler(bool& showConfig, float& saveMessageTimer, const In
 
 void ButtonHandler::renderButtonPane() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
-    if (ImGui::Button("Save", ImVec2(100, 0))) {
+    if (ImGui::Button("Apply", ImVec2(100, 0))) {
         if (onSave_) {
             onSave_(); // Calls ConfigUI::saveConfig
             LOG_DEBUG("ButtonHandler: Save button pressed, onSave_ called");

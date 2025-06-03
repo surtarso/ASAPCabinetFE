@@ -1,9 +1,12 @@
 #include "vps_data_enricher.h"
 #include <fstream>
 #include <regex>
+#include <mutex>
 #include "utils/logging.h"
 
 VpsDataEnricher::VpsDataEnricher(const nlohmann::json& vpsDb) : vpsDb_(vpsDb) {}
+
+static std::mutex mismatchLogMutex; // Mutex for thread-safe mismatch logging
 
 bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const {
     if (!vpxTable.is_object()) {
@@ -73,7 +76,6 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         LOG_DEBUG("VpsDataEnricher: Error processing table data: " << vpxTable.value("path", "N/A") << ": " << e.what());
     }
 
-    std::ofstream mismatchLog("tables/vpsdb_mismatches.log", std::ios::app);
     bool matched_to_vpsdb = false;
     std::string latestVpsVersionFound = "";
     nlohmann::json bestVpsDbEntry = {};
@@ -221,8 +223,12 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
 
         LOG_INFO("VpsDataEnricher: Successfully enriched table '" << tableData.title << "' with VPSDB info");
     } else {
+        {
+            std::lock_guard<std::mutex> lock(mismatchLogMutex);
+            std::ofstream mismatchLog("tables/vpsdb_mismatches.log", std::ios::app);
+            mismatchLog << "No vpsdb match for table: " << tableData.tableName << ", gameName: " << tableData.romPath << "\n";
+        }
         LOG_DEBUG("VpsDataEnricher: No vpsdb match for table: '" << tableData.tableName << "', gameName: '" << tableData.romPath << "'");
-        mismatchLog << "No vpsdb match for table: " << tableData.tableName << ", gameName: " << tableData.romPath << "\n";
     }
 
     return matched_to_vpsdb;
