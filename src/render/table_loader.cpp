@@ -84,13 +84,17 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
                 file.close();
 
                 // Initialize VPS client
-                VpsDatabaseClient vpsClient(settings.vpsDbPath);
-                bool vpsLoaded = false;
-                if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency) && vpsClient.load()) {
-                    vpsLoaded = true;
-                } else {
-                    LOG_ERROR("TableLoader: Failed to load vpsdb.json, using vpxtool only");
-                }
+                
+                    VpsDatabaseClient vpsClient(settings.vpsDbPath);
+                    bool vpsLoaded = false;
+                    if (settings.fetchVPSdb == true){
+                        if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency) && vpsClient.load()) {
+                            vpsLoaded = true;
+                        } else {
+                            LOG_ERROR("TableLoader: Failed to load vpsdb.json, using vpxtool only");
+                        }
+                    }
+
 
                 if (!vpxtoolJson.contains("tables") || !vpxtoolJson["tables"].is_array()) {
                     LOG_ERROR("TableLoader: Invalid vpxtool_index.json: 'tables' missing or not an array");
@@ -231,8 +235,10 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings) {
 
                                     // VPS enrichment
                                     // The vpsClient.enrichTableData will set table.title based on the best VPSDB match.
-                                    if (vpsLoaded && vpsClient.enrichTableData(tableJson, table)) {
-                                        LOG_DEBUG("TableLoader: Enriched table: " << table.title);
+                                    if (settings.fetchVPSdb == true){
+                                        if (vpsLoaded && vpsClient.enrichTableData(tableJson, table)) {
+                                            LOG_DEBUG("TableLoader: Enriched table: " << table.title);
+                                        }
                                     }
                                     break; // Found matching tableData, break inner loop
                                 }

@@ -240,6 +240,12 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "topperRotation"); }},
 
         // [TitleDisplay]
+        {"fetchVPSdb", "TitleDisplay", "FetchVPSdb", true, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "fetchVPSdb"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "fetchVPSdb"); }},
+        {"forceRebuildMetadata", "TitleDisplay", "ForceRebuild", false, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "forceRebuildMetadata"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "forceRebuildMetadata"); }},
         {"showMetadata", "TitleDisplay", "ShowMetadata", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showMetadata"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showMetadata"); }},
@@ -372,7 +378,10 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultString(s, val, "indexPath"); }},
         {"vpxtoolIndex", "Internal", "VpxtoolIndex", std::string("data/vpxtool_index.json"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "vpxtoolIndex"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "vpxtoolIndex"); }}
+         [this](Settings& s, const auto& val) { defaultString(s, val, "vpxtoolIndex"); }},
+        {"screenshotWait", "Internal", "ScreenshotWait", 4, Type::Int, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseInt(s, val, "screenshotWait"); },
+         [this](Settings& s, const auto& val) { defaultInt(s, val, "screenshotWait"); }}
     };
 }
 
@@ -479,6 +488,7 @@ void ConfigSchema::parseInt(Settings& s, const std::string& val, const std::stri
     else if (field == "fontSize") s.fontSize = v;
     else if (field == "titleX") s.titleX = v;
     else if (field == "titleY") s.titleY = v;
+    else if (field == "screenshotWait") s.screenshotWait= v;
     else LOG_ERROR("ConfigSchema: Unknown int field: " << field);
 }
 
@@ -512,6 +522,8 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "useVPinballXIni") s.useVPinballXIni = v;
     else if (field == "forceImagesOnly") s.forceImagesOnly = v;
     else if (field == "showMetadata") s.showMetadata = v;
+    else if (field == "fetchVPSdb") s.fetchVPSdb = v;
+    else if (field == "forceRebuildMetadata") s.forceRebuildMetadata = v;
     else if (field == "masterMute") s.masterMute = v;
     else if (field == "mediaAudioMute") s.mediaAudioMute = v;
     else if (field == "tableMusicMute") s.tableMusicMute = v;

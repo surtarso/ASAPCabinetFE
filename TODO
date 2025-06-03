@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- executable not showing in imguifiledialog! (regression)
 - year parsing (release date should be last resort)
 - name parsing (its ok, could be better like vpxguitools)
 - small static gstreamer and pulseaudio leak

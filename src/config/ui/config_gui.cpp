@@ -114,9 +114,10 @@ std::vector<std::string> ConfigUI::getVisibleSections() const {
     std::vector<std::string> visibleSections;
     for (const auto& section : sectionOrder) {
         if (standaloneMode_ && section != "VPX") continue;
-#ifndef DEBUG_LOGGING
-        if (section == "Internal" || section == "UISounds" || section == "DefaultMedia") continue;
-#endif
+// FREEEEEDOOOOMMMMMM!!!!! =P
+// #ifndef DEBUG_LOGGING
+//         if (section == "Internal" || section == "UISounds" || section == "DefaultMedia") continue;
+// #endif
         visibleSections.push_back(section);
     }
     return visibleSections;

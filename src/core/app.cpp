@@ -96,6 +96,20 @@ void App::reloadAssetsAndRenderers() {
 }
 
 void App::reloadTablesAndTitle() {
+    const Settings& settings = configManager_->getSettings();
+    std::string currentTableIndex = settings.indexPath;
+
+    if (settings.forceRebuildMetadata) {
+        LOG_DEBUG("App: execDir: " << exeDir_ << "index: " << currentTableIndex);
+        std::error_code ec;
+        bool removed = std::filesystem::remove(exeDir_ + currentTableIndex, ec);
+        if (!removed && ec) {
+            LOG_ERROR("Failed to delete " << exeDir_ + currentTableIndex << ": " << ec.message());
+        } else if (removed) {
+            LOG_DEBUG("Successfully deleted " << exeDir_ + currentTableIndex);
+        }
+    }
+
     LOG_DEBUG("App: Reloading tables and title texture for TitleSource change");
     size_t oldIndex = currentIndex_;
     tables_ = tableLoader_->loadTableList(configManager_->getSettings());

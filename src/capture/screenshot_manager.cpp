@@ -25,15 +25,15 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
         return;
     }
 
-    LOG_INFO("ScreenshotManager: Waiting 4s for VPX to fully initialize");
-    sleep(4);
+    LOG_INFO("ScreenshotManager: Waiting " << settings.screenshotWait << "s for VPX to fully initialize");
+    sleep(settings.screenshotWait);
 
     if (!capture_.isWindowVisible("Visual Pinball Player")) {
-        LOG_ERROR("ScreenshotManager: Aborting screenshot mode - VPX window not found after 4s");
+        LOG_ERROR("ScreenshotManager: Aborting screenshot mode - VPX window not found after " << settings.screenshotWait << "s");
         process_.terminateVPX();
         return;
     }
-    LOG_INFO("ScreenshotManager: VPX playfield window detected after 4s.");
+    LOG_INFO("ScreenshotManager: VPX playfield window detected after " << settings.screenshotWait << "s.");
 
     LOG_DEBUG("ScreenshotManager: Waiting an additional 1s for VPX to settle");
     sleep(1);

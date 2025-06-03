@@ -67,6 +67,8 @@ struct Settings {
 
     // [TitleDisplay]
     std::string titleSource;
+    bool fetchVPSdb;
+    bool forceRebuildMetadata;
     bool showMetadata;
     bool showWheel;
     std::string wheelWindow;
@@ -147,6 +149,7 @@ struct Settings {
     std::string vpsDbLastUpdated;
     std::string vpxtoolIndex;
     std::string indexPath;
+    int screenshotWait;
 };
 
 #endif // SETTINGS_H

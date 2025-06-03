@@ -46,11 +46,20 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderMetadataCheckbox(key, value, hasChanges_, currentSection_, configService_);
     };
+    keyRenderers_["FetchVPSdb"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ForceRebuild"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
     keyRenderers_["ForceImagesOnly"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["FontSize"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
+    };
+    keyRenderers_["ScreenshotWait"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderInt(key, value, hasChanges_, currentSection_, 1, 40);
     };
     keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);

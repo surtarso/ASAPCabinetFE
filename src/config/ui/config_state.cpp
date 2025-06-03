@@ -168,6 +168,25 @@ bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSect
     const auto& currentSection = currentIt->second;
     const auto& lastSection = lastIt->second;
 
+    // List of keys to check
+    const std::vector<std::string> keys = {"ShowMetadata", "FetchVPSdb", "ForceRebuild"};
+    
+    for (const auto& key : keys) {
+        auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
+                                          [&key](const auto& pair) { return pair.first == key; });
+        auto lastPairIt = std::find_if(lastSection.keyValues.begin(), lastSection.keyValues.end(),
+                                       [&key](const auto& pair) { return pair.first == key; });
+
+        if (currentPairIt == currentSection.keyValues.end() || lastPairIt == lastSection.keyValues.end()) {
+            LOG_DEBUG("ConfigUIState: " << key << " key missing in current or last state");
+            return true;
+        }
+        if (currentPairIt->second != lastPairIt->second) {
+            LOG_DEBUG("ConfigUIState: " << key << " changed from " << lastPairIt->second << " to " << currentPairIt->second);
+            return true;
+        }
+    }
+
     // Check TitleSource
     const std::string titleSourceKey = "TitleSource";
     auto currentTitleSourceIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
