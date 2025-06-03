@@ -648,6 +648,7 @@ void renderVolumeScale(const std::string& key, std::string& value, bool& hasChan
     // Tooltip for the slider
     if (IsItemHovered() || IsItemActive()) {
         static const std::map<std::string, std::string> friendlyNames = {
+            {"MasterVol", "Master Audio"},
             {"MediaAudioVol", "Videos Audio"},
             {"TableMusicVol", "Table Music"},
             {"InterfaceAudioVol", "UI Sounds"},

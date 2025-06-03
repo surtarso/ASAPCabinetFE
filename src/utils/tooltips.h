@@ -10,7 +10,7 @@ namespace Tooltips {
         static const std::unordered_map<std::string, std::string> tooltips = {
             // VPX
             {"VPXTablesPath",
-                "Specifies the absolute path to the folder containing VPX table files.\n"
+                "Defines the absolute path to the folder containing VPX table files.\n"
                 "\n"
                 "It must be a full path.\n"
                 "(e.g., /home/user/tables/).\n"
@@ -22,6 +22,10 @@ namespace Tooltips {
                 "\n"
                 "Final command:\n"
                 "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"},
+            {"VPXIniPath",
+                "Defines the absolute path to the VPinballX.ini file\n"
+                "If left empty it will search the default location\n"
+                "~/.vpinball/VPinballX.ini"},
             {"StartArgs",
                 "Optional command-line arguments to prepend to the executable.\n"
                 "\n"
@@ -38,72 +42,44 @@ namespace Tooltips {
                 "Relative path to the wheel image for the table.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPTopperImage",
-                "Relative path to the PuP topper image.\n"
+            {"TopperImage",
+                "Relative path to the topper image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"PlayfieldImage",
                 "Relative path to the table's preview image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPPlayfieldImage",
-                "Relative path to the PuP table image.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
             {"BackglassImage",
                 "Relative path to the backglass image.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
-            {"PuPBackglassImage",
-                "Relative path to the PuP backglass image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"DmdImage",
                 "Relative path to the DMD image.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPDmdImage",
-                "Relative path to the PuP DMD image.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
-            {"PuPFullDmdImage",
-                "Relative path to the PuP full DMD image.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
-            {"PuPTopperVideo",
-                "Relative path to the PuP topper video.\n"
+            {"TopperVideo",
+                "Relative path to the topper video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"PlayfieldVideo",
                 "Relative path to the table preview video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPPlayfieldVideo",
-                "Relative path to the PuP table video.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
             {"BackglassVideo",
                 "Relative path to the backglass video.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
-            {"PuPBackglassVideo",
-                "Relative path to the PuP backglass video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
             {"DmdVideo",
                 "Relative path to the DMD video.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
-            {"PuPDmdVideo",
-                "Relative path to the PuP DMD video.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
-            {"PuPFullDmdVideo",
-                "Relative path to the PuP full DMD video.\n"
-                "These are relative to your table folder.\n"
-                "/path/to/tables/<table_folder>/"},
             {"TableMusic",
                 "Relative path to the table music file.\n"
+                "These are relative to your table folder.\n"
+                "/path/to/tables/<table_folder>/"},
+            {"CustomLaunchSound",
+                "Relative path to the table launch audio file.\n"
                 "These are relative to your table folder.\n"
                 "/path/to/tables/<table_folder>/"},
 
@@ -126,6 +102,7 @@ namespace Tooltips {
             {"UseVPinballXIni",
                 "Uses sizes and positions from ~/.vpinball/VPinballX.ini\n"
                 "Using this options will override options bellow."},
+
             {"PlayfieldWidth",
                 "Width of the Playfield window in pixels.\n"
                 "This should be relative to your Playfield media width."},
@@ -169,11 +146,33 @@ namespace Tooltips {
                 "Y position of the DMD window.\n"
                 "You can drag and double-click a window to save it's position"},
 
+            {"ShowTopper",
+                "Show/hide the Topper window."},
+            {"TopperWidth",
+                "Width of the Topper window in pixels.\n"
+                "This should be relative to your Topper media width."},
+            {"TopperHeight",
+                "Height of the Topper window in pixels.\n"
+                "This should be relative to your Topper media height."},
+            {"TopperX",
+                "X position of the Topper window.\n"
+                "You can drag and double-click a window to save it's position"},
+            {"TopperY",
+                "Y position of the Topper window.\n"
+                "You can drag and double-click a window to save it's position"},
+
             // TitleDisplay
             {"TitleSource",
                 "Select the source of the title info.\n"
-                "- 'filename' to use filename as title.\n"
-                "- 'metadata' to use file metadata as title. (requires vpxtool)\n"},
+                "- 'filename' to use filename as table title.\n"
+                "- 'metadata' to use table title from metadata. (requires vpxtool)\n"},
+            {"FetchVPSdb",
+                "Fetches Virtual Pinball Spreadsheet database and\n"
+                "attempts to match with vpxtool metadata."},
+            {"ForceRebuild",
+                "Forces re-building metadata.\n"
+                "Saving with this checked will DELETE asapcabinetfe_index.json\n"
+                "and re-create it from scratch"},
             {"ShowMetadata",
                 "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
                 "TitleSource must be set to 'metadata' for the panel to display something."},
@@ -188,9 +187,13 @@ namespace Tooltips {
             {"ShowWheel",
                 "Toggle visibility of the wheel image in the main window.\n"
                 "Set to true to show the wheel, false to hide it."},
+            {"WheelWindow",
+                "Select the window to display the wheel art."},
             {"ShowTitle",
                 "Toggle visibility of table titles in the main window.\n"
                 "Set to true to show titles, false to hide them."},
+            {"TitleWindow",
+                "Select the window to display the table title."},
             {"TitleX",
                 "X position of the table title"},
             {"TitleY",
@@ -199,6 +202,7 @@ namespace Tooltips {
             // MediaDimensions
             {"ForceImagesOnly", 
                 "Use only images (skip videos)."},
+
             {"WheelMediaHeight",
                 "Height of the wheel image in pixels."},
             {"WheelMediaWidth",
@@ -254,6 +258,22 @@ namespace Tooltips {
                 "0 = no rotation\n"
                 "90, 180, 270, -90, etc"},
 
+            {"TopperMediaWidth",
+                "Width of the Topper media in pixels."},
+            {"TopperMediaHeight",
+                "Height of the Topper media in pixels.\n"
+                "This should match your Topper window height."},
+            {"TopperMediaX",
+                "X position of the Topper media.\n"
+                "This position is relative to the Topper window."},
+            {"TopperMediaY",
+                "Y position of the Topper media.\n"
+                "This position is relative to the Topper window."},
+            {"TopperRotation",
+                "Rotation of the Topper media.\n"
+                "0 = no rotation\n"
+                "90, 180, 270, -90, etc"},
+
             // Default Media
             {"DefaultPlayfieldImage",
                 "Relative path to the default table preview image.\n"
@@ -267,6 +287,9 @@ namespace Tooltips {
             {"DefaultWheelImage",
                 "Relative path to the default wheel image.\n"
                 "Used when a table has no custom wheel art."},
+            {"DefaultTopperImage",
+                "Relative path to the default Topper image.\n"
+                "Used when a table has no custom Topper art."},
 
             {"DefaultPlayfieldVideo",
                 "Relative path to the default table preview video.\n"
@@ -277,6 +300,9 @@ namespace Tooltips {
             {"DefaultDmdVideo",
                 "Relative path to the default DMD video.\n"
                 "Used when a table has no custom DMD video."},
+            {"DefaultTopperVideo",
+                "Relative path to the default Topper video.\n"
+                "Used when a table has no custom Topper video."},
 
             // Keybinds
             {"PreviousTable",
@@ -309,22 +335,26 @@ namespace Tooltips {
                 "Key to quit screenshot mode."},
             
             // Audio Settings
-            {"MediaAudioMute",
-                "Mute playfield, backglass and DMD audio"},
-            {"MediaAudioVol",
-                "Adjust playfield, backglass and DMD video volume."},
-            {"TableMusicMute",
-                "Mute current table music."},
-            {"TableMusicVol",
-                "Adjust current table music volume."},
-            {"InterfaceAudioMute",
-                "Mute interface sounds."},
-            {"InterfaceAudioVol",
-                "Adjust interface sounds volume."},
-            {"InterfaceAmbienceMute",
-                "Mute interface ambience."},
-            {"InterfaceAmbienceVol",
-                "Adjust interface ambience volume."},
+            // {"MasterMute",
+            //     "Mute all audio"},
+            // {"MasterVol",
+            //     "Adjust all volume."},
+            // {"MediaAudioMute",
+            //     "Mute playfield, backglass and DMD audio"},
+            // {"MediaAudioVol",
+            //     "Adjust playfield, backglass and DMD video volume."},
+            // {"TableMusicMute",
+            //     "Mute current table music."},
+            // {"TableMusicVol",
+            //     "Adjust current table music volume."},
+            // {"InterfaceAudioMute",
+            //     "Mute interface sounds."},
+            // {"InterfaceAudioVol",
+            //     "Adjust interface sounds volume."},
+            // {"InterfaceAmbienceMute",
+            //     "Mute interface ambience."},
+            // {"InterfaceAmbienceVol",
+            //     "Adjust interface ambience volume."},
 
             // Internal
             {"SubCmd",
@@ -332,6 +362,20 @@ namespace Tooltips {
                 "Use VPinballX --help command line menu to see more."},
             {"LogFile",
                 "Path to the debug log file, relative to exec dir."},
+
+            {"IndexPath",
+                "Path to the main table index file, relative to exec dir."},
+            {"VpxtoolIndex",
+                "Path to the vpxtool index file, relative to tables folder by default."},
+            {"VpsDbPath",
+                "Path to the VPS database file, relative to exec dir."},
+            {"VpsDbLastUpdated",
+                "Path to the VPS database update file, relative to exec dir."},
+            {"VpsDbUpdateFrequency",
+                "Choose when to fetch for updates in VPS database.\n"
+                "The only option for now is 'startup'."},
+            {"ScreenshotWait",
+                "Time for the screenshot tool to wait until there are visible windows in VPX."},
 
             // UI Sounds
             {"ScrollPrevSound",
@@ -359,7 +403,9 @@ namespace Tooltips {
             {"ScreenshotTakeSound",
                 "Sound played when taking a screenshot."},
             {"ScreenshotQuitSound",
-                "Sound played when exiting screenshot mode."}
+                "Sound played when exiting screenshot mode."},
+            {"AmbienceSound",
+                "Sound played on the background if there is no table music."}
         };
         return tooltips;
     }
