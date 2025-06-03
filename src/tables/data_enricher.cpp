@@ -1,5 +1,5 @@
 #include "tables/data_enricher.h"
-#include "tables/vps_database_client.h"
+#include "tables/vpsdb/vps_database_client.h"
 #include "utils/logging.h"
 #include <filesystem>
 #include <fstream>

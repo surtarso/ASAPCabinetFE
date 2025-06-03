@@ -164,7 +164,11 @@ set(SOURCES
     src/tables/path_utils.cpp
     src/tables/table_loader.cpp
     src/tables/vpx_scanner.cpp
-    src/tables/vps_database_client.cpp
+    src/tables/vpsdb/vps_data_enricher.cpp
+    src/tables/vpsdb/vps_database_client.cpp
+    src/tables/vpsdb/vps_database_loader.cpp
+    src/tables/vpsdb/vps_database_updater.cpp
+    src/tables/vpsdb/vps_utils.cpp
     src/utils/logger.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources
@@ -198,6 +202,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/render/video_players/gstreamer
     ${CMAKE_SOURCE_DIR}/src/render/video_players/vlc
     ${CMAKE_SOURCE_DIR}/src/tables
+    ${CMAKE_SOURCE_DIR}/src/tables/vpsdb
     ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils
     # Dear ImGui
