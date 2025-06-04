@@ -243,7 +243,7 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const auto& val) { defaultInt(s, val, "topperRotation"); }},
 
         // [TitleDisplay]
-        {"fetchVPSdb", "TitleDisplay", "FetchVPSdb", true, Type::Bool, false, PostProcess::None,
+        {"fetchVPSdb", "TitleDisplay", "FetchVPSdb", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "fetchVPSdb"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "fetchVPSdb"); }},
         {"forceRebuildMetadata", "TitleDisplay", "ForceRebuild", false, Type::Bool, false, PostProcess::None,
