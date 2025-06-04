@@ -66,6 +66,8 @@ struct TableData {
     // Sorting metadata
     std::string manufacturer;    ///< Manufacturer from vpxtool or vpsdb, used for sorting.
     std::string year;            ///< Year from vpxtool or vpsdb, used for sorting.
+
+    float matchConfidence = 0.0f; ///< Confidence score of match with vpsdb
 };
 
 #endif // TABLE_DATA_H

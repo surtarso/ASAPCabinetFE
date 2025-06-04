@@ -26,7 +26,7 @@ App::App(const std::string& configPath)
     LOG_INFO("App: Executable directory set to " << exeDir_);
     configPath_ = exeDir_ + configPath_;
     LOG_INFO("App: Config path set to " << configPath_);
-    std::string logFile = exeDir_ + "logs/debug.log";
+    std::string logFile = exeDir_ + "logs/debug.txt";
     LOG_INFO("App: Initializing logger with file " << logFile);
     Logger::getInstance().initialize(logFile,
 #ifdef DEBUG_LOGGING

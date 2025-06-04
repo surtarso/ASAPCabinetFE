@@ -2,106 +2,154 @@
 #include <fstream>
 #include <regex>
 #include <mutex>
+#include <algorithm>
+#include <filesystem>
 #include "utils/logging.h"
+
+namespace fs = std::filesystem;
 
 VpsDataEnricher::VpsDataEnricher(const nlohmann::json& vpsDb) : vpsDb_(vpsDb) {}
 
-static std::mutex mismatchLogMutex; // Mutex for thread-safe mismatch logging
+static std::mutex mismatchLogMutex;
+
+size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::string& s2) const {
+    const size_t len1 = s1.size(), len2 = s2.size();
+    std::vector<std::vector<size_t>> dp(len1 + 1, std::vector<size_t>(len2 + 1));
+    for (size_t i = 0; i <= len1; ++i) dp[i][0] = i;
+    for (size_t j = 0; j <= len2; ++j) dp[0][j] = j;
+    for (size_t i = 1; i <= len1; ++i) {
+        for (size_t j = 1; j <= len2; ++j) {
+            size_t cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+            dp[i][j] = std::min({dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost});
+        }
+    }
+    return dp[len1][len2];
+}
 
 bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const {
+    LOG_DEBUG("Starting enrichTableData for table path: " << vpxTable.value("path", "N/A"));
+
+    // Test file write with mutex protection
+    {
+        std::lock_guard<std::mutex> lock(mismatchLogMutex);
+        std::ofstream testLog("tables/test_log.txt", std::ios::app);
+        testLog << "Test log entry for table: " << vpxTable.value("path", "N/A") << "\n";
+    }
+
+    // Check if vpxTable is valid
     if (!vpxTable.is_object()) {
-        LOG_DEBUG("VpsDataEnricher: vpxTable is not an object, type: " << vpxTable.type_name());
+        LOG_DEBUG("vpxTable is not an object, type: " << vpxTable.type_name());
         return false;
     }
 
-    std::string vpxTableName_source, vpxGameName_source, vpxTableVersion_source, vpxReleaseDate_source, vpxAuthorName_source, vpxTableDescription_source;
+    std::string vpxTableName_source, vpxGameName, vpxTableVersion_source, vpxAuthorName, vpxTableDescription;
+    std::string filename;
+
+    // Extract filename from path for fallback data
+    if (vpxTable.contains("path") && vpxTable["path"].is_string()) {
+        filename = fs::path(vpxTable["path"].get<std::string>()).stem().string();
+    }
 
     try {
+        // Extract VPX metadata from table_info
         if (vpxTable.contains("table_info") && vpxTable["table_info"].is_object()) {
             const auto& tableInfo = vpxTable["table_info"];
             if (tableInfo.contains("table_name") && tableInfo["table_name"].is_string()) {
                 vpxTableName_source = tableInfo["table_name"].get<std::string>();
             }
-            if (tableInfo.contains("table_version")) {
+            if (tableInfo.contains("table_version") && !tableInfo["table_version"].is_null()) {
                 if (tableInfo["table_version"].is_string()) {
                     vpxTableVersion_source = tableInfo["table_version"].get<std::string>();
                 } else if (tableInfo["table_version"].is_number()) {
                     vpxTableVersion_source = std::to_string(tableInfo["table_version"].get<double>());
                 }
             }
-            if (tableInfo.contains("release_date") && tableInfo["release_date"].is_string()) {
-                vpxReleaseDate_source = tableInfo["release_date"].get<std::string>();
-            }
             if (tableInfo.contains("author_name") && tableInfo["author_name"].is_string()) {
-                vpxAuthorName_source = tableInfo["author_name"].get<std::string>();
+                vpxAuthorName = tableInfo["author_name"].get<std::string>();
             }
             if (tableInfo.contains("table_description") && tableInfo["table_description"].is_string()) {
-                vpxTableDescription_source = tableInfo["table_description"].get<std::string>();
+                vpxTableDescription = tableInfo["table_description"].get<std::string>();
             }
         }
         if (vpxTable.contains("game_name") && vpxTable["game_name"].is_string()) {
-            vpxGameName_source = vpxTable["game_name"].get<std::string>();
+            vpxGameName = vpxTable["game_name"].get<std::string>();
         }
 
+        // Set initial table data
         if (!vpxTableName_source.empty()) {
             tableData.tableName = vpxTableName_source;
         }
-        if (tableData.tableName.empty()) {
-            tableData.tableName = tableData.title;
+        if (tableData.tableName.empty() && !filename.empty()) {
+            tableData.tableName = filename;
         }
         tableData.tableVersion = vpxTableVersion_source;
-        tableData.authorName = vpxAuthorName_source;
-        tableData.tableDescription = vpxTableDescription_source;
-        tableData.romPath = vpxGameName_source;
-        tableData.gameName = vpxGameName_source;
+        tableData.authorName = vpxAuthorName;
+        tableData.tableDescription = vpxTableDescription;
+        tableData.romPath = vpxGameName;
+        tableData.gameName = vpxGameName;
 
-        if (!vpxReleaseDate_source.empty()) {
-            tableData.year = utils_.extractYearFromDate(vpxReleaseDate_source);
-        }
-        if (tableData.year.empty() && !tableData.tableName.empty()) {
-            std::regex yearFromTitleRegex("\\((\\d{4})\\)");
+        // Fallback: Extract year and manufacturer from filename
+        if (!filename.empty()) {
+            std::regex yearRegex(R"(\b(\d{4})\b)");
             std::smatch match;
-            if (std::regex_search(tableData.tableName, match, yearFromTitleRegex)) {
+            if (std::regex_search(filename, match, yearRegex) && tableData.year.empty()) {
                 tableData.year = match[1].str();
+                LOG_DEBUG("Extracted year from filename: " << tableData.year);
+            }
+
+            std::regex manufRegex(R"(\(([^)]+?)(?:\s+\d{4})?\))");
+            if (std::regex_search(filename, match, manufRegex) && tableData.manufacturer.empty()) {
+                tableData.manufacturer = match[1].str();
+                LOG_DEBUG("Extracted manufacturer from filename: " << tableData.manufacturer);
+            }
+        }
+
+        // Fallback to tableName if filename extraction fails
+        if (tableData.year.empty() && !tableData.tableName.empty()) {
+            std::regex yearRegex(R"(\b(\d{4})\b)");
+            std::smatch match;
+            if (std::regex_search(tableData.tableName, match, yearRegex)) {
+                tableData.year = match[1].str();
+                LOG_DEBUG("Extracted year from tableName: " << tableData.year);
             }
         }
         if (tableData.manufacturer.empty() && !tableData.tableName.empty()) {
-            std::regex manufFromTitleRegex("\\(([^)]+?)(?:\\s+\\d{4})?\\)");
+            std::regex manufRegex(R"(\(([^)]+?)(?:\s+\d{4})?\))");
             std::smatch match;
-            if (std::regex_search(tableData.tableName, match, manufFromTitleRegex)) {
+            if (std::regex_search(tableData.tableName, match, manufRegex)) {
                 tableData.manufacturer = match[1].str();
+                LOG_DEBUG("Extracted manufacturer from tableName: " << tableData.manufacturer);
             }
         }
     } catch (const std::exception& e) {
-        LOG_DEBUG("VpsDataEnricher: Error processing table data: " << vpxTable.value("path", "N/A") << ": " << e.what());
+        LOG_DEBUG("Error processing table data: " << e.what());
     }
 
+    // VPS database matching
     bool matched_to_vpsdb = false;
-    std::string latestVpsVersionFound = "";
-    nlohmann::json bestVpsDbEntry = {};
-    std::string bestMatchVpsName = "";
-    
+    nlohmann::json bestVpsDbEntry;
+    std::string latestVpsVersionFound;
+    std::string bestMatchVpsName;
+    float bestMatchScore = -1.0f;
+
     std::string normVpxTableNameAggressive = utils_.normalizeString(tableData.tableName);
     std::string normVpxTableNameLessAggressive = utils_.normalizeStringLessAggressive(tableData.tableName);
-    std::string normVpxGameName = utils_.normalizeString(tableData.romPath);
-    
-    LOG_DEBUG("VpsDataEnricher: Attempting to enrich table '" << tableData.tableName
-        << "' (Normalized: '" << normVpxTableNameAggressive << "', Less Aggressive: '" << normVpxTableNameLessAggressive
-        << "') with Game Name '" << tableData.romPath << "' (Normalized: '" << normVpxGameName << "')"
-        << ", Year: '" << tableData.year << "', Manufacturer: '" << tableData.manufacturer
-        << "', Version: '" << tableData.tableVersion << "'");
+    std::string normVpxGameName = utils_.normalizeString(tableData.gameName);
+    std::string normFilename = utils_.normalizeStringLessAggressive(filename);
 
-    int bestMatchScore = -1;
+    LOG_DEBUG("Attempting to match table: " << tableData.tableName);
 
     for (const auto& vpsDbEntry : vpsDb_) {
-        std::string vpsId = vpsDbEntry.value("id", "N/A");
-        std::string vpsName = vpsDbEntry.value("name", "");
-        std::string vpsYear;
-        std::string vpsManufacturer = vpsDbEntry.value("manufacturer", "");
-        std::string currentVpsEntryLatestVersion = "";
-
         try {
-            if (vpsDbEntry.contains("year")) {
+            if (!vpsDbEntry.is_object()) continue;
+
+            std::string vpsId = vpsDbEntry.value("id", "N/A");
+            std::string vpsName = vpsDbEntry.value("name", "");
+            std::string vpsYear;
+            std::string vpsManufacturer = vpsDbEntry.value("manufacturer", "");
+            std::string currentVpsEntryLatestVersion;
+
+            if (vpsDbEntry.contains("year") && !vpsDbEntry["year"].is_null()) {
                 if (vpsDbEntry["year"].is_number_integer()) {
                     vpsYear = std::to_string(vpsDbEntry["year"].get<int>());
                 } else if (vpsDbEntry["year"].is_string()) {
@@ -109,7 +157,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
                 }
             }
             if (vpsName.empty()) {
-                LOG_DEBUG("VpsDataEnricher: Skipping VPSDB entry with empty 'name'. ID: " << vpsId);
+                LOG_DEBUG("Skipping VPSDB entry with empty name, ID: " << vpsId);
                 continue;
             }
 
@@ -123,113 +171,180 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
                     }
                 }
             }
-        } catch (const std::exception& e) {
-            LOG_DEBUG("VpsDataEnricher: Error parsing vpsdb entry (ID: " << vpsDbEntry.value("id", "N/A") << "): " << e.what());
-            continue;
-        }
 
-        std::string normVpsNameAggressive = utils_.normalizeString(vpsName);
-        std::string normVpsNameLessAggressive = utils_.normalizeStringLessAggressive(vpsName);
+            std::string normVpsNameAggressive = utils_.normalizeString(vpsName);
+            std::string normVpsNameLessAggressive = utils_.normalizeStringLessAggressive(vpsName);
+            float currentMatchScore = 0.0f;
 
-        int currentMatchScore = -1;
+            // ROM matching
+            if (!normVpxGameName.empty() && vpsDbEntry.contains("tableFiles") && vpsDbEntry["tableFiles"].is_array()) {
+                for (const auto& tableFile : vpsDbEntry["tableFiles"]) {
+                    if (tableFile.contains("roms") && tableFile["roms"].is_array()) {
+                        for (const auto& rom : tableFile["roms"]) {
+                            if (rom.contains("name") && rom["name"].is_string()) {
+                                std::string romName = rom["name"].get<std::string>();
+                                if (!romName.empty() && utils_.normalizeString(romName) == normVpxGameName) {
+                                    currentMatchScore += 5.0f;
+                                    LOG_DEBUG("ROM match found for: " << tableData.gameName);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-        if (!normVpxTableNameAggressive.empty() && normVpxTableNameAggressive == normVpsNameAggressive) {
-            currentMatchScore = 3;
-            LOG_DEBUG("VpsDataEnricher: Potential match (Score 3 - Aggressive Name): VPX '" << tableData.tableName << "' <-> VPSDB '" << vpsName << "' (VPS ID: " << vpsId << ")");
-        } else if (!normVpxTableNameLessAggressive.empty() && normVpxTableNameLessAggressive == normVpsNameLessAggressive) {
-            currentMatchScore = 2;
-            LOG_DEBUG("VpsDataEnricher: Potential match (Score 2 - Less Aggressive Name): VPX '" << tableData.tableName << "' <-> VPSDB '" << vpsName << "' (VPS ID: " << vpsId << ")");
-        } else if (!normVpxGameName.empty() && (normVpxGameName == normVpsNameAggressive || normVpxGameName == normVpsNameLessAggressive)) {
-            currentMatchScore = 1;
-            LOG_DEBUG("VpsDataEnricher: Potential match (Score 1 - Game Name): VPX ROM '" << tableData.romPath << "' <-> VPSDB '" << vpsName << "' (VPS ID: " << vpsId << ")");
-        } else if (bestMatchScore < 1 && !tableData.year.empty() && !tableData.manufacturer.empty() &&
-                   tableData.year == vpsYear && utils_.normalizeStringLessAggressive(tableData.manufacturer) == utils_.normalizeStringLessAggressive(vpsManufacturer)) {
-            currentMatchScore = 0;
-            LOG_DEBUG("VpsDataEnricher: Potential match (Score 0 - Year/Manufacturer): VPX '" << tableData.tableName << "' (Y:" << tableData.year << ", M:" << tableData.manufacturer << ") <-> VPSDB '" << vpsName << "' (Y:" << vpsYear << ", M:" << vpsManufacturer << ") (VPS ID: " << vpsId << ")");
-        }
+            // Name matching
+            if (!normVpxTableNameAggressive.empty() && normVpxTableNameAggressive == normVpsNameAggressive) {
+                currentMatchScore += 3.0f;
+                LOG_DEBUG("Aggressive name match for: " << tableData.tableName);
+            } else if (!normVpxTableNameLessAggressive.empty() && normVpxTableNameLessAggressive == normVpsNameLessAggressive) {
+                currentMatchScore += 2.0f;
+                LOG_DEBUG("Less aggressive name match for: " << tableData.tableName);
+            } else {
+                size_t dist = levenshteinDistance(normVpxTableNameLessAggressive, normVpsNameLessAggressive);
+                float similarity = 1.0f - static_cast<float>(dist) / std::max(normVpxTableNameLessAggressive.size(), normVpsNameLessAggressive.size());
+                if (similarity > 0.7f) {
+                    currentMatchScore += similarity * 2.0f;
+                    LOG_DEBUG("Fuzzy name match, similarity: " << similarity);
+                }
+            }
 
-        if (currentMatchScore > bestMatchScore) {
-            bestMatchScore = currentMatchScore;
-            bestVpsDbEntry = vpsDbEntry;
-            latestVpsVersionFound = currentVpsEntryLatestVersion;
-            bestMatchVpsName = vpsName;
-            matched_to_vpsdb = true;
-        } else if (currentMatchScore == bestMatchScore && currentMatchScore > -1) {
-            if (utils_.isVersionGreaterThan(currentVpsEntryLatestVersion, latestVpsVersionFound)) {
-                latestVpsVersionFound = currentVpsEntryLatestVersion;
+            // Year and manufacturer matching
+            if (!tableData.year.empty() && !vpsYear.empty() && tableData.year == vpsYear) {
+                currentMatchScore += 1.0f;
+                LOG_DEBUG("Year match: " << tableData.year);
+            }
+            if (!tableData.manufacturer.empty() && !vpsManufacturer.empty() &&
+                utils_.normalizeStringLessAggressive(tableData.manufacturer) == utils_.normalizeStringLessAggressive(vpsManufacturer)) {
+                currentMatchScore += 1.0f;
+                LOG_DEBUG("Manufacturer match: " << tableData.manufacturer);
+            }
+
+            if (currentMatchScore > bestMatchScore || (currentMatchScore == bestMatchScore && utils_.isVersionGreaterThan(currentVpsEntryLatestVersion, latestVpsVersionFound))) {
+                bestMatchScore = currentMatchScore;
                 bestVpsDbEntry = vpsDbEntry;
+                latestVpsVersionFound = currentVpsEntryLatestVersion;
                 bestMatchVpsName = vpsName;
                 matched_to_vpsdb = true;
+                LOG_DEBUG("New best match, score: " << bestMatchScore);
             }
+        } catch (const std::exception& e) {
+            LOG_DEBUG("Error in VPSDB entry: " << e.what());
+            continue;
         }
     }
 
     if (matched_to_vpsdb) {
         tableData.vpsId = bestVpsDbEntry.value("id", "");
-        tableData.vpsName = bestVpsDbEntry.value("name", "");
+        tableData.vpsName = bestMatchVpsName;
         tableData.type = bestVpsDbEntry.value("type", "");
-        tableData.themes = bestVpsDbEntry.contains("theme") ? utils_.join(bestVpsDbEntry["theme"], ", ") : "";
-        tableData.designers = bestVpsDbEntry.contains("designers") ? utils_.join(bestVpsDbEntry["designers"], ", ") : "";
-        tableData.players = bestVpsDbEntry.contains("players") && bestVpsDbEntry["players"].is_number_integer() ? std::to_string(bestVpsDbEntry["players"].get<int>()) : "";
+        tableData.themes = bestVpsDbEntry.contains("theme") && bestVpsDbEntry["theme"].is_array() ? utils_.join(bestVpsDbEntry["theme"], ", ") : "";
+        tableData.designers = bestVpsDbEntry.contains("designers") && bestVpsDbEntry["designers"].is_array() ? utils_.join(bestVpsDbEntry["designers"], ", ") : "";
+        tableData.players = bestVpsDbEntry.contains("players") && !bestVpsDbEntry["players"].is_null() && bestVpsDbEntry["players"].is_number_integer() ? std::to_string(bestVpsDbEntry["players"].get<int>()) : "";
         tableData.ipdbUrl = bestVpsDbEntry.value("ipdbUrl", "");
 
-        if (!bestVpsDbEntry.value("manufacturer", "").empty() && 
-            (tableData.manufacturer.empty() || utils_.normalizeStringLessAggressive(tableData.manufacturer) == "original" || bestMatchScore > 0)) {
-            tableData.manufacturer = bestVpsDbEntry.value("manufacturer", "");
-        }
-        if (!bestVpsDbEntry.value("year", "").empty() && (tableData.year.empty() || bestMatchScore > 0)) {
-            if (bestVpsDbEntry["year"].is_number_integer()) {
-                tableData.year = std::to_string(bestVpsDbEntry["year"].get<int>());
-            } else if (bestVpsDbEntry["year"].is_string()) {
-                tableData.year = bestVpsDbEntry["year"].get<std::string>();
-            }
+        // Update manufacturer and year from VPSDB if applicable
+        std::string vpsManufacturer = bestVpsDbEntry.value("manufacturer", "");
+        if (!vpsManufacturer.empty() && (tableData.manufacturer.empty() || bestMatchScore > 2.0f)) {
+            tableData.manufacturer = vpsManufacturer;
+            LOG_DEBUG("Updated manufacturer from VPSDB: " << tableData.manufacturer);
         }
 
+        std::string vpsYear;
+        if (bestVpsDbEntry.contains("year") && !bestVpsDbEntry["year"].is_null()) {
+            if (bestVpsDbEntry["year"].is_number_integer()) {
+                vpsYear = std::to_string(bestVpsDbEntry["year"].get<int>());
+            } else if (bestVpsDbEntry["year"].is_string()) {
+                vpsYear = bestVpsDbEntry["year"].get<std::string>();
+            }
+        }
+        if (!vpsYear.empty() && (tableData.year.empty() || bestMatchScore > 2.0f)) {
+            tableData.year = vpsYear;
+            LOG_DEBUG("Updated year from VPSDB: " << tableData.year);
+        }
+
+        // Process tableFiles for additional data
         if (bestVpsDbEntry.contains("tableFiles") && bestVpsDbEntry["tableFiles"].is_array()) {
             for (const auto& file : bestVpsDbEntry["tableFiles"]) {
                 if (file.value("tableFormat", "") == "VPX") {
-                    tableData.vpsAuthors = file.contains("authors") ? utils_.join(file["authors"], ", ") : "";
-                    tableData.features = file.contains("features") ? utils_.join(file["features"], ", ") : "";
+                    tableData.vpsAuthors = file.contains("authors") && file["authors"].is_array() ? utils_.join(file["authors"], ", ") : "";
+                    tableData.features = file.contains("features") && file["features"].is_array() ? utils_.join(file["features"], ", ") : "";
                     std::string current_vps_comment = file.value("comment", "");
-                    if (!current_vps_comment.empty()) {
-                        if (tableData.tableDescription.empty() || current_vps_comment.length() > tableData.tableDescription.length()) {
-                            tableData.tableDescription = current_vps_comment;
-                        }
+                    if (!current_vps_comment.empty() && (tableData.tableDescription.empty() || current_vps_comment.length() > tableData.tableDescription.length())) {
+                        tableData.tableDescription = current_vps_comment;
                     }
                     tableData.vpsComment = current_vps_comment;
                 }
             }
         }
 
-        if (bestMatchScore >= 1 && !bestMatchVpsName.empty()) {
+        // Set title based on similarity
+        float titleSimilarity = 0.0f;
+        if (!bestMatchVpsName.empty()) {
+            std::string normBestVpsNameLessAggressive = utils_.normalizeStringLessAggressive(bestMatchVpsName);
+            std::string sourceName = normVpxTableNameLessAggressive.empty() ? normFilename : normVpxTableNameLessAggressive;
+            if (!sourceName.empty() && !normBestVpsNameLessAggressive.empty()) {
+                size_t dist = levenshteinDistance(sourceName, normBestVpsNameLessAggressive);
+                titleSimilarity = 1.0f - static_cast<float>(dist) / std::max(sourceName.size(), normBestVpsNameLessAggressive.size());
+            }
+        }
+        if (titleSimilarity >= 0.7f && bestMatchScore >= 2.0f) {
             tableData.title = bestMatchVpsName;
+            LOG_DEBUG("Title updated to VPSDB name: " << bestMatchVpsName);
+        } else {
+            tableData.title = tableData.tableName.empty() ? filename : tableData.tableName;
+            LOG_DEBUG("Title kept as: " << tableData.title);
         }
 
+        // Handle version information
         std::string currentVpxVersionNormalized = utils_.normalizeVersion(vpxTableVersion_source);
         tableData.vpsVersion = latestVpsVersionFound;
-
         if (!latestVpsVersionFound.empty() && utils_.isVersionGreaterThan(latestVpsVersionFound, currentVpxVersionNormalized)) {
             if (!currentVpxVersionNormalized.empty()) {
                 tableData.tableVersion = currentVpxVersionNormalized + " (Latest: " + latestVpsVersionFound + ")";
             } else {
                 tableData.tableVersion = "(Latest: " + latestVpsVersionFound + ")";
             }
-            LOG_INFO("VpsDataEnricher: Updated table '" << tableData.title << "' with latest VPSDB version info: " << tableData.tableVersion);
+            LOG_DEBUG("Updated version: " << tableData.tableVersion);
         } else if (!currentVpxVersionNormalized.empty()) {
             tableData.tableVersion = currentVpxVersionNormalized;
         } else if (!latestVpsVersionFound.empty()) {
             tableData.tableVersion = latestVpsVersionFound;
         }
 
-        LOG_INFO("VpsDataEnricher: Successfully enriched table '" << tableData.title << "' with VPSDB info");
+        tableData.matchConfidence = bestMatchScore / 10.0f;
+        LOG_INFO("Matched table to VPSDB, confidence: " << tableData.matchConfidence);
     } else {
+        tableData.title = tableData.tableName.empty() ? filename : tableData.tableName;
         {
             std::lock_guard<std::mutex> lock(mismatchLogMutex);
             std::ofstream mismatchLog("tables/vpsdb_mismatches.log", std::ios::app);
-            mismatchLog << "No vpsdb match for table: " << tableData.tableName << ", gameName: " << tableData.romPath << "\n";
+            mismatchLog << "No vpsdb match for table: '" << tableData.tableName << "', gameName: '" << tableData.gameName << "'\n";
         }
-        LOG_DEBUG("VpsDataEnricher: No vpsdb match for table: '" << tableData.tableName << "', gameName: '" << tableData.romPath << "'");
+        LOG_INFO("No VPSDB match, using title: " << tableData.title);
+
+        // Final fallback for year and manufacturer
+        if (!filename.empty()) {
+            if (tableData.year.empty()) {
+                std::regex yearRegex(R"(\b(\d{4})\b)");
+                std::smatch match;
+                if (std::regex_search(filename, match, yearRegex)) {
+                    tableData.year = match[1].str();
+                    LOG_DEBUG("Final fallback year: " << tableData.year);
+                }
+            }
+            if (tableData.manufacturer.empty()) {
+                std::regex manufRegex(R"(\(([^)]+?)(?:\s+\d{4})?\))");
+                std::smatch match;
+                if (std::regex_search(filename, match, manufRegex)) {
+                    tableData.manufacturer = match[1].str();
+                    LOG_DEBUG("Final fallback manufacturer: " << tableData.manufacturer);
+                }
+            }
+        }
     }
 
+    LOG_DEBUG("Final table title: " << tableData.title);
     return matched_to_vpsdb;
 }

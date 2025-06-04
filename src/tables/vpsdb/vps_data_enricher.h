@@ -13,6 +13,7 @@ public:
 private:
     const nlohmann::json& vpsDb_;
     VpsUtils utils_;
+    size_t levenshteinDistance(const std::string& s1, const std::string& s2) const;
 };
 
 #endif // VPS_DATA_ENRICHER_H

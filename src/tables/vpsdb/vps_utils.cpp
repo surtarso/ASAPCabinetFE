@@ -31,14 +31,17 @@ std::string VpsUtils::normalizeString(const std::string& input) const {
 std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) const {
     std::string result = input;
     std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    // Remove only specific punctuation, preserve spaces and parentheses
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
-        return (c == '_' || c == '-' || c == '(' || c == ')' || c == '.' || c == '\'' || c == ',' || c == '!' || c == '?' || c == ':' || c == '&' || c == '[' || c == ']');
+        return (c == '_' || c == '-' || c == '.' || c == '\'' || c == ',' || c == '!' || c == '?' || c == ':' || c == '&');
     }), result.end());
 
+    // Collapse multiple spaces to single space
     std::string cleaned_result;
     std::unique_copy(result.begin(), result.end(), std::back_inserter(cleaned_result),
                      [](char a, char b) { return std::isspace(a) && std::isspace(b); });
 
+    // Trim leading/trailing spaces
     size_t first = cleaned_result.find_first_not_of(' ');
     if (std::string::npos == first) return "";
     size_t last = cleaned_result.find_last_not_of(' ');
