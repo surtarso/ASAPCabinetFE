@@ -124,7 +124,9 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
 
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->currentTask = "Matching VPSDB entries...";
+        std::stringstream ss;
+        ss << "Matching VPSDB " << totalVpsEntries << " entries...";
+        progress->currentTask = ss.str();
         // Do not set totalTablesToLoad here to preserve local table count
         progress->currentTablesLoaded = 0;
     }

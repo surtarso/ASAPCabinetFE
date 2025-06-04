@@ -61,7 +61,7 @@ void LoadingScreen::render() {
     }
     char matchedOverlayText[16];
     snprintf(matchedOverlayText, sizeof(matchedOverlayText), "%.0f%%", matchedProgress * 100.0f);
-    ImGui::Text("Matched Progress:");
+    ImGui::Text("Match Progress:");
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(1.0f, 0.7f, 0.8f, 1.0f)); // Pinkish-white
     ImGui::ProgressBar(matchedProgress, ImVec2(-1, 0), matchedOverlayText);
     ImGui::PopStyleColor();

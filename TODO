@@ -1,16 +1,15 @@
 TODO
 
 FIX:
-- year parsing (release date should be last resort)
-- name parsing (its ok, could be better like vpxguitools)
+- name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start
 - refactor the monoliths...
 
 QOL:
-- thread vps parser
-- sort by year/manufacturer
+- thread vps parser!
+- sort by year/manufacturer/type/letter(default)
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
@@ -21,7 +20,6 @@ UI:
 
 On hold:
 - add metadata panel to settings (size/pos, visible fields etc)
-- implement db update frequency (not just startup)
 - abstract linux commands with an interface for crossplat later
 - use json instead of memory for standart info
 - attract mode (random table on a timer if idle) (optional)
@@ -34,11 +32,3 @@ Later:
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
 - adapt to be crossplatform?
-
-
-Cooking:
-fetch vpxtool binary on metadata toggle select (button/popup) if needed.
-download, run, use paths from settings all auto w/ feedback.
-Add enrich layer from vpsdb someway thats optional and intuitive (checkbox 'add online metadata' or something).
-If possible, skip vpxtool entirely (no metadata to start with)
-to have 3 options (filename, file metadata(vpxtool), online metadata(vpsdb)) that can work independently. (in case vpxtool is not available for some reason, or vpsdb) but keeping current behavior of 'full metadata' with all fallbacks already implemented. this need to be on settings and easy to understand.

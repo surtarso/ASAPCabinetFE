@@ -168,10 +168,13 @@ namespace Tooltips {
                 "- 'metadata' to use table title from metadata. (requires vpxtool)\n"},
             {"FetchVPSdb",
                 "Fetches Virtual Pinball Spreadsheet database and\n"
-                "attempts to match with vpxtool metadata."},
+                "attempts to match with vpxtool metadata.\n"
+                "TIP: Leave this off after you're happy with the metadata.\n"
+                "Leaving this on will check for updates every full table reload."},
             {"ForceRebuild",
                 "Forces re-building metadata from scratch.\n"
-                "Applying will DELETE asapcabinetfe_index.json"},
+                "Applying will DELETE asapcabinetfe_index.json\n"
+                "TIP: Remember to turn this OFF AFTER rebuilding metadata."},
             {"ShowMetadata",
                 "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
                 "TitleSource must be set to 'metadata' for the panel to display something."},
