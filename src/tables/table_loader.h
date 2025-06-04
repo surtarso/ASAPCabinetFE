@@ -15,6 +15,7 @@ public:
 
 private:
     std::map<char, int> letterIndex;
+    void sortTables(std::vector<TableData>& tables, const std::string& sortBy, LoadingProgress* progress);
 };
 
 #endif // TABLE_LOADER_H

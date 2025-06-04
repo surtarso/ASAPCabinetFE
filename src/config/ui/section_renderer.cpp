@@ -166,6 +166,9 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["WheelWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["TitleSortBy"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderTitleSortDropdown(key, value, hasChanges_, currentSection_);
+    };
 }
 
 void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {

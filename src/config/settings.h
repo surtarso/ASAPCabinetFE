@@ -66,11 +66,14 @@ struct Settings {
     int topperWindowX;
     int topperWindowY;
 
-    // [TitleDisplay]
+    // [TableMetadata]
     std::string titleSource;
     bool fetchVPSdb;
     bool forceRebuildMetadata;
+    std::string titleSortBy;
     bool showMetadata;
+
+    // [TitleDisplay]
     bool showWheel;
     std::string wheelWindow;
     bool showTitle;

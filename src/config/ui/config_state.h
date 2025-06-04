@@ -96,6 +96,7 @@ public:
      * @return True if the title data source has changed, false otherwise.
      */
     bool hasTitleDataChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
+    bool hasTitleMetadataChanged(const std::map<std::string, SettingsSection>& currentIniData) const;
 
     /**
      * @brief Checks if the video backend has changed.

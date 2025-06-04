@@ -2,14 +2,13 @@ TODO
 
 FIX:
 - name parsing should fallback to filename with bad match
-- small static gstreamer and pulseaudio leak
+- small static gstreamer leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - ffmpeg player video looping takes too long to start
 - refactor the monoliths...
 
 QOL:
 - thread vps parser!
-- sort by year/manufacturer/type/letter(default)
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 

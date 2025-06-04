@@ -160,8 +160,11 @@ namespace Tooltips {
             {"TopperY",
                 "Y position of the Topper window.\n"
                 "You can drag and double-click a window to save it's position"},
-
-            // TitleDisplay
+            
+            // TableMetadata
+            {"TitleSortBy",
+                "Select the sorting of tables.\n"
+                "- Requires rich metadata.(vpxtool + vpsdb)"},
             {"TitleSource",
                 "Select the source of the title info.\n"
                 "- 'filename' to use filename as table title.\n"
@@ -178,6 +181,8 @@ namespace Tooltips {
             {"ShowMetadata",
                 "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
                 "TitleSource must be set to 'metadata' for the panel to display something."},
+            
+            // TitleDisplay
             {"FontPath",
                 "Select a font for the table title display."},
             {"FontColor",

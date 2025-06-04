@@ -242,16 +242,24 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseInt(s, val, "topperRotation"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "topperRotation"); }},
 
-        // [TitleDisplay]
-        {"fetchVPSdb", "TitleDisplay", "FetchVPSdb", false, Type::Bool, false, PostProcess::None,
+        // [TableMetadata]
+        {"titleSortBy", "TableMetadata", "TitleSortBy", std::string("title"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "titleSortBy"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "titleSortBy"); }},
+        {"fetchVPSdb", "TableMetadata", "FetchVPSdb", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "fetchVPSdb"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "fetchVPSdb"); }},
-        {"forceRebuildMetadata", "TitleDisplay", "ForceRebuild", false, Type::Bool, false, PostProcess::None,
+        {"forceRebuildMetadata", "TableMetadata", "ForceRebuild", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "forceRebuildMetadata"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "forceRebuildMetadata"); }},
-        {"showMetadata", "TitleDisplay", "ShowMetadata", false, Type::Bool, false, PostProcess::None,
+        {"showMetadata", "TableMetadata", "ShowMetadata", false, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showMetadata"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showMetadata"); }},
+        {"titleSource", "TableMetadata", "TitleSource", std::string("filename"), Type::String, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseString(s, val, "titleSource"); },
+         [this](Settings& s, const auto& val) { defaultString(s, val, "titleSource"); }},
+        
+        // [TitleDisplay]
         {"fontPath", "TitleDisplay", "FontPath", std::string("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "fontPath"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "fontPath"); }},
@@ -264,9 +272,6 @@ ConfigSchema::ConfigSchema() {
         {"fontSize", "TitleDisplay", "FontSize", 28, Type::Int, false, PostProcess::DpiScaleFontSize,
          [this](Settings& s, const std::string& val) { parseInt(s, val, "fontSize"); },
          [this](Settings& s, const auto& val) { defaultInt(s, val, "fontSize"); }},
-        {"titleSource", "TitleDisplay", "TitleSource", std::string("filename"), Type::String, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseString(s, val, "titleSource"); },
-         [this](Settings& s, const auto& val) { defaultString(s, val, "titleSource"); }},
         {"showWheel", "TitleDisplay", "ShowWheel", true, Type::Bool, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseBool(s, val, "showWheel"); },
          [this](Settings& s, const auto& val) { defaultBool(s, val, "showWheel"); }},
@@ -417,6 +422,7 @@ void ConfigSchema::parseString(Settings& s, const std::string& val, const std::s
     else if (field == "customLaunchSound") s.customLaunchSound = val;
     else if (field == "fontPath") s.fontPath = val;
     else if (field == "titleSource") s.titleSource = val;
+    else if (field == "titleSortBy") s.titleSortBy = val;
     else if (field == "scrollPrevSound") s.scrollPrevSound = val;
     else if (field == "scrollNextSound") s.scrollNextSound = val;
     else if (field == "scrollFastPrevSound") s.scrollFastPrevSound = val;

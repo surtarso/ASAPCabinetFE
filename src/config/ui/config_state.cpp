@@ -156,12 +156,12 @@ bool ConfigUIState::hasFontSettingsChanged(const std::map<std::string, SettingsS
     return false;
 }
 
-bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
-    auto currentIt = currentIniData.find("TitleDisplay");
-    auto lastIt = lastSavedIniData.find("TitleDisplay");
+bool ConfigUIState::hasTitleMetadataChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+    auto currentIt = currentIniData.find("TableMetadata");
+    auto lastIt = lastSavedIniData.find("TableMetadata");
 
     if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
-        LOG_DEBUG("ConfigUIState: TitleDisplay section missing in current or last state");
+        LOG_DEBUG("ConfigUIState: TableMetadata section missing in current or last state");
         return true;
     }
 
@@ -169,7 +169,7 @@ bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSect
     const auto& lastSection = lastIt->second;
 
     // List of keys to check
-    const std::vector<std::string> keys = {"ShowMetadata", "FetchVPSdb", "ForceRebuild"};
+    const std::vector<std::string> keys = {"ShowMetadata", "FetchVPSdb", "ForceRebuild", "TitleSortBy"};
     
     for (const auto& key : keys) {
         auto currentPairIt = std::find_if(currentSection.keyValues.begin(), currentSection.keyValues.end(),
@@ -202,6 +202,21 @@ bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSect
         LOG_DEBUG("ConfigUIState: TitleSource changed from " << lastTitleSourceIt->second << " to " << currentTitleSourceIt->second);
         return true;
     }
+    return false;
+}
+
+bool ConfigUIState::hasTitleDataChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
+
+    auto currentIt = currentIniData.find("TitleDisplay");
+    auto lastIt = lastSavedIniData.find("TitleDisplay");
+
+    if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
+        LOG_DEBUG("ConfigUIState: TitleDisplay section missing in current or last state");
+        return true;
+    }
+
+    const auto& currentSection = currentIt->second;
+    const auto& lastSection = lastIt->second;
 
     // Check wheelWindow
     const std::string wheelWindowKey = "WheelWindow";
@@ -298,11 +313,11 @@ bool ConfigUIState::hasForceImagesOnlyChanged(const std::map<std::string, Settin
 }
 
 bool ConfigUIState::hasMetadataSettingsChanged(const std::map<std::string, SettingsSection>& currentIniData) const {
-    auto currentIt = currentIniData.find("TitleDisplay");
-    auto lastIt = lastSavedIniData.find("TitleDisplay");
+    auto currentIt = currentIniData.find("TableMetadata");
+    auto lastIt = lastSavedIniData.find("TableMetadata");
 
     if (currentIt == currentIniData.end() || lastIt == lastSavedIniData.end()) {
-        LOG_DEBUG("ConfigUIState: TitleDisplay section missing in current or last state");
+        LOG_DEBUG("ConfigUIState: TableMetadata section missing in current or last state");
         return true;
     }
 

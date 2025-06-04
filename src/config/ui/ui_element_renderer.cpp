@@ -286,22 +286,43 @@ void renderVideoBackendDropdown([[maybe_unused]] const std::string& key, std::st
 
 void renderWheelTitleWindowDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
     const char* options[] = {"playfield", "backglass", "dmd", "topper"};
-    int videoBackend = 0; // Default to the first option (playfield)
+    int chosenWindow = 0; // Default to the first option (playfield)
 
     // Find the index of the current 'value' in the 'options' array
     for (int i = 0; i < IM_ARRAYSIZE(options); ++i) {
         if (value == options[i]) {
-            videoBackend = i;
+            chosenWindow = i;
             break; // Found the match, no need to continue
         }
     }
 
     ImGui::SetNextItemWidth(150);
-    if (ImGui::Combo("##videoBackend", &videoBackend, options, IM_ARRAYSIZE(options))) {
+    if (ImGui::Combo("##videoBackend", &chosenWindow, options, IM_ARRAYSIZE(options))) {
         std::string oldValue = value;
-        value = options[videoBackend];
+        value = options[chosenWindow];
         hasChanges = true;
-        LOG_DEBUG("UiElementRenderer::renderVideoBackendDropdown: " << section << "." << key << " = " << value);
+        LOG_DEBUG("UiElementRenderer::renderWheelTitleWindowDropdown: " << section << "." << key << " = " << value);
+    }
+}
+
+void renderTitleSortDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section) {
+    const char* options[] = {"title", "author", "type", "manufacturer", "year"};
+    int sortSelected = 0; // Default to the first option (title)
+
+    // Find the index of the current 'value' in the 'options' array
+    for (int i = 0; i < IM_ARRAYSIZE(options); ++i) {
+        if (value == options[i]) {
+            sortSelected = i;
+            break; // Found the match, no need to continue
+        }
+    }
+
+    ImGui::SetNextItemWidth(150);
+    if (ImGui::Combo("##videoBackend", &sortSelected, options, IM_ARRAYSIZE(options))) {
+        std::string oldValue = value;
+        value = options[sortSelected];
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer::renderTitleSortDropdown: " << section << "." << key << " = " << value);
     }
 }
 

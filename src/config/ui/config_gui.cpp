@@ -108,7 +108,7 @@ void ConfigUI::updateSaveMessageTimer() {
 
 std::vector<std::string> ConfigUI::getVisibleSections() const {
     static const std::vector<std::string> sectionOrder = {
-        "VPX", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
+        "VPX", "TableMetadata", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
         "Keybinds", "AudioSettings", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
     };
     std::vector<std::string> visibleSections;
@@ -142,6 +142,7 @@ void ConfigUI::saveConfig() {
     bool visibilitySettingsChanged = state_.hasVisibilitySettingsChanged(oldIniData);
     bool fontSettingsChanged = state_.hasFontSettingsChanged(oldIniData);
     bool titleDataSourceChanged = state_.hasTitleDataChanged(oldIniData);
+    bool titleMetadataChanged = state_.hasTitleMetadataChanged(oldIniData);
     bool videoBackendChanged = state_.hasVideoBackendChanged(oldIniData);
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
     bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
@@ -203,7 +204,7 @@ void ConfigUI::saveConfig() {
             appCallbacks_->reloadAssetsAndRenderers();
             anyCallbackTriggered = true;
         }
-        if (titleDataSourceChanged || forceImagesOnlyChanged) {
+        if (titleDataSourceChanged || forceImagesOnlyChanged || titleMetadataChanged) {
             LOG_DEBUG("ConfigUI: Title data-source or ForceImagesOnly changed, triggering reloadTablesAndTitle");
             appCallbacks_->reloadTablesAndTitle();
             anyCallbackTriggered = true;

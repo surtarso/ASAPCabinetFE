@@ -1,11 +1,11 @@
-// tables/table_loader.cpp
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
 #include "tables/vpx_scanner.h"
 #include "tables/data_enricher.h"
-#include "tables/vpsdb/vps_database_client.h" // Added for VpsDatabaseClient
+#include "tables/vpsdb/vps_database_client.h"
 #include "utils/logging.h"
 #include <algorithm>
+#include <cctype>
 
 std::vector<TableData> TableLoader::loadTableList(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
@@ -40,7 +40,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     }
 
     if (settings.titleSource == "metadata" && !settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
-        LOG_INFO("TableLoader: Loaded %d tables from ASAP index" << tables.size());
+        LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from ASAP index");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTablesLoaded = tables.size();
@@ -83,10 +83,49 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->currentTask = "Sorting and indexing tables...";
         progress->currentStage = 5;
     }
-    std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-        return a.title < b.title;
-    });
+    sortTables(tables, settings.titleSortBy, progress);
 
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Loading complete";
+        progress->currentTablesLoaded = tables.size();
+        progress->totalTablesToLoad = tables.size();
+        progress->currentStage = 5;
+    }
+
+    return tables;
+}
+
+void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& sortBy, LoadingProgress* progress) {
+    if (tables.empty()) return;
+
+    // Sort based on the selected criterion
+    if (sortBy == "author") {
+        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+            // Prefer vpsAuthors, fallback to authorName
+            std::string aAuthor = a.vpsAuthors.empty() ? a.authorName : a.vpsAuthors;
+            std::string bAuthor = b.vpsAuthors.empty() ? b.authorName : b.vpsAuthors;
+            return aAuthor < bAuthor;
+        });
+    } else if (sortBy == "type") {
+        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+            return a.type < b.type;
+        });
+    } else if (sortBy == "manufacturer") {
+        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+            return a.manufacturer < b.manufacturer;
+        });
+    } else if (sortBy == "year") {
+        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+            return a.year > b.year; // Descending order for year
+        });
+    } else { // Default to "title"
+        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+            return a.title < b.title;
+        });
+    }
+
+    // Rebuild letter index after sorting (always based on title)
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Building letter index...";
@@ -101,14 +140,4 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             }
         }
     }
-
-    if (progress) {
-        std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->currentTask = "Loading complete";
-        progress->currentTablesLoaded = tables.size();
-        progress->totalTablesToLoad = tables.size();
-        progress->currentStage = 5;
-    }
-
-    return tables;
 }
