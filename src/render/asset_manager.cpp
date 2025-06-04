@@ -201,6 +201,10 @@ void AssetManager::applyVideoAudioSettings() {
 
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& tables) {
     auto start = std::chrono::high_resolution_clock::now();
+    if (tables.empty()) {
+        LOG_DEBUG("AssetManager: Tables not yet loaded, skipping asset reload");
+        return;
+    }
     if (index >= tables.size()) {
         LOG_ERROR("AssetManager: Invalid table index: " << index << ", table count: " << tables.size());
         return;

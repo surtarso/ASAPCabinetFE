@@ -5,6 +5,7 @@
 #include <map>
 #include "tables/table_data.h"
 #include "config/settings.h"
+#include "core/loading_progress.h"
 
 /**
  * @brief Interface for loading table data.
@@ -23,10 +24,10 @@ public:
      * the necessary configuration for determining which table data to load.
      *
      * @param settings Configuration parameters used to load the table data.
+     * @param progress Optional pointer to LoadingProgress for tracking loading status.
      * @return A vector containing the loaded TableData objects.
      */
-    virtual std::vector<TableData> loadTableList(const Settings& settings) = 0;
-
+    virtual std::vector<TableData> loadTableList(const Settings& settings, LoadingProgress* progress = nullptr) = 0;
 
     /**
      * @brief Retrieves the letter-to-index mapping.

@@ -3,11 +3,12 @@
 
 #include <string>
 #include <json.hpp>
+#include "core/loading_progress.h"
 
 class VpsDatabaseLoader {
 public:
     VpsDatabaseLoader(const std::string& vpsDbPath);
-    bool load();
+    bool load(LoadingProgress* progress = nullptr);
     const nlohmann::json& getVpsDb() const;
 
 private:

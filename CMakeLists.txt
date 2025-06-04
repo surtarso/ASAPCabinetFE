@@ -133,6 +133,7 @@ set(SOURCES
     src/core/first_run.cpp
     src/core/gui_manager.cpp
     src/core/joystick_manager.cpp
+    src/core/loading_screen.cpp
     src/core/playfield_overlay.cpp
     src/core/window_manager.cpp
     src/sound/pulseaudio_player.cpp

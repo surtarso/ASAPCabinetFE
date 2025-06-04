@@ -7,7 +7,7 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables) {
+bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
         LOG_INFO("AsapIndexManager: asapcabinetfe_index.json not found at: " << settings.indexPath);
         return false;
@@ -22,6 +22,13 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
         if (!asapIndex.contains("tables") || !asapIndex["tables"].is_array()) {
             LOG_ERROR("AsapIndexManager: Invalid asapcabinetfe_index.json: 'tables' missing or not an array");
             return false;
+        }
+
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Loading tables from index...";
+            progress->totalTablesToLoad = asapIndex["tables"].size();
+            progress->currentTablesLoaded = 0;
         }
 
         tables.clear();
@@ -65,6 +72,10 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("dmdVideo") && table["dmdVideo"].is_string()) tableData.dmdVideo = table["dmdVideo"].get<std::string>();
             if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
             tables.push_back(tableData);
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTablesLoaded++;
+            }
         }
         LOG_INFO("AsapIndexManager: Loaded " << tables.size() << " tables from asapcabinetfe_index.json");
         return !tables.empty();
@@ -74,9 +85,16 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
     }
 }
 
-bool AsapIndexManager::save(const Settings& settings, const std::vector<TableData>& tables) {
+bool AsapIndexManager::save(const Settings& settings, const std::vector<TableData>& tables, LoadingProgress* progress) {
     json asapIndex;
     asapIndex["tables"] = json::array();
+
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Saving tables to index...";
+        progress->totalTablesToLoad = tables.size();
+        progress->currentTablesLoaded = 0;
+    }
 
     for (const auto& table : tables) {
         json tableJson;
@@ -118,6 +136,10 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["dmdVideo"] = table.dmdVideo;
         tableJson["topperVideo"] = table.topperVideo;
         asapIndex["tables"].push_back(tableJson);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTablesLoaded++;
+        }
     }
 
     try {
@@ -129,6 +151,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         }
         out << asapIndex.dump(4);
         out.close();
+        LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcabinetfe_index.json");
         return true;
     } catch (const std::exception& e) {
         LOG_ERROR("AsapIndexManager: Failed to save asapcabinetfe_index.json: " << e.what());

@@ -17,6 +17,8 @@
 #include "capture/screenshot_manager.h"
 #include "utils/logging.h"
 
+static std::atomic<bool> dummyIsLoadingTables{false};
+
 /**
  * @brief Creates a window manager instance.
  *
@@ -153,7 +155,7 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
     bool dummyShowConfig = false;
     std::vector<TableData> dummyTables;
     input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
-                           dummyShowConfig, "", screenshotManager, nullptr);
+                           dummyShowConfig, "", screenshotManager, nullptr, dummyIsLoadingTables);
     input->registerActions();
     return input;
 }

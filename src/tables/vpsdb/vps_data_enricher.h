@@ -4,11 +4,12 @@
 #include <json.hpp>
 #include "tables/table_data.h"
 #include "vps_utils.h"
+#include "core/loading_progress.h"
 
 class VpsDataEnricher {
 public:
     VpsDataEnricher(const nlohmann::json& vpsDb);
-    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const;
+    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
 private:
     const nlohmann::json& vpsDb_;

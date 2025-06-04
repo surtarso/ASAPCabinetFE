@@ -2,6 +2,7 @@
 #define TABLE_LOADER_H
 
 #include "tables/itable_loader.h"
+#include "core/loading_progress.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -9,7 +10,7 @@ namespace fs = std::filesystem;
 class TableLoader : public ITableLoader {
 public:
     TableLoader() = default;
-    std::vector<TableData> loadTableList(const Settings& settings) override;
+    std::vector<TableData> loadTableList(const Settings& settings, LoadingProgress* progress = nullptr) override;
     const std::map<char, int>& getLetterIndex() const override { return letterIndex; }
 
 private:

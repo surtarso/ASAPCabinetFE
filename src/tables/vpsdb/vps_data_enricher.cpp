@@ -26,7 +26,7 @@ size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::st
     return dp[len1][len2];
 }
 
-bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const {
+bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
     LOG_DEBUG("Starting enrichTableData for table path: " << vpxTable.value("path", "N/A"));
 
     {
@@ -118,6 +118,16 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
     std::string normFilename = utils_.normalizeStringLessAggressive(filename);
 
     LOG_DEBUG("Attempting to match table: " << tableData.tableName);
+
+    size_t totalVpsEntries = vpsDb_.size();
+    size_t processedVpsEntries = 0;
+
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Matching VPSDB entries...";
+        // Do not set totalTablesToLoad here to preserve local table count
+        progress->currentTablesLoaded = 0;
+    }
 
     for (const auto& vpsDbEntry : vpsDb_) {
         try {
@@ -222,6 +232,12 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
             LOG_DEBUG("Error in VPSDB entry: " << e.what());
             continue;
         }
+
+        processedVpsEntries++;
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTablesLoaded = processedVpsEntries;
+        }
     }
 
     if (matched_to_vpsdb) {
@@ -296,6 +312,10 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
 
         tableData.matchConfidence = bestMatchScore / 10.0f;
         LOG_INFO("Matched table to VPSDB, confidence: " << tableData.matchConfidence);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->numMatched++;
+        }
     } else {
         tableData.title = tableData.tableName.empty() ? filename : tableData.tableName;
         {
@@ -304,6 +324,10 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
             mismatchLog << "No vpsdb match for table: '" << tableData.tableName << "', gameName: '" << tableData.gameName << "'\n";
         }
         LOG_INFO("No VPSDB match, using title: " << tableData.title);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->numNoMatch++;
+        }
 
         if (!filename.empty()) {
             if (tableData.year.empty()) {

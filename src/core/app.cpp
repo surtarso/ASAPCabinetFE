@@ -21,7 +21,9 @@ App::App(const std::string& configPath)
     : configPath_(configPath), 
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
-      tableLoader_(std::make_unique<TableLoader>()) {
+      tableLoader_(std::make_unique<TableLoader>()),
+      isLoadingTables_{false},
+      loadingProgress_(std::make_shared<LoadingProgress>()) {
     exeDir_ = getExecutableDir();
     LOG_INFO("App: Executable directory set to " << exeDir_);
     configPath_ = exeDir_ + configPath_;
@@ -35,9 +37,20 @@ App::App(const std::string& configPath)
             false
 #endif
     );
+    Logger::getInstance().setLoadingProgress(loadingProgress_);
 }
 
 App::~App() {
+    // Ensure the loading thread is joined before destruction
+    if (loadingThread_.joinable()) {
+        {
+            std::lock_guard<std::mutex> lock(loadingMutex_);
+            isLoadingTables_ = false; // Signal thread to stop if needed
+        }
+        loadingCV_.notify_all();
+        loadingThread_.join();
+        LOG_DEBUG("App: Loading thread joined during shutdown");
+    }
     cleanup();
 }
 
@@ -144,29 +157,6 @@ void App::loadFont() {
     }
 }
 
-void App::renderLoadingScreen() {
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Always);
-    ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-
-    ImGui::Text("ASAPCabinetFE tables are now loading.");
-    ImGui::NewLine();
-    ImGui::Text("Parsing Metadata. Please wait...");
-    ImGui::SameLine();
-    // Simple spinning animation using rotating characters
-    const char* spinner = "|/-\\";
-    static int spinnerIndex = 0;
-    static float lastUpdate = 0.0f;
-    float currentTime = ImGui::GetTime();
-    if (currentTime - lastUpdate > 0.1f) {
-        spinnerIndex = (spinnerIndex + 1) % 4;
-        lastUpdate = currentTime;
-    }
-    ImGui::Text("%c", spinner[spinnerIndex]);
-    ImGui::End();
-}
-
 void App::loadTables() {
     loadTablesThreaded(); // Use threaded loading
 }
@@ -177,30 +167,51 @@ void App::loadTablesThreaded(size_t oldIndex) {
         return;
     }
 
+    // If a previous thread exists, join it before starting a new one
+    if (loadingThread_.joinable()) {
+        loadingThread_.join();
+    }
+
     isLoadingTables_ = true;
-    std::thread loadingThread([this, oldIndex]() {
-        auto loadedTables = tableLoader_->loadTableList(configManager_->getSettings());
-        if (loadedTables.empty()) {
-            LOG_ERROR("App: No .vpx files found in " << configManager_->getSettings().VPXTablesPath);
+    Logger::getInstance().setLoadingProgress(loadingProgress_);
+    
+    loadingThread_ = std::thread([this, oldIndex]() {
+        try {
+            auto loadedTables = tableLoader_->loadTableList(configManager_->getSettings(), loadingProgress_.get());
+            if (loadedTables.empty()) {
+                LOG_ERROR("App: No .vpx files found in " << configManager_->getSettings().VPXTablesPath);
+                std::lock_guard<std::mutex> lock(loadingMutex_);
+                isLoadingTables_ = false;
+                Logger::getInstance().setLoadingProgress(nullptr);
+                loadingCV_.notify_all();
+                return;
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(tablesMutex_);
+                tables_ = std::move(loadedTables);
+                currentIndex_ = (oldIndex >= tables_.size()) ? tables_.size() - 1 : oldIndex;
+            }
+
+            SDL_Event event;
+            event.type = SDL_USEREVENT;
+            SDL_PushEvent(&event);
+
+            {
+                std::lock_guard<std::mutex> lock(loadingMutex_);
+                isLoadingTables_ = false;
+                Logger::getInstance().setLoadingProgress(nullptr);
+                LOG_INFO("App: Loaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
+            }
+            loadingCV_.notify_all();
+        } catch (const std::exception& e) {
+            LOG_ERROR("App: Exception in loading thread: " << e.what());
+            std::lock_guard<std::mutex> lock(loadingMutex_);
             isLoadingTables_ = false;
-            return; // Don't update tables_ if empty
+            Logger::getInstance().setLoadingProgress(nullptr);
+            loadingCV_.notify_all();
         }
-
-        {
-            std::lock_guard<std::mutex> lock(tablesMutex_);
-            tables_ = std::move(loadedTables);
-            currentIndex_ = (oldIndex >= tables_.size()) ? tables_.size() - 1 : oldIndex;
-        }
-
-        // Reload assets on the main thread after loading
-        SDL_Event event;
-        event.type = SDL_USEREVENT;
-        SDL_PushEvent(&event);
-
-        isLoadingTables_ = false;
-        LOG_INFO("App: Loaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
     });
-    loadingThread.detach(); // Detach for simplicity; could join in destructor if needed
 }
 
 void App::initializeDependencies() {
@@ -223,21 +234,23 @@ void App::initializeDependencies() {
     }
 
     loadFont();
+    loadingScreen_ = std::make_unique<LoadingScreen>(loadingProgress_);
     loadTables();
 
     assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_, soundManager_.get());
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
+    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
+                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
+                                   windowManager_.get(), isLoadingTables_); // Updated
+
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     playfieldOverlay_ = std::make_unique<PlayfieldOverlay>(
         &tables_, &currentIndex_, configManager_.get(), windowManager_.get(), assets_.get()
     );
 
-    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
-                                   windowManager_.get());
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 
@@ -322,8 +335,12 @@ void App::render() {
     
     // Render loading screen if tables are loading
     if (isLoadingTables_) {
-        renderLoadingScreen();
-    } else {
+        // Ensure loadingScreen_ is initialized before calling render
+        if (!loadingScreen_) {
+            loadingScreen_ = std::make_unique<LoadingScreen>(loadingProgress_);
+        }
+        loadingScreen_->render(); // Call the new LoadingScreen's render method
+    } else if (!tables_.empty()) {
         renderer_->render(*assets_);
         if (playfieldOverlay_) {
             playfieldOverlay_->render();

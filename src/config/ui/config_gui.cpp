@@ -146,7 +146,7 @@ void ConfigUI::saveConfig() {
     bool forceImagesOnlyChanged = state_.hasForceImagesOnlyChanged(oldIniData);
     bool metadataSettingsChanged = state_.hasMetadataSettingsChanged(oldIniData);
     bool audioSettingsChanged = state_.hasSectionChanged("AudioSettings", oldIniData);
-
+    
     // Log change detection results
     // LOG_DEBUG("ConfigUI: Change detection: "
     //           << "windowSettings=" << windowSettingsChanged

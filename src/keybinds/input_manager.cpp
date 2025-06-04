@@ -20,7 +20,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableData>& tables,
                                    bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                                   IWindowManager* windowManager) {
+                                   IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) {
     //LOG_INFO("InputManager: setDependencies started, quit_ = " << quit_);
     assets_ = assets;
     soundManager_ = sound;
@@ -31,6 +31,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     showConfig_ = &showConfig;
     exeDir_ = exeDir;
     screenshotManager_ = screenshotManager;
+    isLoadingTables_ = &isLoadingTables;
 
     for (size_t i = 0; i < tables_->size(); ++i) {
         if (!tables_->at(i).title.empty()) {
@@ -303,6 +304,14 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
     Uint32 currentTime = SDL_GetTicks();
     ImGuiIO& io = ImGui::GetIO(); // Get ImGuiIO state here once
+
+    // Block all input if tables are loading, except for quit
+    if (isLoadingTables_ && *isLoadingTables_) {
+        if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "Quit")) {
+            actionHandlers_["Quit"]();
+        }
+        return; // Block all other actions
+    }
 
     // Priority 1: External application active or debounce period
     // If an external app is running or recently returned, block all custom input.

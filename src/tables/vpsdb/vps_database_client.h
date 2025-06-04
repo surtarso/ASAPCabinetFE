@@ -6,13 +6,14 @@
 #include "vps_database_loader.h"
 #include "vps_data_enricher.h"
 #include "vps_database_updater.h"
+#include "core/loading_progress.h"
 
 class VpsDatabaseClient {
 public:
     VpsDatabaseClient(const std::string& vpsDbPath);
-    bool load();
-    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const;
-    bool fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency);
+    bool load(LoadingProgress* progress = nullptr);
+    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
+    bool fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress = nullptr);
 
 private:
     std::string vpsDbPath_;

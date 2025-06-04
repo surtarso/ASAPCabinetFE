@@ -16,6 +16,8 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "config/iconfig_service.h"
@@ -33,6 +35,8 @@
 #include "core/gui_manager.h"
 #include "core/dependency_factory.h"
 #include "core/iapp_callbacks.h"
+#include "core/loading_progress.h"
+#include "core/loading_screen.h"
 
 /**
  * @class App
@@ -129,7 +133,12 @@ private:
     bool prevShowConfig_ = false;                        ///< Previous state of showConfig_ flag.
     std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
     std::mutex tablesMutex_;                            ///< Protects tables_ vector
-    std::atomic<float> tableLoadProgress_{0.0f};        ///< Progress tracking
+    std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
+    std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
+    std::thread loadingThread_;              // Added to store the loading thread
+    std::mutex loadingMutex_;                // Added for synchronizing loading state
+    std::condition_variable loadingCV_;      // Added to signal loading completion
+
     /**
      * @brief Gets the executable directory.
      *
@@ -196,13 +205,6 @@ private:
      * Creates and configures all components using DependencyFactory.
      */
     void initializeDependencies();
-
-    /**
-     * @brief Renders a loading screen during table loading.
-     *
-     * Displays a centered ImGui window with a loading indicator when tables are being loaded.
-     */
-    void renderLoadingScreen();
 
     void loadTablesThreaded(size_t oldIndex = 0); // Helper for threaded loading
 };

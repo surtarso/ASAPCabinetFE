@@ -83,7 +83,7 @@ public:
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableData>& tables,
                          bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                         IWindowManager* windowManager) override;
+                         IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) override;
 
     /**
      * @brief Checks if the configuration UI is active.
@@ -152,6 +152,7 @@ private:
     bool inExternalAppMode_;            ///< Flag indicating if an external application is running.
     Uint32 lastExternalAppReturnTime_;  ///< Timestamp of the last external application return.
     static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< Debounce time (ms) after external app return.
+    std::atomic<bool>* isLoadingTables_; ///< Track loading state
 };
 
 #endif // INPUT_MANAGER_H

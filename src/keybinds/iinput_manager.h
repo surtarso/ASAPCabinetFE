@@ -16,6 +16,7 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <atomic>
 
 /**
  * @class IAssetManager
@@ -107,7 +108,7 @@ public:
     virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                  size_t& currentIndex, const std::vector<TableData>& tables,
                                  bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                                 IWindowManager* windowManager) = 0;
+                                 IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) = 0;
 
     /**
      * @brief Sets the runtime configuration editor.

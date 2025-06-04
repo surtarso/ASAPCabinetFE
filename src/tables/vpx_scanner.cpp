@@ -5,11 +5,25 @@
 
 namespace fs = std::filesystem;
 
-std::vector<TableData> VpxScanner::scan(const Settings& settings) {
+std::vector<TableData> VpxScanner::scan(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
+
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
         LOG_ERROR("VpxScanner: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
+    }
+
+    // Count total VPX files for progress
+    int total = 0;
+    for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
+            total++;
+        }
+    }
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->totalTablesToLoad = total;
+        progress->currentTablesLoaded = 0;
     }
 
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
@@ -37,6 +51,10 @@ std::vector<TableData> VpxScanner::scan(const Settings& settings) {
                 table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
             }
             tables.push_back(table);
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTablesLoaded++;
+            }
         }
     }
     return tables;

@@ -7,14 +7,14 @@ VpsDatabaseClient::VpsDatabaseClient(const std::string& vpsDbPath)
       enricher_(loader_.getVpsDb()),
       updater_(vpsDbPath) {}
 
-bool VpsDatabaseClient::load() {
-    return loader_.load();
+bool VpsDatabaseClient::load(LoadingProgress* progress) {
+    return loader_.load(progress);
 }
 
-bool VpsDatabaseClient::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData) const {
-    return enricher_.enrichTableData(vpxTable, tableData);
+bool VpsDatabaseClient::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
+    return enricher_.enrichTableData(vpxTable, tableData, progress);
 }
 
-bool VpsDatabaseClient::fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency) {
-    return updater_.fetchIfNeeded(lastUpdatedPath, updateFrequency);
+bool VpsDatabaseClient::fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress) {
+    return updater_.fetchIfNeeded(lastUpdatedPath, updateFrequency, progress);
 }
