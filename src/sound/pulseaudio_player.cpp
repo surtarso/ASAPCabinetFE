@@ -134,6 +134,7 @@ void PulseAudioPlayer::loadSounds() {
             ambienceMusic_.reset(); // Ensure it's null if file doesn't exist or is a directory
         }
     }
+    LOG_INFO("PulseAudio Player Initialized.");
 }
 
 /**

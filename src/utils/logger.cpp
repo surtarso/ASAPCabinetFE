@@ -31,7 +31,7 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
         return;
     }
     
-    debug("Logger: Initialized");
+    info("Logger Initialized.");
 }
 
 void Logger::setLoadingProgress(std::shared_ptr<LoadingProgress> progress) {
@@ -40,7 +40,7 @@ void Logger::setLoadingProgress(std::shared_ptr<LoadingProgress> progress) {
 
 Logger::~Logger() {
     if (logFile_.is_open()) {
-        info("Shutting down");
+        info("Shutting down...");
         logFile_.close();
     }
 }

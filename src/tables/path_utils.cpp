@@ -33,7 +33,7 @@ std::string PathUtils::getMusicPath(const std::string& root, const std::string& 
     }
     fs::path musicFile = fs::path(root) / musicPath;
     if (fs::exists(musicFile) && fs::is_regular_file(musicFile)) {
-        LOG_DEBUG("PathUtils: Found Music: " << musicFile.string());
+        //LOG_DEBUG("PathUtils: Found Music: " << musicFile.string());
         return musicFile.string();
     }
     //LOG_DEBUG("PathUtils: No music file found or not a regular file for: " << musicFile.string());

@@ -28,7 +28,7 @@ PlayfieldOverlay::PlayfieldOverlay(const std::vector<TableData>* tables, size_t*
       assetManager_(assetManager),
       showMetadataPanel_(configService->getSettings().showMetadata)
 {
-    LOG_DEBUG("PlayfieldOverlay: Initialized.");
+    LOG_INFO("Playfield Overlay Initialized.");
 }
 
 void PlayfieldOverlay::updateSettings(const Settings& settings) {

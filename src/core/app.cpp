@@ -25,11 +25,11 @@ App::App(const std::string& configPath)
       isLoadingTables_{false},
       loadingProgress_(std::make_shared<LoadingProgress>()) {
     exeDir_ = getExecutableDir();
-    LOG_INFO("App: Executable directory set to " << exeDir_);
+    //LOG_INFO("App: Executable directory set to " << exeDir_);
     configPath_ = exeDir_ + configPath_;
-    LOG_INFO("App: Config path set to " << configPath_);
+    LOG_INFO("Config Path: " << configPath_);
     std::string logFile = exeDir_ + "logs/debug.txt";
-    LOG_INFO("App: Initializing logger with file " << logFile);
+    // LOG_INFO("App: Initializing logger with file " << logFile);
     Logger::getInstance().initialize(logFile,
 #ifdef DEBUG_LOGGING
             true
@@ -201,7 +201,7 @@ void App::loadTablesThreaded(size_t oldIndex) {
                 std::lock_guard<std::mutex> lock(loadingMutex_);
                 isLoadingTables_ = false;
                 Logger::getInstance().setLoadingProgress(nullptr);
-                LOG_INFO("App: Loaded " << tables_.size() << " tables, currentIndex_ = " << currentIndex_);
+                LOG_INFO("Loaded " << tables_.size() << " table(s).");
             }
             loadingCV_.notify_all();
         } catch (const std::exception& e) {
@@ -254,7 +254,7 @@ void App::initializeDependencies() {
     inputManager_->setRuntimeEditor(configEditor_.get());
     inputManager_->registerActions();
 
-    LOG_INFO("Initialization complete");
+    LOG_INFO("Initialization completed.");
 }
 
 void App::handleEvents() {
@@ -367,5 +367,5 @@ void App::render() {
 void App::cleanup() {
     assets_->cleanupVideoPlayers();
     assets_.reset();
-    LOG_INFO("App::cleanup: Cleanup complete");
+    LOG_INFO("App cleanup complete.");
 }

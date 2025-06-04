@@ -46,7 +46,7 @@ void GuiManager::initialize() {
         ImGui_ImplSDL2_InitForSDLRenderer(configWindow_, configRenderer_);
         ImGui_ImplSDLRenderer2_Init(configRenderer_);
     }
-    LOG_DEBUG("GuiManager: GuiManager initialized");
+    LOG_INFO("ImGui Initialized.");
 }
 
 void GuiManager::newFrame() {

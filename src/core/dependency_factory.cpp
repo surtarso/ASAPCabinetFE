@@ -63,8 +63,9 @@ std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* 
  * @return A unique pointer to an IAssetManager instance.
  */
 std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
-                                                                    IConfigService* configService, size_t index, 
-                                                                    const std::vector<TableData>& tables,
+                                                                    IConfigService* configService,
+                                                                    [[maybe_unused]] size_t index, 
+                                                                    [[maybe_unused]] const std::vector<TableData>& tables,
                                                                     ISoundManager* soundManager) {
     auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
                                                  windowManager->getBackglassRenderer(),
@@ -72,7 +73,7 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
                                                  windowManager->getTopperRenderer(),
                                                  font, soundManager);
     assets->setSettingsManager(configService);
-    assets->loadTableAssets(index, tables);
+    // assets->loadTableAssets(index, tables);
     return assets;
 }
 
