@@ -158,6 +158,8 @@ set(SOURCES
     src/render/renderer.cpp
     src/render/video_players/video_player_factory.cpp
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
+    src/render/video_players/ffmpeg/audio_decoder.cpp
+    src/render/video_players/ffmpeg/video_decoder.cpp
     src/render/video_players/gstreamer/gstreamer_player.cpp
     src/render/video_players/vlc/vlc_player.cpp
     src/tables/asap_index_manager.cpp
