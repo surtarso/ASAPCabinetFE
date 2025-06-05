@@ -1,3 +1,15 @@
+/**
+ * @file loading_screen.cpp
+ * @brief Implements the LoadingScreen class for rendering a loading UI in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the LoadingScreen class, which renders an
+ * ImGui-based loading interface with multiple progress bars (overall, per-table, match),
+ * a fade animation, and a mini terminal for log messages. It uses LoadingProgress data
+ * for real-time updates, with dynamic window sizing (max 600x400 or 50% width/70% height)
+ * and customizable colors (deep blue, purple, pinkish-white) that can be extended via
+ * configUI in the future.
+ */
+
 #include "core/loading_screen.h"
 #include "imgui.h"
 #include <SDL2/SDL.h> // Required for SDL_GetDesktopDisplayMode if used for window sizing
@@ -76,12 +88,11 @@ void LoadingScreen::render() {
     ImGui::BeginChild("LogTerminal", ImVec2(-1, ImGui::GetContentRegionAvail().y), true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.2f, 1.0f)); // Faded yellow
     for (const auto& msg : loadingProgress_->logMessages) {
-        // Remove "DEBUG:" from the message
+        // Remove "DEBUG:" prefix and leading whitespace for cleaner display
         std::string displayMsg = msg;
         const std::string debugPrefix = "DEBUG:";
         if (displayMsg.compare(0, debugPrefix.length(), debugPrefix) == 0) {
             displayMsg = displayMsg.substr(debugPrefix.length());
-            // Remove leading whitespace if any
             size_t firstNonSpace = displayMsg.find_first_not_of(" \t");
             if (firstNonSpace != std::string::npos) {
                 displayMsg = displayMsg.substr(firstNonSpace);
@@ -96,7 +107,7 @@ void LoadingScreen::render() {
     ImGui::PopStyleColor();
     // Auto-scroll to bottom only if user hasn't manually scrolled up
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(1.0f);
+        ImGui::SetScrollHereY(1.0f); // Scroll to bottom if at max
     }
     ImGui::EndChild();
 

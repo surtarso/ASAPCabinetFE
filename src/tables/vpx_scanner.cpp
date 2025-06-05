@@ -1,3 +1,15 @@
+/**
+ * @file vpx_scanner.cpp
+ * @brief Implements the VpxScanner class for scanning VPX table files in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the VpxScanner class, which recursively scans
+ * a directory for VPX files and constructs TableData objects with file paths and media
+ * asset paths. The scanner uses Settings to determine the base path and media preferences
+ * (e.g., images vs. videos with forceImagesOnly), and supports progress tracking via
+ * LoadingProgress. The process is configurable, with potential for future customization
+ * via configUI (e.g., additional path rules or media types).
+ */
+
 #include "tables/vpx_scanner.h"
 #include "tables/path_utils.h"
 #include "utils/logging.h"
@@ -13,7 +25,7 @@ std::vector<TableData> VpxScanner::scan(const Settings& settings, LoadingProgres
         return tables;
     }
 
-    // Count total VPX files for progress
+    // Count total VPX files for progress tracking
     int total = 0;
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
@@ -26,6 +38,7 @@ std::vector<TableData> VpxScanner::scan(const Settings& settings, LoadingProgres
         progress->currentTablesLoaded = 0;
     }
 
+    // Scan and populate TableData for each VPX file
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             TableData table;
@@ -40,11 +53,13 @@ std::vector<TableData> VpxScanner::scan(const Settings& settings, LoadingProgres
             table.dmdImage = PathUtils::getImagePath(table.folder, settings.customDmdImage, settings.defaultDmdImage);
             table.topperImage = PathUtils::getImagePath(table.folder, settings.customTopperImage, settings.defaultTopperImage);
             if (settings.forceImagesOnly) {
+                // Disable video paths when forceImagesOnly is enabled
                 table.playfieldVideo = "";
                 table.backglassVideo = "";
                 table.dmdVideo = "";
                 table.topperVideo = "";
             } else {
+                // Resolve video paths based on settings
                 table.playfieldVideo = PathUtils::getVideoPath(table.folder, settings.customPlayfieldVideo, settings.defaultPlayfieldVideo);
                 table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
                 table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);

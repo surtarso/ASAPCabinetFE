@@ -1,3 +1,14 @@
+/**
+ * @file vps_utils.cpp
+ * @brief Implements the VpsUtils class for utility functions in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the VpsUtils class, which offers utility
+ * methods for string normalization, version comparison, date parsing, and JSON array
+ * joining. These methods support VPS metadata processing in ASAPCabinetFE, ensuring
+ * consistency in matching and enrichment tasks. The functionality can be extended
+ * with configUI for user-defined normalization or formatting rules in the future.
+ */
+
 #include "vps_utils.h"
 #include <regex>
 #include <algorithm>
@@ -15,23 +26,24 @@ std::string VpsUtils::join(const nlohmann::json& array, const std::string& delim
             LOG_DEBUG("VpsUtils: Skipping invalid array item in join: " << e.what());
         }
     }
+    // Use accumulate to join strings with delimiter, starting with the first item
     return items.empty() ? "" : std::accumulate(std::next(items.begin()), items.end(), items[0],
         [&delimiter](const std::string& a, const std::string& b) { return a + delimiter + b; });
 }
 
 std::string VpsUtils::normalizeString(const std::string& input) const {
     std::string result = input;
-    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower); // Convert to lowercase
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
-        return !std::isalnum(c);
+        return !std::isalnum(c); // Remove non-alphanumeric characters
     }), result.end());
     return result;
 }
 
 std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) const {
     std::string result = input;
-    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
-    // Remove only specific punctuation, preserve spaces and parentheses
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower); // Convert to lowercase
+    // Remove specific punctuation, preserve spaces and parentheses
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
         return (c == '_' || c == '-' || c == '.' || c == '\'' || c == ',' || c == '!' || c == '?' || c == ':' || c == '&');
     }), result.end());
@@ -50,14 +62,14 @@ std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) co
 
 std::string VpsUtils::normalizeVersion(const std::string& version) const {
     std::string normalized = version;
-    std::replace(normalized.begin(), normalized.end(), ',', '.');
-    normalized.erase(0, normalized.find_first_not_of(" \t\n\r\f\v"));
-    normalized.erase(normalized.find_last_not_of(" \t\n\r\f\v") + 1);
+    std::replace(normalized.begin(), normalized.end(), ',', '.'); // Replace commas with dots
+    normalized.erase(0, normalized.find_first_not_of(" \t\n\r\f\v")); // Trim leading whitespace
+    normalized.erase(normalized.find_last_not_of(" \t\n\r\f\v") + 1); // Trim trailing whitespace
 
     size_t dash_pos = normalized.find('-');
     if (dash_pos != std::string::npos) {
         std::string first_part = normalized.substr(0, dash_pos);
-        if (std::regex_match(first_part, std::regex("[0-9\\.]+"))) {
+        if (std::regex_match(first_part, std::regex("[0-9\\.]+"))) { // Check if first part is numeric (e.g., "1.2-beta")
             return first_part;
         }
     }
@@ -68,27 +80,27 @@ bool VpsUtils::isVersionGreaterThan(const std::string& v1, const std::string& v2
     std::string norm_v1 = normalizeVersion(v1);
     std::string norm_v2 = normalizeVersion(v2);
 
-    if (norm_v1.empty()) return false;
-    if (norm_v2.empty()) return true;
+    if (norm_v1.empty()) return false; // Empty v1 is not greater
+    if (norm_v2.empty()) return true; // Non-empty v1 is greater than empty v2
 
     try {
-        float f1 = std::stof(norm_v1);
+        float f1 = std::stof(norm_v1); // Convert to float for numeric comparison
         float f2 = std::stof(norm_v2);
         return f1 > f2;
     } catch (const std::exception&) {
-        return norm_v1 > norm_v2;
+        return norm_v1 > norm_v2; // Fallback to lexicographical comparison if conversion fails
     }
 }
 
 std::string VpsUtils::extractYearFromDate(const std::string& dateString) const {
-    std::regex dateRegex_DDMMYYYY("\\d{2}\\.\\d{2}\\.(\\d{4})");
-    std::regex dateRegex_YYYY("\\d{4}");
+    std::regex dateRegex_DDMMYYYY("\\d{2}\\.\\d{2}\\.(\\d{4})"); // Match DD.MM.YYYY format
+    std::regex dateRegex_YYYY("\\d{4}"); // Match standalone YYYY format
     std::smatch match;
 
     if (std::regex_search(dateString, match, dateRegex_DDMMYYYY) && match.size() > 1) {
-        return match[1].str();
+        return match[1].str(); // Extract year from DD.MM.YYYY
     } else if (std::regex_search(dateString, match, dateRegex_YYYY) && match.size() > 0) {
-        return match[0].str();
+        return match[0].str(); // Extract standalone year
     }
     return "";
 }

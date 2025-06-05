@@ -1,3 +1,15 @@
+/**
+ * @file data_enricher.cpp
+ * @brief Implements the DataEnricher class for enriching table data in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the DataEnricher class, which enriches
+ * TableData objects with metadata from vpxtool_index.json and optionally VPSDB. It
+ * includes utility methods for cleaning strings and safely extracting JSON values,
+ * supports progress tracking via LoadingProgress, and is configurable via Settings
+ * (e.g., VPXTablesPath, fetchVPSdb). The process can be extended with configUI for
+ * custom metadata sources or cleaning rules in the future.
+ */
+
 #include "tables/data_enricher.h"
 #include "tables/vpsdb/vps_database_client.h"
 #include "utils/logging.h"
@@ -5,18 +17,18 @@
 #include <fstream>
 #include <json.hpp>
 
-namespace fs = std::filesystem;
-using json = nlohmann::json;
+namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
+using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
 
 std::string DataEnricher::cleanString(const std::string& input) {
     std::string result = input;
-    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
-    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
-    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end());
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end()); // Remove carriage returns
+    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end()); // Remove newlines
+    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end()); // Remove control characters
     size_t first = result.find_first_not_of(" \t");
     size_t last = result.find_last_not_of(" \t");
-    if (first == std::string::npos) return "";
-    return result.substr(first, last - first + 1);
+    if (first == std::string::npos) return ""; // Return empty if all whitespace
+    return result.substr(first, last - first + 1); // Trim leading/trailing whitespace
 }
 
 std::string DataEnricher::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
@@ -24,13 +36,13 @@ std::string DataEnricher::safeGetString(const nlohmann::json& j, const std::stri
         if (j[key].is_string()) {
             return j[key].get<std::string>();
         } else if (j[key].is_number()) {
-            return std::to_string(j[key].get<double>());
+            return std::to_string(j[key].get<double>()); // Convert number to string
         } else {
             LOG_DEBUG("Field " << key << " is not a string or number, type: " << j[key].type_name());
             return defaultValue;
         }
     }
-    return defaultValue;
+    return defaultValue; // Return default if key is missing
 }
 
 void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
@@ -39,7 +51,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
         LOG_INFO("DataEnricher: vpxtool_index.json not found at: " << jsonPath);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->numNoMatch += tables.size();
+            progress->numNoMatch += tables.size(); // Mark all tables as unmatched
         }
         return;
     }
@@ -47,17 +59,18 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
     json vpxtoolJson;
     try {
         std::ifstream file(jsonPath);
-        file >> vpxtoolJson;
+        file >> vpxtoolJson; // Parse vpxtool_index.json
         file.close();
     } catch (const std::exception& e) {
         LOG_ERROR("DataEnricher: Failed to parse vpxtool_index.json: " << e.what());
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->numNoMatch += tables.size();
+            progress->numNoMatch += tables.size(); // Mark all tables as unmatched
         }
         return;
     }
 
+    // Load VPSDB if enabled
     VpsDatabaseClient vpsClient(settings.vpsDbPath);
     bool vpsLoaded = false;
     if (settings.fetchVPSdb && vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
@@ -70,7 +83,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
         LOG_ERROR("DataEnricher: Invalid vpxtool_index.json: 'tables' missing or not an array");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->numNoMatch += tables.size();
+            progress->numNoMatch += tables.size(); // Mark all tables as unmatched
         }
         return;
     }
@@ -109,17 +122,17 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
 
                 fs::path filePath(path);
                 std::string filename = filePath.stem().string();
-                table.title = table.tableName.empty() ? cleanString(filename) : table.tableName;
+                table.title = table.tableName.empty() ? cleanString(filename) : table.tableName; // Fallback to filename if tableName is empty
 
                 if (vpsLoaded) {
-                    vpsClient.enrichTableData(tableJson, table, progress);
+                    vpsClient.enrichTableData(tableJson, table, progress); // Enrich with VPSDB if loaded
                 }
                 break;
             }
             processed++;
             if (progress && !found) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->numNoMatch++;
+                progress->numNoMatch++; // Increment unmatched count if no match found
             }
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);

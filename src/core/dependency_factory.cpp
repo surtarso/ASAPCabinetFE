@@ -5,7 +5,11 @@
  * This file provides the implementation of the DependencyFactory class, which creates
  * instances of core components, such as WindowManager, GuiManager, AssetManager, and
  * others, with their required dependencies. It is used by the App class to initialize
- * the application.
+ * the application. The factory methods initialize components with settings from
+ * IConfigService and other dependencies, with potential for user customization via
+ * configUI (e.g., window configurations, asset loading options, keybinds). The file
+ * includes a dummy atomic flag for loading state and commented-out asset loading
+ * logic for future expansion.
  */
 
 #include "core/dependency_factory.h"
@@ -17,7 +21,7 @@
 #include "capture/screenshot_manager.h"
 #include "utils/logging.h"
 
-static std::atomic<bool> dummyIsLoadingTables{false};
+static std::atomic<bool> dummyIsLoadingTables{false}; // Atomic flag used as a placeholder for loading state in InputManager
 
 /**
  * @brief Creates a window manager instance.
@@ -44,7 +48,7 @@ std::unique_ptr<IWindowManager> DependencyFactory::createWindowManager(const Set
  */
 std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* windowManager, IConfigService* configService) {
     auto gui = std::make_unique<GuiManager>(windowManager, configService);
-    gui->initialize();
+    gui->initialize(); // Sets up ImGui context with window and renderer data
     return gui;
 }
 
@@ -73,7 +77,7 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
                                                  windowManager->getTopperRenderer(),
                                                  font, soundManager);
     assets->setSettingsManager(configService);
-    // assets->loadTableAssets(index, tables);
+    // assets->loadTableAssets(index, tables); // Commented out for now, to be implemented with dynamic asset loading
     return assets;
 }
 
@@ -105,7 +109,7 @@ std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* wind
  */
 std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {
     auto sound = std::make_unique<PulseAudioPlayer>(exeDir, settings);
-    sound->loadSounds();
+    sound->loadSounds(); // Loads sound files based on exeDir and settings
     return sound;
 }
 
@@ -143,7 +147,9 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
  * @brief Creates an input manager instance.
  *
  * Initializes an InputManager with the keybind manager (from configService) and
- * screenshot manager, setting minimal dependencies and registering actions.
+ * screenshot manager, setting minimal dependencies with dummy values (e.g., index,
+ * tables) for basic functionality. The method registers actions and could be
+ * extended to support configurable keybinds via configUI.
  *
  * @param configService The configuration service for accessing keybind settings.
  * @param screenshotManager The screenshot manager for screenshot mode.
@@ -152,12 +158,12 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
 std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, 
                                                                    IScreenshotManager* screenshotManager) {
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
-    size_t dummyIndex = 0;
-    bool dummyShowConfig = false;
-    std::vector<TableData> dummyTables;
+    size_t dummyIndex = 0; // Placeholder index for minimal functionality
+    bool dummyShowConfig = false; // Placeholder visibility flag
+    std::vector<TableData> dummyTables; // Empty table list as a placeholder
     input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
-                           dummyShowConfig, "", screenshotManager, nullptr, dummyIsLoadingTables);
-    input->registerActions();
+                           dummyShowConfig, "", screenshotManager, nullptr, dummyIsLoadingTables); // Sets dummy dependencies
+    input->registerActions(); // Registers default input actions
     return input;
 }
 

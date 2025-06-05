@@ -3,9 +3,11 @@
  * @brief Defines the PlayfieldOverlay class for rendering ImGui overlays in ASAPCabinetFE.
  *
  * This header provides the PlayfieldOverlay class, which manages ImGui-based UI elements
- * for the playfield display, including scrollbars and metadata panels. It integrates with
- * table data, configuration services, window management, and asset management to render
- * interactive overlays.
+ * for the playfield display, including scrollbars, navigation arrows, and metadata panels.
+ * It integrates with table data, configuration services, window management, and asset
+ * management to render interactive and customizable overlays. Settings for these elements
+ * are defined in namespaces (e.g., NavigationArrowSettings, ScrollbarSettings,
+ * MetadataPanelSettings) for user-configurable adjustments via configUI.
  */
 
 #ifndef PLAYFIELD_OVERLAY_H
@@ -24,10 +26,12 @@
  * @class PlayfieldOverlay
  * @brief Manages ImGui-based UI overlays for the playfield display.
  *
- * This class renders ImGui elements, such as scrollbars and metadata panels, on the
- * playfield display. It uses table data to display metadata, configuration services
- * for settings, window management for positioning, and asset management for potential
- * texture or video needs.
+ * This class renders ImGui elements, such as scrollbars, navigation arrows, and metadata
+ * panels, on the playfield display. It uses table data to display metadata, configuration
+ * services for settings, window management for positioning, and asset management for
+ * potential texture or video needs. Customization is supported through namespace-defined
+ * settings (e.g., NavigationArrowSettings for arrows, ScrollbarSettings for scrollbars,
+ * MetadataPanelSettings for panels) that can be adjusted via configUI.
  */
 class PlayfieldOverlay {
 public:
@@ -35,7 +39,9 @@ public:
      * @brief Constructs a PlayfieldOverlay instance.
      *
      * Initializes the overlay with dependencies for table data, current table index,
-     * configuration, window management, and asset management.
+     * configuration, window management, and asset management. The overlay's appearance
+     * is governed by customizable settings in namespaces (e.g., NavigationArrowSettings,
+     * ScrollbarSettings, MetadataPanelSettings) that can be modified via configUI.
      *
      * @param tables Pointer to the list of table data.
      * @param currentIndex Pointer to the current table index.
@@ -50,8 +56,10 @@ public:
     /**
      * @brief Renders all ImGui overlay elements.
      *
-     * Draws the scrollbar and metadata panel (if visible) on the playfield display
-     * using ImGui, based on the current table index and settings.
+     * Draws the scrollbar, navigation arrows, and metadata panel (if visible) on the
+     * playfield display using ImGui. The appearance and visibility of these elements
+     * are controlled by settings in NavigationArrowSettings, ScrollbarSettings, and
+     * MetadataPanelSettings, which can be tweaked via configUI.
      */
     void render();
 
@@ -59,6 +67,7 @@ public:
      * @brief Checks if the metadata panel is visible.
      *
      * @return True if the metadata panel is visible, false otherwise.
+     * @note Controlled by the showMetadataPanel_ member, which is updated via configUI.
      */
     bool isMetadataPanelVisible() const { return showMetadataPanel_; }
 
@@ -66,24 +75,28 @@ public:
      * @brief Updates overlay settings.
      *
      * Reconfigures the overlay based on the provided application settings, such as
-     * UI visibility or positioning.
+     * UI visibility or positioning. This includes updating the showMetadataPanel_
+     * flag and can be extended to reflect changes in NavigationArrowSettings,
+     * ScrollbarSettings, or MetadataPanelSettings via configUI.
      *
      * @param settings The application settings to apply.
      */
     void updateSettings(const Settings& settings);
 
 private:
-    const std::vector<TableData>* tables_; ///< Pointer to the list of table data.
-    size_t* currentIndex_;                 ///< Pointer to the current table index.
-    [[maybe_unused]] IConfigService* configService_;        ///< Configuration service for settings.
-    IWindowManager* windowManager_;        ///< Window manager for playfield dimensions.
-    [[maybe_unused]] IAssetManager* assetManager_;          ///< Asset manager for textures or video players.
-    bool showMetadataPanel_;               ///< Flag controlling metadata panel visibility.
+    const std::vector<TableData>* tables_; ///< Pointer to the list of table data used for metadata display.
+    size_t* currentIndex_;                 ///< Pointer to the current table index for navigation and scrollbar positioning.
+    [[maybe_unused]] IConfigService* configService_;        ///< Configuration service for accessing and updating settings, including UI visibility.
+    IWindowManager* windowManager_;        ///< Window manager for retrieving playfield window dimensions and positioning overlays.
+    [[maybe_unused]] IAssetManager* assetManager_;          ///< Asset manager for potential texture or video assets in future enhancements.
+    bool showMetadataPanel_;               ///< Flag controlling metadata panel visibility, set via configService and updated by updateSettings.
 
     /**
      * @brief Renders the scrollbar UI element.
      *
-     * Draws the scrollbar for navigating the table list using ImGui.
+     * Draws the scrollbar for navigating the table list using ImGui. The scrollbar's
+     * appearance (e.g., width, padding, thumb size, colors) and visibility are defined
+     * in ScrollbarSettings, allowing customization via configUI.
      */
     void renderScrollbar();
 
@@ -91,7 +104,8 @@ private:
      * @brief Renders the metadata panel UI element.
      *
      * Draws the metadata panel with table information (e.g., title, author) using
-     * ImGui, if the panel is visible.
+     * ImGui, if the panel is visible. The panel's size (width and height factors) and
+     * transparency are controlled by MetadataPanelSettings, enabling configUI adjustments.
      */
     void renderMetadataPanel();
 };

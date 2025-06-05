@@ -1,10 +1,20 @@
-// tables/vps_database_loader.cpp
+/**
+ * @file vps_database_loader.cpp
+ * @brief Implements the VpsDatabaseLoader class for loading the VPS database in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the VpsDatabaseLoader class, which loads
+ * the VPS database (vpsdb.json) from a specified file path into a nlohmann::json object.
+ * It validates the JSON structure, supports progress tracking via LoadingProgress, and
+ * provides access to the loaded data. The loading process can be extended with configUI
+ * for custom validation rules (e.g., additional JSON structure checks) in the future.
+ */
+
 #include "vps_database_loader.h"
 #include <filesystem>
 #include <fstream>
 #include "utils/logging.h"
 
-namespace fs = std::filesystem;
+namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 
 VpsDatabaseLoader::VpsDatabaseLoader(const std::string& vpsDbPath) : vpsDbPath_(vpsDbPath) {}
 
@@ -23,22 +33,22 @@ bool VpsDatabaseLoader::load(LoadingProgress* progress) {
             // Do not set totalTablesToLoad to preserve local table count
         }
 
-        vpsDb_ = nlohmann::json::parse(file, nullptr, true, true);
+        vpsDb_ = nlohmann::json::parse(file, nullptr, true, true); // Parse JSON with comments and error tolerance
         file.close();
 
         if (vpsDb_.is_array()) {
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTablesLoaded = vpsDb_.size();
+                progress->currentTablesLoaded = vpsDb_.size(); // Update with number of entries
                 progress->currentTask = "VPSDB JSON loaded";
             }
             LOG_INFO("VpsDatabaseLoader: Loaded vpsdb.json with " << vpsDb_.size() << " entries");
             return true;
         } else if (vpsDb_.is_object() && vpsDb_.contains("tables") && vpsDb_["tables"].is_array()) {
-            vpsDb_ = vpsDb_["tables"];
+            vpsDb_ = vpsDb_["tables"]; // Adjust to store the 'tables' array directly
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTablesLoaded = vpsDb_.size();
+                progress->currentTablesLoaded = vpsDb_.size(); // Update with number of entries
                 progress->currentTask = "VPSDB JSON loaded";
             }
             LOG_INFO("VpsDatabaseLoader: Loaded vpsdb.json with " << vpsDb_.size() << " entries");

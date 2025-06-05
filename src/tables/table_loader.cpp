@@ -1,3 +1,15 @@
+/**
+ * @file table_loader.cpp
+ * @brief Implements the TableLoader class for loading and managing table data in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the TableLoader class, which loads table data
+ * through a five-stage process: fetching VPSDB (if enabled), scanning VPX files or loading
+ * from an ASAP index, enriching metadata, saving the index, and sorting tables. It supports
+ * progress tracking via LoadingProgress and builds a letter index for navigation. The
+ * process is configurable via Settings (e.g., titleSource, sortBy), with potential for
+ * future customization via configUI.
+ */
+
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
 #include "tables/vpx_scanner.h"
@@ -39,6 +51,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
+    // Stage 2: Load from index or scan VPX files
     if (settings.titleSource == "metadata" && !settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
         LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from ASAP index");
         if (progress) {
@@ -61,7 +74,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentTask = "Scanning complete";
         }
         if (settings.titleSource == "metadata") {
-            // Enrich and save only when scanning
+            // Stage 3: Enrich metadata and Stage 4: Save index (only when scanning)
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Enriching data...";
@@ -102,7 +115,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
     // Sort based on the selected criterion
     if (sortBy == "author") {
         std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            // Prefer vpsAuthors, fallback to authorName
+            // Prefer vpsAuthors, fallback to authorName if empty
             std::string aAuthor = a.vpsAuthors.empty() ? a.authorName : a.vpsAuthors;
             std::string bAuthor = b.vpsAuthors.empty() ? b.authorName : b.vpsAuthors;
             return aAuthor < bAuthor;
@@ -136,7 +149,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         if (std::isdigit(firstChar) || std::isalpha(firstChar)) {
             char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
             if (letterIndex.find(key) == letterIndex.end()) {
-                letterIndex[key] = static_cast<int>(i);
+                letterIndex[key] = static_cast<int>(i); // Assign index of first occurrence
             }
         }
     }

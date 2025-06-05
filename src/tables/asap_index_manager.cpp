@@ -1,11 +1,22 @@
+/**
+ * @file asap_index_manager.cpp
+ * @brief Implements the AsapIndexManager class for managing ASAP index files in ASAPCabinetFE.
+ *
+ * This file provides the implementation of the AsapIndexManager class, which loads and
+ * saves table data from/to an ASAP index file (asapcabinetfe_index.json) using JSON
+ * serialization. The manager handles file I/O, validates JSON structure, and supports
+ * progress tracking via LoadingProgress. It is configurable via Settings (e.g., indexPath),
+ * with potential for future configUI enhancements (e.g., custom index paths or formatting).
+ */
+
 #include "tables/asap_index_manager.h"
 #include "utils/logging.h"
 #include <filesystem>
 #include <fstream>
 #include "json.hpp"
 
-namespace fs = std::filesystem;
-using json = nlohmann::json;
+namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
+using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
 
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
@@ -16,7 +27,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
     try {
         std::ifstream indexFile(settings.indexPath);
         json asapIndex;
-        indexFile >> asapIndex;
+        indexFile >> asapIndex; // Parse JSON from file
         indexFile.close();
 
         if (!asapIndex.contains("tables") || !asapIndex["tables"].is_array()) {
@@ -143,13 +154,13 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
     }
 
     try {
-        fs::create_directories(fs::path(settings.indexPath).parent_path());
+        fs::create_directories(fs::path(settings.indexPath).parent_path()); // Ensure parent directories exist
         std::ofstream out(settings.indexPath);
         if (!out.is_open()) {
             LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for writing");
             return false;
         }
-        out << asapIndex.dump(4);
+        out << asapIndex.dump(4); // Serialize with 4-space indentation
         out.close();
         LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcabinetfe_index.json");
         return true;
