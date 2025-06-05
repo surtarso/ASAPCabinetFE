@@ -158,9 +158,9 @@ private:
     bool isConfigValid();
 
     /**
-     * @brief Loads table data.
+     * @brief Loads table data. (leftover)
      *
-     * Populates the tables_ vector using the table loader.
+     * Calls loadTablesThreaded() 
      */
     void loadTables();
 
@@ -206,6 +206,11 @@ private:
      */
     void initializeDependencies();
 
+    /**
+     * @brief Loads table data with threading.
+     *
+     * Populates the tables_ vector using the table loader.
+     */
     void loadTablesThreaded(size_t oldIndex = 0); // Helper for threaded loading
 };
 
