@@ -17,7 +17,6 @@ UI:
 - show a couple of prev/next table wheels?
 
 On hold:
-- add playfield overlay to settings (size/pos, visible fields etc)
 - abstract linux commands with an interface for crossplat later
 - use json instead of memory for standart info
 - attract mode (random table on a timer if idle) (optional)
