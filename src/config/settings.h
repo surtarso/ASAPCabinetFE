@@ -73,6 +73,28 @@ struct Settings {
     std::string titleSortBy;
     bool showMetadata;
 
+    float metadataPanelWidth;
+    float metadataPanelHeight;
+    float metadataPanelAlpha;
+
+    // [UIWidgets]
+    bool showArrowHint;
+    float arrowHintWidth;
+    float arrowHintHeight;
+    float arrowThickness;
+    float arrowAlpha;
+    float arrowGlow;
+    SDL_Color arrowGlowColor;
+    SDL_Color arrowColorTop;
+    SDL_Color arrowColorBottom;
+
+    bool showScrollbar;
+    float scrollbarWidth;
+    float scrollbarHeight;
+    float scrollbarLength;
+    SDL_Color scrollbarColor;
+    SDL_Color scrollbarThumbColor;
+
     // [TitleDisplay]
     bool showWheel;
     std::string wheelWindow;

@@ -11,7 +11,6 @@
 #include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
-#include "core/dependency_factory.h"
 #include "utils/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>

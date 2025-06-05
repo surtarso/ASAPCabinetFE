@@ -108,7 +108,7 @@ void ConfigUI::updateSaveMessageTimer() {
 
 std::vector<std::string> ConfigUI::getVisibleSections() const {
     static const std::vector<std::string> sectionOrder = {
-        "VPX", "TableMetadata", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
+        "VPX", "DPISettings", "TableMetadata", "UIWidgets", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
         "Keybinds", "AudioSettings", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
     };
     std::vector<std::string> visibleSections;

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 const std::vector<std::string> ConfigUIState::sectionOrder_ = {
-    "VPX", "DPISettings", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
+    "VPX", "DPISettings", "UIWidgets", "WindowSettings", "TitleDisplay", "CustomMedia", "MediaDimensions",  
     "Keybinds", "AudioSettings", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
 };
 

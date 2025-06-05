@@ -259,6 +259,68 @@ ConfigSchema::ConfigSchema() {
          [this](Settings& s, const std::string& val) { parseString(s, val, "titleSource"); },
          [this](Settings& s, const auto& val) { defaultString(s, val, "titleSource"); }},
         
+
+
+
+         {"metadataPanelWidth", "TableMetadata", "MetadataPanelWidth", 0.7f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "metadataPanelWidth"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "metadataPanelWidth"); }},
+        {"metadataPanelHeight", "TableMetadata", "MetadataPanelHeight", 0.5f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "metadataPanelHeight"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "metadataPanelHeight"); }},
+        {"metadataPanelAlpha", "TableMetadata", "MetadataPanelAlpha", 0.6f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "metadataPanelAlpha"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "metadataPanelAlpha"); }},
+        
+        // [UIWidgets]
+        // Arrow widget
+        {"showArrowHint", "UIWidgets", "ShowArrowHint", true, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "showArrowHint"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "showArrowHint"); }},
+        {"arrowHintWidth", "UIWidgets", "ArrowHintWidth", 20.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "arrowHintWidth"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "arrowHintWidth"); }},
+        {"arrowHintHeight", "UIWidgets", "ArrowHintHeight", 100.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "arrowHintHeight"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "arrowHintHeight"); }},
+        {"arrowThickness", "UIWidgets", "ArrowThickness", 4.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "arrowThickness"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "arrowThickness"); }},
+        {"arrowAlpha", "UIWidgets", "ArrowAlpha", 0.6f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "arrowAlpha"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "arrowAlpha"); }},
+        {"arrowGlow", "UIWidgets", "ArrowGlow", 1.5f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "arrowGlow"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "arrowGlow"); }},
+        {"arrowGlowColor", "UIWidgets", "ArrowGlowColor", SDL_Color{200, 200, 200, 255}, Type::SDLColor, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseSDLColor(s, val, "arrowGlowColor"); },
+         [this](Settings& s, const auto& val) { defaultSDLColor(s, val, "arrowGlowColor"); }},
+        {"arrowColorTop", "UIWidgets", "ArrowColorTop", SDL_Color{100, 100, 100, 255}, Type::SDLColor, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseSDLColor(s, val, "arrowColorTop"); },
+         [this](Settings& s, const auto& val) { defaultSDLColor(s, val, "arrowColorTop"); }},
+        {"arrowColorBottom", "UIWidgets", "ArrowColorBottom", SDL_Color{150, 150, 150, 255}, Type::SDLColor, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseSDLColor(s, val, "arrowColorBottom"); },
+         [this](Settings& s, const auto& val) { defaultSDLColor(s, val, "arrowColorBottom"); }},
+        // Scrollbar widget
+        {"showScrollbar", "UIWidgets", "ShowScrollbar", true, Type::Bool, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseBool(s, val, "showScrollbar"); },
+         [this](Settings& s, const auto& val) { defaultBool(s, val, "showScrollbar"); }},
+        {"scrollbarWidth", "UIWidgets", "ScrollbarWidth", 12.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarWidth"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarWidth"); }},
+        {"scrollbarHeight", "UIWidgets", "ScrollbarHeight", 15.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarHeight"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarHeight"); }},
+        {"scrollbarLength", "UIWidgets", "ScrollbarLength", 0.5f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarLength"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarLength"); }},
+        {"scrollbarColor", "UIWidgets", "ScrollbarColor", SDL_Color{50, 50, 50, 200}, Type::SDLColor, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseSDLColor(s, val, "scrollbarColor"); },
+         [this](Settings& s, const auto& val) { defaultSDLColor(s, val, "scrollbarColor"); }},
+        {"scrollbarThumbColor", "UIWidgets", "ScrollbarThumbColor", SDL_Color{50, 150, 150, 255}, Type::SDLColor, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseSDLColor(s, val, "scrollbarThumbColor"); },
+         [this](Settings& s, const auto& val) { defaultSDLColor(s, val, "scrollbarThumbColor"); }},
+
         // [TitleDisplay]
         {"fontPath", "TitleDisplay", "FontPath", std::string("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"), Type::String, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseString(s, val, "fontPath"); },
@@ -514,6 +576,17 @@ void ConfigSchema::parseFloat(Settings& s, const std::string& val, const std::st
     else if (field == "tableMusicVol") s.tableMusicVol = v;
     else if (field == "interfaceAudioVol") s.interfaceAudioVol = v;
     else if (field == "interfaceAmbienceVol") s.interfaceAmbienceVol = v;
+    else if (field == "metadataPanelWidth") s.metadataPanelWidth = v;
+    else if (field == "metadataPanelHeight") s.metadataPanelHeight = v;
+    else if (field == "metadataPanelAlpha") s.metadataPanelAlpha = v;
+    else if (field == "arrowHintWidth") s.arrowHintWidth = v;
+    else if (field == "arrowHintHeight") s.arrowHintHeight = v;
+    else if (field == "arrowThickness") s.arrowThickness = v;
+    else if (field == "arrowAlpha") s.arrowAlpha = v;
+    else if (field == "arrowGlow") s.arrowGlow = v;
+    else if (field == "scrollbarWidth") s.scrollbarWidth = v;
+    else if (field == "scrollbarHeight") s.scrollbarHeight = v;
+    else if (field == "scrollbarLength") s.scrollbarLength = v;
     else LOG_ERROR("ConfigSchema: Unknown float field: " << field);
 }
 
@@ -539,6 +612,8 @@ void ConfigSchema::parseBool(Settings& s, const std::string& val, const std::str
     else if (field == "tableMusicMute") s.tableMusicMute = v;
     else if (field == "interfaceAudioMute") s.interfaceAudioMute = v;
     else if (field == "interfaceAmbienceMute") s.interfaceAmbienceMute = v;
+    else if (field == "showArrowHint") s.showArrowHint = v;
+    else if (field == "showScrollbar") s.showScrollbar = v;
     else LOG_ERROR("ConfigSchema: Unknown bool field: " << field);
 }
 
@@ -551,6 +626,11 @@ void ConfigSchema::parseSDLColor(Settings& s, const std::string& val, const std:
     sscanf(val.c_str(), "%hhu,%hhu,%hhu,%hhu", &color.r, &color.g, &color.b, &color.a);
     if (field == "fontColor") s.fontColor = color;
     else if (field == "fontBgColor") s.fontBgColor = color;
+    else if (field == "arrowGlowColor") s.arrowGlowColor = color;
+    else if (field == "arrowColorTop") s.arrowColorTop = color;
+    else if (field == "arrowColorBottom") s.arrowColorBottom = color;
+    else if (field == "scrollbarColor") s.scrollbarColor = color;
+    else if (field == "scrollbarThumbColor") s.scrollbarThumbColor = color;
     else LOG_ERROR("ConfigSchema: Unknown SDL_Color field: " << field);
 }
 
