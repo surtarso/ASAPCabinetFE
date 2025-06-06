@@ -47,7 +47,7 @@ namespace ScrollbarSettings {
     bool SHOW_SCROLLBAR() { return settings ? settings->showScrollbar : true; }
     float WIDTH() { return settings ? settings->scrollbarWidth : 12.0f; }
     float PADDING() { return settings ? 15.0f : 15.0f; } // Static for now
-    float THUMB_MIN_HEIGHT() { return settings ? settings->scrollbarHeight : 20.0f; }
+    float THUMB_MIN_HEIGHT() { return settings ? settings->thumbWidth : 20.0f; }
     float LENGTH_FACTOR() { return settings ? settings->scrollbarLength : 0.5f; }
     ImU32 BACKGROUND_COLOR() {
         return settings ? IM_COL32(settings->scrollbarColor.r, settings->scrollbarColor.g,

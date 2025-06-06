@@ -308,9 +308,9 @@ ConfigSchema::ConfigSchema() {
         {"scrollbarWidth", "UIWidgets", "ScrollbarWidth", 12.0f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarWidth"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarWidth"); }},
-        {"scrollbarHeight", "UIWidgets", "ScrollbarHeight", 15.0f, Type::Float, false, PostProcess::None,
-         [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarHeight"); },
-         [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarHeight"); }},
+        {"thumbWidth", "UIWidgets", "ThumbWidth", 15.0f, Type::Float, false, PostProcess::None,
+         [this](Settings& s, const std::string& val) { parseFloat(s, val, "thumbWidth"); },
+         [this](Settings& s, const auto& val) { defaultFloat(s, val, "thumbWidth"); }},
         {"scrollbarLength", "UIWidgets", "ScrollbarLength", 0.5f, Type::Float, false, PostProcess::None,
          [this](Settings& s, const std::string& val) { parseFloat(s, val, "scrollbarLength"); },
          [this](Settings& s, const auto& val) { defaultFloat(s, val, "scrollbarLength"); }},
@@ -585,7 +585,7 @@ void ConfigSchema::parseFloat(Settings& s, const std::string& val, const std::st
     else if (field == "arrowAlpha") s.arrowAlpha = v;
     else if (field == "arrowGlow") s.arrowGlow = v;
     else if (field == "scrollbarWidth") s.scrollbarWidth = v;
-    else if (field == "scrollbarHeight") s.scrollbarHeight = v;
+    else if (field == "thumbWidth") s.thumbWidth = v;
     else if (field == "scrollbarLength") s.scrollbarLength = v;
     else LOG_ERROR("ConfigSchema: Unknown float field: " << field);
 }

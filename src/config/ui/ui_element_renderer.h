@@ -242,6 +242,7 @@ namespace UIElementRenderer {
     void renderAudioMuteButton(const std::string& key, std::string& value, bool& hasChanges, const std::string& section);
     void renderWheelTitleWindowDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section);
     void renderTitleSortDropdown([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges,[[maybe_unused]] const std::string& section);
+    void renderSliderFloat([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, float min, float max);
 }
 
 #endif // UI_ELEMENT_RENDERER_H

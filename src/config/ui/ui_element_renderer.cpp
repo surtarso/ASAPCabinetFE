@@ -209,6 +209,22 @@ void renderSliderInt([[maybe_unused]] const std::string& key, std::string& value
     }
 }
 
+void renderSliderFloat([[maybe_unused]] const std::string& key, std::string& value, bool& hasChanges, [[maybe_unused]] const std::string& section, float min, float max) {
+    float floatValue = 0.0f;
+    try {
+        floatValue = std::stof(value);
+    } catch (...) {
+        LOG_ERROR("UiElementRenderer: Invalid float value: " << value << ", defaulting to " << (min + (max - min) / 2.0f));
+        floatValue = min + (max - min) / 2.0f;
+    }
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::SliderFloat("##sliderFloat", &floatValue, min, max, "%.3f")) {
+        value = std::to_string(floatValue);
+        hasChanges = true;
+        LOG_DEBUG("UiElementRenderer::renderSliderFloat: " << section << "." << key << " = " << value);
+    }
+}
+
 // Helper function to snap rotation to valid values (0, ±90, ±180, ±270, ±360)
 static int snapRotation(int value) {
     // Valid rotation values

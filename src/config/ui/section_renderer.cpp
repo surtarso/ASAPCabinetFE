@@ -13,25 +13,20 @@ SectionRenderer::SectionRenderer(IConfigService* configService, std::string& cur
 
 void SectionRenderer::initializeKeyRenderers() {
     using namespace UIElementRenderer;
-    keyRenderers_["FontColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["FontBgColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["FontPath"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderFontPath(key, value, hasChanges_, currentSection_, availableFonts_);
-    };
+    // checkboxes
     keyRenderers_["EnableDpiScaling"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DpiScale"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderDpiScale(key, value, hasChanges_, currentSection_, section);
     };
     keyRenderers_["ShowWheel"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["ShowTitle"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ShowArrowHint"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ShowScrollbar"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
     keyRenderers_["ShowBackglass"] = [this](const std::string& key, std::string& value, SettingsSection&) {
@@ -43,9 +38,6 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ShowTopper"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderMetadataCheckbox(key, value, hasChanges_, currentSection_, configService_);
-    };
     keyRenderers_["FetchVPSdb"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
@@ -55,18 +47,89 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["ForceImagesOnly"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderCheckbox(key, value, hasChanges_, currentSection_);
     };
+    keyRenderers_["UseVPinballXIni"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderCheckbox(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderMetadataCheckbox(key, value, hasChanges_, currentSection_, configService_);
+    };
+    // rotation sliders
+    keyRenderers_["BackglassRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["PlayfieldRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["TopperRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
+    };
+    // color pickers
+    keyRenderers_["FontColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["FontBgColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ArrowGlowColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ArrowColorTop"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ArrowColorBottom"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ScrollbarColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["ScrollbarThumbColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderColorPicker(key, value, hasChanges_, currentSection_);
+    };
+    // int sliders
     keyRenderers_["FontSize"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
     };
     keyRenderers_["ScreenshotWait"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderSliderInt(key, value, hasChanges_, currentSection_, 1, 40);
     };
-    keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);
+    // float sliders
+    keyRenderers_["MetadataPanelWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
     };
-    keyRenderers_["UseVPinballXIni"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
+    keyRenderers_["MetadataPanelHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
     };
+    keyRenderers_["MetadataPanelAlpha"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
+    };
+    keyRenderers_["ArrowHintWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 500.0f);
+    };
+    keyRenderers_["ArrowHintHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 500.0f);
+    };
+    keyRenderers_["ArrowThickness"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
+    };
+    keyRenderers_["ArrowAlpha"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
+    };
+    keyRenderers_["ArrowGlow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 100.0f);
+    };
+    keyRenderers_["ScrollbarWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
+    };
+    keyRenderers_["ThumbWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
+    };
+    keyRenderers_["ScrollbarLength"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
+    };
+    // resolution
     keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
@@ -78,9 +141,6 @@ void SectionRenderer::initializeKeyRenderers() {
     };
     keyRenderers_["PlayfieldMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["PlayfieldRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
     keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
@@ -94,9 +154,6 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["BackglassMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["BackglassRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
     keyRenderers_["DMDWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
@@ -108,9 +165,6 @@ void SectionRenderer::initializeKeyRenderers() {
     };
     keyRenderers_["DMDMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
     };
     keyRenderers_["TopperWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
@@ -124,12 +178,7 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["TopperMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderResolution(key, value, hasChanges_, currentSection_);
     };
-    keyRenderers_["TopperRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
-    keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
-    };
+    // audio mute
     keyRenderers_["MediaAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
@@ -145,6 +194,7 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["MasterMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderAudioMuteButton(key, value, hasChanges_, currentSection_);
     };
+    // volume scales
     keyRenderers_["MediaAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
     };
@@ -160,6 +210,13 @@ void SectionRenderer::initializeKeyRenderers() {
     keyRenderers_["MasterVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
         renderVolumeScale(key, value, hasChanges_, currentSection_, section);
     };
+    // dropdowns
+    keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
+    };
+    keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);
+    };
     keyRenderers_["TitleWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
     };
@@ -168,6 +225,13 @@ void SectionRenderer::initializeKeyRenderers() {
     };
     keyRenderers_["TitleSortBy"] = [this](const std::string& key, std::string& value, SettingsSection&) {
         renderTitleSortDropdown(key, value, hasChanges_, currentSection_);
+    };
+    // misc
+    keyRenderers_["FontPath"] = [this](const std::string& key, std::string& value, SettingsSection&) {
+        renderFontPath(key, value, hasChanges_, currentSection_, availableFonts_);
+    };
+    keyRenderers_["DpiScale"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
+        renderDpiScale(key, value, hasChanges_, currentSection_, section);
     };
 }
 

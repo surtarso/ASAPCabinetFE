@@ -90,7 +90,7 @@ struct Settings {
 
     bool showScrollbar;
     float scrollbarWidth;
-    float scrollbarHeight;
+    float thumbWidth;
     float scrollbarLength;
     SDL_Color scrollbarColor;
     SDL_Color scrollbarThumbColor;
