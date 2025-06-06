@@ -9,14 +9,14 @@ FIX:
 - refactor the monoliths...
 
 QOL:
-- Reset current section to default button
+- add button to reset current config ui section to default 
 - auto disable vpsdb and/or full rescan after a full rescan
 - thread vps parser!
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
 UI:
-- properly render uiwidgets section elements
+- use reasonable values on uiwidgets section elements
 - overall polish on config ui (imgui)
 - show a couple of prev/next table wheels?
 
