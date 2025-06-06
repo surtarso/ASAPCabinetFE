@@ -37,7 +37,7 @@ void LoadingScreen::render() {
     ImGui::Text("ASAPCabinetFE tables are now loading.");
     ImGui::NewLine();
 
-    // Overall Progress Bar with Fade Animation (Deep Blue - Nebula)
+    // Overall Progress Bar with Fade Animation (Blue)
     float overallProgress = 0.0f;
     if (loadingProgress_->totalStages > 0) {
         overallProgress = (float)loadingProgress_->currentStage / loadingProgress_->totalStages;
@@ -57,7 +57,7 @@ void LoadingScreen::render() {
     std::string progressText = loadingProgress_->currentTask + " (" + std::to_string(loadingProgress_->currentTablesLoaded) + ")";
     ImGui::Text("%s", progressText.c_str());
 
-    // Per-Table Progress Bar (Purple - Galaxy Core)
+    // Per-Table Progress Bar (Purple)
     float tableProgress = 0.0f;
     if (loadingProgress_->totalTablesToLoad > 0) {
         tableProgress = (float)loadingProgress_->currentTablesLoaded / loadingProgress_->totalTablesToLoad;
@@ -66,7 +66,7 @@ void LoadingScreen::render() {
     ImGui::ProgressBar(tableProgress, ImVec2(-1, 0));
     ImGui::PopStyleColor();
 
-    // Matched Progress Bar (Pinkish-White - Star Glow)
+    // Matched Progress Bar (Pink)
     float matchedProgress = 0.0f;
     if (loadingProgress_->totalTablesToLoad > 0) {
         matchedProgress = (float)loadingProgress_->numMatched / loadingProgress_->totalTablesToLoad;

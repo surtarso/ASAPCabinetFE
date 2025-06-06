@@ -24,26 +24,8 @@ void ConfigService::loadConfig() {
         fileHandler_.writeConfig(iniData_);
     }
 
-    // Store original showMetadata value to detect changes
-    // bool originalShowMetadata = false;
-    // auto titleDisplayIt = iniData_.find("TitleDisplay");
-    // if (titleDisplayIt != iniData_.end() && titleDisplayIt->second.keyValues.size() > 0) {
-    //     auto it = std::find_if(titleDisplayIt->second.keyValues.begin(),
-    //                            titleDisplayIt->second.keyValues.end(),
-    //                            [](const auto& pair) { return pair.first == "ShowMetadata"; });
-    //     if (it != titleDisplayIt->second.keyValues.end()) {
-    //         originalShowMetadata = (it->second == "true");
-    //     }
-    // }
-
     parser_.parse(iniData_, settings_, keybindManager_);
     // LOG_INFO("ConfigService: Config loaded from " << configPath_);
-
-    // // Check if showMetadata was changed due to titleSource == "filename"
-    // if (settings_.titleSource == "filename" && originalShowMetadata && !settings_.showMetadata) {
-    //     fileHandler_.writeConfig(iniData_);
-    //     LOG_INFO("ConfigService: Updated config.ini to reflect showMetadata=false due to titleSource=filename");
-    // }
 
     // Apply VPinballX.ini settings if enabled
     if (settings_.useVPinballXIni) {

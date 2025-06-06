@@ -298,7 +298,6 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
         auto& section = iniData[currentSection_];
         hasChanges_ = false; // Reset changes flag for this section
 
-        // --- IMPORTANT CHANGE STARTS HERE ---
         if (currentSection_ == "AudioSettings") {
             // If the current section is "AudioSettings", render the custom mixer
             // The dummy key/value are needed because renderAudioSettingsMixer has a signature
@@ -344,7 +343,6 @@ void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>
                 ImGui::PopID();
             }
         }
-        // --- IMPORTANT CHANGE ENDS HERE ---
     }
     ImGui::PopStyleVar();
     ImGui::EndChild();

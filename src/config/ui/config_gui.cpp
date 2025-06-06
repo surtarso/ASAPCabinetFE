@@ -57,18 +57,6 @@ void ConfigUI::drawGUI() {
     renderSectionsPane();
     ImGui::SameLine();
     renderKeyValuesPane();
-
-    // // Apply audio settings changes in real-time
-    // if (state_.hasChanges && state_.currentSection == "AudioSettings" && appCallbacks_) {
-    //     ISoundManager* soundManager = appCallbacks_->getSoundManager();
-    //     if (soundManager) {
-    //         soundManager->updateSettings(configService_->getSettings());
-    //         LOG_DEBUG("ConfigUI: AudioSettings changed, updated ISoundManager in real-time");
-    //     } else {
-    //         LOG_ERROR("ConfigUI: Failed to get ISoundManager from appCallbacks_");
-    //     }
-    // }
-
     renderButtonPane();
 
     if (inputHandler_.isCapturingKey()) {
@@ -112,12 +100,9 @@ std::vector<std::string> ConfigUI::getVisibleSections() const {
         "Keybinds", "AudioSettings", "UISounds", "DefaultMedia", "Internal", "Table Overrides"
     };
     std::vector<std::string> visibleSections;
+    // show only VPX section on 1st run.
     for (const auto& section : sectionOrder) {
         if (standaloneMode_ && section != "VPX") continue;
-// FREEEEEDOOOOMMMMMM!!!!! =P
-// #ifndef DEBUG_LOGGING
-//         if (section == "Internal" || section == "UISounds" || section == "DefaultMedia") continue;
-// #endif
         visibleSections.push_back(section);
     }
     return visibleSections;

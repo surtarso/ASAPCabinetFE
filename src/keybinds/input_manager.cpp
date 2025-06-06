@@ -5,7 +5,7 @@
 #include "imgui_impl_sdl2.h" // Required for ImGui_ImplSDL2_ProcessEvent
 #include <iostream>
 #include <random>
-#include <SDL.h> // Ensure SDL.h is included for SDL_GetTicks() and SDL_Event
+#include <SDL.h> // For SDL_GetTicks() and SDL_Event
 
 InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
@@ -284,9 +284,6 @@ void InputManager::registerActions() {
         } else {
             soundManager_->playCustomLaunch(tables_->at(*currentIndex_).launchAudio);
         }
-        //keep ambience on background while playing
-        //TODO: this should be optional.
-        //soundManager_->playAmbienceMusic(settings.ambienceSound);
 
         //int result = std::system(command.c_str()); // This call blocks until VPX exits
         int result = std::system((command + " > /dev/null 2>&1").c_str());

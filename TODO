@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- 1st run cannot create config.ini from scratch if deleted.
 - table match count not reseting after a full scan.(loading screen)
 - name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
@@ -8,6 +9,7 @@ FIX:
 - refactor the monoliths...
 
 QOL:
+- Reset current section to default button
 - auto disable vpsdb and/or full rescan after a full rescan
 - thread vps parser!
 - make windows naturally draggable with mouse hold
@@ -32,3 +34,6 @@ Later:
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
 - adapt to be crossplatform?
+
+SANITY:
+- RE-DO ENTIRE Config/ folder pretty much. WHAT A MESS!
