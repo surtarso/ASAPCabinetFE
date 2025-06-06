@@ -49,8 +49,8 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - Use `VPinballX.ini` for size and position auto-configuration.
 - Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata.
 - Enrich metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
-- Navigate tables with titles and/or wheels and marquees.
 - Sort tables by title, type, manufacturer, year or author. (requires metadata)
+- Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
