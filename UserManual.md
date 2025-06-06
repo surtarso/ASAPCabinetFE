@@ -96,10 +96,12 @@ Place your media files directly into the respective table's folder using these s
   - Wheel image: `images/wheel.png`
   - Playfield image: `images/table.png`
   - Backglass image: `images/backglass.png`
-  - DMD image: `images/marquee.png`
+  - DMD image: `images/dmd.png`
+  - Topper image: `images/topper.png`
   - Playfield video: `video/table.mp4`
   - Backglass video: `video/backglass.mp4`
   - DMD video: `video/dmd.mp4`
+  - Topper video: `images/topper.mp4`
   - Table music: `audio/music.mp3`
     
 The next time you scroll to a table, your custom media will appear. If you don't add anything, the app will use its default previews, which you can also customize in the configuration menu.
@@ -155,12 +157,16 @@ Here’s a glimpse of what you can tweak:
   - **Window Layout**: Adjust the position and size of the playfield, backglass, or DMD windows.
   - **Media Layout**: Control the position and size of media elements within their respective windows.
   - **Title Layout**: Place the wheel image and table title anywhere you like, or hide them entirely.
+  - **Overlay Widgets**: Adjust or remove any on-screen overlay item.
   - **Sound Levels**: Independently adjust the volume for preview videos, table music, app sounds, and background music.
   - **Controls**: Customize the keyboard keys for various actions, and configure joystick support.
   - **Display**: Increase DPI scaling if elements appear too small on your screen.
 
 >[!IMPORTANT]
 >To use **metadata** you need to download and run [`vpxtool`](https://github.com/francisdb/vpxtool) to create `vpxtool_index.json` in your tables folder.
+
+>[!NOTE]
+>For **complete metadata** from the _Visual Pinball Spreadsheet_ API, you need the initial metadata extracted from the files by `vpxtool`.
 
 ### Saving Your Changes
 
@@ -206,19 +212,25 @@ You can find all these sound options within the “Audio Settings” section of 
 
 ### No Tables Show Up
 
-Ensure your VPX tables are located in the correct directory as configured in the app (check the “Table Path” setting in the config menu). The app requires `.vpx` files to display a table list.
+Ensure your VPX tables are located in the correct directory as configured in the app (check the “Table Path” setting in the config menu). The app requires `.vpx` files to display a table list. Change the title source to 'filename' and force a rebuild to make sure _ASAPCab_ can see your files.
 
 ### Screenshots/Videos Aren’t Saving
 
-Verify that the table's media folders (e.g., `images/`, `video/`) have the necessary write permissions to save new files.
+Verify that the table's media folders (e.g., `images/`, `video/`) have the necessary write permissions to save new files. Try the external shell script tool.
 
 ### No Sound
 
-Open the configuration menu (press **C**), go to “Audio Settings,” and check that nothing is muted or set too low.
+Open the configuration menu (press **C**), go to “Audio Settings,” and check that nothing is muted or set too low. Table media sounds may differ when using other video backends.
 
 ### Videos Are Choppy Or Weird
 
 Try changing the video backend setting in the configuration menu to one that might be better suited for your system.
+
+### Tables are not launching
+
+The VPinballX binary logs will be redirected to the log folder.
+
+**Please redirect VPX launching issues with logging information to the [VPinballX maintainers](https://github.com/vpinball/vpinball/issues/)** as I am also myself a mere user of the VPinballX engine.
 
 >[!NOTE]
 > Still encountering issues? Check the [project's discussion page](https://github.com/surtarso/ASAPCabinetFE/discussions) for solutions or open an [issue](https://github.com/surtarso/ASAPCabinetFE/issues) on the [project's repository](https://github.com/surtarso/ASAPCabinetFE) for assistance.
