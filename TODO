@@ -1,21 +1,25 @@
 TODO
 
 FIX:
+- table match count not reseting after a full scan.(loading screen)
 - name parsing should fallback to filename with bad match
-- small static gstreamer leak
+- small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - refactor the monoliths...
 
 QOL:
+- auto disable vpsdb and/or full rescan after a full rescan
 - thread vps parser!
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
 UI:
+- properly render uiwidgets section elements
 - overall polish on config ui (imgui)
 - show a couple of prev/next table wheels?
 
 On hold:
+- review the entire config class and save/load pipeline (messsss)
 - abstract linux commands with an interface for crossplat later
 - use json instead of memory for standart info
 - attract mode (random table on a timer if idle) (optional)
