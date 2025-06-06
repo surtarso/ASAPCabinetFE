@@ -87,47 +87,135 @@ void InputManager::registerActions() {
 
     actionHandlers_["JumpPrevLetter"] = [this]() {
         LOG_DEBUG("InputManager: Jump previous letter triggered");
-        char currentChar = tables_->at(*currentIndex_).title[0];
-        char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
-        auto it = letterIndex_.find(key);
-        if (it != letterIndex_.begin()) {
-            auto prevIt = std::prev(it);
-            size_t newIndex = prevIt->second;
-            if (newIndex != *currentIndex_) {
-                assets_->loadTableAssets(newIndex, *tables_);
-                *currentIndex_ = newIndex;
-                soundManager_->playUISound("scroll_jump_prev");
+        if (!tables_ || tables_->empty() || !currentIndex_) {
+            LOG_ERROR("InputManager: Invalid tables or currentIndex for JumpPrevLetter");
+            return;
+        }
+
+        size_t currentIdx = *currentIndex_;
+        if (currentIdx >= tables_->size()) {
+            LOG_ERROR("InputManager: currentIndex " << currentIdx << " out of range (size=" << tables_->size() << ")");
+            return;
+        }
+
+        std::string currentTitle = tables_->at(currentIdx).title;
+        if (currentTitle.empty()) {
+            LOG_ERROR("InputManager: Empty title at index " << currentIdx);
+            return;
+        }
+
+        char currentChar = currentTitle[0];
+        char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? std::toupper(currentChar) : '\0';
+        if (currentKey == '\0') {
+            LOG_ERROR("InputManager: Invalid first character in title: " << currentTitle);
+            return;
+        }
+
+        size_t newIndex = currentIdx;
+        bool found = false;
+
+        // Scan backward for a different letter
+        for (size_t i = currentIdx; i > 0; --i) {
+            size_t idx = i - 1;
+            std::string title = tables_->at(idx).title;
+            if (title.empty()) continue;
+            char c = title[0];
+            char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+            if (key != '\0' && key < currentKey) {
+                newIndex = idx;
+                found = true;
+                break;
             }
+        }
+
+        // Wrap to the highest letter if no previous letter found
+        if (!found) {
+            for (size_t i = tables_->size(); i > 0; --i) {
+                size_t idx = i - 1;
+                std::string title = tables_->at(idx).title;
+                if (title.empty()) continue;
+                char c = title[0];
+                char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+                if (key != '\0') {
+                    newIndex = idx;
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (found && newIndex != currentIdx) {
+            assets_->loadTableAssets(newIndex, *tables_);
+            *currentIndex_ = newIndex;
+            soundManager_->playUISound("scroll_jump_prev");
         } else {
-            auto lastIt = std::prev(letterIndex_.end());
-            size_t newIndex = lastIt->second;
-            if (newIndex != *currentIndex_) {
-                assets_->loadTableAssets(newIndex, *tables_);
-                *currentIndex_ = newIndex;
-                soundManager_->playUISound("scroll_jump_prev");
-            }
+            LOG_DEBUG("InputManager: No previous letter found for key " << currentKey);
         }
     };
 
     actionHandlers_["JumpNextLetter"] = [this]() {
         LOG_DEBUG("InputManager: Jump next letter triggered");
-        char currentChar = tables_->at(*currentIndex_).title[0];
-        char key = std::isalpha(currentChar) ? std::toupper(currentChar) : currentChar;
-        auto it = letterIndex_.find(key);
-        if (it != letterIndex_.end() && std::next(it) != letterIndex_.end()) {
-            size_t newIndex = std::next(it)->second;
-            if (newIndex != *currentIndex_) {
-                assets_->loadTableAssets(newIndex, *tables_);
-                *currentIndex_ = newIndex;
-                soundManager_->playUISound("scroll_jump_next");
+        if (!tables_ || tables_->empty() || !currentIndex_) {
+            LOG_ERROR("InputManager: Invalid tables or currentIndex for JumpNextLetter");
+            return;
+        }
+
+        size_t currentIdx = *currentIndex_;
+        if (currentIdx >= tables_->size()) {
+            LOG_ERROR("InputManager: currentIndex " << currentIdx << " out of range (size=" << tables_->size() << ")");
+            return;
+        }
+
+        std::string currentTitle = tables_->at(currentIdx).title;
+        if (currentTitle.empty()) {
+            LOG_ERROR("InputManager: Empty title at index " << currentIdx);
+            return;
+        }
+
+        char currentChar = currentTitle[0];
+        char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? std::toupper(currentChar) : '\0';
+        if (currentKey == '\0') {
+            LOG_ERROR("InputManager: Invalid first character in title: " << currentTitle);
+            return;
+        }
+
+        size_t newIndex = currentIdx;
+        bool found = false;
+
+        // Scan forward for a different letter
+        for (size_t i = currentIdx + 1; i < tables_->size(); ++i) {
+            std::string title = tables_->at(i).title;
+            if (title.empty()) continue;
+            char c = title[0];
+            char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+            if (key != '\0' && key > currentKey) {
+                newIndex = i;
+                found = true;
+                break;
             }
+        }
+
+        // Wrap to the lowest letter if no next letter found
+        if (!found) {
+            for (size_t i = 0; i < tables_->size(); ++i) {
+                std::string title = tables_->at(i).title;
+                if (title.empty()) continue;
+                char c = title[0];
+                char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+                if (key != '\0') {
+                    newIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (found && newIndex != currentIdx) {
+            assets_->loadTableAssets(newIndex, *tables_);
+            *currentIndex_ = newIndex;
+            soundManager_->playUISound("scroll_jump_next");
         } else {
-            size_t newIndex = letterIndex_.begin()->second;
-            if (newIndex != *currentIndex_) {
-                assets_->loadTableAssets(newIndex, *tables_);
-                *currentIndex_ = newIndex;
-                soundManager_->playUISound("scroll_jump_next");
-            }
+            LOG_DEBUG("InputManager: No next letter found for key " << currentKey);
         }
     };
 

@@ -236,7 +236,7 @@ bool VideoDecoder::decodeVideoFrame() {
                     sws_scale(swsContext_, videoFrame_->data, videoFrame_->linesize, 0, videoCodecContext_->height,
                               rgbFrame_->data, rgbFrame_->linesize);
                     invalidFrameSkipCount = 0;
-                    LOG_DEBUG("VideoDecoder: Valid frame decoded (width=" << videoFrame_->width << ", height=" << videoFrame_->height << ").");
+                    // LOG_DEBUG("VideoDecoder: Valid frame decoded (width=" << videoFrame_->width << ", height=" << videoFrame_->height << ").");
                     return true;
                 } else {
                     if (videoClock_ < 1.0 && invalidFrameSkipCount < maxSkipFrames) {

@@ -233,7 +233,7 @@ void PlayfieldOverlay::renderScrollbar() {
 
 void PlayfieldOverlay::renderMetadataPanel() {
     if (!tables_ || tables_->empty() || *currentIndex_ >= tables_->size()) {
-        LOG_DEBUG("PlayfieldOverlay: No table data to display in metadata panel");
+        // LOG_DEBUG("PlayfieldOverlay: No table data to display in metadata panel");
         return;
     }
 

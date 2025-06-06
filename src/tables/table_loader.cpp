@@ -110,12 +110,14 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
 }
 
 void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& sortBy, LoadingProgress* progress) {
-    if (tables.empty()) return;
+    if (tables.empty()) {
+        LOG_DEBUG("TableLoader: No tables to sort");
+        return;
+    }
 
     // Sort based on the selected criterion
     if (sortBy == "author") {
         std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            // Prefer vpsAuthors, fallback to authorName if empty
             std::string aAuthor = a.vpsAuthors.empty() ? a.authorName : a.vpsAuthors;
             std::string bAuthor = b.vpsAuthors.empty() ? b.authorName : b.vpsAuthors;
             return aAuthor < bAuthor;
@@ -145,12 +147,22 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
     }
     letterIndex.clear();
     for (size_t i = 0; i < tables.size(); ++i) {
+        if (tables[i].title.empty()) {
+            LOG_DEBUG("TableLoader: Empty title at index " << i);
+            continue;
+        }
         char firstChar = tables[i].title[0];
         if (std::isdigit(firstChar) || std::isalpha(firstChar)) {
             char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
             if (letterIndex.find(key) == letterIndex.end()) {
                 letterIndex[key] = static_cast<int>(i); // Assign index of first occurrence
+                LOG_DEBUG("TableLoader: Added letter index: " << key << " -> " << i);
             }
+        } else {
+            LOG_DEBUG("TableLoader: Invalid first character in title: " << tables[i].title << " at index " << i);
         }
+    }
+    if (letterIndex.empty()) {
+        LOG_ERROR("TableLoader: Letter index is empty after building");
     }
 }
