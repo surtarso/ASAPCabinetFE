@@ -4,7 +4,6 @@ FIX:
 - name parsing should fallback to filename with bad match
 - small static gstreamer leak
 - ffmpeg volume slider has incorrect values (too narrow range)
-- ffmpeg player video looping takes too long to start
 - refactor the monoliths...
 
 QOL:

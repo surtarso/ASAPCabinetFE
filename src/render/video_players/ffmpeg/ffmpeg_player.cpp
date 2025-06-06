@@ -120,11 +120,28 @@ void FFmpegPlayer::seekToBeginning(int streamIndex) {
             for (unsigned int i = 0; i < formatContext_->nb_streams; ++i) {
                 if (formatContext_->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ||
                     formatContext_->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-                    av_seek_frame(formatContext_, i, 0, AVSEEK_FLAG_BACKWARD);
+                    int ret = avformat_seek_file(formatContext_, i, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_BACKWARD);
+                    if (ret < 0) {
+                        char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                        av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                        LOG_ERROR("FFmpegPlayer: Seek failed for stream " << i << ": " << err_buf << ".");
+                    }
                 }
             }
         } else {
-            av_seek_frame(formatContext_, targetStream, 0, AVSEEK_FLAG_BACKWARD);
+            int ret = avformat_seek_file(formatContext_, targetStream, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_BACKWARD);
+            if (ret < 0) {
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                LOG_ERROR("FFmpegPlayer: Seek failed for stream " << targetStream << ": " << err_buf << ".");
+            }
+        }
+        avformat_flush(formatContext_);
+        if (videoDecoder_) {
+            videoDecoder_->flush();
+        }
+        if (audioDecoder_) {
+            audioDecoder_->flush();
         }
     }
 }

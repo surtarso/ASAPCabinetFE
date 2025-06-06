@@ -31,7 +31,7 @@ bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer,
         }
     }
     if (videoStreamIndex_ == -1) {
-        LOG_INFO("VideoDecoder: No video stream found.");
+        LOG_ERROR("VideoDecoder: No video stream found.");
         return false;
     }
 
@@ -54,6 +54,10 @@ bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer,
         cleanup();
         return false;
     }
+
+    // Enable error concealment for robust decoding
+    videoCodecContext_->flags |= AV_CODEC_FLAG_OUTPUT_CORRUPT;
+    videoCodecContext_->err_recognition = AV_EF_EXPLODE | AV_EF_COMPLIANT | AV_EF_CRCCHECK;
 
     if (avcodec_open2(videoCodecContext_, videoCodec, nullptr) < 0) {
         LOG_ERROR("VideoDecoder: Failed to open video codec.");
@@ -135,15 +139,30 @@ void VideoDecoder::update() {
     auto currentTime = std::chrono::high_resolution_clock::now();
     double elapsedPlaybackTime = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - playbackStartTime_).count();
 
-    if (videoClock_ <= elapsedPlaybackTime || needsReset_) {
+    // Use PTS difference for timing, fallback to frame rate
+    double frameDelay = 1.0 / av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->r_frame_rate);
+    if (videoClock_ <= elapsedPlaybackTime) {
         if (decodeVideoFrame()) {
-            videoClock_ = videoFrame_->pts * av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
-            if (videoClock_ < 0) videoClock_ = 0;
+            double nextVideoClock = videoFrame_->pts * av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+            if (nextVideoClock < videoClock_ || nextVideoClock < 0) {
+                // Invalid PTS, use frameDelay
+                videoClock_ += frameDelay;
+            } else {
+                videoClock_ = nextVideoClock;
+            }
             updateTexture();
         } else if (needsReset_) {
+            // Seek to beginning and reset timing
             player_->seekToBeginning(videoStreamIndex_);
+            flush(); // Clear codec buffers
             resetPlaybackTimes();
             needsReset_ = false;
+            // Try decoding the first frame
+            if (decodeVideoFrame()) {
+                videoClock_ = videoFrame_->pts * av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+                if (videoClock_ < 0) videoClock_ = frameDelay;
+                updateTexture();
+            }
         }
     }
 }
@@ -153,40 +172,8 @@ SDL_Texture* VideoDecoder::getTexture() const {
 }
 
 bool VideoDecoder::decodeVideoFrame() {
-    if (needsReset_) {
-        if (videoCodecContext_) {
-            avcodec_free_context(&videoCodecContext_);
-        }
-        const AVCodec* videoCodec = avcodec_find_decoder(player_->getFormatContext()->streams[videoStreamIndex_]->codecpar->codec_id);
-        if (!videoCodec) {
-            LOG_ERROR("VideoDecoder: Video codec not found during reset.");
-            return false;
-        }
-        videoCodecContext_ = avcodec_alloc_context3(videoCodec);
-        if (!videoCodecContext_) {
-            LOG_ERROR("VideoDecoder: Failed to re-allocate video codec context during reset.");
-            return false;
-        }
-        if (avcodec_parameters_to_context(videoCodecContext_, player_->getFormatContext()->streams[videoStreamIndex_]->codecpar) < 0) {
-            LOG_ERROR("VideoDecoder: Failed to re-copy video codec parameters during reset.");
-            return false;
-        }
-        if (avcodec_open2(videoCodecContext_, videoCodec, nullptr) < 0) {
-            LOG_ERROR("VideoDecoder: Failed to re-open video codec during reset.");
-            return false;
-        }
-        sws_freeContext(swsContext_);
-        swsContext_ = sws_getContext(
-            videoCodecContext_->width, videoCodecContext_->height, videoCodecContext_->pix_fmt,
-            width_, height_, AV_PIX_FMT_RGB24,
-            SWS_BILINEAR, nullptr, nullptr, nullptr);
-        if (!swsContext_) {
-            LOG_ERROR("VideoDecoder: Failed to re-initialize swscale context during reset.");
-            return false;
-        }
-        needsReset_ = false;
-        LOG_DEBUG("VideoDecoder: Video decoder fully reset.");
-    }
+    static int invalidFrameSkipCount = 0; // Track invalid frames at start
+    const int maxSkipFrames = 3; // Max frames to skip at start
 
     while (player_->isPlaying()) {
         int ret = av_read_frame(player_->getFormatContext(), videoPacket_);
@@ -194,66 +181,73 @@ bool VideoDecoder::decodeVideoFrame() {
             if (ret == AVERROR_EOF) {
                 av_packet_unref(videoPacket_);
                 needsReset_ = true;
+                invalidFrameSkipCount = 0; // Reset on EOF
                 return false;
             }
             char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
             av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
             LOG_ERROR("VideoDecoder: Error reading video packet: " << err_buf << ".");
             av_packet_unref(videoPacket_);
-            return false;
+            continue; // Skip to next packet
         }
 
         if (videoPacket_->stream_index == videoStreamIndex_) {
             ret = avcodec_send_packet(videoCodecContext_, videoPacket_);
-            av_packet_unref(videoPacket_);
             if (ret < 0) {
-                if (ret == AVERROR(EAGAIN)) {
-                    int receive_ret;
-                    while ((receive_ret = avcodec_receive_frame(videoCodecContext_, videoFrame_)) >= 0) {
-                        sws_scale(swsContext_, videoFrame_->data, videoFrame_->linesize, 0, videoCodecContext_->height,
-                                  rgbFrame_->data, rgbFrame_->linesize);
-                        return true;
-                    }
-                    if (receive_ret == AVERROR(EAGAIN)) {
-                        return false;
-                    } else if (receive_ret == AVERROR_EOF) {
-                        needsReset_ = true;
-                        return false;
-                    } else {
-                        char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
-                        av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, receive_ret);
-                        LOG_ERROR("VideoDecoder: Error receiving frame after send_packet EAGAIN: " << err_buf << ".");
-                        return false;
-                    }
-                } else {
-                    char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
-                    av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                    LOG_ERROR("VideoDecoder: Error sending video packet to decoder: " << err_buf << ".");
-                    return false;
-                }
+                char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+                av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+                LOG_ERROR("VideoDecoder: Error sending video packet to decoder: " << err_buf << ".");
+                av_packet_unref(videoPacket_);
+                continue; // Skip to next packet
             }
 
             ret = avcodec_receive_frame(videoCodecContext_, videoFrame_);
+            av_packet_unref(videoPacket_);
             if (ret >= 0) {
-                sws_scale(swsContext_, videoFrame_->data, videoFrame_->linesize, 0, videoCodecContext_->height,
-                          rgbFrame_->data, rgbFrame_->linesize);
-                return true;
-            } else if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                continue;
+                // Validate frame
+                if (videoFrame_->data[0] && videoFrame_->width > 0 && videoFrame_->height > 0 &&
+                    videoFrame_->width <= videoCodecContext_->width && videoFrame_->height <= videoCodecContext_->height &&
+                    videoFrame_->format == videoCodecContext_->pix_fmt) {
+                    sws_scale(swsContext_, videoFrame_->data, videoFrame_->linesize, 0, videoCodecContext_->height,
+                              rgbFrame_->data, rgbFrame_->linesize);
+                    invalidFrameSkipCount = 0; // Reset on valid frame
+                    return true;
+                } else {
+                    if (invalidFrameSkipCount < maxSkipFrames && videoClock_ < 1.0) {
+                        LOG_DEBUG("VideoDecoder: Skipping invalid frame at start (count=" << invalidFrameSkipCount + 1
+                                  << ", width=" << videoFrame_->width << ", height=" << videoFrame_->height
+                                  << ", format=" << videoFrame_->format << ").");
+                        invalidFrameSkipCount++;
+                        continue; // Skip invalid frame at start
+                    }
+                    LOG_ERROR("VideoDecoder: Invalid frame data (width=" << videoFrame_->width << ", height=" << videoFrame_->height
+                              << ", format=" << videoFrame_->format << "). Giving up.");
+                    return false; // Stop after max skips or later in video
+                }
+            } else if (ret == AVERROR(EAGAIN)) {
+                continue; // Need more packets
+            } else if (ret == AVERROR_EOF) {
+                needsReset_ = true;
+                invalidFrameSkipCount = 0; // Reset on EOF
+                return false;
             } else {
                 char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                 av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
                 LOG_ERROR("VideoDecoder: Error receiving video frame from decoder: " << err_buf << ".");
-                return false;
+                continue; // Skip to next frame
             }
+        } else {
+            av_packet_unref(videoPacket_);
         }
-        av_packet_unref(videoPacket_);
     }
+    invalidFrameSkipCount = 0; // Reset on exit
     return false;
 }
-
 void VideoDecoder::updateTexture() {
-    if (!texture_ || !rgbFrame_ || !rgbBuffer_) return;
+    if (!texture_ || !rgbFrame_ || !rgbBuffer_ || !rgbFrame_->data[0] || rgbFrame_->linesize[0] <= 0) {
+        LOG_ERROR("VideoDecoder: Invalid RGB frame data for texture update.");
+        return;
+    }
 
     void* pixels;
     int pitch;
@@ -261,6 +255,10 @@ void VideoDecoder::updateTexture() {
         uint8_t* dst = static_cast<uint8_t*>(pixels);
         const uint8_t* src = rgbBuffer_;
         int bytes_per_pixel_row = width_ * 3;
+        if (rgbFrame_->linesize[0] < bytes_per_pixel_row) {
+            LOG_ERROR("VideoDecoder: Invalid RGB frame linesize (" << rgbFrame_->linesize[0] << ") for texture update.");
+            return;
+        }
         for (int y = 0; y < height_; ++y) {
             memcpy(dst, src, bytes_per_pixel_row);
             dst += pitch;
