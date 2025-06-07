@@ -8,8 +8,9 @@ FOR PR:
 - integrate metadata parsing logic call to config ui
 - add button to reset current config ui section to default
 - use reasonable values on uiwidgets section elements
-- overall polish on config ui (imgui)
 - auto disable vpsdb and/or full rescan after a full rescan
+- organize config ui better, more intuitive (rename etc)
+- integrate tooltips back
 
 -------------------------------------------------------------------
 
