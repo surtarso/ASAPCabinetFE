@@ -121,7 +121,7 @@ std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::
  * @param configPath The file path to the configuration file.
  * @return A unique pointer to a ConfigService instance.
  */
-std::unique_ptr<ConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
+std::unique_ptr<IConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
     auto config = std::make_unique<ConfigService>(configPath);
     return config;
 }

@@ -3,7 +3,7 @@
  * @brief Defines the AsapIndexManager class for managing ASAP index files in ASAPCabinetFE.
  *
  * This header provides the AsapIndexManager class, which implements static methods to
- * load and save table data from/to an ASAP index file (asapcabinetfe_index.json). The
+ * load and save table data from/to an ASAP index file (asapcab_index.json). The
  * manager handles JSON-based serialization and deserialization of TableData, supports
  * progress tracking via LoadingProgress, and is configurable via Settings (e.g., indexPath).
  * The process can be extended with configUI for custom index paths or format options in
@@ -34,7 +34,8 @@ public:
     /**
      * @brief Loads table data from the ASAP index file.
      *
-     * Attempts to read and parse the asapcabinetfe_index.json file specified in
+     * Attempts to read and parse the asapcab_index.json
+ file specified in
      * settings.indexPath, populating the tables vector with TableData objects. If
      * progress is provided, it updates currentTablesLoaded and totalTablesToLoad.
      * The method checks for file existence and JSON validity, returning false on
@@ -51,7 +52,8 @@ public:
      * @brief Saves table data to the ASAP index file.
      *
      * Serializes the provided tables vector into a JSON array and writes it to
-     * asapcabinetfe_index.json at settings.indexPath. If progress is provided, it
+     * asapcab_index.json
+ at settings.indexPath. If progress is provided, it
      * updates currentTablesLoaded and totalTablesToLoad. The method creates parent
      * directories if needed and returns false on I/O or serialization errors.
      * Configurability via settings.indexPath supports custom save locations.

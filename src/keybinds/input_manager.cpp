@@ -492,7 +492,7 @@ void InputManager::handleDoubleClick(const SDL_Event& event) {
             LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
             int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY;
             windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY);
-            settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY);
+            // settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY);
             soundManager_->playUISound("config_save");
             lastClickTimes_.erase(it); // Clear to reset double-click detection
         } else {

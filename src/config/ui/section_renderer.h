@@ -1,110 +1,89 @@
-/**
- * @file section_renderer.h
- * @brief Defines the SectionRenderer class for rendering configuration sections in ASAPCabinetFE.
- *
- * This header provides the SectionRenderer class, which manages the ImGui rendering of
- * configuration sections and key-value pairs. It integrates with IConfigService for
- * settings, InputHandler for input events, and UIElementRenderer for specific UI elements.
- */
-
 #ifndef SECTION_RENDERER_H
 #define SECTION_RENDERER_H
 
-#include "config/iconfig_service.h"
-#include "config/ui/input_handler.h"
-#include "imgui.h"
+#include <json.hpp>
 #include <string>
 #include <vector>
-#include <map>
-#include <functional>
+#include <imgui.h>
+#include "utils/logging.h"
 
 /**
- * @class SectionRenderer
- * @brief Manages ImGui rendering of configuration sections and key-value pairs.
- *
- * This class renders a pane for selecting configuration sections and a pane for editing
- * key-value pairs within the selected section. It uses UIElementRenderer to render
- * specific UI elements and tracks changes to INI data, integrating with IConfigService
- * and InputHandler.
+ * @class ISectionRenderer
+ * @brief Interface for rendering configuration sections in the UI.
  */
-class SectionRenderer {
+class ISectionRenderer {
 public:
-    /**
-     * @brief Constructs a SectionRenderer instance.
-     *
-     * Initializes the renderer with a configuration service, current section reference,
-     * and input handler, and sets up font lists and key renderers.
-     *
-     * @param configService The configuration service for accessing settings.
-     * @param currentSection Reference to the currently selected section name.
-     * @param inputHandler The input handler for capturing user input.
-     */
-    SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler);
+    virtual ~ISectionRenderer() = default;
+    virtual void render(const std::string& sectionName, nlohmann::json& sectionData) = 0;
+};
 
-    /**
-     * @brief Renders the sections selection pane.
-     *
-     * Displays an ImGui pane listing available configuration sections, allowing the
-     * user to select a section.
-     *
-     * @param sectionOrder The ordered list of section names to display.
-     */
-    void renderSectionsPane(const std::vector<std::string>& sectionOrder);
+/**
+ * @class BaseSectionRenderer
+ * @brief Base class providing common rendering utilities for configuration sections.
+ */
+class BaseSectionRenderer : public ISectionRenderer {
+protected:
+    // Render a boolean field
+    void renderBool(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
+        bool val = value.get<bool>();
+        if (ImGui::Checkbox(key.c_str(), &val)) {
+            value = val;
+            LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << val);
+        }
+    }
 
-    /**
-     * @brief Renders the key-value editing pane.
-     *
-     * Displays an ImGui pane for editing key-value pairs in the current section,
-     * using UIElementRenderer for specific UI elements and tracking changes.
-     *
-     * @param iniData The map of section names to SettingsSection objects.
-     * @param hasChanges Reference to flag indicating if changes were made.
-     */
-    void renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData, bool& hasChanges);
+    // Render a float field with a slider
+    void renderFloat(const std::string& key, nlohmann::json& value, const std::string& sectionName,
+                     float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
+        float val = value.get<float>();
+        if (ImGui::SliderFloat(key.c_str(), &val, minVal, maxVal, format)) {
+            value = val;
+            LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << val);
+        }
+    }
 
-private:
-    IConfigService* configService_; ///< Configuration service for accessing settings.
-    std::string& currentSection_;   ///< Reference to the currently selected section name.
-    InputHandler& inputHandler_;    ///< Input handler for capturing user input.
-    std::vector<std::string> availableFonts_; ///< List of available font paths.
-    bool hasChanges_;               ///< Flag indicating if changes were made.
-    std::map<std::string, std::function<void(const std::string&, std::string&, SettingsSection&)>> keyRenderers_; ///< Dispatcher table for key-specific rendering.
+    // Render an integer field
+    void renderInt(const std::string& key, nlohmann::json& value, const std::string& sectionName,
+                   int minVal = 0, int maxVal = 10000) {
+        int val = value.get<int>();
+        if (ImGui::InputInt(key.c_str(), &val, 1, 100)) {
+            val = std::clamp(val, minVal, maxVal);
+            value = val;
+            LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << val);
+        }
+    }
 
-    /**
-     * @brief Renders a tooltip for a configuration key.
-     *
-     * Displays an ImGui tooltip with information about the specified key.
-     *
-     * @param key The configuration key.
-     */
-    void renderTooltip(const std::string& key);
+    // Render a string field
+    void renderString(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
+        std::string val = value.get<std::string>();
+        char buffer[256];
+        strncpy(buffer, val.c_str(), sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
+        if (ImGui::InputText(key.c_str(), buffer, sizeof(buffer))) {
+            value = std::string(buffer);
+            LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << buffer);
+        }
+    }
 
-    /**
-     * @brief Initializes the list of available fonts.
-     *
-     * Populates the availableFonts_ vector with valid font paths.
-     */
-    void initializeFontList();
-
-    /**
-     * @brief Initializes the key renderers dispatcher table.
-     *
-     * Sets up the keyRenderers_ map with functions for rendering specific keys,
-     * using UIElementRenderer.
-     */
-    void initializeKeyRenderers();
-
-    /**
-     * @brief Renders a single key-value pair.
-     *
-     * Displays the UI element for the specified key-value pair using the appropriate
-     * renderer from keyRenderers_, updating the value if changed.
-     *
-     * @param key The configuration key.
-     * @param value The current value.
-     * @param section The SettingsSection containing the key-value pair.
-     */
-    void renderKeyValue(const std::string& key, std::string& value, SettingsSection& section);
+    // Render a color field (RGBA array)
+    void renderColor(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
+        float color[4] = {
+            value[0].get<float>() / 255.0f,
+            value[1].get<float>() / 255.0f,
+            value[2].get<float>() / 255.0f,
+            value[3].get<float>() / 255.0f
+        };
+        if (ImGui::ColorEdit4(key.c_str(), color)) {
+            value = nlohmann::json{
+                static_cast<int>(color[0] * 255.0f),
+                static_cast<int>(color[1] * 255.0f),
+                static_cast<int>(color[2] * 255.0f),
+                static_cast<int>(color[3] * 255.0f)
+            };
+            LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key
+                      << " to [" << value[0] << "," << value[1] << "," << value[2] << "," << value[3] << "]");
+        }
+    }
 };
 
 #endif // SECTION_RENDERER_H

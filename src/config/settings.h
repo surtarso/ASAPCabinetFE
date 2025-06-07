@@ -3,179 +3,758 @@
 
 #include <string>
 #include <SDL2/SDL.h>
+#include <json.hpp>
+#include <unordered_map>
+#include <vector>
+#include <cstdlib>
+#include <filesystem>
 
 struct Settings {
+    // Enum to define reload requirements for settings changes
+    enum class ReloadType {
+        None,           // No reload needed
+        Assets,         // Full table reloads
+        Windows,        // Window reloads
+        Metadata,      // UI widget reloads
+        Audio,          // Audio settings reload
+        Font            // Font for title display reload
+    };
+
+    // Metadata for each setting: field name -> reload type
+    static const std::unordered_map<std::string, ReloadType> settingsMetadata;
+
     // [VPX]
-    std::string VPXTablesPath;
-    std::string VPinballXPath;
-    std::string vpxIniPath;
-    std::string vpxStartArgs;
-    std::string vpxEndArgs;
+    std::string VPXTablesPath = "/home/tarso/Games/VPX_Tables/"; // imguifiledialog
+    std::string VPinballXPath = "/home/tarso/Games/vpinball/build/VPinballX_BGFX"; // imguifiledialog
+    std::string vpxIniPath = ""; // imguifiledialog
+    std::string vpxStartArgs = "";
+    std::string vpxEndArgs = "";
 
     // [DPISettings]
-    float dpiScale = 1.0f;
+    float dpiScale = 1.0f; // 0.1-1.0
     bool enableDpiScaling = true;
 
     // [DefaultMedia]
-    std::string defaultPlayfieldImage;
-    std::string defaultBackglassImage;
-    std::string defaultDmdImage;
-    std::string defaultWheelImage;
-    std::string defaultTopperImage;
-    std::string defaultPlayfieldVideo;
-    std::string defaultBackglassVideo;
-    std::string defaultDmdVideo;
-    std::string defaultTopperVideo;
+    std::string defaultPlayfieldImage = "img/default_table.png";
+    std::string defaultBackglassImage = "img/default_backglass.png";
+    std::string defaultDmdImage = "img/default_dmd.png";
+    std::string defaultWheelImage = "img/default_wheel.png";
+    std::string defaultTopperImage = "img/default_topper.png";
+    std::string defaultPlayfieldVideo = "img/default_table.mp4";
+    std::string defaultBackglassVideo = "img/default_backglass.mp4";
+    std::string defaultDmdVideo = "img/default_dmd.mp4";
+    std::string defaultTopperVideo = "img/default_topper.mp4";
 
     // [CustomMedia]
-    std::string customPlayfieldImage;
-    std::string customBackglassImage;
-    std::string customDmdImage;
-    std::string customWheelImage;
-    std::string customTopperImage;
-    std::string customPlayfieldVideo;
-    std::string customBackglassVideo;
-    std::string customDmdVideo;
-    std::string customTopperVideo;
-    std::string tableMusic;
-    std::string customLaunchSound;
+    std::string customPlayfieldImage = "images/table.png";
+    std::string customBackglassImage = "images/backglass.png";
+    std::string customDmdImage = "images/dmd.png";
+    std::string customWheelImage = "images/wheel.png";
+    std::string customTopperImage = "images/topper.png";
+    std::string customPlayfieldVideo = "video/table.mp4";
+    std::string customBackglassVideo = "video/backglass.mp4";
+    std::string customDmdVideo = "video/dmd.mp4";
+    std::string customTopperVideo = "images/topper.mp4";
+    std::string tableMusic = "audio/music.mp3";
+    std::string customLaunchSound = "audio/launch.mp3";
 
     // [WindowSettings]
-    std::string videoBackend;
-    bool useVPinballXIni;
-    int playfieldWindowWidth;
-    int playfieldWindowHeight;
-    int playfieldX;
-    int playfieldY;
+    std::string videoBackend = "vlc"; // + 'ffmpeg', 'gstreamer', 'novideo'
+    bool useVPinballXIni = true; // use vpx_ini_reader
+    int playfieldWindowWidth = 1080;
+    int playfieldWindowHeight = 1920;
+    int playfieldX = -1;
+    int playfieldY = -1;
 
-    bool showBackglass;
-    int backglassWindowWidth;
-    int backglassWindowHeight;
-    int backglassX;
-    int backglassY;
+    bool showBackglass = true;
+    int backglassWindowWidth = 1024;
+    int backglassWindowHeight = 768;
+    int backglassX = -1;
+    int backglassY = -1;
 
-    bool showDMD;
-    int dmdWindowWidth;
-    int dmdWindowHeight;
-    int dmdX;
-    int dmdY;
+    bool showDMD = true;
+    int dmdWindowWidth = 1024;
+    int dmdWindowHeight = 256;
+    int dmdX = -1;
+    int dmdY = -1;
 
-    bool showTopper;
-    int topperWindowWidth;
-    int topperWindowHeight;
-    int topperWindowX;
-    int topperWindowY;
+    bool showTopper = false;
+    int topperWindowWidth = 512;
+    int topperWindowHeight = 128;
+    int topperWindowX = -1;
+    int topperWindowY = -1;
 
     // [TableMetadata]
-    std::string titleSource;
-    bool fetchVPSdb;
-    bool forceRebuildMetadata;
-    std::string titleSortBy;
-    bool showMetadata;
+    std::string titleSource = "filename"; // + 'metadata'
+    bool fetchVPSdb = false;
+    bool forceRebuildMetadata = false;
+    std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
+    bool showMetadata = false;
 
-    float metadataPanelWidth;
-    float metadataPanelHeight;
-    float metadataPanelAlpha;
+    float metadataPanelWidth = 0.7f; // 0.1-1.0
+    float metadataPanelHeight = 0.5f; // 0.1-1.0
+    float metadataPanelAlpha = 0.6f; // 0.1-1.0
 
     // [UIWidgets]
-    bool showArrowHint;
-    float arrowHintWidth;
-    float arrowHintHeight;
-    float arrowThickness;
-    float arrowAlpha;
-    float arrowGlow;
-    SDL_Color arrowGlowColor;
-    SDL_Color arrowColorTop;
-    SDL_Color arrowColorBottom;
+    bool showArrowHint = true;
+    float arrowHintWidth = 20.0f;
+    float arrowHintHeight = 100.0f;
+    float arrowThickness = 4.0f;
+    float arrowAlpha = 0.6f; // 0.1-1.0
+    float arrowGlow = 1.5f;
+    SDL_Color arrowGlowColor = {200, 200, 200, 255};
+    SDL_Color arrowColorTop = {100, 100, 100, 255};
+    SDL_Color arrowColorBottom = {150, 150, 150, 255};
 
-    bool showScrollbar;
-    float scrollbarWidth;
-    float thumbWidth;
-    float scrollbarLength;
-    SDL_Color scrollbarColor;
-    SDL_Color scrollbarThumbColor;
+    bool showScrollbar = true;
+    float scrollbarWidth = 12.0f;
+    float thumbWidth = 15.0f;
+    float scrollbarLength = 0.5f; // 0.1-1.0
+    SDL_Color scrollbarColor = {50, 50, 50, 200};
+    SDL_Color scrollbarThumbColor = {50, 150, 150, 255};
 
     // [TitleDisplay]
-    bool showWheel;
-    std::string wheelWindow;
-    bool showTitle;
-    std::string titleWindow;
-    std::string fontPath;
-    SDL_Color fontColor;
-    SDL_Color fontBgColor;
-    int fontSize;
-    int titleX;
-    int titleY;
+    bool showWheel = true;
+    std::string wheelWindow = "playfield"; // + 'backglass', 'dmd', 'topper'
+    bool showTitle = true;
+    std::string titleWindow = "playfield"; // + 'backglass', 'dmd', 'topper'
+    std::string fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+    SDL_Color fontColor = {255, 255, 255, 255};
+    SDL_Color fontBgColor = {0, 0, 0, 128};
+    int fontSize = 28; // 1-80
+    int titleX = 30;
+    int titleY = 1850;
 
     // [MediaDimensions]
-    bool forceImagesOnly;
+    bool forceImagesOnly = false;
 
-    int wheelMediaHeight;
-    int wheelMediaWidth;
-    int wheelMediaX;
-    int wheelMediaY;
-    
-    int playfieldMediaWidth;
-    int playfieldMediaHeight;
-    int playfieldMediaX;
-    int playfieldMediaY;
-    int playfieldRotation;
+    int wheelMediaHeight = 350;
+    int wheelMediaWidth = 350;
+    int wheelMediaX = 720;
+    int wheelMediaY = 1550;
 
-    int backglassMediaWidth;
-    int backglassMediaHeight;
-    int backglassMediaX;
-    int backglassMediaY;
-    int backglassRotation;
-    
-    int dmdMediaWidth;
-    int dmdMediaHeight;
-    int dmdMediaX;
-    int dmdMediaY;
-    int dmdRotation;
+    int playfieldMediaWidth = 1080;
+    int playfieldMediaHeight = 1920;
+    int playfieldMediaX = 0;
+    int playfieldMediaY = 0;
+    int playfieldRotation = 0; // 0-90-180-270-360 +/-
 
-    int topperMediaWidth;
-    int topperMediaHeight;
-    int topperMediaX;
-    int topperMediaY;
-    int topperRotation;
+    int backglassMediaWidth = 1024;
+    int backglassMediaHeight = 768;
+    int backglassMediaX = 0;
+    int backglassMediaY = 0;
+    int backglassRotation = 0; // 0-90-180-270-360 +/-
+
+    int dmdMediaWidth = 1024;
+    int dmdMediaHeight = 256;
+    int dmdMediaX = 0;
+    int dmdMediaY = 0;
+    int dmdRotation = 0; // 0-90-180-270-360 +/-
+
+    int topperMediaWidth = 512;
+    int topperMediaHeight = 128;
+    int topperMediaX = 0;
+    int topperMediaY = 0;
+    int topperRotation = 0; // 0-90-180-270-360 +/-
 
     // [AudioSettings]
-    bool masterMute;
-    float masterVol;
-    bool mediaAudioMute;
-    float mediaAudioVol;
-    bool tableMusicMute;
-    float tableMusicVol;
-    bool interfaceAudioMute;
-    float interfaceAudioVol;
-    bool interfaceAmbienceMute;
-    float interfaceAmbienceVol;
+    bool masterMute = false;
+    float masterVol = 100.0f; // 0-100
+    bool mediaAudioMute = false;
+    float mediaAudioVol = 60.0f; // 0-100
+    bool tableMusicMute = false;
+    float tableMusicVol = 60.0f; // 0-100
+    bool interfaceAudioMute = false;
+    float interfaceAudioVol = 60.0f; // 0-100
+    bool interfaceAmbienceMute = false;
+    float interfaceAmbienceVol = 60.0f; // 0-100
 
     // [UiSounds]
-    std::string scrollPrevSound;
-    std::string scrollNextSound;
-    std::string scrollFastPrevSound;
-    std::string scrollFastNextSound;
-    std::string scrollJumpPrevSound;
-    std::string scrollJumpNextSound;
-    std::string scrollRandomSound;
-    std::string launchTableSound;
-    std::string launchScreenshotSound;
-    std::string configToggleSound;
-    std::string configSaveSound;
-    std::string screenshotTakeSound;
-    std::string screenshotQuitSound;
-    std::string ambienceSound;
+    std::string scrollPrevSound = "snd/scroll_prev.mp3";
+    std::string scrollNextSound = "snd/scroll_next.mp3";
+    std::string scrollFastPrevSound = "snd/scroll_fast_prev.mp3";
+    std::string scrollFastNextSound = "snd/scroll_fast_next.mp3";
+    std::string scrollJumpPrevSound = "snd/scroll_jump_prev.mp3";
+    std::string scrollJumpNextSound = "snd/scroll_jump_next.mp3";
+    std::string scrollRandomSound = "snd/scroll_random.mp3";
+    std::string launchTableSound = "snd/launch_table.mp3";
+    std::string launchScreenshotSound = "snd/launch_screenshot.mp3";
+    std::string configToggleSound = "snd/config_toggle.mp3";
+    std::string configSaveSound = "snd/config_save.mp3";
+    std::string screenshotTakeSound = "snd/screenshot_take.mp3";
+    std::string screenshotQuitSound = "snd/screenshot_quit.mp3";
+    std::string ambienceSound = "snd/interface_ambience.mp3";
 
     // [Internal]
-    std::string vpxSubCmd;
-    std::string logFile;
-    std::string vpsDbPath;
-    std::string vpsDbUpdateFrequency;
-    std::string vpsDbLastUpdated;
-    std::string vpxtoolIndex;
-    std::string indexPath;
-    int screenshotWait;
+    std::string vpxSubCmd = "-Play";
+    std::string vpsDbPath = "data/vpsdb.json";
+    std::string vpsDbUpdateFrequency = "startup";
+    std::string vpsDbLastUpdated = "data/vpsdb_last_updated.txt";
+    std::string vpxtoolIndex = "data/vpxtool_index.json";
+    std::string indexPath = "data/asapca_index.json";
+    int screenshotWait = 4; // 0-60
+
+    // Apply post-processing (e.g., DPI scaling, path resolution)
+    void applyPostProcessing(const std::string& exeDir) {
+        // Resolve paths for fields marked with needsPathResolution in config_schema.h
+        std::vector<std::string> pathFields = {
+            "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
+            "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
+            "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo"
+        };
+        for (const auto& field : pathFields) {
+            if (field == "defaultPlayfieldImage") defaultPlayfieldImage = resolvePath(defaultPlayfieldImage, exeDir);
+            else if (field == "defaultBackglassImage") defaultBackglassImage = resolvePath(defaultBackglassImage, exeDir);
+            else if (field == "defaultDmdImage") defaultDmdImage = resolvePath(defaultDmdImage, exeDir);
+            else if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
+            else if (field == "defaultTopperImage") defaultTopperImage = resolvePath(defaultTopperImage, exeDir);
+            else if (field == "defaultPlayfieldVideo") defaultPlayfieldVideo = resolvePath(defaultPlayfieldVideo, exeDir);
+            else if (field == "defaultBackglassVideo") defaultBackglassVideo = resolvePath(defaultBackglassVideo, exeDir);
+            else if (field == "defaultDmdVideo") defaultDmdVideo = resolvePath(defaultDmdVideo, exeDir);
+            else if (field == "defaultTopperVideo") defaultTopperVideo = resolvePath(defaultTopperVideo, exeDir);
+        }
+
+        // Apply DPI scaling to fontSize if enabled
+        if (enableDpiScaling) {
+            fontSize = static_cast<int>(fontSize * dpiScale);
+        }
+    }
+
+private:
+    // Resolve relative paths and environment variables (e.g., $USER)
+    std::string resolvePath(const std::string& value, const std::string& exeDir) const {
+        std::string result = value;
+        // Replace $USER with actual user home directory
+        if (result.find("$USER") != std::string::npos) {
+            const char* home = std::getenv("HOME");
+            if (home) {
+                result.replace(result.find("$USER"), 5, home);
+            }
+        }
+        // Resolve relative paths
+        if (result.empty()) return exeDir + value;
+        if (result[0] == '/' || result[0] == '\\') return result;
+        return exeDir + result;
+    }
+
+    // JSON serialization
+    friend void to_json(nlohmann::json& j, const Settings& s) {
+        j = nlohmann::json{
+            {"VPX", {
+                {"VPXTablesPath", s.VPXTablesPath},
+                {"VPinballXPath", s.VPinballXPath},
+                {"vpxIniPath", s.vpxIniPath},
+                {"vpxStartArgs", s.vpxStartArgs},
+                {"vpxEndArgs", s.vpxEndArgs}
+            }},
+            {"DPISettings", {
+                {"dpiScale", s.dpiScale},
+                {"enableDpiScaling", s.enableDpiScaling}
+            }},
+            {"DefaultMedia", {
+                {"defaultPlayfieldImage", s.defaultPlayfieldImage},
+                {"defaultBackglassImage", s.defaultBackglassImage},
+                {"defaultDmdImage", s.defaultDmdImage},
+                {"defaultWheelImage", s.defaultWheelImage},
+                {"defaultTopperImage", s.defaultTopperImage},
+                {"defaultPlayfieldVideo", s.defaultPlayfieldVideo},
+                {"defaultBackglassVideo", s.defaultBackglassVideo},
+                {"defaultDmdVideo", s.defaultDmdVideo},
+                {"defaultTopperVideo", s.defaultTopperVideo}
+            }},
+            {"CustomMedia", {
+                {"customPlayfieldImage", s.customPlayfieldImage},
+                {"customBackglassImage", s.customBackglassImage},
+                {"customDmdImage", s.customDmdImage},
+                {"customWheelImage", s.customWheelImage},
+                {"customTopperImage", s.customTopperImage},
+                {"customPlayfieldVideo", s.customPlayfieldVideo},
+                {"customBackglassVideo", s.customBackglassVideo},
+                {"customDmdVideo", s.customDmdVideo},
+                {"customTopperVideo", s.customTopperVideo},
+                {"tableMusic", s.tableMusic},
+                {"customLaunchSound", s.customLaunchSound}
+            }},
+            {"WindowSettings", {
+                {"videoBackend", s.videoBackend},
+                {"useVPinballXIni", s.useVPinballXIni},
+                {"playfieldWindowWidth", s.playfieldWindowWidth},
+                {"playfieldWindowHeight", s.playfieldWindowHeight},
+                {"playfieldX", s.playfieldX},
+                {"playfieldY", s.playfieldY},
+                {"showBackglass", s.showBackglass},
+                {"backglassWindowWidth", s.backglassWindowWidth},
+                {"backglassWindowHeight", s.backglassWindowHeight},
+                {"backglassX", s.backglassX},
+                {"backglassY", s.backglassY},
+                {"showDMD", s.showDMD},
+                {"dmdWindowWidth", s.dmdWindowWidth},
+                {"dmdWindowHeight", s.dmdWindowHeight},
+                {"dmdX", s.dmdX},
+                {"dmdY", s.dmdY},
+                {"showTopper", s.showTopper},
+                {"topperWindowWidth", s.topperWindowWidth},
+                {"topperWindowHeight", s.topperWindowHeight},
+                {"topperWindowX", s.topperWindowX},
+                {"topperWindowY", s.topperWindowY}
+            }},
+            {"TableMetadata", {
+                {"titleSource", s.titleSource},
+                {"fetchVPSdb", s.fetchVPSdb},
+                {"forceRebuildMetadata", s.forceRebuildMetadata},
+                {"titleSortBy", s.titleSortBy},
+                {"showMetadata", s.showMetadata},
+                {"metadataPanelWidth", s.metadataPanelWidth},
+                {"metadataPanelHeight", s.metadataPanelHeight},
+                {"metadataPanelAlpha", s.metadataPanelAlpha}
+            }},
+            {"UIWidgets", {
+                {"showArrowHint", s.showArrowHint},
+                {"arrowHintWidth", s.arrowHintWidth},
+                {"arrowHintHeight", s.arrowHintHeight},
+                {"arrowThickness", s.arrowThickness},
+                {"arrowAlpha", s.arrowAlpha},
+                {"arrowGlow", s.arrowGlow},
+                {"arrowGlowColor", {s.arrowGlowColor.r, s.arrowGlowColor.g, s.arrowGlowColor.b, s.arrowGlowColor.a}},
+                {"arrowColorTop", {s.arrowColorTop.r, s.arrowColorTop.g, s.arrowColorTop.b, s.arrowColorTop.a}},
+                {"arrowColorBottom", {s.arrowColorBottom.r, s.arrowColorBottom.g, s.arrowColorBottom.b, s.arrowColorBottom.a}},
+                {"showScrollbar", s.showScrollbar},
+                {"scrollbarWidth", s.scrollbarWidth},
+                {"thumbWidth", s.thumbWidth},
+                {"scrollbarLength", s.scrollbarLength},
+                {"scrollbarColor", {s.scrollbarColor.r, s.scrollbarColor.g, s.scrollbarColor.b, s.scrollbarColor.a}},
+                {"scrollbarThumbColor", {s.scrollbarThumbColor.r, s.scrollbarThumbColor.g, s.scrollbarThumbColor.b, s.scrollbarThumbColor.a}}
+            }},
+            {"TitleDisplay", {
+                {"showWheel", s.showWheel},
+                {"wheelWindow", s.wheelWindow},
+                {"showTitle", s.showTitle},
+                {"titleWindow", s.titleWindow},
+                {"fontPath", s.fontPath},
+                {"fontColor", {s.fontColor.r, s.fontColor.g, s.fontColor.b, s.fontColor.a}},
+                {"fontBgColor", {s.fontBgColor.r, s.fontBgColor.g, s.fontBgColor.b, s.fontBgColor.a}},
+                {"fontSize", s.fontSize},
+                {"titleX", s.titleX},
+                {"titleY", s.titleY}
+            }},
+            {"MediaDimensions", {
+                {"forceImagesOnly", s.forceImagesOnly},
+                {"wheelMediaHeight", s.wheelMediaHeight},
+                {"wheelMediaWidth", s.wheelMediaWidth},
+                {"wheelMediaX", s.wheelMediaX},
+                {"wheelMediaY", s.wheelMediaY},
+                {"playfieldMediaWidth", s.playfieldMediaWidth},
+                {"playfieldMediaHeight", s.playfieldMediaHeight},
+                {"playfieldMediaX", s.playfieldMediaX},
+                {"playfieldMediaY", s.playfieldMediaY},
+                {"playfieldRotation", s.playfieldRotation},
+                {"backglassMediaWidth", s.backglassMediaWidth},
+                {"backglassMediaHeight", s.backglassMediaHeight},
+                {"backglassMediaX", s.backglassMediaX},
+                {"backglassMediaY", s.backglassMediaY},
+                {"backglassRotation", s.backglassRotation},
+                {"dmdMediaWidth", s.dmdMediaWidth},
+                {"dmdMediaHeight", s.dmdMediaHeight},
+                {"dmdMediaX", s.dmdMediaX},
+                {"dmdMediaY", s.dmdMediaY},
+                {"dmdRotation", s.dmdRotation},
+                {"topperMediaWidth", s.topperMediaWidth},
+                {"topperMediaHeight", s.topperMediaHeight},
+                {"topperMediaX", s.topperMediaX},
+                {"topperMediaY", s.topperMediaY},
+                {"topperRotation", s.topperRotation}
+            }},
+            {"AudioSettings", {
+                {"masterMute", s.masterMute},
+                {"masterVol", s.masterVol},
+                {"mediaAudioMute", s.mediaAudioMute},
+                {"mediaAudioVol", s.mediaAudioVol},
+                {"tableMusicMute", s.tableMusicMute},
+                {"tableMusicVol", s.tableMusicVol},
+                {"interfaceAudioMute", s.interfaceAudioMute},
+                {"interfaceAudioVol", s.interfaceAudioVol},
+                {"interfaceAmbienceMute", s.interfaceAmbienceMute},
+                {"interfaceAmbienceVol", s.interfaceAmbienceVol}
+            }},
+            {"UISounds", {
+                {"scrollPrevSound", s.scrollPrevSound},
+                {"scrollNextSound", s.scrollNextSound},
+                {"scrollFastPrevSound", s.scrollFastPrevSound},
+                {"scrollFastNextSound", s.scrollFastNextSound},
+                {"scrollJumpPrevSound", s.scrollJumpPrevSound},
+                {"scrollJumpNextSound", s.scrollJumpNextSound},
+                {"scrollRandomSound", s.scrollRandomSound},
+                {"launchTableSound", s.launchTableSound},
+                {"launchScreenshotSound", s.launchScreenshotSound},
+                {"configToggleSound", s.configToggleSound},
+                {"configSaveSound", s.configSaveSound},
+                {"screenshotTakeSound", s.screenshotTakeSound},
+                {"screenshotQuitSound", s.screenshotQuitSound},
+                {"ambienceSound", s.ambienceSound}
+            }},
+            {"Internal", {
+                {"vpxSubCmd", s.vpxSubCmd},
+                {"vpsDbPath", s.vpsDbPath},
+                {"vpsDbUpdateFrequency", s.vpsDbUpdateFrequency},
+                {"vpsDbLastUpdated", s.vpsDbLastUpdated},
+                {"vpxtoolIndex", s.vpxtoolIndex},
+                {"indexPath", s.indexPath},
+                {"screenshotWait", s.screenshotWait}
+            }}
+        };
+    }
+
+    friend void from_json(const nlohmann::json& j, Settings& s) {
+        // VPX
+        s.VPXTablesPath = j.value("VPX", nlohmann::json{}).value("VPXTablesPath", s.VPXTablesPath);
+        s.VPinballXPath = j.value("VPX", nlohmann::json{}).value("VPinballXPath", s.VPinballXPath);
+        s.vpxIniPath = j.value("VPX", nlohmann::json{}).value("vpxIniPath", s.vpxIniPath);
+        s.vpxStartArgs = j.value("VPX", nlohmann::json{}).value("vpxStartArgs", s.vpxStartArgs);
+        s.vpxEndArgs = j.value("VPX", nlohmann::json{}).value("vpxEndArgs", s.vpxEndArgs);
+
+        // DPISettings
+        s.dpiScale = j.value("DPISettings", nlohmann::json{}).value("dpiScale", s.dpiScale);
+        s.enableDpiScaling = j.value("DPISettings", nlohmann::json{}).value("enableDpiScaling", s.enableDpiScaling);
+
+        // DefaultMedia
+        s.defaultPlayfieldImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultPlayfieldImage", s.defaultPlayfieldImage);
+        s.defaultBackglassImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultBackglassImage", s.defaultBackglassImage);
+        s.defaultDmdImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultDmdImage", s.defaultDmdImage);
+        s.defaultWheelImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
+        s.defaultTopperImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultTopperImage", s.defaultTopperImage);
+        s.defaultPlayfieldVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultPlayfieldVideo", s.defaultPlayfieldVideo);
+        s.defaultBackglassVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultBackglassVideo", s.defaultBackglassVideo);
+        s.defaultDmdVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultDmdVideo", s.defaultDmdVideo);
+        s.defaultTopperVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultTopperVideo", s.defaultTopperVideo);
+
+        // CustomMedia
+        s.customPlayfieldImage = j.value("CustomMedia", nlohmann::json{}).value("customPlayfieldImage", s.customPlayfieldImage);
+        s.customBackglassImage = j.value("CustomMedia", nlohmann::json{}).value("customBackglassImage", s.customBackglassImage);
+        s.customDmdImage = j.value("CustomMedia", nlohmann::json{}).value("customDmdImage", s.customDmdImage);
+        s.customWheelImage = j.value("CustomMedia", nlohmann::json{}).value("customWheelImage", s.customWheelImage);
+        s.customTopperImage = j.value("CustomMedia", nlohmann::json{}).value("customTopperImage", s.customTopperImage);
+        s.customPlayfieldVideo = j.value("CustomMedia", nlohmann::json{}).value("customPlayfieldVideo", s.customPlayfieldVideo);
+        s.customBackglassVideo = j.value("CustomMedia", nlohmann::json{}).value("customBackglassVideo", s.customBackglassVideo);
+        s.customDmdVideo = j.value("CustomMedia", nlohmann::json{}).value("customDmdVideo", s.customDmdVideo);
+        s.customTopperVideo = j.value("CustomMedia", nlohmann::json{}).value("customTopperVideo", s.customTopperVideo);
+        s.tableMusic = j.value("CustomMedia", nlohmann::json{}).value("tableMusic", s.tableMusic);
+        s.customLaunchSound = j.value("CustomMedia", nlohmann::json{}).value("customLaunchSound", s.customLaunchSound);
+
+        // WindowSettings
+        s.videoBackend = j.value("WindowSettings", nlohmann::json{}).value("videoBackend", s.videoBackend);
+        s.useVPinballXIni = j.value("WindowSettings", nlohmann::json{}).value("useVPinballXIni", s.useVPinballXIni);
+        s.playfieldWindowWidth = j.value("WindowSettings", nlohmann::json{}).value("playfieldWindowWidth", s.playfieldWindowWidth);
+        s.playfieldWindowHeight = j.value("WindowSettings", nlohmann::json{}).value("playfieldWindowHeight", s.playfieldWindowHeight);
+        s.playfieldX = j.value("WindowSettings", nlohmann::json{}).value("playfieldX", s.playfieldX);
+        s.playfieldY = j.value("WindowSettings", nlohmann::json{}).value("playfieldY", s.playfieldY);
+        s.showBackglass = j.value("WindowSettings", nlohmann::json{}).value("showBackglass", s.showBackglass);
+        s.backglassWindowWidth = j.value("WindowSettings", nlohmann::json{}).value("backglassWindowWidth", s.backglassWindowWidth);
+        s.backglassWindowHeight = j.value("WindowSettings", nlohmann::json{}).value("backglassWindowHeight", s.backglassWindowHeight);
+        s.backglassX = j.value("WindowSettings", nlohmann::json{}).value("backglassX", s.backglassX);
+        s.backglassY = j.value("WindowSettings", nlohmann::json{}).value("backglassY", s.backglassY);
+        s.showDMD = j.value("WindowSettings", nlohmann::json{}).value("showDMD", s.showDMD);
+        s.dmdWindowWidth = j.value("WindowSettings", nlohmann::json{}).value("dmdWindowWidth", s.dmdWindowWidth);
+        s.dmdWindowHeight = j.value("WindowSettings", nlohmann::json{}).value("dmdWindowHeight", s.dmdWindowHeight);
+        s.dmdX = j.value("WindowSettings", nlohmann::json{}).value("dmdX", s.dmdX);
+        s.dmdY = j.value("WindowSettings", nlohmann::json{}).value("dmdY", s.dmdY);
+        s.showTopper = j.value("WindowSettings", nlohmann::json{}).value("showTopper", s.showTopper);
+        s.topperWindowWidth = j.value("WindowSettings", nlohmann::json{}).value("topperWindowWidth", s.topperWindowWidth);
+        s.topperWindowHeight = j.value("WindowSettings", nlohmann::json{}).value("topperWindowHeight", s.topperWindowHeight);
+        s.topperWindowX = j.value("WindowSettings", nlohmann::json{}).value("topperWindowX", s.topperWindowX);
+        s.topperWindowY = j.value("WindowSettings", nlohmann::json{}).value("topperWindowY", s.topperWindowY);
+
+        // TableMetadata
+        s.titleSource = j.value("TableMetadata", nlohmann::json{}).value("titleSource", s.titleSource);
+        s.fetchVPSdb = j.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", s.fetchVPSdb);
+        s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
+        s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
+        s.showMetadata = j.value("TableMetadata", nlohmann::json{}).value("showMetadata", s.showMetadata);
+        s.metadataPanelWidth = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelWidth", s.metadataPanelWidth);
+        s.metadataPanelHeight = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelHeight", s.metadataPanelHeight);
+        s.metadataPanelAlpha = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelAlpha", s.metadataPanelAlpha);
+
+        // UIWidgets
+        s.showArrowHint = j.value("UIWidgets", nlohmann::json{}).value("showArrowHint", s.showArrowHint);
+        s.arrowHintWidth = j.value("UIWidgets", nlohmann::json{}).value("arrowHintWidth", s.arrowHintWidth);
+        s.arrowHintHeight = j.value("UIWidgets", nlohmann::json{}).value("arrowHintHeight", s.arrowHintHeight);
+        s.arrowThickness = j.value("UIWidgets", nlohmann::json{}).value("arrowThickness", s.arrowThickness);
+        s.arrowAlpha = j.value("UIWidgets", nlohmann::json{}).value("arrowAlpha", s.arrowAlpha);
+        s.arrowGlow = j.value("UIWidgets", nlohmann::json{}).value("arrowGlow", s.arrowGlow);
+        if (j.value("UIWidgets", nlohmann::json{}).contains("arrowGlowColor") && j["UIWidgets"]["arrowGlowColor"].is_array() && j["UIWidgets"]["arrowGlowColor"].size() == 4) {
+            s.arrowGlowColor = {static_cast<Uint8>(j["UIWidgets"]["arrowGlowColor"][0]),
+                                static_cast<Uint8>(j["UIWidgets"]["arrowGlowColor"][1]),
+                                static_cast<Uint8>(j["UIWidgets"]["arrowGlowColor"][2]),
+                                static_cast<Uint8>(j["UIWidgets"]["arrowGlowColor"][3])};
+        }
+        if (j.value("UIWidgets", nlohmann::json{}).contains("arrowColorTop") && j["UIWidgets"]["arrowColorTop"].is_array() && j["UIWidgets"]["arrowColorTop"].size() == 4) {
+            s.arrowColorTop = {static_cast<Uint8>(j["UIWidgets"]["arrowColorTop"][0]),
+                               static_cast<Uint8>(j["UIWidgets"]["arrowColorTop"][1]),
+                               static_cast<Uint8>(j["UIWidgets"]["arrowColorTop"][2]),
+                               static_cast<Uint8>(j["UIWidgets"]["arrowColorTop"][3])};
+        }
+        if (j.value("UIWidgets", nlohmann::json{}).contains("arrowColorBottom") && j["UIWidgets"]["arrowColorBottom"].is_array() && j["UIWidgets"]["arrowColorBottom"].size() == 4) {
+            s.arrowColorBottom = {static_cast<Uint8>(j["UIWidgets"]["arrowColorBottom"][0]),
+                                  static_cast<Uint8>(j["UIWidgets"]["arrowColorBottom"][1]),
+                                  static_cast<Uint8>(j["UIWidgets"]["arrowColorBottom"][2]),
+                                  static_cast<Uint8>(j["UIWidgets"]["arrowColorBottom"][3])};
+        }
+        s.showScrollbar = j.value("UIWidgets", nlohmann::json{}).value("showScrollbar", s.showScrollbar);
+        s.scrollbarWidth = j.value("UIWidgets", nlohmann::json{}).value("scrollbarWidth", s.scrollbarWidth);
+        s.thumbWidth = j.value("UIWidgets", nlohmann::json{}).value("thumbWidth", s.thumbWidth);
+        s.scrollbarLength = j.value("UIWidgets", nlohmann::json{}).value("scrollbarLength", s.scrollbarLength);
+        if (j.value("UIWidgets", nlohmann::json{}).contains("scrollbarColor") && j["UIWidgets"]["scrollbarColor"].is_array() && j["UIWidgets"]["scrollbarColor"].size() == 4) {
+            s.scrollbarColor = {static_cast<Uint8>(j["UIWidgets"]["scrollbarColor"][0]),
+                                static_cast<Uint8>(j["UIWidgets"]["scrollbarColor"][1]),
+                                static_cast<Uint8>(j["UIWidgets"]["scrollbarColor"][2]),
+                                static_cast<Uint8>(j["UIWidgets"]["scrollbarColor"][3])};
+        }
+        if (j.value("UIWidgets", nlohmann::json{}).contains("scrollbarThumbColor") && j["UIWidgets"]["scrollbarThumbColor"].is_array() && j["UIWidgets"]["scrollbarThumbColor"].size() == 4) {
+            s.scrollbarThumbColor = {static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][0]),
+                                     static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][1]),
+                                     static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][2]),
+                                     static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][3])};
+        }
+
+        // TitleDisplay
+        s.showWheel = j.value("TitleDisplay", nlohmann::json{}).value("showWheel", s.showWheel);
+        s.wheelWindow = j.value("TitleDisplay", nlohmann::json{}).value("wheelWindow", s.wheelWindow);
+        s.showTitle = j.value("TitleDisplay", nlohmann::json{}).value("showTitle", s.showTitle);
+        s.titleWindow = j.value("TitleDisplay", nlohmann::json{}).value("titleWindow", s.titleWindow);
+        s.fontPath = j.value("TitleDisplay", nlohmann::json{}).value("fontPath", s.fontPath);
+        if (j.value("TitleDisplay", nlohmann::json{}).contains("fontColor") && j["TitleDisplay"]["fontColor"].is_array() && j["TitleDisplay"]["fontColor"].size() == 4) {
+            s.fontColor = {static_cast<Uint8>(j["TitleDisplay"]["fontColor"][0]),
+                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][1]),
+                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][2]),
+                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][3])};
+        }
+        if (j.value("TitleDisplay", nlohmann::json{}).contains("fontBgColor") && j["TitleDisplay"]["fontBgColor"].is_array() && j["TitleDisplay"]["fontBgColor"].size() == 4) {
+            s.fontBgColor = {static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][0]),
+                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][1]),
+                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][2]),
+                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][3])};
+        }
+        s.fontSize = j.value("TitleDisplay", nlohmann::json{}).value("fontSize", s.fontSize);
+        s.titleX = j.value("TitleDisplay", nlohmann::json{}).value("titleX", s.titleX);
+        s.titleY = j.value("TitleDisplay", nlohmann::json{}).value("titleY", s.titleY);
+
+        // MediaDimensions
+        s.forceImagesOnly = j.value("MediaDimensions", nlohmann::json{}).value("forceImagesOnly", s.forceImagesOnly);
+        s.wheelMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaHeight", s.wheelMediaHeight);
+        s.wheelMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaWidth", s.wheelMediaWidth);
+        s.wheelMediaX = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaX", s.wheelMediaX);
+        s.wheelMediaY = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaY", s.wheelMediaY);
+        s.playfieldMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("playfieldMediaWidth", s.playfieldMediaWidth);
+        s.playfieldMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("playfieldMediaHeight", s.playfieldMediaHeight);
+        s.playfieldMediaX = j.value("MediaDimensions", nlohmann::json{}).value("playfieldMediaX", s.playfieldMediaX);
+        s.playfieldMediaY = j.value("MediaDimensions", nlohmann::json{}).value("playfieldMediaY", s.playfieldMediaY);
+        s.playfieldRotation = j.value("MediaDimensions", nlohmann::json{}).value("playfieldRotation", s.playfieldRotation);
+        s.backglassMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("backglassMediaWidth", s.backglassMediaWidth);
+        s.backglassMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("backglassMediaHeight", s.backglassMediaHeight);
+        s.backglassMediaX = j.value("MediaDimensions", nlohmann::json{}).value("backglassMediaX", s.backglassMediaX);
+        s.backglassMediaY = j.value("MediaDimensions", nlohmann::json{}).value("backglassMediaY", s.backglassMediaY);
+        s.backglassRotation = j.value("MediaDimensions", nlohmann::json{}).value("backglassRotation", s.backglassRotation);
+        s.dmdMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("dmdMediaWidth", s.dmdMediaWidth);
+        s.dmdMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("dmdMediaHeight", s.dmdMediaHeight);
+        s.dmdMediaX = j.value("MediaDimensions", nlohmann::json{}).value("dmdMediaX", s.dmdMediaX);
+        s.dmdMediaY = j.value("MediaDimensions", nlohmann::json{}).value("dmdMediaY", s.dmdMediaY);
+        s.dmdRotation = j.value("MediaDimensions", nlohmann::json{}).value("dmdRotation", s.dmdRotation);
+        s.topperMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("topperMediaWidth", s.topperMediaWidth);
+        s.topperMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("topperMediaHeight", s.topperMediaHeight);
+        s.topperMediaX = j.value("MediaDimensions", nlohmann::json{}).value("topperMediaX", s.topperMediaX);
+        s.topperMediaY = j.value("MediaDimensions", nlohmann::json{}).value("topperMediaY", s.topperMediaY);
+        s.topperRotation = j.value("MediaDimensions", nlohmann::json{}).value("topperRotation", s.topperRotation);
+
+        // AudioSettings
+        s.masterMute = j.value("AudioSettings", nlohmann::json{}).value("masterMute", s.masterMute);
+        s.masterVol = j.value("AudioSettings", nlohmann::json{}).value("masterVol", s.masterVol);
+        s.mediaAudioMute = j.value("AudioSettings", nlohmann::json{}).value("mediaAudioMute", s.mediaAudioMute);
+        s.mediaAudioVol = j.value("AudioSettings", nlohmann::json{}).value("mediaAudioVol", s.mediaAudioVol);
+        s.tableMusicMute = j.value("AudioSettings", nlohmann::json{}).value("tableMusicMute", s.tableMusicMute);
+        s.tableMusicVol = j.value("AudioSettings", nlohmann::json{}).value("tableMusicVol", s.tableMusicVol);
+        s.interfaceAudioMute = j.value("AudioSettings", nlohmann::json{}).value("interfaceAudioMute", s.interfaceAudioMute);
+        s.interfaceAudioVol = j.value("AudioSettings", nlohmann::json{}).value("interfaceAudioVol", s.interfaceAudioVol);
+        s.interfaceAmbienceMute = j.value("AudioSettings", nlohmann::json{}).value("interfaceAmbienceMute", s.interfaceAmbienceMute);
+        s.interfaceAmbienceVol = j.value("AudioSettings", nlohmann::json{}).value("interfaceAmbienceVol", s.interfaceAmbienceVol);
+
+        // UISounds
+        s.scrollPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollPrevSound", s.scrollPrevSound);
+        s.scrollNextSound = j.value("UISounds", nlohmann::json{}).value("scrollNextSound", s.scrollNextSound);
+        s.scrollFastPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollFastPrevSound", s.scrollFastPrevSound);
+        s.scrollFastNextSound = j.value("UISounds", nlohmann::json{}).value("scrollFastNextSound", s.scrollFastNextSound);
+        s.scrollJumpPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollJumpPrevSound", s.scrollJumpPrevSound);
+        s.scrollJumpNextSound = j.value("UISounds", nlohmann::json{}).value("scrollJumpNextSound", s.scrollJumpNextSound);
+        s.scrollRandomSound = j.value("UISounds", nlohmann::json{}).value("scrollRandomSound", s.scrollRandomSound);
+        s.launchTableSound = j.value("UISounds", nlohmann::json{}).value("launchTableSound", s.launchTableSound);
+        s.launchScreenshotSound = j.value("UISounds", nlohmann::json{}).value("launchScreenshotSound", s.launchScreenshotSound);
+        s.configToggleSound = j.value("UISounds", nlohmann::json{}).value("configToggleSound", s.configToggleSound);
+        s.configSaveSound = j.value("UISounds", nlohmann::json{}).value("configSaveSound", s.configSaveSound);
+        s.screenshotTakeSound = j.value("UISounds", nlohmann::json{}).value("screenshotTakeSound", s.screenshotTakeSound);
+        s.screenshotQuitSound = j.value("UISounds", nlohmann::json{}).value("screenshotQuitSound", s.screenshotQuitSound);
+        s.ambienceSound = j.value("UISounds", nlohmann::json{}).value("ambienceSound", s.ambienceSound);
+
+        // Internal
+        s.vpxSubCmd = j.value("Internal", nlohmann::json{}).value("vpxSubCmd", s.vpxSubCmd);
+        s.vpsDbPath = j.value("Internal", nlohmann::json{}).value("vpsDbPath", s.vpsDbPath);
+        s.vpsDbUpdateFrequency = j.value("Internal", nlohmann::json{}).value("vpsDbUpdateFrequency", s.vpsDbUpdateFrequency);
+        s.vpsDbLastUpdated = j.value("Internal", nlohmann::json{}).value("vpsDbLastUpdated", s.vpsDbLastUpdated);
+        s.vpxtoolIndex = j.value("Internal", nlohmann::json{}).value("vpxtoolIndex", s.vpxtoolIndex);
+        s.indexPath = j.value("Internal", nlohmann::json{}).value("indexPath", s.indexPath);
+        s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
+    }
+};
+
+// Define settingsMetadata (initialized in settings.cpp)
+inline const std::unordered_map<std::string, Settings::ReloadType> Settings::settingsMetadata = {
+    // VPX (requires full table reload)
+    {"VPXTablesPath", Settings::ReloadType::None},
+    {"VPinballXPath", Settings::ReloadType::None},
+    {"vpxIniPath", Settings::ReloadType::None},
+    {"vpxStartArgs", Settings::ReloadType::None},
+    {"vpxEndArgs", Settings::ReloadType::None},
+    // DPISettings (affects UI rendering)
+    {"dpiScale", Settings::ReloadType::None},
+    {"enableDpiScaling", Settings::ReloadType::None},
+    // DefaultMedia (affects specific media components)
+    {"defaultPlayfieldImage", Settings::ReloadType::None},
+    {"defaultBackglassImage", Settings::ReloadType::None},
+    {"defaultDmdImage", Settings::ReloadType::None},
+    {"defaultWheelImage", Settings::ReloadType::None},
+    {"defaultTopperImage", Settings::ReloadType::None},
+    {"defaultPlayfieldVideo", Settings::ReloadType::None},
+    {"defaultBackglassVideo", Settings::ReloadType::None},
+    {"defaultDmdVideo", Settings::ReloadType::None},
+    {"defaultTopperVideo", Settings::ReloadType::None},
+    // CustomMedia
+    {"customPlayfieldImage", Settings::ReloadType::None},
+    {"customBackglassImage", Settings::ReloadType::None},
+    {"customDmdImage", Settings::ReloadType::None},
+    {"customWheelImage", Settings::ReloadType::None},
+    {"customTopperImage", Settings::ReloadType::None},
+    {"customPlayfieldVideo", Settings::ReloadType::None},
+    {"customBackglassVideo", Settings::ReloadType::None},
+    {"customDmdVideo", Settings::ReloadType::None},
+    {"customTopperVideo", Settings::ReloadType::None},
+    {"tableMusic", Settings::ReloadType::None},
+    {"customLaunchSound", Settings::ReloadType::None},
+    // WindowSettings
+    {"videoBackend", Settings::ReloadType::None},
+    {"useVPinballXIni", Settings::ReloadType::None},
+    {"playfieldWindowWidth", Settings::ReloadType::None},
+    {"playfieldWindowHeight", Settings::ReloadType::None},
+    {"playfieldX", Settings::ReloadType::None},
+    {"playfieldY", Settings::ReloadType::None},
+    {"showBackglass", Settings::ReloadType::None},
+    {"backglassWindowWidth", Settings::ReloadType::None},
+    {"backglassWindowHeight", Settings::ReloadType::None},
+    {"backglassX", Settings::ReloadType::None},
+    {"backglassY", Settings::ReloadType::None},
+    {"showDMD", Settings::ReloadType::None},
+    {"dmdWindowWidth", Settings::ReloadType::None},
+    {"dmdWindowHeight", Settings::ReloadType::None},
+    {"dmdX", Settings::ReloadType::None},
+    {"dmdY", Settings::ReloadType::None},
+    {"showTopper", Settings::ReloadType::None},
+    {"topperWindowWidth", Settings::ReloadType::None},
+    {"topperWindowHeight", Settings::ReloadType::None},
+    {"topperWindowX", Settings::ReloadType::None},
+    {"topperWindowY", Settings::ReloadType::None},
+    // TableMetadata
+    {"titleSource", Settings::ReloadType::None},
+    {"fetchVPSdb", Settings::ReloadType::None},
+    {"forceRebuildMetadata", Settings::ReloadType::None},
+    {"titleSortBy", Settings::ReloadType::None},
+    {"showMetadata", Settings::ReloadType::Metadata},
+    {"metadataPanelWidth", Settings::ReloadType::None},
+    {"metadataPanelHeight", Settings::ReloadType::None},
+    {"metadataPanelAlpha", Settings::ReloadType::None},
+    // UIWidgets
+    {"showArrowHint", Settings::ReloadType::None},
+    {"arrowHintWidth", Settings::ReloadType::None},
+    {"arrowHintHeight", Settings::ReloadType::None},
+    {"arrowThickness", Settings::ReloadType::None},
+    {"arrowAlpha", Settings::ReloadType::None},
+    {"arrowGlow", Settings::ReloadType::None},
+    {"arrowGlowColor", Settings::ReloadType::None},
+    {"arrowColorTop", Settings::ReloadType::None},
+    {"arrowColorBottom", Settings::ReloadType::None},
+    {"showScrollbar", Settings::ReloadType::None},
+    {"scrollbarWidth", Settings::ReloadType::None},
+    {"thumbWidth", Settings::ReloadType::None},
+    {"scrollbarLength", Settings::ReloadType::None},
+    {"scrollbarColor", Settings::ReloadType::None},
+    {"scrollbarThumbColor", Settings::ReloadType::None},
+    // TitleDisplay
+    {"showWheel", Settings::ReloadType::None},
+    {"wheelWindow", Settings::ReloadType::None},
+    {"showTitle", Settings::ReloadType::None},
+    {"titleWindow", Settings::ReloadType::None},
+    {"fontPath", Settings::ReloadType::None},
+    {"fontColor", Settings::ReloadType::None},
+    {"fontBgColor", Settings::ReloadType::None},
+    {"fontSize", Settings::ReloadType::None},
+    {"titleX", Settings::ReloadType::None},
+    {"titleY", Settings::ReloadType::None},
+    // MediaDimensions
+    {"forceImagesOnly", Settings::ReloadType::None},
+    {"wheelMediaHeight", Settings::ReloadType::None},
+    {"wheelMediaWidth", Settings::ReloadType::None},
+    {"wheelMediaX", Settings::ReloadType::None},
+    {"wheelMediaY", Settings::ReloadType::None},
+    {"playfieldMediaWidth", Settings::ReloadType::None},
+    {"playfieldMediaHeight", Settings::ReloadType::None},
+    {"playfieldMediaX", Settings::ReloadType::None},
+    {"playfieldMediaY", Settings::ReloadType::None},
+    {"playfieldRotation", Settings::ReloadType::None},
+    {"backglassMediaWidth", Settings::ReloadType::None},
+    {"backglassMediaHeight", Settings::ReloadType::None},
+    {"backglassMediaX", Settings::ReloadType::None},
+    {"backglassMediaY", Settings::ReloadType::None},
+    {"backglassRotation", Settings::ReloadType::None},
+    {"dmdMediaWidth", Settings::ReloadType::None},
+    {"dmdMediaHeight", Settings::ReloadType::None},
+    {"dmdMediaX", Settings::ReloadType::None},
+    {"dmdMediaY", Settings::ReloadType::None},
+    {"dmdRotation", Settings::ReloadType::None},
+    {"topperMediaWidth", Settings::ReloadType::None},
+    {"topperMediaHeight", Settings::ReloadType::None},
+    {"topperMediaX", Settings::ReloadType::None},
+    {"topperMediaY", Settings::ReloadType::None},
+    {"topperRotation", Settings::ReloadType::None},
+    // AudioSettings
+    {"masterMute", Settings::ReloadType::None},
+    {"masterVol", Settings::ReloadType::None},
+    {"mediaAudioMute", Settings::ReloadType::None},
+    {"mediaAudioVol", Settings::ReloadType::None},
+    {"tableMusicMute", Settings::ReloadType::None},
+    {"tableMusicVol", Settings::ReloadType::None},
+    {"interfaceAudioMute", Settings::ReloadType::None},
+    {"interfaceAudioVol", Settings::ReloadType::None},
+    {"interfaceAmbienceMute", Settings::ReloadType::None},
+    {"interfaceAmbienceVol", Settings::ReloadType::None},
+    // UISounds
+    {"scrollPrevSound", Settings::ReloadType::None},
+    {"scrollNextSound", Settings::ReloadType::None},
+    {"scrollFastPrevSound", Settings::ReloadType::None},
+    {"scrollFastNextSound", Settings::ReloadType::None},
+    {"scrollJumpPrevSound", Settings::ReloadType::None},
+    {"scrollJumpNextSound", Settings::ReloadType::None},
+    {"scrollRandomSound", Settings::ReloadType::None},
+    {"launchTableSound", Settings::ReloadType::None},
+    {"launchScreenshotSound", Settings::ReloadType::None},
+    {"configToggleSound", Settings::ReloadType::None},
+    {"configSaveSound", Settings::ReloadType::None},
+    {"screenshotTakeSound", Settings::ReloadType::None},
+    {"screenshotQuitSound", Settings::ReloadType::None},
+    {"ambienceSound", Settings::ReloadType::None},
+    // Internal
+    {"vpxSubCmd", Settings::ReloadType::None},
+    {"logFile", Settings::ReloadType::None},
+    {"vpsDbPath", Settings::ReloadType::None},
+    {"vpsDbUpdateFrequency", Settings::ReloadType::None},
+    {"vpsDbLastUpdated", Settings::ReloadType::None},
+    {"vpxtoolIndex", Settings::ReloadType::None},
+    {"indexPath", Settings::ReloadType::None},
+    {"screenshotWait", Settings::ReloadType::None}
 };
 
 #endif // SETTINGS_H

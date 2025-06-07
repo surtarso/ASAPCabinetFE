@@ -3,7 +3,7 @@
  * @brief Implements the AsapIndexManager class for managing ASAP index files in ASAPCabinetFE.
  *
  * This file provides the implementation of the AsapIndexManager class, which loads and
- * saves table data from/to an ASAP index file (asapcabinetfe_index.json) using JSON
+ * saves table data from/to an ASAP index file (asapcab_index.json) using JSON
  * serialization. The manager handles file I/O, validates JSON structure, and supports
  * progress tracking via LoadingProgress. It is configurable via Settings (e.g., indexPath),
  * with potential for future configUI enhancements (e.g., custom index paths or formatting).
@@ -20,7 +20,7 @@ using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
 
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
-        LOG_INFO("AsapIndexManager: asapcabinetfe_index.json not found at: " << settings.indexPath);
+        LOG_INFO("AsapIndexManager: asapcab_index.json not found at: " << settings.indexPath);
         return false;
     }
 
@@ -31,7 +31,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
         indexFile.close();
 
         if (!asapIndex.contains("tables") || !asapIndex["tables"].is_array()) {
-            LOG_ERROR("AsapIndexManager: Invalid asapcabinetfe_index.json: 'tables' missing or not an array");
+            LOG_ERROR("AsapIndexManager: Invalid asapcab_index.json : 'tables' missing or not an array");
             return false;
         }
 
@@ -88,10 +88,10 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
                 progress->currentTablesLoaded++;
             }
         }
-        LOG_INFO("AsapIndexManager: Loaded " << tables.size() << " tables from asapcabinetfe_index.json");
+        LOG_INFO("AsapIndexManager: Loaded " << tables.size() << " tables from asapcab_index.json");
         return !tables.empty();
     } catch (const std::exception& e) {
-        LOG_ERROR("AsapIndexManager: Failed to load asapcabinetfe_index.json: " << e.what());
+        LOG_ERROR("AsapIndexManager: Failed to load asapcab_index.json: " << e.what());
         return false;
     }
 }
@@ -162,10 +162,10 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         }
         out << asapIndex.dump(4); // Serialize with 4-space indentation
         out.close();
-        LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcabinetfe_index.json");
+        LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcab_index.json");
         return true;
     } catch (const std::exception& e) {
-        LOG_ERROR("AsapIndexManager: Failed to save asapcabinetfe_index.json: " << e.what());
+        LOG_ERROR("AsapIndexManager: Failed to save asapcab_index.json: " << e.what());
         return false;
     }
 }

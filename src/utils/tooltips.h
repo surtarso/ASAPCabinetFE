@@ -176,7 +176,7 @@ namespace Tooltips {
                 "Leaving this on will check for updates every full table reload."},
             {"ForceRebuild",
                 "Forces re-building metadata from scratch.\n"
-                "Applying will DELETE asapcabinetfe_index.json\n"
+                "Applying will DELETE asapcab_index.json\n"
                 "TIP: Remember to turn this OFF AFTER rebuilding metadata."},
             {"ShowMetadata",
                 "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
@@ -342,34 +342,31 @@ namespace Tooltips {
                 "Key to quit screenshot mode."},
             
             // Audio Settings
-            // {"MasterMute",
-            //     "Mute all audio"},
-            // {"MasterVol",
-            //     "Adjust all volume."},
-            // {"MediaAudioMute",
-            //     "Mute playfield, backglass and DMD audio"},
-            // {"MediaAudioVol",
-            //     "Adjust playfield, backglass and DMD video volume."},
-            // {"TableMusicMute",
-            //     "Mute current table music."},
-            // {"TableMusicVol",
-            //     "Adjust current table music volume."},
-            // {"InterfaceAudioMute",
-            //     "Mute interface sounds."},
-            // {"InterfaceAudioVol",
-            //     "Adjust interface sounds volume."},
-            // {"InterfaceAmbienceMute",
-            //     "Mute interface ambience."},
-            // {"InterfaceAmbienceVol",
-            //     "Adjust interface ambience volume."},
+            {"MasterMute",
+                "Mute all audio"},
+            {"MasterVol",
+                "Adjust all volume."},
+            {"MediaAudioMute",
+                "Mute playfield, backglass and DMD audio"},
+            {"MediaAudioVol",
+                "Adjust playfield, backglass and DMD video volume."},
+            {"TableMusicMute",
+                "Mute current table music."},
+            {"TableMusicVol",
+                "Adjust current table music volume."},
+            {"InterfaceAudioMute",
+                "Mute interface sounds."},
+            {"InterfaceAudioVol",
+                "Adjust interface sounds volume."},
+            {"InterfaceAmbienceMute",
+                "Mute interface ambience."},
+            {"InterfaceAmbienceVol",
+                "Adjust interface ambience volume."},
 
             // Internal
             {"SubCmd",
                 "VPinballX internal command to play .vpx tables.\n"
                 "Use VPinballX --help command line menu to see more."},
-            {"LogFile",
-                "Path to the debug log file, relative to exec dir."},
-
             {"IndexPath",
                 "Path to the main table index file, relative to exec dir."},
             {"VpxtoolIndex",
