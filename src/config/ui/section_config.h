@@ -13,29 +13,164 @@ class SectionConfig {
 public:
     SectionConfig() {
         sectionOrder_ = {
-            "VPX",
             "TableMetadata",
             "TitleDisplay",
-            "DPISettings",
             "UIWidgets",
+            "AudioSettings",
+            "Keybinds",
+            "DPISettings",
             "WindowSettings",
             "MediaDimensions",
-            "AudioSettings",
             "CustomMedia",
+            "VPX",
             "DefaultMedia",
             "UISounds",
-            "Keybinds",
             "Internal"
         };
         keyOrders_["TableMetadata"] = {
+            "titleSource",
+            "titleSortBy",
             "showMetadata",
             "fetchVPSdb",
             "forceRebuildMetadata",
             "metadataPanelWidth",
             "metadataPanelHeight",
-            "metadataPanelAlpha",
-            "titleSource",
-            "titleSortBy"
+            "metadataPanelAlpha"
+        };
+        keyOrders_["TitleDisplay"] = {
+            "showWheel",
+            "wheelWindow",
+            "showTitle",
+            "titleWindow",
+            "fontPath",
+            "fontColor",
+            "fontBgColor",
+            "fontSize",
+            "titleX",
+            "titleY"
+        };
+        keyOrders_["UIWidgets"] = {
+            "showArrowHint",
+            "arrowHintWidth",
+            "arrowHintHeight",
+            "arrowThickness",
+            "arrowAlpha",
+            "arrowColorTop",
+            "arrowColorBottom",
+            "arrowGlow",
+            "arrowGlowColor",
+            "showScrollbar",
+            "scrollbarWidth",
+            "thumbWidth",
+            "scrollbarLength",
+            "scrollbarColor",
+            "scrollbarThumbColor"
+        };
+        keyOrders_["AudioSettings"] = {
+            "masterVol",
+            "masterMute",
+            "mediaAudioVol",
+            "mediaAudioMute",
+            "tableMusicVol",
+            "tableMusicMute",
+            "interfaceAudioVol",
+            "interfaceAudioMute",
+            "interfaceAmbienceVol",
+            "interfaceAmbienceMute"
+        };
+        keyOrders_["Keybinds"] = {
+            // TODO
+        };
+        keyOrders_["DPISettings"] = {
+            "dpiScale",
+            "enableDpiScaling"
+        };
+        keyOrders_["WindowSettings"] = {
+            "videoBackend",
+            "useVPinballXIni",
+            "playfieldWindowWidth",
+            "playfieldWindowHeight",
+            "playfieldX",
+            "playfieldY",
+            "showBackglass",
+            "backglassWindowWidth",
+            "backglassWindowHeight",
+            "backglassX",
+            "backglassY",
+            "showDMD",
+            "dmdWindowWidth",
+            "dmdWindowHeight",
+            "dmdX",
+            "dmdY",
+            "showTopper",
+            "topperWindowWidth",
+            "topperWindowHeight",
+            "topperWindowX",
+            "topperWindowY"
+        };
+        keyOrders_["MediaDimensions"] = {
+            "forceImagesOnly",
+            "wheelMediaHeight",
+            "wheelMediaWidth",
+            "wheelMediaX",
+            "wheelMediaY",
+            "playfieldMediaWidth",
+            "playfieldMediaHeight",
+            "playfieldMediaX",
+            "playfieldMediaY",
+            "playfieldRotation",
+            "backglassMediaWidth",
+            "backglassMediaHeight",
+            "backglassMediaX",
+            "backglassMediaY",
+            "backglassRotation",
+            "dmdMediaWidth",
+            "dmdMediaHeight",
+            "dmdMediaX",
+            "dmdMediaY",
+            "dmdRotation",
+            "topperMediaWidth",
+            "topperMediaHeight",
+            "topperMediaX",
+            "topperMediaY",
+            "topperRotation"
+        };
+        keyOrders_["CustomMedia"] = {
+            "customWheelImage",
+            "customPlayfieldImage",
+            "customBackglassImage",
+            "customDmdImage",
+            "customTopperImage",
+            "customPlayfieldVideo",
+            "customBackglassVideo",
+            "customDmdVideo",
+            "customTopperVideo",
+            "tableMusic",
+            "customLaunchSound"
+        };
+        keyOrders_["VPX"] = {
+            "VPXTablesPath",
+            "VPinballXPath",
+            "vpxIniPath",
+            "vpxStartArgs",
+            "vpxEndArgs"
+        };
+        keyOrders_["DefaultMedia"] = {
+            "defaultWheelImage",
+            "defaultPlayfieldImage",
+            "defaultBackglassImage",
+            "defaultDmdImage",
+            "defaultTopperImage",
+            "defaultPlayfieldVideo",
+            "defaultBackglassVideo",
+            "defaultDmdVideo",
+            "defaultTopperVideo"
+        };
+        keyOrders_["UISounds"] = {
+            // doesn't matter right now
+        };
+        keyOrders_["Internal"] = {
+            // doesn't matter right now
         };
     }
 

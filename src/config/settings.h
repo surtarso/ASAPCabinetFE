@@ -624,8 +624,8 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"vpxStartArgs", Settings::ReloadType::None},
     {"vpxEndArgs", Settings::ReloadType::None},
     // DPISettings
-    {"dpiScale", Settings::ReloadType::None},
-    {"enableDpiScaling", Settings::ReloadType::None},
+    {"dpiScale", Settings::ReloadType::None}, // ?
+    {"enableDpiScaling", Settings::ReloadType::None}, // ?
     // DefaultMedia (done)
     {"defaultPlayfieldImage", Settings::ReloadType::Tables},
     {"defaultBackglassImage", Settings::ReloadType::Tables},
@@ -697,9 +697,9 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"scrollbarThumbColor", Settings::ReloadType::None},
     // TitleDisplay (done except marked)
     {"showWheel", Settings::ReloadType::None},
-    {"wheelWindow", Settings::ReloadType::None}, // ?
+    {"wheelWindow", Settings::ReloadType::None}, //on table switch?
     {"showTitle", Settings::ReloadType::None},
-    {"titleWindow", Settings::ReloadType::None}, // ?
+    {"titleWindow", Settings::ReloadType::None}, //on table switch?
     {"fontPath", Settings::ReloadType::Font},
     {"fontColor", Settings::ReloadType::Font},
     {"fontBgColor", Settings::ReloadType::Font},
