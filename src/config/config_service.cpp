@@ -13,8 +13,9 @@ const Settings& ConfigService::getSettings() const {
 }
 
 bool ConfigService::isConfigValid() const {
-    // Basic validation: check if essential paths are set
-    return !settings_.VPXTablesPath.empty() && !settings_.VPinballXPath.empty();
+    LOG_DEBUG("Validating config file.");
+    return std::filesystem::exists(settings_.VPXTablesPath) && 
+        std::filesystem::exists(settings_.VPinballXPath);
 }
 
 void ConfigService::loadConfig() {

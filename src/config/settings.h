@@ -615,7 +615,7 @@ private:
     }
 };
 
-// Define settingsMetadata (initialized in settings.cpp)
+// Define settingsMetadata
 inline const std::unordered_map<std::string, Settings::ReloadType> Settings::settingsMetadata = {
     // VPX
     {"VPXTablesPath", Settings::ReloadType::None},
@@ -650,7 +650,7 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"customLaunchSound", Settings::ReloadType::Tables},
     // WindowSettings (done except marked)
     {"videoBackend", Settings::ReloadType::None}, //on table switch?
-    {"useVPinballXIni", Settings::ReloadType::None}, //custom action!
+    {"useVPinballXIni", Settings::ReloadType::None}, //call vpxiniscanner
     {"playfieldWindowWidth", Settings::ReloadType::Assets}, 
     {"playfieldWindowHeight", Settings::ReloadType::Assets}, 
     {"playfieldX", Settings::ReloadType::Assets}, 
@@ -704,8 +704,8 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"fontColor", Settings::ReloadType::Font},
     {"fontBgColor", Settings::ReloadType::Font},
     {"fontSize", Settings::ReloadType::Font},
-    {"titleX", Settings::ReloadType::None}, // ? (table switch)
-    {"titleY", Settings::ReloadType::None}, // ? (table switch)
+    {"titleX", Settings::ReloadType::Title},
+    {"titleY", Settings::ReloadType::Title},
     // MediaDimensions (done)
     {"forceImagesOnly", Settings::ReloadType::Tables},
     {"wheelMediaHeight", Settings::ReloadType::None},

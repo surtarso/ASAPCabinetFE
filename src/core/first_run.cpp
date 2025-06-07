@@ -32,14 +32,14 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             guiManager->processEvent(event);
-            // configEditor.handleEvent(event);
+            configEditor.handleEvent(event);
             if (event.type == SDL_QUIT) {
                 LOG_ERROR("FirstRun: Config window closed without saving. Exiting...");
                 return false;
             }
         }
         guiManager->newFrame();
-        // configEditor.drawGUI();
+        configEditor.drawGUI();
         guiManager->render(configRenderer);
         SDL_RenderPresent(configRenderer);
 

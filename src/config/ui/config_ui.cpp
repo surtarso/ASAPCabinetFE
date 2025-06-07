@@ -89,8 +89,11 @@ void ConfigUI::drawGUI() {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.9f, 0.3f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.7f, 0.1f, 1.0f));
     }
-    if (ImGui::Button("Save", ImVec2(100, 0))) {
+    if (ImGui::Button("Apply", ImVec2(100, 0))) {
         saveConfig();
+        if(standaloneMode_){
+            showConfig_ = false;
+        }
     }
     if (hasChanges) {
         ImGui::PopStyleColor(3);
@@ -150,10 +153,6 @@ void ConfigUI::saveConfig() {
                     appCallbacks_->reloadFont(standaloneMode_);
                     LOG_DEBUG("ConfigUI: Triggered reloadFont for ReloadType " << static_cast<int>(reloadType));
                     break;
-                case Settings::ReloadType::Tables:
-                    appCallbacks_->reloadTablesAndTitle();
-                    LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
-                    break;
                 case Settings::ReloadType::Windows:
                     appCallbacks_->reloadWindows();
                     LOG_DEBUG("ConfigUI: Triggered reloadWindows");
@@ -161,6 +160,10 @@ void ConfigUI::saveConfig() {
                 case Settings::ReloadType::Assets:
                     appCallbacks_->reloadAssetsAndRenderers();
                     LOG_DEBUG("ConfigUI: Triggered reloadAssetsAndRenderers for ReloadType " << static_cast<int>(reloadType));
+                    break;
+                case Settings::ReloadType::Tables:
+                    appCallbacks_->reloadTablesAndTitle();
+                    LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
                     break;
                 case Settings::ReloadType::Overlay:
                     appCallbacks_->reloadOverlaySettings();
