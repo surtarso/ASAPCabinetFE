@@ -11,6 +11,7 @@ FOR PR:
 - auto disable vpsdb and/or full rescan after a full rescan
 - organize config ui better, more intuitive (rename etc)
 - integrate tooltips back
+- implement 1st run
 
 -------------------------------------------------------------------
 

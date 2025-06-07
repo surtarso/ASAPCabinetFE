@@ -141,7 +141,7 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 
 Start the table in "Screenshot Mode" (default: s) and follow the on-screen instructions.
 
-**2.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `config.ini`.
+**2.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `settings.json`.
 ```sh
 ./generate_media.sh --help
 ```
