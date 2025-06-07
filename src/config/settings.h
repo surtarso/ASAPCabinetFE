@@ -24,8 +24,8 @@ struct Settings {
     static const std::unordered_map<std::string, ReloadType> settingsMetadata;
 
     // [VPX]
-    std::string VPXTablesPath = "/home/tarso/Games/VPX_Tables/"; // imguifiledialog
-    std::string VPinballXPath = "/home/tarso/Games/vpinball/build/VPinballX_BGFX"; // imguifiledialog
+    std::string VPXTablesPath = "$HOME/Games/VPX_Tables/"; // imguifiledialog
+    std::string VPinballXPath = "$HOME/Games/vpinball/build/VPinballX_BGFX"; // imguifiledialog
     std::string vpxIniPath = ""; // imguifiledialog
     std::string vpxStartArgs = "";
     std::string vpxEndArgs = "";
@@ -196,6 +196,12 @@ struct Settings {
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
     void applyPostProcessing(const std::string& exeDir) {
+
+        // ✅ Resolve VPX paths
+        VPXTablesPath = resolvePath(VPXTablesPath, exeDir);
+        VPinballXPath = resolvePath(VPinballXPath, exeDir);
+        // vpxIniPath    = resolvePath(vpxIniPath, exeDir);
+
         // Resolve paths for fields marked with needsPathResolution in config_schema.h
         std::vector<std::string> pathFields = {
             "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
@@ -224,11 +230,15 @@ private:
     // Resolve relative paths and environment variables (e.g., $USER)
     std::string resolvePath(const std::string& value, const std::string& exeDir) const {
         std::string result = value;
-        // Replace $USER with actual user home directory
-        if (result.find("$USER") != std::string::npos) {
-            const char* home = std::getenv("HOME");
-            if (home) {
-                result.replace(result.find("$USER"), 5, home);
+        // Replace $HOME with actual home directory
+        const char* home = std::getenv("HOME");
+        if (home) {
+            size_t pos;
+            while ((pos = result.find("$HOME")) != std::string::npos) {
+                result.replace(pos, 5, home);
+            }
+            if (!result.empty() && result[0] == '~') {
+                result.replace(0, 1, home);
             }
         }
         // Resolve relative paths
