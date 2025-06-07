@@ -1,6 +1,7 @@
 #include "config_ui.h"
 #include "table_metadata_renderer.h"
 #include "generic_section_renderer.h"
+#include "sound/isound_manager.h"
 #include <set>
 #include <algorithm>
 
@@ -139,7 +140,17 @@ void ConfigUI::saveConfig() {
             switch (reloadType) {
                 case Settings::ReloadType::None:
                     break;
+                case Settings::ReloadType::Title:
+                    if (assets_) {
+                        assets_->setTitlePosition(settings.titleX, settings.titleY);
+                        LOG_DEBUG("ConfigUI: Triggered setTitlePosition for ReloadType " << static_cast<int>(reloadType));
+                    }
+                    break;
                 case Settings::ReloadType::Font:
+                    appCallbacks_->reloadFont(standaloneMode_);
+                    LOG_DEBUG("ConfigUI: Triggered reloadFont for ReloadType " << static_cast<int>(reloadType));
+                    break;
+                case Settings::ReloadType::Tables:
                     appCallbacks_->reloadTablesAndTitle();
                     LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
                     break;
@@ -151,16 +162,21 @@ void ConfigUI::saveConfig() {
                     appCallbacks_->reloadAssetsAndRenderers();
                     LOG_DEBUG("ConfigUI: Triggered reloadAssetsAndRenderers for ReloadType " << static_cast<int>(reloadType));
                     break;
-                case Settings::ReloadType::Metadata:
+                case Settings::ReloadType::Overlay:
                     appCallbacks_->reloadOverlaySettings();
                     LOG_DEBUG("ConfigUI: Triggered reloadOverlaySettings");
                     break;
                 case Settings::ReloadType::Audio:
-                    if (appCallbacks_->getSoundManager()) {
-                        // appCallbacks_->getSoundManager()->updateSettings(jsonData_);
-                        LOG_DEBUG("ConfigUI: Triggered SoundManager::updateSettings");
-                    } else {
-                        LOG_ERROR("ConfigUI: SoundManager is null for Audio reload");
+                    if (appCallbacks_) {
+                        ISoundManager* soundManager = appCallbacks_->getSoundManager();
+                        if (soundManager) {
+                            soundManager->updateSettings(configService_->getSettings());
+                            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated ISoundManager");
+                        }
+                        if (assets_) {
+                            assets_->applyVideoAudioSettings();
+                            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated AssetManager");
+                        }
                     }
                     break;
                 default:

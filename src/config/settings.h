@@ -13,9 +13,11 @@ struct Settings {
     // Enum to define reload requirements for settings changes
     enum class ReloadType {
         None,           // No reload needed
-        Assets,         // Full table reloads
+        Title,          // Title position
+        Tables,         // Reload table related files
+        Assets,         // Full table reloads/renderers
         Windows,        // Window reloads
-        Metadata,      // UI widget reloads
+        Overlay,        // UI widget reloads
         Audio,          // Audio settings reload
         Font            // Font for title display reload
     };
@@ -615,69 +617,69 @@ private:
 
 // Define settingsMetadata (initialized in settings.cpp)
 inline const std::unordered_map<std::string, Settings::ReloadType> Settings::settingsMetadata = {
-    // VPX (requires full table reload)
+    // VPX
     {"VPXTablesPath", Settings::ReloadType::None},
     {"VPinballXPath", Settings::ReloadType::None},
     {"vpxIniPath", Settings::ReloadType::None},
     {"vpxStartArgs", Settings::ReloadType::None},
     {"vpxEndArgs", Settings::ReloadType::None},
-    // DPISettings (affects UI rendering)
+    // DPISettings
     {"dpiScale", Settings::ReloadType::None},
     {"enableDpiScaling", Settings::ReloadType::None},
-    // DefaultMedia (affects specific media components)
-    {"defaultPlayfieldImage", Settings::ReloadType::None},
-    {"defaultBackglassImage", Settings::ReloadType::None},
-    {"defaultDmdImage", Settings::ReloadType::None},
-    {"defaultWheelImage", Settings::ReloadType::None},
-    {"defaultTopperImage", Settings::ReloadType::None},
-    {"defaultPlayfieldVideo", Settings::ReloadType::None},
-    {"defaultBackglassVideo", Settings::ReloadType::None},
-    {"defaultDmdVideo", Settings::ReloadType::None},
-    {"defaultTopperVideo", Settings::ReloadType::None},
-    // CustomMedia
-    {"customPlayfieldImage", Settings::ReloadType::None},
-    {"customBackglassImage", Settings::ReloadType::None},
-    {"customDmdImage", Settings::ReloadType::None},
-    {"customWheelImage", Settings::ReloadType::None},
-    {"customTopperImage", Settings::ReloadType::None},
-    {"customPlayfieldVideo", Settings::ReloadType::None},
-    {"customBackglassVideo", Settings::ReloadType::None},
-    {"customDmdVideo", Settings::ReloadType::None},
-    {"customTopperVideo", Settings::ReloadType::None},
-    {"tableMusic", Settings::ReloadType::None},
-    {"customLaunchSound", Settings::ReloadType::None},
-    // WindowSettings
-    {"videoBackend", Settings::ReloadType::None},
-    {"useVPinballXIni", Settings::ReloadType::None},
-    {"playfieldWindowWidth", Settings::ReloadType::None},
-    {"playfieldWindowHeight", Settings::ReloadType::None},
-    {"playfieldX", Settings::ReloadType::None},
-    {"playfieldY", Settings::ReloadType::None},
-    {"showBackglass", Settings::ReloadType::None},
-    {"backglassWindowWidth", Settings::ReloadType::None},
-    {"backglassWindowHeight", Settings::ReloadType::None},
-    {"backglassX", Settings::ReloadType::None},
-    {"backglassY", Settings::ReloadType::None},
-    {"showDMD", Settings::ReloadType::None},
-    {"dmdWindowWidth", Settings::ReloadType::None},
-    {"dmdWindowHeight", Settings::ReloadType::None},
-    {"dmdX", Settings::ReloadType::None},
-    {"dmdY", Settings::ReloadType::None},
-    {"showTopper", Settings::ReloadType::None},
-    {"topperWindowWidth", Settings::ReloadType::None},
-    {"topperWindowHeight", Settings::ReloadType::None},
-    {"topperWindowX", Settings::ReloadType::None},
-    {"topperWindowY", Settings::ReloadType::None},
-    // TableMetadata
-    {"titleSource", Settings::ReloadType::None},
-    {"fetchVPSdb", Settings::ReloadType::None},
-    {"forceRebuildMetadata", Settings::ReloadType::None},
-    {"titleSortBy", Settings::ReloadType::None},
-    {"showMetadata", Settings::ReloadType::Metadata},
+    // DefaultMedia (done)
+    {"defaultPlayfieldImage", Settings::ReloadType::Tables},
+    {"defaultBackglassImage", Settings::ReloadType::Tables},
+    {"defaultDmdImage", Settings::ReloadType::Tables},
+    {"defaultWheelImage", Settings::ReloadType::Tables},
+    {"defaultTopperImage", Settings::ReloadType::Tables},
+    {"defaultPlayfieldVideo", Settings::ReloadType::Tables},
+    {"defaultBackglassVideo", Settings::ReloadType::Tables},
+    {"defaultDmdVideo", Settings::ReloadType::Tables},
+    {"defaultTopperVideo", Settings::ReloadType::Tables},
+    // CustomMedia (done)
+    {"customPlayfieldImage", Settings::ReloadType::Tables},
+    {"customBackglassImage", Settings::ReloadType::Tables},
+    {"customDmdImage", Settings::ReloadType::Tables},
+    {"customWheelImage", Settings::ReloadType::Tables},
+    {"customTopperImage", Settings::ReloadType::Tables},
+    {"customPlayfieldVideo", Settings::ReloadType::Tables},
+    {"customBackglassVideo", Settings::ReloadType::Tables},
+    {"customDmdVideo", Settings::ReloadType::Tables},
+    {"customTopperVideo", Settings::ReloadType::Tables},
+    {"tableMusic", Settings::ReloadType::Tables},
+    {"customLaunchSound", Settings::ReloadType::Tables},
+    // WindowSettings (done except marked)
+    {"videoBackend", Settings::ReloadType::None}, //on table switch?
+    {"useVPinballXIni", Settings::ReloadType::None}, //custom action!
+    {"playfieldWindowWidth", Settings::ReloadType::Assets}, 
+    {"playfieldWindowHeight", Settings::ReloadType::Assets}, 
+    {"playfieldX", Settings::ReloadType::Assets}, 
+    {"playfieldY", Settings::ReloadType::Assets}, 
+    {"showBackglass", Settings::ReloadType::Assets}, 
+    {"backglassWindowWidth", Settings::ReloadType::Assets}, 
+    {"backglassWindowHeight", Settings::ReloadType::Assets}, 
+    {"backglassX", Settings::ReloadType::Assets}, 
+    {"backglassY", Settings::ReloadType::Assets}, 
+    {"showDMD", Settings::ReloadType::Assets}, 
+    {"dmdWindowWidth", Settings::ReloadType::Assets}, 
+    {"dmdWindowHeight", Settings::ReloadType::Assets}, 
+    {"dmdX", Settings::ReloadType::Assets}, 
+    {"dmdY", Settings::ReloadType::Assets}, 
+    {"showTopper", Settings::ReloadType::Assets}, 
+    {"topperWindowWidth", Settings::ReloadType::Assets}, 
+    {"topperWindowHeight", Settings::ReloadType::Assets}, 
+    {"topperWindowX", Settings::ReloadType::Assets}, 
+    {"topperWindowY", Settings::ReloadType::Assets}, 
+    // TableMetadata (done except marked)
+    {"titleSource", Settings::ReloadType::Tables},
+    {"fetchVPSdb", Settings::ReloadType::None}, // flip on save!
+    {"forceRebuildMetadata", Settings::ReloadType::None}, // flip on save!
+    {"titleSortBy", Settings::ReloadType::Tables},
+    {"showMetadata", Settings::ReloadType::Overlay},
     {"metadataPanelWidth", Settings::ReloadType::None},
     {"metadataPanelHeight", Settings::ReloadType::None},
     {"metadataPanelAlpha", Settings::ReloadType::None},
-    // UIWidgets
+    // UIWidgets (done)
     {"showArrowHint", Settings::ReloadType::None},
     {"arrowHintWidth", Settings::ReloadType::None},
     {"arrowHintHeight", Settings::ReloadType::None},
@@ -693,19 +695,19 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"scrollbarLength", Settings::ReloadType::None},
     {"scrollbarColor", Settings::ReloadType::None},
     {"scrollbarThumbColor", Settings::ReloadType::None},
-    // TitleDisplay
+    // TitleDisplay (done except marked)
     {"showWheel", Settings::ReloadType::None},
-    {"wheelWindow", Settings::ReloadType::None},
+    {"wheelWindow", Settings::ReloadType::None}, // ?
     {"showTitle", Settings::ReloadType::None},
-    {"titleWindow", Settings::ReloadType::None},
-    {"fontPath", Settings::ReloadType::None},
-    {"fontColor", Settings::ReloadType::None},
-    {"fontBgColor", Settings::ReloadType::None},
-    {"fontSize", Settings::ReloadType::None},
-    {"titleX", Settings::ReloadType::None},
-    {"titleY", Settings::ReloadType::None},
-    // MediaDimensions
-    {"forceImagesOnly", Settings::ReloadType::None},
+    {"titleWindow", Settings::ReloadType::None}, // ?
+    {"fontPath", Settings::ReloadType::Font},
+    {"fontColor", Settings::ReloadType::Font},
+    {"fontBgColor", Settings::ReloadType::Font},
+    {"fontSize", Settings::ReloadType::Font},
+    {"titleX", Settings::ReloadType::None}, // ? (table switch)
+    {"titleY", Settings::ReloadType::None}, // ? (table switch)
+    // MediaDimensions (done)
+    {"forceImagesOnly", Settings::ReloadType::Tables},
     {"wheelMediaHeight", Settings::ReloadType::None},
     {"wheelMediaWidth", Settings::ReloadType::None},
     {"wheelMediaX", Settings::ReloadType::None},
@@ -730,33 +732,33 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"topperMediaX", Settings::ReloadType::None},
     {"topperMediaY", Settings::ReloadType::None},
     {"topperRotation", Settings::ReloadType::None},
-    // AudioSettings
-    {"masterMute", Settings::ReloadType::None},
-    {"masterVol", Settings::ReloadType::None},
-    {"mediaAudioMute", Settings::ReloadType::None},
-    {"mediaAudioVol", Settings::ReloadType::None},
-    {"tableMusicMute", Settings::ReloadType::None},
-    {"tableMusicVol", Settings::ReloadType::None},
-    {"interfaceAudioMute", Settings::ReloadType::None},
-    {"interfaceAudioVol", Settings::ReloadType::None},
-    {"interfaceAmbienceMute", Settings::ReloadType::None},
-    {"interfaceAmbienceVol", Settings::ReloadType::None},
-    // UISounds
-    {"scrollPrevSound", Settings::ReloadType::None},
-    {"scrollNextSound", Settings::ReloadType::None},
-    {"scrollFastPrevSound", Settings::ReloadType::None},
-    {"scrollFastNextSound", Settings::ReloadType::None},
-    {"scrollJumpPrevSound", Settings::ReloadType::None},
-    {"scrollJumpNextSound", Settings::ReloadType::None},
-    {"scrollRandomSound", Settings::ReloadType::None},
-    {"launchTableSound", Settings::ReloadType::None},
-    {"launchScreenshotSound", Settings::ReloadType::None},
-    {"configToggleSound", Settings::ReloadType::None},
-    {"configSaveSound", Settings::ReloadType::None},
-    {"screenshotTakeSound", Settings::ReloadType::None},
-    {"screenshotQuitSound", Settings::ReloadType::None},
-    {"ambienceSound", Settings::ReloadType::None},
-    // Internal
+    // AudioSettings (done)
+    {"masterMute", Settings::ReloadType::Audio},
+    {"masterVol", Settings::ReloadType::Audio},
+    {"mediaAudioMute", Settings::ReloadType::Audio},
+    {"mediaAudioVol", Settings::ReloadType::Audio},
+    {"tableMusicMute", Settings::ReloadType::Audio},
+    {"tableMusicVol", Settings::ReloadType::Audio},
+    {"interfaceAudioMute", Settings::ReloadType::Audio},
+    {"interfaceAudioVol", Settings::ReloadType::Audio},
+    {"interfaceAmbienceMute", Settings::ReloadType::Audio},
+    {"interfaceAmbienceVol", Settings::ReloadType::Audio},
+    // UISounds (done)
+    {"scrollPrevSound", Settings::ReloadType::Tables},
+    {"scrollNextSound", Settings::ReloadType::Tables},
+    {"scrollFastPrevSound", Settings::ReloadType::Tables},
+    {"scrollFastNextSound", Settings::ReloadType::Tables},
+    {"scrollJumpPrevSound", Settings::ReloadType::Tables},
+    {"scrollJumpNextSound", Settings::ReloadType::Tables},
+    {"scrollRandomSound", Settings::ReloadType::Tables},
+    {"launchTableSound", Settings::ReloadType::Tables},
+    {"launchScreenshotSound", Settings::ReloadType::Tables},
+    {"configToggleSound", Settings::ReloadType::Tables},
+    {"configSaveSound", Settings::ReloadType::Tables},
+    {"screenshotTakeSound", Settings::ReloadType::Tables},
+    {"screenshotQuitSound", Settings::ReloadType::Tables},
+    {"ambienceSound", Settings::ReloadType::Tables},
+    // Internal (done)
     {"vpxSubCmd", Settings::ReloadType::None},
     {"logFile", Settings::ReloadType::None},
     {"vpsDbPath", Settings::ReloadType::None},
