@@ -87,26 +87,53 @@ void ConfigUI::drawGUI() {
     ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
-    // Render sections in order, but only "VPX" in standalone mode
-    for (const auto& sectionName : sectionConfig_.getSectionOrder()) {
-        if (standaloneMode_ && sectionName != "VPX") {
-            continue; // Skip all sections except VPX in standalone mode
-        }
-        if (jsonData_.contains(sectionName)) {
-            ImGui::PushID(sectionName.c_str());
-            auto it = renderers_.find(sectionName);
+    // Render sections in custom order for standalone mode
+    if (standaloneMode_) {
+        // Render VPX first, opened by default
+        if (jsonData_.contains("VPX")) {
+            ImGui::PushID("VPX");
+            auto it = renderers_.find("VPX");
             if (it != renderers_.end()) {
-                bool defaultOpen = standaloneMode_ && sectionName == "VPX"; // Expand VPX by default in standalone mode
-                if (sectionName == "Keybinds" && isCapturingKey_) {
-                    ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
-                }
-                it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen);
+                it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, true);
             } else {
-                LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
+                LOG_ERROR("ConfigUI: No renderer for section VPX");
             }
-            renderedSections.insert(sectionName);
+            renderedSections.insert("VPX");
             ImGui::PopID();
             ImGui::Spacing();
+        }
+        // Render WindowSettings second, closed by default
+        if (jsonData_.contains("WindowSettings")) {
+            ImGui::PushID("WindowSettings");
+            auto it = renderers_.find("WindowSettings");
+            if (it != renderers_.end()) {
+                it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, false);
+            } else {
+                LOG_ERROR("ConfigUI: No renderer for section WindowSettings");
+            }
+            renderedSections.insert("WindowSettings");
+            ImGui::PopID();
+            ImGui::Spacing();
+        }
+    } else {
+        // Render all sections in order for non-standalone mode
+        for (const auto& sectionName : sectionConfig_.getSectionOrder()) {
+            if (jsonData_.contains(sectionName)) {
+                ImGui::PushID(sectionName.c_str());
+                auto it = renderers_.find(sectionName);
+                if (it != renderers_.end()) {
+                    bool defaultOpen = false; // Default to closed for non-standalone
+                    if (sectionName == "Keybinds" && isCapturingKey_) {
+                        ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
+                    }
+                    it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen);
+                } else {
+                    LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
+                }
+                renderedSections.insert(sectionName);
+                ImGui::PopID();
+                ImGui::Spacing();
+            }
         }
     }
 

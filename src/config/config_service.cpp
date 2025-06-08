@@ -14,8 +14,66 @@ const Settings& ConfigService::getSettings() const {
 
 bool ConfigService::isConfigValid() const {
     LOG_DEBUG("Validating config file.");
-    return std::filesystem::exists(settings_.VPXTablesPath) && 
-           std::filesystem::exists(settings_.VPinballXPath);
+
+    // Check for empty or unresolved paths
+    if (settings_.VPinballXPath.empty()) {
+        LOG_ERROR("Config validation failed: VPinballXPath is empty.");
+        return false;
+    }
+    if (settings_.VPXTablesPath.empty()) {
+        LOG_ERROR("Config validation failed: VPXTablesPath is empty.");
+        return false;
+    }
+
+    // Validate VPinballX path as an executable
+    if (!std::filesystem::exists(settings_.VPinballXPath)) {
+        LOG_ERROR("Config validation failed: VPinballX path does not exist: " << settings_.VPinballXPath);
+        return false;
+    }
+    if (!std::filesystem::is_regular_file(settings_.VPinballXPath)) {
+        LOG_ERROR("Config validation failed: VPinballX path is not a regular file: " << settings_.VPinballXPath);
+        return false;
+    }
+    auto perms = std::filesystem::status(settings_.VPinballXPath).permissions();
+    if ((perms & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
+        LOG_ERROR("Config validation failed: VPinballX path lacks executable permissions: " << settings_.VPinballXPath);
+        return false;
+    }
+
+    // Validate VPXTablesPath contains .vpx files (depth 1)
+    if (!std::filesystem::exists(settings_.VPXTablesPath)) {
+        LOG_ERROR("Config validation failed: VPXTablesPath does not exist: " << settings_.VPXTablesPath);
+        return false;
+    }
+    if (!std::filesystem::is_directory(settings_.VPXTablesPath)) {
+        LOG_ERROR("Config validation failed: VPXTablesPath is not a directory: " << settings_.VPXTablesPath);
+        return false;
+    }
+    bool hasVpxFiles = false;
+    // Check root directory
+    for (const auto& entry : std::filesystem::directory_iterator(settings_.VPXTablesPath)) {
+        if (entry.path().extension() == ".vpx") {
+            hasVpxFiles = true;
+            break;
+        }
+        // Check one level of subdirectories if no .vpx found yet
+        if (!hasVpxFiles && entry.is_directory()) {
+            for (const auto& subEntry : std::filesystem::directory_iterator(entry.path())) {
+                if (subEntry.path().extension() == ".vpx") {
+                    hasVpxFiles = true;
+                    break;
+                }
+            }
+            if (hasVpxFiles) break;
+        }
+    }
+    if (!hasVpxFiles) {
+        LOG_ERROR("Config validation failed: No .vpx files found in VPXTablesPath: " << settings_.VPXTablesPath);
+        return false;
+    }
+
+    LOG_DEBUG("Config validation passed.");
+    return true;
 }
 
 void ConfigService::loadConfig() {
