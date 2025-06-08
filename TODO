@@ -1,9 +1,9 @@
 TODO
 
 FOR PR:
+- crash in dialog when used in both 1st and and app on same session
 
 - re-enable dpi settings
-- crash in dialog when used in both 1st and and app on same session
 - use reasonable values on uiwidgets section elements
 
 -------------------------------------------------------------------

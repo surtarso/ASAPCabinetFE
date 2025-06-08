@@ -1,11 +1,11 @@
-#include "generic_section_renderer.h"
+#include "section_renderer.h"
 #include "section_config.h"
 #include "config_ui.h"
 #include <set>
 #include <algorithm>
 #include <map>
 
-void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen, bool& isDialogOpen, std::string& dialogKey) {
+void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen, bool& isDialogOpen, std::string& dialogKey) {
     SectionConfig config;
     std::string displayName = config.getSectionDisplayName(sectionName);
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;

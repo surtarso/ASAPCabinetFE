@@ -6,7 +6,7 @@
 #include "render/iasset_manager.h"
 #include "tables/table_data.h"
 #include "core/iapp_callbacks.h"
-#include "section_renderer.h"
+#include "isection_renderer.h"
 #include "section_config.h"
 #include <string>
 #include <vector>

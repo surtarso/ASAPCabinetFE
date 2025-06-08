@@ -1,5 +1,5 @@
 #include "config_ui.h"
-#include "generic_section_renderer.h"
+#include "section_renderer.h"
 #include "sound/isound_manager.h"
 #include <set>
 #include <algorithm>
@@ -44,7 +44,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
 
 void ConfigUI::initializeRenderers() {
     for (const auto& section : sectionConfig_.getSectionOrder()) {
-        renderers_[section] = std::make_unique<GenericSectionRenderer>(
+        renderers_[section] = std::make_unique<SectionRenderer>(
             sectionConfig_.getKeyOrder(section));
     }
 }
