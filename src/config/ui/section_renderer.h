@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <imgui.h>
+#include "ImGuiFileDialog.h"
 #include "utils/logging.h"
 
 /**
@@ -14,7 +15,7 @@
 class ISectionRenderer {
 public:
     virtual ~ISectionRenderer() = default;
-    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen = false) = 0;
+    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen = false, bool& isDialogOpen = *(new bool(false)), std::string& dialogKey = *(new std::string())) = 0;
 };
 
 /**
@@ -23,7 +24,6 @@ public:
  */
 class BaseSectionRenderer : public ISectionRenderer {
 protected:
-    // Render a boolean field
     void renderBool(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         bool val = value.get<bool>();
         if (ImGui::Checkbox(key.c_str(), &val)) {
@@ -32,7 +32,6 @@ protected:
         }
     }
 
-    // Render a float field with a slider
     void renderFloat(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                      float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
         float val = value.get<float>();
@@ -42,7 +41,6 @@ protected:
         }
     }
 
-    // Render an integer field
     void renderInt(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                    int minVal = 0, int maxVal = 10000) {
         int val = value.get<int>();
@@ -53,7 +51,6 @@ protected:
         }
     }
 
-    // Render a string field
     void renderString(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         std::string val = value.get<std::string>();
         char buffer[256];
@@ -65,7 +62,6 @@ protected:
         }
     }
 
-    // Render a color field (RGBA array)
     void renderColor(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         float color[4] = {
             value[0].get<float>() / 255.0f,
@@ -85,11 +81,10 @@ protected:
         }
     }
 
-    // Render a rotation field with snapping
     void renderRotation(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         int val = value.get<int>();
         static std::unordered_map<std::string, int> lastLoggedValues;
-        int currentValue = snapToStep(val); // Initialize with snapped value
+        int currentValue = snapToStep(val);
         LOG_DEBUG("BaseSectionRenderer: Rendering " << key << " with currentValue " << currentValue);
         if (ImGui::SliderInt(key.c_str(), &currentValue, 0, 360, "%d°")) {
             int snappedValue = snapToStep(currentValue);
@@ -112,7 +107,7 @@ protected:
         if (ImGui::Button(buttonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             if (!isCapturing) {
                 isCapturing = true;
-                capturingKeyName = key; // Use the raw key here
+                capturingKeyName = key;
                 LOG_DEBUG("BaseSectionRenderer: Started capturing key for " << sectionName << "." << key);
             }
         }
@@ -121,7 +116,40 @@ protected:
         }
     }
 
-    // Helper function to snap value to nearest 90-degree step
+    void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName, bool& isDialogOpen, std::string& dialogKey) {
+        std::string val = value.get<std::string>();
+        char buffer[1024];
+        strncpy(buffer, val.c_str(), sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 60);
+        if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
+            value = std::string(buffer);
+            LOG_DEBUG("BaseSectionRenderer::renderPathOrExecutable: " << sectionName << "." << key << " = " << value.get<std::string>());
+        }
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+        if (ImGui::Button("Browse", ImVec2(50, 0))) {
+            LOG_DEBUG("BaseSectionRenderer: Browse button clicked for " << key);
+            IGFD::FileDialogConfig config;
+            config.path = (!val.empty() && std::filesystem::exists(val)) ? val : std::string(getenv("HOME"));
+            config.flags = ImGuiFileDialogFlags_Modal;
+            ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+
+            if (key == "VPXTablesPath") {
+                ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_VPXTablesPath", "Select VPX Tables Folder", nullptr, config);
+            } else if (key == "VPinballXPath") {
+                ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+                ImGuiFileDialog::Instance()->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "((VPinballX))", config);
+            } else if (key == "vpxIniPath") {
+                ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+                ImGuiFileDialog::Instance()->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
+            }
+            isDialogOpen = true;
+            dialogKey = key;
+            LOG_DEBUG("Dialog opened with key: " << dialogKey << ", isDialogOpen: " << isDialogOpen);
+        }
+    }
+
     int snapToStep(int value) {
         const int steps[] = {0, 90, 180, 270, 360};
         int nearestStep = 0;

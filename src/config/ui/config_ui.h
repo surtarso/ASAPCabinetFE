@@ -17,8 +17,6 @@
 /**
  * @class ConfigUI
  * @brief Manages the ImGui-based configuration UI.
- *
- * This class orchestrates rendering of configuration sections using a registry of section renderers.
  */
 class ConfigUI {
 public:
@@ -35,25 +33,27 @@ public:
 
 private:
     IConfigService* configService_;
-    IKeybindProvider* keybindProvider_; // for keybind section
-    IAssetManager* assets_; // for title position reload and table assets
+    IKeybindProvider* keybindProvider_;
+    IAssetManager* assets_;
     IAppCallbacks* appCallbacks_;
     bool& showConfig_;
     bool standaloneMode_;
     nlohmann::json jsonData_;
     nlohmann::json originalJsonData_;
-    SectionConfig sectionConfig_; // section order
-    std::unordered_map<std::string, std::unique_ptr<ISectionRenderer>> renderers_; // item order
-    std::unordered_map<std::string, bool> sectionCollapseStates_; // Tracks section collapse state
-    float windowWidthRatio_ = 0.8f; // 80% of screen width (Add to settings)
-    float windowHeightRatio_ = 0.8f; // 80% of screen height (Add to settings)
+    SectionConfig sectionConfig_;
+    std::unordered_map<std::string, std::unique_ptr<ISectionRenderer>> renderers_;
+    std::unordered_map<std::string, bool> sectionCollapseStates_;
+    float windowWidthRatio_ = 0.8f;
+    float windowHeightRatio_ = 0.8f;
 
     bool isCapturingKey_ = false;
     std::string capturingKeyName_;
+
+    bool isDialogOpen_ = false;
+    std::string dialogKey_ = "";
 
     void initializeRenderers();
     void updateKeybind(const std::string& action, const std::string& bind);
 };
 
 #endif // CONFIG_UI_H
-

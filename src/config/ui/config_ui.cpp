@@ -18,7 +18,6 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
         originalJsonData_ = jsonData_;
-        // Initialize keybind values from KeybindManager
         if (jsonData_.contains("Keybinds")) {
             for (const auto& action : keybindProvider_->getActions()) {
                 SDL_Event event;
@@ -44,7 +43,6 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
 }
 
 void ConfigUI::initializeRenderers() {
-    // Generic renderer for sections
     for (const auto& section : sectionConfig_.getSectionOrder()) {
         renderers_[section] = std::make_unique<GenericSectionRenderer>(
             sectionConfig_.getKeyOrder(section));
@@ -61,10 +59,8 @@ void ConfigUI::drawGUI() {
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
     } else {
-        // Calculate ConfigUI window size (add these to internal)
         float configWidth = io.DisplaySize.x * windowWidthRatio_;
         float configHeight = io.DisplaySize.y * windowHeightRatio_;
-        // Center window
         float configX = io.DisplaySize.x / 2 - configWidth / 2;
         float configY = io.DisplaySize.y / 2 - configHeight / 2;
         
@@ -82,19 +78,16 @@ void ConfigUI::drawGUI() {
 
     bool hasChanges = jsonData_ != originalJsonData_;
 
-    // Reserve space for Apply button at bottom
-    float buttonHeight = ImGui::GetFrameHeightWithSpacing() + 15.0f; // Button + padding
+    float buttonHeight = ImGui::GetFrameHeightWithSpacing() + 15.0f;
     ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
-    // Render sections in custom order for standalone mode
     if (standaloneMode_) {
-        // Render VPX first, opened by default
         if (jsonData_.contains("VPX")) {
             ImGui::PushID("VPX");
             auto it = renderers_.find("VPX");
             if (it != renderers_.end()) {
-                it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, true);
+                it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, true, isDialogOpen_, dialogKey_);
                 if (ImGui::Button("Reset to Default", ImVec2(120, 0))) {
                     resetSectionToDefault("VPX");
                 }
@@ -105,12 +98,11 @@ void ConfigUI::drawGUI() {
             ImGui::PopID();
             ImGui::Spacing();
         }
-        // Render WindowSettings second, closed by default
         if (jsonData_.contains("WindowSettings")) {
             ImGui::PushID("WindowSettings");
             auto it = renderers_.find("WindowSettings");
             if (it != renderers_.end()) {
-                it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, false);
+                it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, false, isDialogOpen_, dialogKey_);
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section WindowSettings");
             }
@@ -119,17 +111,16 @@ void ConfigUI::drawGUI() {
             ImGui::Spacing();
         }
     } else {
-        // Render all sections in order for non-standalone mode
         for (const auto& sectionName : sectionConfig_.getSectionOrder()) {
             if (jsonData_.contains(sectionName)) {
                 ImGui::PushID(sectionName.c_str());
                 auto it = renderers_.find(sectionName);
                 if (it != renderers_.end()) {
-                    bool defaultOpen = false; // Default to closed for non-standalone
+                    bool defaultOpen = false;
                     if (sectionName == "Keybinds" && isCapturingKey_) {
                         ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
                     }
-                    it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen);
+                    it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen, isDialogOpen_, dialogKey_);
                 } else {
                     LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
                 }
@@ -141,7 +132,6 @@ void ConfigUI::drawGUI() {
     }
 
     ImGui::EndChild();
-    // Position button at bottom of window
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - buttonHeight);
 
     ImGui::Separator();
@@ -152,7 +142,7 @@ void ConfigUI::drawGUI() {
     }
     if (ImGui::Button("Apply", ImVec2(100, 0))) {
         saveConfig();
-        if(standaloneMode_){
+        if (standaloneMode_) {
             showConfig_ = false;
         }
     }
@@ -163,12 +153,53 @@ void ConfigUI::drawGUI() {
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));
     }
     if (ImGui::Button("Close", ImVec2(100, 0))) {
-        jsonData_ = originalJsonData_; // Discard changes
-        showConfig_ = false; // Close the UI
+        jsonData_ = originalJsonData_;
+        showConfig_ = false;
     }
     if (hasChanges) {
-        ImGui::PopStyleColor(3); // Pop Close button colors
-        ImGui::PopStyleColor(3); // Pop Apply button colors
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(3);
+    }
+
+    if (isDialogOpen_) {
+        LOG_DEBUG("ConfigUI: Attempting to display dialog for key: " << dialogKey_ << ", isDialogOpen_: " << isDialogOpen_);
+        ImVec2 maxSize = ImVec2(ImGui::GetIO().DisplaySize.x * 0.8f, ImGui::GetIO().DisplaySize.y * 0.8f);
+        ImVec2 minSize = ImVec2(600, 400);
+
+        if (dialogKey_ == "VPXTablesPath") {
+            if (ImGuiFileDialog::Instance()->Display("FolderDlg_VPXTablesPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("ConfigUI: Displaying FolderDlg_VPXTablesPath");
+                if (ImGuiFileDialog::Instance()->IsOk()) {
+                    jsonData_["VPX"]["VPXTablesPath"] = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    LOG_INFO("ConfigUI: Selected VPXTablesPath: " << jsonData_["VPX"]["VPXTablesPath"].get<std::string>());
+                }
+                ImGuiFileDialog::Instance()->Close();
+                isDialogOpen_ = false;
+            }
+        } else if (dialogKey_ == "VPinballXPath") {
+            if (ImGuiFileDialog::Instance()->Display("FileDlg_VPinballXPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("ConfigUI: Displaying FileDlg_VPinballXPath");
+                if (ImGuiFileDialog::Instance()->IsOk()) {
+                    jsonData_["VPX"]["VPinballXPath"] = ImGuiFileDialog::Instance()->GetFilePathName();
+                    LOG_INFO("ConfigUI: Selected VPinballXPath: " << jsonData_["VPX"]["VPinballXPath"].get<std::string>());
+                }
+                ImGuiFileDialog::Instance()->Close();
+                isDialogOpen_ = false;
+            }
+        } else if (dialogKey_ == "vpxIniPath") {
+            if (ImGuiFileDialog::Instance()->Display("FileDlg_vpxIniPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("ConfigUI: Displaying FileDlg_vpxIniPath");
+                if (ImGuiFileDialog::Instance()->IsOk()) {
+                    jsonData_["VPX"]["vpxIniPath"] = ImGuiFileDialog::Instance()->GetFilePathName();
+                    LOG_INFO("ConfigUI: Selected vpxIniPath: " << jsonData_["VPX"]["vpxIniPath"].get<std::string>());
+                }
+                ImGuiFileDialog::Instance()->Close();
+                isDialogOpen_ = false;
+            }
+        } else {
+            LOG_ERROR("ConfigUI: Unknown dialog key: " << dialogKey_);
+            isDialogOpen_ = false;
+        }
     }
 
     ImGui::End();
@@ -191,7 +222,6 @@ void ConfigUI::handleEvent(const SDL_Event& event) {
 void ConfigUI::updateKeybind(const std::string& action, const std::string& bind) {
     if (!jsonData_.contains("Keybinds") || !keybindProvider_) return;
 
-    // Normalize action name by removing spaces and converting to camelCase
     std::string normalizedAction = action;
     for (size_t i = 0; i < normalizedAction.size(); ++i) {
         if (normalizedAction[i] == ' ') {
@@ -202,13 +232,12 @@ void ConfigUI::updateKeybind(const std::string& action, const std::string& bind)
         }
     }
 
-    jsonData_["Keybinds"][action] = bind; // Update JSON with new binding
+    jsonData_["Keybinds"][action] = bind;
     SDL_Keycode key = SDL_GetKeyFromName(bind.c_str());
     if (key != SDLK_UNKNOWN) {
         keybindProvider_->setKey(normalizedAction, key);
         LOG_DEBUG("ConfigUI: Updated keybind " << normalizedAction << " to " << bind);
     } else if (bind.find("JOY_") == 0) {
-        // Parse joystick input (simplified for now, expand based on KeybindManager logic)
         if (bind.find("_BUTTON_") != std::string::npos) {
             size_t joyEnd = bind.find("_BUTTON_");
             int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
@@ -256,7 +285,7 @@ void ConfigUI::saveConfig() {
                     std::string fullKey = key;
                     auto it = Settings::settingsMetadata.find(fullKey);
                     if (it != Settings::settingsMetadata.end()) {
-                        reloadTypes.insert(it->second.first); // Insert only the ReloadType from the pair
+                        reloadTypes.insert(it->second.first);
                         LOG_DEBUG("ConfigUI: Detected change in " << sectionName << "." << key << ", ReloadType: " << static_cast<int>(it->second.first));
                     } else {
                         LOG_DEBUG("ConfigUI: No ReloadType found for " << sectionName << "." << key);
@@ -266,9 +295,8 @@ void ConfigUI::saveConfig() {
         }
 
         Settings& settings = const_cast<Settings&>(configService_->getSettings());
-        settings = jsonData_; // This updates the entire Settings object, including keybinds
+        settings = jsonData_;
 
-        // Explicitly sync keybinds to Settings::keybinds_ with normalized actions
         if (jsonData_.contains("Keybinds") && jsonData_["Keybinds"].is_object()) {
             for (const auto& [action, bind] : jsonData_["Keybinds"].items()) {
                 std::string normalizedAction = action;
@@ -290,7 +318,6 @@ void ConfigUI::saveConfig() {
             }
         }
 
-        // Reset forceRebuildMetadata if it was true and a rebuild was triggered
         if (originalSettings.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", false)) {
             settings.forceRebuildMetadata = false;
             jsonData_["TableMetadata"]["forceRebuildMetadata"] = false;
@@ -357,12 +384,12 @@ void ConfigUI::saveConfig() {
 
 void ConfigUI::resetSectionToDefault(const std::string& sectionName) {
     LOG_DEBUG("ConfigUI: Resetting section " << sectionName << " to default.");
-    Settings defaultSettings; // Create instance with default values from Settings.h
+    Settings defaultSettings;
     nlohmann::json defaultJson;
-    to_json(defaultJson, defaultSettings); // Convert defaults to JSON
+    to_json(defaultJson, defaultSettings);
 
     if (defaultJson.contains(sectionName)) {
-        jsonData_[sectionName] = defaultJson[sectionName]; // Overwrite current section with defaults
+        jsonData_[sectionName] = defaultJson[sectionName];
         LOG_DEBUG("ConfigUI: Section " << sectionName << " reset to default values.");
     } else {
         LOG_ERROR("ConfigUI: No default data found for section " << sectionName);
