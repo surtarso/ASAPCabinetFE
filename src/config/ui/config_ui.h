@@ -34,19 +34,26 @@ public:
 
 private:
     IConfigService* configService_;
-    IKeybindProvider* keybindProvider_;
+    IKeybindProvider* keybindProvider_; // for keybind section
     IAssetManager* assets_; // for title position reload.
-    size_t* currentIndex_;
-    std::vector<TableData>* tables_;
+    // size_t* currentIndex_;
+    // std::vector<TableData>* tables_;
     IAppCallbacks* appCallbacks_;
     bool& showConfig_;
     bool standaloneMode_;
     nlohmann::json jsonData_;
     nlohmann::json originalJsonData_;
-    SectionConfig sectionConfig_;
-    std::unordered_map<std::string, std::unique_ptr<ISectionRenderer>> renderers_;
+    SectionConfig sectionConfig_; // section order
+    std::unordered_map<std::string, std::unique_ptr<ISectionRenderer>> renderers_; // item order
+    std::unordered_map<std::string, bool> sectionCollapseStates_; // Tracks section collapse state
+    float windowWidthRatio_ = 0.8f; // 80% of screen width (Add to settings)
+    float windowHeightRatio_ = 0.8f; // 80% of screen height (Add to settings)
+
+    bool isCapturingKey_ = false;
+    std::string capturingKeyName_;
 
     void initializeRenderers();
+    void updateKeybind(const std::string& action, const std::string& bind);
 };
 
 #endif // CONFIG_UI_H

@@ -46,7 +46,7 @@ protected:
     void renderInt(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                    int minVal = 0, int maxVal = 10000) {
         int val = value.get<int>();
-        if (ImGui::InputInt(key.c_str(), &val, 1, 100)) {
+        if (ImGui::InputInt(key.c_str(), &val)) {
             val = std::clamp(val, minVal, maxVal);
             value = val;
             LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << val);
@@ -83,6 +83,37 @@ protected:
             LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key
                       << " to [" << value[0] << "," << value[1] << "," << value[2] << "," << value[3] << "]");
         }
+    }
+
+    // Render a rotation field with snapping
+    void renderRotation(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
+        int val = value.get<int>();
+        static std::unordered_map<std::string, int> lastLoggedValues;
+        int currentValue = snapToStep(val); // Initialize with snapped value
+        LOG_DEBUG("BaseSectionRenderer: Rendering " << key << " with currentValue " << currentValue);
+        if (ImGui::SliderInt(key.c_str(), &currentValue, 0, 360, "%d°")) {
+            int snappedValue = snapToStep(currentValue);
+            if (snappedValue != lastLoggedValues[key]) {
+                value = snappedValue;
+                lastLoggedValues[key] = snappedValue;
+                LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << snappedValue << "°");
+            }
+        }
+    }
+
+    // Helper function to snap value to nearest 90-degree step
+    int snapToStep(int value) {
+        const int steps[] = {0, 90, 180, 270, 360};
+        int nearestStep = 0;
+        int minDiff = abs(value - steps[0]);
+        for (int i = 1; i < 5; ++i) {
+            int diff = abs(value - steps[i]);
+            if (diff < minDiff) {
+                minDiff = diff;
+                nearestStep = steps[i];
+            }
+        }
+        return nearestStep;
     }
 };
 

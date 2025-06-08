@@ -8,8 +8,6 @@ FOR PR:
 - integrate 1st run validconfig check (and window config)
 
 - add button to reset current config ui section to default
-- organize config ui better, more intuitive (rename etc)
-- create all config ui widgets for all sections
 - integrate tooltips back
 
 

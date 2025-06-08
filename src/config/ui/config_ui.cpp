@@ -1,18 +1,17 @@
 #include "config_ui.h"
-#include "table_metadata_renderer.h"
 #include "generic_section_renderer.h"
 #include "sound/isound_manager.h"
 #include <set>
 #include <algorithm>
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
-                   IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables,
+                   IAssetManager* assets,[[maybe_unused]] size_t* currentIndex,[[maybe_unused]] std::vector<TableData>* tables,
                    IAppCallbacks* appCallbacks, bool& showConfig, bool standaloneMode)
     : configService_(configService),
       keybindProvider_(keybindProvider),
       assets_(assets),
-      currentIndex_(currentIndex),
-      tables_(tables),
+    //   currentIndex_(currentIndex),
+    //   tables_(tables),
       appCallbacks_(appCallbacks),
       showConfig_(showConfig),
       standaloneMode_(standaloneMode)
@@ -21,6 +20,25 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
         originalJsonData_ = jsonData_;
+        // Initialize keybind values from KeybindManager
+        if (jsonData_.contains("Keybinds")) {
+            for (const auto& action : keybindProvider_->getActions()) {
+                SDL_Event event;
+                event.type = SDL_KEYDOWN;
+                event.key.keysym.sym = keybindProvider_->getKey(action);
+                event.key.keysym.scancode = SDL_SCANCODE_UNKNOWN;
+                event.key.keysym.mod = 0;
+                event.key.state = SDL_PRESSED;
+                event.key.repeat = 0;
+                std::string currentBind = keybindProvider_->eventToString(event);
+                if (currentBind.empty()) {
+                    if (auto key = keybindProvider_->getKey(action); key != SDLK_UNKNOWN) {
+                        currentBind = SDL_GetKeyName(key);
+                    }
+                }
+                jsonData_["Keybinds"][action] = currentBind;
+            }
+        }
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigUI: Error initializing JSON data: " << e.what());
     }
@@ -28,21 +46,29 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
 }
 
 void ConfigUI::initializeRenderers() {
-    // Unique renderers
-    renderers_["TableMetadata"] = std::make_unique<TableMetadataSectionRenderer>(
-        sectionConfig_.getKeyOrder("TableMetadata"));
-    // Generic renderer for other sections
+    // Generic renderer for sections
     for (const auto& section : sectionConfig_.getSectionOrder()) {
-        if (section != "TableMetadata") {
-            renderers_[section] = std::make_unique<GenericSectionRenderer>(
-                sectionConfig_.getKeyOrder(section));
-        }
+        renderers_[section] = std::make_unique<GenericSectionRenderer>(
+            sectionConfig_.getKeyOrder(section));
     }
 }
 
 void ConfigUI::drawGUI() {
-    ImGui::Begin("Configuration", &showConfig_, ImGuiWindowFlags_AlwaysAutoResize);
-
+    ImGuiIO& io = ImGui::GetIO();
+    // Calculate ConfigUI window size (add these to internal)
+    float configWidth = io.DisplaySize.x * windowWidthRatio_;
+    float configHeight = io.DisplaySize.y * windowHeightRatio_;
+    // Center window
+    float configX = io.DisplaySize.x / 2 - configWidth / 2;
+    float configY = io.DisplaySize.y / 2 - configHeight / 2;
+    
+    ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
+    
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | 
+                                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+    ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
+    
     if (jsonData_.is_null()) {
         LOG_ERROR("ConfigUI: JSON data is null.");
         ImGui::Text("Error: Failed to load configuration data.");
@@ -51,6 +77,9 @@ void ConfigUI::drawGUI() {
     }
 
     bool hasChanges = jsonData_ != originalJsonData_;
+    // Reserve space for Apply button at bottom
+    float buttonHeight = ImGui::GetFrameHeightWithSpacing() + 15.0f; // Button + padding
+    ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
     // Render sections in order
@@ -59,6 +88,9 @@ void ConfigUI::drawGUI() {
             ImGui::PushID(sectionName.c_str());
             auto it = renderers_.find(sectionName);
             if (it != renderers_.end()) {
+                if (sectionName == "Keybinds" && isCapturingKey_) {
+                    ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
+                }
                 it->second->render(sectionName, jsonData_[sectionName]);
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
@@ -78,10 +110,17 @@ void ConfigUI::drawGUI() {
             renderers_[sectionName] = std::make_unique<GenericSectionRenderer>(
                 sectionConfig_.getKeyOrder(sectionName));
         }
+        if (sectionName == "Keybinds" && isCapturingKey_) {
+            ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
+        }
         renderers_[sectionName]->render(sectionName, jsonData_[sectionName]);
         ImGui::PopID();
         ImGui::Spacing();
     }
+
+    ImGui::EndChild();
+    // Position button at bottom of window
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - buttonHeight);
 
     ImGui::Separator();
     if (hasChanges) {
@@ -103,8 +142,56 @@ void ConfigUI::drawGUI() {
 }
 
 void ConfigUI::handleEvent(const SDL_Event& event) {
-    //LOG_DEBUG("ConfigUI::handleEvent called.");
-    (void)event;
+    if (!isCapturingKey_) return;
+
+    if (event.type == SDL_KEYDOWN || event.type == SDL_JOYBUTTONDOWN || 
+        event.type == SDL_JOYHATMOTION || event.type == SDL_JOYAXISMOTION) {
+        std::string newBind = keybindProvider_->eventToString(event);
+        if (!newBind.empty()) {
+            LOG_DEBUG("ConfigUI: Captured bind: " << newBind << " for " << capturingKeyName_);
+            updateKeybind(capturingKeyName_, newBind);
+            isCapturingKey_ = false;
+        }
+    }
+}
+
+void ConfigUI::updateKeybind(const std::string& action, const std::string& bind) {
+    if (!jsonData_.contains("Keybinds") || !keybindProvider_) return;
+
+    jsonData_["Keybinds"][action] = bind;
+    SDL_Keycode key = SDL_GetKeyFromName(bind.c_str());
+    if (key != SDLK_UNKNOWN) {
+        keybindProvider_->setKey(action, key);
+        LOG_DEBUG("ConfigUI: Updated keybind " << action << " to " << bind);
+    } else if (bind.find("JOY_") == 0) {
+        // Parse joystick input (simplified for now, expand based on KeybindManager logic)
+        if (bind.find("_BUTTON_") != std::string::npos) {
+            size_t joyEnd = bind.find("_BUTTON_");
+            int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
+            uint8_t button = static_cast<uint8_t>(std::stoi(bind.substr(joyEnd + 8)));
+            keybindProvider_->setJoystickButton(action, joystickId, button);
+        } else if (bind.find("_HAT_") != std::string::npos) {
+            size_t joyEnd = bind.find("_HAT_");
+            size_t hatEnd = bind.find("_", joyEnd + 5);
+            int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
+            uint8_t hat = static_cast<uint8_t>(std::stoi(bind.substr(joyEnd + 5, hatEnd - (joyEnd + 5))));
+            std::string directionStr = bind.substr(hatEnd + 1);
+            uint8_t direction = SDL_HAT_CENTERED;
+            if (directionStr == "UP") direction = SDL_HAT_UP;
+            else if (directionStr == "DOWN") direction = SDL_HAT_DOWN;
+            else if (directionStr == "LEFT") direction = SDL_HAT_LEFT;
+            else if (directionStr == "RIGHT") direction = SDL_HAT_RIGHT;
+            keybindProvider_->setJoystickHat(action, joystickId, hat, direction);
+        } else if (bind.find("_AXIS_") != std::string::npos) {
+            size_t joyEnd = bind.find("_AXIS_");
+            size_t axisEnd = bind.find("_", joyEnd + 6);
+            int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
+            uint8_t axis = static_cast<uint8_t>(std::stoi(bind.substr(joyEnd + 6, axisEnd - (joyEnd + 6))));
+            bool positiveDirection = (bind.substr(axisEnd + 1) == "POSITIVE");
+            keybindProvider_->setJoystickAxis(action, joystickId, axis, positiveDirection);
+        }
+        LOG_DEBUG("ConfigUI: Updated joystick bind " << action << " to " << bind);
+    }
 }
 
 void ConfigUI::saveConfig() {

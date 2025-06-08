@@ -144,7 +144,6 @@ set(SOURCES
     src/config/config_service.cpp
     src/config/ui/config_ui.cpp
     src/config/ui/generic_section_renderer.cpp
-    src/config/ui/table_metadata_renderer.cpp
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/render/asset_manager.cpp

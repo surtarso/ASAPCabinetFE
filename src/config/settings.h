@@ -205,22 +205,22 @@ struct Settings {
         // vpxIniPath    = resolvePath(vpxIniPath, exeDir);
 
         // Resolve paths for fields marked with needsPathResolution in config_schema.h
-        std::vector<std::string> pathFields = {
-            "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
-            "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
-            "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo"
-        };
-        for (const auto& field : pathFields) {
-            if (field == "defaultPlayfieldImage") defaultPlayfieldImage = resolvePath(defaultPlayfieldImage, exeDir);
-            else if (field == "defaultBackglassImage") defaultBackglassImage = resolvePath(defaultBackglassImage, exeDir);
-            else if (field == "defaultDmdImage") defaultDmdImage = resolvePath(defaultDmdImage, exeDir);
-            else if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
-            else if (field == "defaultTopperImage") defaultTopperImage = resolvePath(defaultTopperImage, exeDir);
-            else if (field == "defaultPlayfieldVideo") defaultPlayfieldVideo = resolvePath(defaultPlayfieldVideo, exeDir);
-            else if (field == "defaultBackglassVideo") defaultBackglassVideo = resolvePath(defaultBackglassVideo, exeDir);
-            else if (field == "defaultDmdVideo") defaultDmdVideo = resolvePath(defaultDmdVideo, exeDir);
-            else if (field == "defaultTopperVideo") defaultTopperVideo = resolvePath(defaultTopperVideo, exeDir);
-        }
+        // std::vector<std::string> pathFields = {
+        //     "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
+        //     "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
+        //     "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo"
+        // };
+        // for (const auto& field : pathFields) {
+        //     if (field == "defaultPlayfieldImage") defaultPlayfieldImage = resolvePath(defaultPlayfieldImage, exeDir);
+        //     else if (field == "defaultBackglassImage") defaultBackglassImage = resolvePath(defaultBackglassImage, exeDir);
+        //     else if (field == "defaultDmdImage") defaultDmdImage = resolvePath(defaultDmdImage, exeDir);
+        //     else if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
+        //     else if (field == "defaultTopperImage") defaultTopperImage = resolvePath(defaultTopperImage, exeDir);
+        //     else if (field == "defaultPlayfieldVideo") defaultPlayfieldVideo = resolvePath(defaultPlayfieldVideo, exeDir);
+        //     else if (field == "defaultBackglassVideo") defaultBackglassVideo = resolvePath(defaultBackglassVideo, exeDir);
+        //     else if (field == "defaultDmdVideo") defaultDmdVideo = resolvePath(defaultDmdVideo, exeDir);
+        //     else if (field == "defaultTopperVideo") defaultTopperVideo = resolvePath(defaultTopperVideo, exeDir);
+        // }
 
         // Apply DPI scaling to fontSize if enabled
         if (enableDpiScaling) {
