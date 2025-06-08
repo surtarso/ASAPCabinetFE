@@ -1,7 +1,6 @@
 TODO
 
 FOR PR:
-- integrate vpx_ini_reader to startup/config
 - use reasonable values on uiwidgets section elements
 - integrate 1st run validconfig check (and window config)
 

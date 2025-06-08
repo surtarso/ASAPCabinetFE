@@ -1,6 +1,7 @@
 #ifndef CONFIG_SERVICE_H
 #define CONFIG_SERVICE_H
 
+#include "utils/vpinballx_ini_reader.h"
 #include "iconfig_service.h"
 #include <json.hpp>
 #include <string>
@@ -23,6 +24,8 @@ private:
     nlohmann::json jsonData_;
 
     void applyPostProcessing();
+    void applyIniSettings(const std::optional<VPinballXIniSettings>& iniSettings);
+    void updateJsonWithIniValues(const std::optional<VPinballXIniSettings>& iniSettings);
 };
 
 #endif // CONFIG_SERVICE_H
