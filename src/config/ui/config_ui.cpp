@@ -154,7 +154,12 @@ void ConfigUI::drawGUI() {
     }
     if (ImGui::Button("Close", ImVec2(100, 0))) {
         jsonData_ = originalJsonData_;
-        showConfig_ = false;
+        if (standaloneMode_) {
+            LOG_INFO("Quit without saving.");
+            exit(1);
+        } else {
+            showConfig_ = false;
+        }
     }
     if (hasChanges) {
         ImGui::PopStyleColor(3);
