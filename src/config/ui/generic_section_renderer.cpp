@@ -1,5 +1,6 @@
 #include "generic_section_renderer.h"
 #include "section_config.h"
+#include "config_ui.h"
 #include <set>
 #include <algorithm>
 #include <map>
@@ -236,6 +237,15 @@ void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::js
             ImGui::PopItemWidth();
             ImGui::PopID(); // End field ID scope
         }
+        // Add Reset to Default button as the last member inside the section
+        ImGui::PushID("ResetButton");
+        if (ImGui::Button("Reset to Defaults", ImVec2(130, 0))) {
+            ConfigUI* configUI = dynamic_cast<ConfigUI*>(this); // Cast to access ConfigUI method
+            if (configUI) {
+                configUI->resetSectionToDefault(sectionName);
+            }
+        }
+        ImGui::PopID();
         ImGui::Unindent(); // End section indent
     }
 }

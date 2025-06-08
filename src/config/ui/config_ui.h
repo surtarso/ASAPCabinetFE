@@ -31,6 +31,7 @@ public:
     void saveConfig();
     bool shouldClose() const { return !showConfig_; }
     bool isStandalone() const { return standaloneMode_; }
+    void resetSectionToDefault(const std::string& sectionName);
 
 private:
     IConfigService* configService_;

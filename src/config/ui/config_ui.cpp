@@ -95,6 +95,9 @@ void ConfigUI::drawGUI() {
             auto it = renderers_.find("VPX");
             if (it != renderers_.end()) {
                 it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, true);
+                if (ImGui::Button("Reset to Default", ImVec2(120, 0))) {
+                    resetSectionToDefault("VPX");
+                }
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section VPX");
             }
@@ -338,5 +341,19 @@ void ConfigUI::saveConfig() {
         originalJsonData_ = jsonData_;
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigUI: Error saving config: " << e.what());
+    }
+}
+
+void ConfigUI::resetSectionToDefault(const std::string& sectionName) {
+    LOG_DEBUG("ConfigUI: Resetting section " << sectionName << " to default.");
+    Settings defaultSettings; // Create instance with default values from Settings.h
+    nlohmann::json defaultJson;
+    to_json(defaultJson, defaultSettings); // Convert defaults to JSON
+
+    if (defaultJson.contains(sectionName)) {
+        jsonData_[sectionName] = defaultJson[sectionName]; // Overwrite current section with defaults
+        LOG_DEBUG("ConfigUI: Section " << sectionName << " reset to default values.");
+    } else {
+        LOG_ERROR("ConfigUI: No default data found for section " << sectionName);
     }
 }
