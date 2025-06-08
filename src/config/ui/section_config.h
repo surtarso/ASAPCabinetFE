@@ -175,20 +175,20 @@ public:
             "ScreenshotQuit"
         };
         keyDisplayNames_["Keybinds"] = {
-            {"PreviousTable", "Previous Table"},
-            {"NextTable", "Next Table"},
-            {"FastPrevTable", "Fast Previous Table"},
-            {"FastNextTable", "Fast Next Table"},
-            {"JumpNextLetter", "Jump to Next Letter"},
-            {"JumpPrevLetter", "Jump to Previous Letter"},
-            {"RandomTable", "Random Table"},
-            {"LaunchTable", "Launch Table"},
-            {"ToggleConfig", "Toggle Config UI"},
-            {"Quit", "Quit Application"},
-            {"ConfigClose", "Close Config UI"},
-            {"ScreenshotMode", "Enter Screenshot Mode"},
-            {"ScreenshotKey", "Take Screenshot"},
-            {"ScreenshotQuit", "Exit Screenshot Mode"}
+            // {"PreviousTable"},
+            // {"NextTable"},
+            // {"FastPrevTable"},
+            // {"FastNextTable"},
+            // {"JumpNextLetter"},
+            // {"JumpPrevLetter"},
+            // {"RandomTable"},
+            // {"LaunchTable"},
+            // {"ToggleConfig"},
+            // {"Quit"},
+            // {"ConfigClose"},
+            // {"ScreenshotMode"},
+            // {"ScreenshotKey"},
+            // {"ScreenshotQuit"}
         };
 
         keyOrders_["DPISettings"] = {

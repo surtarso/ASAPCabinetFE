@@ -91,7 +91,7 @@ void ConfigUI::drawGUI() {
                 if (sectionName == "Keybinds" && isCapturingKey_) {
                     ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
                 }
-                it->second->render(sectionName, jsonData_[sectionName]);
+                it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_);
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
             }
@@ -113,7 +113,7 @@ void ConfigUI::drawGUI() {
         if (sectionName == "Keybinds" && isCapturingKey_) {
             ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
         }
-        renderers_[sectionName]->render(sectionName, jsonData_[sectionName]);
+        renderers_[sectionName]->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_);
         ImGui::PopID();
         ImGui::Spacing();
     }
@@ -158,18 +158,29 @@ void ConfigUI::handleEvent(const SDL_Event& event) {
 void ConfigUI::updateKeybind(const std::string& action, const std::string& bind) {
     if (!jsonData_.contains("Keybinds") || !keybindProvider_) return;
 
-    jsonData_["Keybinds"][action] = bind;
+    // Normalize action name by removing spaces and converting to camelCase
+    std::string normalizedAction = action;
+    for (size_t i = 0; i < normalizedAction.size(); ++i) {
+        if (normalizedAction[i] == ' ') {
+            normalizedAction.erase(i, 1);
+            if (i < normalizedAction.size()) {
+                normalizedAction[i] = std::toupper(normalizedAction[i]);
+            }
+        }
+    }
+
+    jsonData_["Keybinds"][action] = bind; // Update JSON with new binding
     SDL_Keycode key = SDL_GetKeyFromName(bind.c_str());
     if (key != SDLK_UNKNOWN) {
-        keybindProvider_->setKey(action, key);
-        LOG_DEBUG("ConfigUI: Updated keybind " << action << " to " << bind);
+        keybindProvider_->setKey(normalizedAction, key);
+        LOG_DEBUG("ConfigUI: Updated keybind " << normalizedAction << " to " << bind);
     } else if (bind.find("JOY_") == 0) {
         // Parse joystick input (simplified for now, expand based on KeybindManager logic)
         if (bind.find("_BUTTON_") != std::string::npos) {
             size_t joyEnd = bind.find("_BUTTON_");
             int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
             uint8_t button = static_cast<uint8_t>(std::stoi(bind.substr(joyEnd + 8)));
-            keybindProvider_->setJoystickButton(action, joystickId, button);
+            keybindProvider_->setJoystickButton(normalizedAction, joystickId, button);
         } else if (bind.find("_HAT_") != std::string::npos) {
             size_t joyEnd = bind.find("_HAT_");
             size_t hatEnd = bind.find("_", joyEnd + 5);
@@ -181,16 +192,16 @@ void ConfigUI::updateKeybind(const std::string& action, const std::string& bind)
             else if (directionStr == "DOWN") direction = SDL_HAT_DOWN;
             else if (directionStr == "LEFT") direction = SDL_HAT_LEFT;
             else if (directionStr == "RIGHT") direction = SDL_HAT_RIGHT;
-            keybindProvider_->setJoystickHat(action, joystickId, hat, direction);
+            keybindProvider_->setJoystickHat(normalizedAction, joystickId, hat, direction);
         } else if (bind.find("_AXIS_") != std::string::npos) {
             size_t joyEnd = bind.find("_AXIS_");
             size_t axisEnd = bind.find("_", joyEnd + 6);
             int joystickId = std::stoi(bind.substr(4, joyEnd - 4));
             uint8_t axis = static_cast<uint8_t>(std::stoi(bind.substr(joyEnd + 6, axisEnd - (joyEnd + 6))));
             bool positiveDirection = (bind.substr(axisEnd + 1) == "POSITIVE");
-            keybindProvider_->setJoystickAxis(action, joystickId, axis, positiveDirection);
+            keybindProvider_->setJoystickAxis(normalizedAction, joystickId, axis, positiveDirection);
         }
-        LOG_DEBUG("ConfigUI: Updated joystick bind " << action << " to " << bind);
+        LOG_DEBUG("ConfigUI: Updated joystick bind " << normalizedAction << " to " << bind);
     }
 }
 
@@ -222,7 +233,30 @@ void ConfigUI::saveConfig() {
         }
 
         Settings& settings = const_cast<Settings&>(configService_->getSettings());
-        settings = jsonData_;
+        settings = jsonData_; // This updates the entire Settings object, including keybinds
+
+        // Explicitly sync keybinds to Settings::keybinds_ with normalized actions
+        if (jsonData_.contains("Keybinds") && jsonData_["Keybinds"].is_object()) {
+            for (const auto& [action, bind] : jsonData_["Keybinds"].items()) {
+                std::string normalizedAction = action;
+                for (size_t i = 0; i < normalizedAction.size(); ++i) {
+                    if (normalizedAction[i] == ' ') {
+                        normalizedAction.erase(i, 1);
+                        if (i < normalizedAction.size()) {
+                            normalizedAction[i] = std::toupper(normalizedAction[i]);
+                        }
+                    }
+                }
+                if (bind.is_string()) {
+                    SDL_Keycode key = SDL_GetKeyFromName(bind.get<std::string>().c_str());
+                    if (key != SDLK_UNKNOWN) {
+                        settings.keybinds_[normalizedAction] = key;
+                        LOG_DEBUG("ConfigUI: Synced keybind " << normalizedAction << " to " << bind.get<std::string>());
+                    }
+                }
+            }
+        }
+
         configService_->saveConfig();
         LOG_DEBUG("ConfigUI: Config saved successfully.");
 

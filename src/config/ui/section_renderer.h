@@ -14,7 +14,7 @@
 class ISectionRenderer {
 public:
     virtual ~ISectionRenderer() = default;
-    virtual void render(const std::string& sectionName, nlohmann::json& sectionData) = 0;
+    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName) = 0;
 };
 
 /**
@@ -98,6 +98,26 @@ protected:
                 lastLoggedValues[key] = snappedValue;
                 LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << snappedValue << "°");
             }
+        }
+    }
+
+    void renderKeybind(const std::string& key, nlohmann::json& value, const std::string& sectionName, bool& isCapturing, std::string& capturingKeyName) {
+        if (!value.is_string()) {
+            LOG_DEBUG("BaseSectionRenderer: Invalid type for keybind " << key << ", expected string, got " << value.type_name());
+            return;
+        }
+
+        std::string currentBind = value.get<std::string>();
+        std::string buttonLabel = "[" + key + ": " + (currentBind.empty() ? "Unbound" : currentBind) + "]";
+        if (ImGui::Button(buttonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            if (!isCapturing) {
+                isCapturing = true;
+                capturingKeyName = key; // Use the raw key here
+                LOG_DEBUG("BaseSectionRenderer: Started capturing key for " << sectionName << "." << key);
+            }
+        }
+        if (isCapturing && capturingKeyName == key) {
+            ImGui::Text("Press a key or joystick input to bind... (Esc to cancel)");
         }
     }
 

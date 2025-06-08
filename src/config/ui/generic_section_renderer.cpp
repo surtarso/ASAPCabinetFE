@@ -5,7 +5,7 @@
 #include <map>
 
 // Renders a configuration section with fields based on JSON data types
-void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData) {
+void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName) {
     SectionConfig config;
     std::string displayName = config.getSectionDisplayName(sectionName);
     // Create collapsible header for the section
@@ -146,6 +146,8 @@ void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::js
                                 LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
                             }
                         }
+                    } else if (sectionName == "Keybinds") {
+                        renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
                     } else {
                         renderString(keyDisplayName, value, sectionName);
                     }
@@ -214,6 +216,8 @@ void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::js
                             LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
                         }
                     }
+                } else if (sectionName == "Keybinds") {
+                    renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
                 } else {
                     renderString(keyDisplayName, value, sectionName);
                 }

@@ -196,6 +196,24 @@ struct Settings {
     std::string indexPath = "data/asapca_index.json";
     int screenshotWait = 4; // 0-60
 
+    // [Keybinds]
+    std::unordered_map<std::string, SDL_Keycode> keybinds_ = {
+        {"PreviousTable", SDLK_LSHIFT},
+        {"NextTable", SDLK_RSHIFT},
+        {"FastPrevTable", SDLK_LCTRL},
+        {"FastNextTable", SDLK_RCTRL},
+        {"JumpNextLetter", SDLK_SLASH},
+        {"JumpPrevLetter", SDLK_z},
+        {"RandomTable", SDLK_r},
+        {"LaunchTable", SDLK_RETURN},
+        {"ToggleConfig", SDLK_c},
+        {"Quit", SDLK_q},
+        {"ConfigClose", SDLK_q},
+        {"ScreenshotMode", SDLK_s},
+        {"ScreenshotKey", SDLK_s},
+        {"ScreenshotQuit", SDLK_q}
+    };
+
     // Apply post-processing (e.g., DPI scaling, path resolution)
     void applyPostProcessing(const std::string& exeDir) {
 
@@ -412,7 +430,8 @@ private:
                 {"vpxtoolIndex", s.vpxtoolIndex},
                 {"indexPath", s.indexPath},
                 {"screenshotWait", s.screenshotWait}
-            }}
+            }},
+            {"Keybinds", s.keybinds_}
         };
     }
 
@@ -612,6 +631,18 @@ private:
         s.vpxtoolIndex = j.value("Internal", nlohmann::json{}).value("vpxtoolIndex", s.vpxtoolIndex);
         s.indexPath = j.value("Internal", nlohmann::json{}).value("indexPath", s.indexPath);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
+        
+        // Keybinds
+        if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
+            for (auto& [key, value] : j["Keybinds"].items()) {
+                if (value.is_string()) {
+                    SDL_Keycode code = SDL_GetKeyFromName(value.get<std::string>().c_str());
+                    if (code != SDLK_UNKNOWN) {
+                        s.keybinds_[key] = code;
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -766,7 +797,22 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"vpsDbLastUpdated", Settings::ReloadType::None},
     {"vpxtoolIndex", Settings::ReloadType::None},
     {"indexPath", Settings::ReloadType::None},
-    {"screenshotWait", Settings::ReloadType::None}
+    {"screenshotWait", Settings::ReloadType::None},
+    // Keybinds
+    {"PreviousTable", Settings::ReloadType::None},
+    {"NextTable", Settings::ReloadType::None},
+    {"FastPrevTable", Settings::ReloadType::None},
+    {"FastNextTable", Settings::ReloadType::None},
+    {"JumpNextLetter", Settings::ReloadType::None},
+    {"JumpPrevLetter", Settings::ReloadType::None},
+    {"RandomTable", Settings::ReloadType::None},
+    {"LaunchTable", Settings::ReloadType::None},
+    {"ToggleConfig", Settings::ReloadType::None},
+    {"Quit", Settings::ReloadType::None},
+    {"ConfigClose", Settings::ReloadType::None},
+    {"ScreenshotMode", Settings::ReloadType::None},
+    {"ScreenshotKey", Settings::ReloadType::None},
+    {"ScreenshotQuit", Settings::ReloadType::None}
 };
 
 #endif // SETTINGS_H

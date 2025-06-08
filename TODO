@@ -1,7 +1,6 @@
 TODO
 
 FOR PR:
-- integrate keybinding back to config ui
 - integrate vpx_ini_reader to startup/config
 - auto disable vpsdb and/or full rescan after a full rescan
 - use reasonable values on uiwidgets section elements
