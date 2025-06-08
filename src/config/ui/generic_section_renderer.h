@@ -14,7 +14,7 @@ public:
     GenericSectionRenderer(const std::vector<std::string>& orderedKeys)
         : orderedKeys_(orderedKeys) {}
 
-    void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName) override;
+    void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen = false);
 
 private:
     std::vector<std::string> orderedKeys_;

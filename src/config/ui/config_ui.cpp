@@ -10,8 +10,6 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
     : configService_(configService),
       keybindProvider_(keybindProvider),
       assets_(assets),
-    //   currentIndex_(currentIndex),
-    //   tables_(tables),
       appCallbacks_(appCallbacks),
       showConfig_(showConfig),
       standaloneMode_(standaloneMode)
@@ -55,20 +53,26 @@ void ConfigUI::initializeRenderers() {
 
 void ConfigUI::drawGUI() {
     ImGuiIO& io = ImGui::GetIO();
-    // Calculate ConfigUI window size (add these to internal)
-    float configWidth = io.DisplaySize.x * windowWidthRatio_;
-    float configHeight = io.DisplaySize.y * windowHeightRatio_;
-    // Center window
-    float configX = io.DisplaySize.x / 2 - configWidth / 2;
-    float configY = io.DisplaySize.y / 2 - configHeight / 2;
-    
-    ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
-    
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | 
-                                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
-    ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
-    
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+
+    if (standaloneMode_) {
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
+        ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
+    } else {
+        // Calculate ConfigUI window size (add these to internal)
+        float configWidth = io.DisplaySize.x * windowWidthRatio_;
+        float configHeight = io.DisplaySize.y * windowHeightRatio_;
+        // Center window
+        float configX = io.DisplaySize.x / 2 - configWidth / 2;
+        float configY = io.DisplaySize.y / 2 - configHeight / 2;
+        
+        ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
+        ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
+    }
+
     if (jsonData_.is_null()) {
         LOG_ERROR("ConfigUI: JSON data is null.");
         ImGui::Text("Error: Failed to load configuration data.");
@@ -77,21 +81,26 @@ void ConfigUI::drawGUI() {
     }
 
     bool hasChanges = jsonData_ != originalJsonData_;
+
     // Reserve space for Apply button at bottom
     float buttonHeight = ImGui::GetFrameHeightWithSpacing() + 15.0f; // Button + padding
     ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
-    // Render sections in order
+    // Render sections in order, but only "VPX" in standalone mode
     for (const auto& sectionName : sectionConfig_.getSectionOrder()) {
+        if (standaloneMode_ && sectionName != "VPX") {
+            continue; // Skip all sections except VPX in standalone mode
+        }
         if (jsonData_.contains(sectionName)) {
             ImGui::PushID(sectionName.c_str());
             auto it = renderers_.find(sectionName);
             if (it != renderers_.end()) {
+                bool defaultOpen = standaloneMode_ && sectionName == "VPX"; // Expand VPX by default in standalone mode
                 if (sectionName == "Keybinds" && isCapturingKey_) {
                     ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
                 }
-                it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_);
+                it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen);
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
             }
@@ -99,23 +108,6 @@ void ConfigUI::drawGUI() {
             ImGui::PopID();
             ImGui::Spacing();
         }
-    }
-
-    // Render remaining sections alphabetically
-    for (const auto& [sectionName, sectionData] : jsonData_.items()) {
-        if (renderedSections.count(sectionName)) continue;
-        ImGui::PushID(sectionName.c_str());
-        auto it = renderers_.find(sectionName);
-        if (it == renderers_.end()) {
-            renderers_[sectionName] = std::make_unique<GenericSectionRenderer>(
-                sectionConfig_.getKeyOrder(sectionName));
-        }
-        if (sectionName == "Keybinds" && isCapturingKey_) {
-            ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
-        }
-        renderers_[sectionName]->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_);
-        ImGui::PopID();
-        ImGui::Spacing();
     }
 
     ImGui::EndChild();

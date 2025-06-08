@@ -36,8 +36,6 @@ private:
     IConfigService* configService_;
     IKeybindProvider* keybindProvider_; // for keybind section
     IAssetManager* assets_; // for title position reload and table assets
-    // size_t* currentIndex_; 
-    // std::vector<TableData>* tables_; 
     IAppCallbacks* appCallbacks_;
     bool& showConfig_;
     bool standaloneMode_;

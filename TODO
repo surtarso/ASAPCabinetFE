@@ -2,7 +2,7 @@ TODO
 
 FOR PR:
 - use reasonable values on uiwidgets section elements
-- integrate 1st run validconfig check (and window config)
+- integrate 1st run validconfig check
 
 - add button to reset current config ui section to default
 - integrate tooltips back
@@ -18,6 +18,7 @@ FIX:
 - refactor the monoliths...
 
 QOL:
+- user friendly name on keybind ui
 - thread vps parser!
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config

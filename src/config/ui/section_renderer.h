@@ -14,7 +14,7 @@
 class ISectionRenderer {
 public:
     virtual ~ISectionRenderer() = default;
-    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName) = 0;
+    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen = false) = 0;
 };
 
 /**

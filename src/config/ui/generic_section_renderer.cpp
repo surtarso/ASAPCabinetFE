@@ -5,11 +5,15 @@
 #include <map>
 
 // Renders a configuration section with fields based on JSON data types
-void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName) {
+void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen) {
     SectionConfig config;
     std::string displayName = config.getSectionDisplayName(sectionName);
     // Create collapsible header for the section
-    if (ImGui::CollapsingHeader(displayName.c_str())) {
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
+    if (defaultOpen) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen; // Expand section by default if requested
+    }
+    if (ImGui::CollapsingHeader(displayName.c_str(), flags)) {
         ImGui::Indent(); // Indent content under header
         // Set dynamic width for input fields (50% of available content region for single fields)
         float singleFieldWidth = ImGui::GetContentRegionAvail().x * 0.5f;
