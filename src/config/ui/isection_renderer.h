@@ -35,6 +35,28 @@ protected:
     void renderFloat(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                      float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
         float val = value.get<float>();
+        // Custom ranges for specific float fields
+        if (key == "DPI Scale") {
+            minVal = 0.5f;
+            maxVal = 3.0f;
+        } else if (key.find("Alpha") != std::string::npos || key == "scrollbarLength" ||
+                   key == "metadataPanelWidth" || key == "metadataPanelHeight") {
+            minVal = 0.0f;
+            maxVal = 1.0f;
+        } else if (key == "arrowHintWidth" || key == "arrowHintHeight") {
+            minVal = 0.0f;
+            maxVal = 200.0f;
+        } else if (key == "arrowThickness" || key == "arrowGlow") {
+            minVal = 0.0f;
+            maxVal = 10.0f;
+        } else if (key == "scrollbarWidth" || key == "thumbWidth") {
+            minVal = 0.0f;
+            maxVal = 50.0f;
+        } else if (key == "masterVol" || key == "mediaAudioVol" || key == "tableMusicVol" ||
+                   key == "interfaceAudioVol" || key == "interfaceAmbienceVol") {
+            minVal = 0.0f;
+            maxVal = 100.0f;
+        }
         if (ImGui::SliderFloat(key.c_str(), &val, minVal, maxVal, format)) {
             value = val;
             LOG_DEBUG("BaseSectionRenderer: Updated " << sectionName << "." << key << " to " << val);
@@ -44,6 +66,18 @@ protected:
     void renderInt(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                    int minVal = 0, int maxVal = 10000) {
         int val = value.get<int>();
+        // Custom ranges for specific integer fields
+        if (key.find("WindowWidth") != std::string::npos || key.find("WindowHeight") != std::string::npos ||
+            key.find("MediaWidth") != std::string::npos || key.find("MediaHeight") != std::string::npos) {
+            minVal = 0;
+            maxVal = 3840; // Suitable for up to 4K resolutions
+        } else if (key == "fontSize") {
+            minVal = 10;
+            maxVal = 60;
+        } else if (key == "screenshotWait") {
+            minVal = 0;
+            maxVal = 60;
+        }
         if (ImGui::InputInt(key.c_str(), &val)) {
             val = std::clamp(val, minVal, maxVal);
             value = val;

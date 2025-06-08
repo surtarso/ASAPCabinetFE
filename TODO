@@ -1,11 +1,5 @@
 TODO
 
-FOR PR:
-- re-enable dpi settings
-- use reasonable values on uiwidgets section elements
-
--------------------------------------------------------------------
-
 FIX:
 - table match count not reseting after a full scan.(loading screen)
 - name parsing should fallback to filename with bad match
