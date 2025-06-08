@@ -15,7 +15,7 @@
 class ISectionRenderer {
 public:
     virtual ~ISectionRenderer() = default;
-    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen = false, bool& isDialogOpen = *(new bool(false)), std::string& dialogKey = *(new std::string())) = 0;
+    virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, ImGuiFileDialog* fileDialog, bool defaultOpen = false, bool& isDialogOpen = *(new bool(false)), std::string& dialogKey = *(new std::string())) = 0;
 };
 
 /**
@@ -116,7 +116,7 @@ protected:
         }
     }
 
-    void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName, bool& isDialogOpen, std::string& dialogKey) {
+    void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName, ImGuiFileDialog* fileDialog, bool& isDialogOpen, std::string& dialogKey) {
         std::string val = value.get<std::string>();
         char buffer[1024];
         strncpy(buffer, val.c_str(), sizeof(buffer) - 1);
@@ -133,16 +133,16 @@ protected:
             IGFD::FileDialogConfig config;
             config.path = (!val.empty() && std::filesystem::exists(val)) ? val : std::string(getenv("HOME"));
             config.flags = ImGuiFileDialogFlags_Modal;
-            ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+            fileDialog->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
 
             if (key == "VPXTablesPath") {
-                ImGuiFileDialog::Instance()->OpenDialog("FolderDlg_VPXTablesPath", "Select VPX Tables Folder", nullptr, config);
+                fileDialog->OpenDialog("FolderDlg_VPXTablesPath", "Select VPX Tables Folder", nullptr, config);
             } else if (key == "VPinballXPath") {
-                ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
-                ImGuiFileDialog::Instance()->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "((VPinballX))", config);
+                fileDialog->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "((VPinballX))", config);
             } else if (key == "vpxIniPath") {
-                ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-                ImGuiFileDialog::Instance()->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
+                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
             }
             isDialogOpen = true;
             dialogKey = key;

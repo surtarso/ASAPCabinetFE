@@ -12,7 +12,9 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       assets_(assets),
       appCallbacks_(appCallbacks),
       showConfig_(showConfig),
-      standaloneMode_(standaloneMode)
+      standaloneMode_(standaloneMode),
+      standaloneFileDialog_(),
+      normalFileDialog_()
 {
     LOG_DEBUG("ConfigUI constructed.");
     try {
@@ -82,12 +84,15 @@ void ConfigUI::drawGUI() {
     ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
+    // Select the appropriate file dialog instance based on mode
+    ImGuiFileDialog* fileDialog = standaloneMode_ ? &standaloneFileDialog_ : &normalFileDialog_;
+
     if (standaloneMode_) {
         if (jsonData_.contains("VPX")) {
             ImGui::PushID("VPX");
             auto it = renderers_.find("VPX");
             if (it != renderers_.end()) {
-                it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, true, isDialogOpen_, dialogKey_);
+                it->second->render("VPX", jsonData_["VPX"], isCapturingKey_, capturingKeyName_, fileDialog, true, isDialogOpen_, dialogKey_);
                 if (ImGui::Button("Reset to Default", ImVec2(120, 0))) {
                     resetSectionToDefault("VPX");
                 }
@@ -102,7 +107,7 @@ void ConfigUI::drawGUI() {
             ImGui::PushID("WindowSettings");
             auto it = renderers_.find("WindowSettings");
             if (it != renderers_.end()) {
-                it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, false, isDialogOpen_, dialogKey_);
+                it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, fileDialog, false, isDialogOpen_, dialogKey_);
             } else {
                 LOG_ERROR("ConfigUI: No renderer for section WindowSettings");
             }
@@ -120,7 +125,7 @@ void ConfigUI::drawGUI() {
                     if (sectionName == "Keybinds" && isCapturingKey_) {
                         ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
                     }
-                    it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, defaultOpen, isDialogOpen_, dialogKey_);
+                    it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, fileDialog, defaultOpen, isDialogOpen_, dialogKey_);
                 } else {
                     LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
                 }
@@ -172,33 +177,33 @@ void ConfigUI::drawGUI() {
         ImVec2 minSize = ImVec2(600, 400);
 
         if (dialogKey_ == "VPXTablesPath") {
-            if (ImGuiFileDialog::Instance()->Display("FolderDlg_VPXTablesPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+            if (fileDialog->Display("FolderDlg_VPXTablesPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 LOG_DEBUG("ConfigUI: Displaying FolderDlg_VPXTablesPath");
-                if (ImGuiFileDialog::Instance()->IsOk()) {
-                    jsonData_["VPX"]["VPXTablesPath"] = ImGuiFileDialog::Instance()->GetCurrentPath();
+                if (fileDialog->IsOk()) {
+                    jsonData_["VPX"]["VPXTablesPath"] = fileDialog->GetCurrentPath();
                     LOG_INFO("ConfigUI: Selected VPXTablesPath: " << jsonData_["VPX"]["VPXTablesPath"].get<std::string>());
                 }
-                ImGuiFileDialog::Instance()->Close();
+                fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else if (dialogKey_ == "VPinballXPath") {
-            if (ImGuiFileDialog::Instance()->Display("FileDlg_VPinballXPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+            if (fileDialog->Display("FileDlg_VPinballXPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 LOG_DEBUG("ConfigUI: Displaying FileDlg_VPinballXPath");
-                if (ImGuiFileDialog::Instance()->IsOk()) {
-                    jsonData_["VPX"]["VPinballXPath"] = ImGuiFileDialog::Instance()->GetFilePathName();
+                if (fileDialog->IsOk()) {
+                    jsonData_["VPX"]["VPinballXPath"] = fileDialog->GetFilePathName();
                     LOG_INFO("ConfigUI: Selected VPinballXPath: " << jsonData_["VPX"]["VPinballXPath"].get<std::string>());
                 }
-                ImGuiFileDialog::Instance()->Close();
+                fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else if (dialogKey_ == "vpxIniPath") {
-            if (ImGuiFileDialog::Instance()->Display("FileDlg_vpxIniPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+            if (fileDialog->Display("FileDlg_vpxIniPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 LOG_DEBUG("ConfigUI: Displaying FileDlg_vpxIniPath");
-                if (ImGuiFileDialog::Instance()->IsOk()) {
-                    jsonData_["VPX"]["vpxIniPath"] = ImGuiFileDialog::Instance()->GetFilePathName();
+                if (fileDialog->IsOk()) {
+                    jsonData_["VPX"]["vpxIniPath"] = fileDialog->GetFilePathName();
                     LOG_INFO("ConfigUI: Selected vpxIniPath: " << jsonData_["VPX"]["vpxIniPath"].get<std::string>());
                 }
-                ImGuiFileDialog::Instance()->Close();
+                fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else {

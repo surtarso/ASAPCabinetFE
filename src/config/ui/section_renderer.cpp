@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <map>
 
-void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, bool defaultOpen, bool& isDialogOpen, std::string& dialogKey) {
+void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, ImGuiFileDialog* fileDialog, bool defaultOpen, bool& isDialogOpen, std::string& dialogKey) {
     SectionConfig config;
     std::string displayName = config.getSectionDisplayName(sectionName);
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
@@ -135,7 +135,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                         }
                     } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
                         LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
-                        renderPathOrExecutable(key, value, sectionName, isDialogOpen, dialogKey);
+                        renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "Keybinds") {
                         renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
                     } else {
@@ -211,7 +211,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                     }
                 } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
                     LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
-                    renderPathOrExecutable(key, value, sectionName, isDialogOpen, dialogKey);
+                    renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                 } else if (sectionName == "Keybinds") {
                     renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
                 } else {

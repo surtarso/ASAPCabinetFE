@@ -8,6 +8,7 @@
 #include "core/iapp_callbacks.h"
 #include "isection_renderer.h"
 #include "section_config.h"
+#include "ImGuiFileDialog.h"
 #include <string>
 #include <vector>
 #include <json.hpp>
@@ -51,6 +52,9 @@ private:
 
     bool isDialogOpen_ = false;
     std::string dialogKey_ = "";
+
+    ImGuiFileDialog standaloneFileDialog_; // File dialog instance for standalone mode
+    ImGuiFileDialog normalFileDialog_;     // File dialog instance for normal mode
 
     void initializeRenderers();
     void updateKeybind(const std::string& action, const std::string& bind);
