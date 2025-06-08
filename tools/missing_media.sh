@@ -22,55 +22,51 @@ YELLOW="\033[1;33m"
 BLUE='\033[0;34m'
 NC="\033[0m" # No Color
 
-CONFIG_FILE="config.ini"
+CONFIG_FILE="data/settings.json"
 
 # Function to get values from INI filef
-get_ini_value() {
+# Function to get values from INI filef
+get_json_value() {
     local section="$1"
     local key="$2"
-    local value
 
-    echo -e "Searching for [$section] -> $key in $CONFIG_FILE" >&2  # Debugging output
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Error: CONFIG_FILE not found: $CONFIG_FILE" >&2
+        return 1
+    fi
 
-    value=$(awk -F= -v section="$section" -v key="$key" '
-        BEGIN { inside_section=0 }
-        /^\[.*\]$/ { inside_section=($0 == "[" section "]") }
-        inside_section && $1 ~ "^[ \t]*" key "[ \t]*$" { gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/\r/, "", $2); print $2; exit }
-    ' "$CONFIG_FILE")
-
-    echo -e "Found value: '$value'" >&2  # Debugging output
-    echo -e "$value"
+    jq -r --arg section "$section" --arg key "$key" '.[$section][$key] // empty' "$CONFIG_FILE"
 }
 
 # Load values from config.ini
 echo -e "${GREEN}Initializing variables...${NC}"
 echo -e "${RED}-------------------------------------------------------------${NC}"
 if [[ -f "$CONFIG_FILE" ]]; then
-    ROOT_FOLDER=$(get_ini_value "VPX" "VPXTablesPath")
+    ROOT_FOLDER=$(get_json_value "VPX" "VPXTablesPath")
     echo -e "${YELLOW}ROOT_FOLDER: $ROOT_FOLDER${NC}"
 
-    WHEEL_IMAGE=$(get_ini_value "CustomMedia" "WheelImage")
+    WHEEL_IMAGE=$(get_json_value "CustomMedia" "customWheelImage")
     echo -e "${YELLOW}WHEEL_IMAGE: $WHEEL_IMAGE${NC}"
     
-    MARQUEE_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
+    MARQUEE_IMAGE=$(get_json_value "CustomMedia" "customDmdImage")
     echo -e "${YELLOW}MARQUEE_IMAGE: $MARQUEE_IMAGE${NC}"
     
-    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
+    BACKGLASS_IMAGE=$(get_json_value "CustomMedia" "customBackglassImage")
     echo -e "${YELLOW}BACKGLASS_IMAGE: $BACKGLASS_IMAGE${NC}"
     
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "PlayfieldImage")
+    TABLE_IMAGE=$(get_json_value "CustomMedia" "customPlayfieldImage")
     echo -e "${YELLOW}TABLE_IMAGE: $TABLE_IMAGE${NC}"
 
-    TABLE_VIDEO=$(get_ini_value "CustomMedia" "PlayfieldVideo")
+    TABLE_VIDEO=$(get_json_value "CustomMedia" "customPlayfieldVideo")
     echo -e "${YELLOW}TABLE_VIDEO: $TABLE_VIDEO${NC}"
 
-    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
+    BACKGLASS_VIDEO=$(get_json_value "CustomMedia" "customBackglassVideo")
     echo -e "${YELLOW}BACKGLASS_VIDEO: $BACKGLASS_VIDEO${NC}"
 
-    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
+    DMD_VIDEO=$(get_json_value "CustomMedia" "customDmdVideo")
     echo -e "${YELLOW}DMD_VIDEO: $DMD_VIDEO${NC}"
 
-    TABLE_MUSIC=$(get_ini_value "CustomMedia" "TableMusic")
+    TABLE_MUSIC=$(get_json_value "CustomMedia" "tableMusic")
     echo -e "${YELLOW}TABLE_MUSIC: $TABLE_MUSIC${NC}"
 
     echo -e "${RED}-------------------------------------------------------------${NC}"

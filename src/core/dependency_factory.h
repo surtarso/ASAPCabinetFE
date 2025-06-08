@@ -23,7 +23,7 @@
 #include "render/renderer.h" // Renderer for playfield, backglass, and DMD
 #include "keybinds/input_manager.h" // Input manager for keybind handling
 #include "config/iconfig_service.h" // Interface for configuration service
-#include "config/ui/config_gui.h" // Configuration UI for user settings
+#include "config/ui/config_ui.h" // Configuration UI for user settings
 #include "capture/iscreenshot_manager.h" // Interface for screenshot management
 #include "sound/isound_manager.h" // Interface for sound management
 
@@ -133,8 +133,7 @@ public:
      * @param configPath The file path to the configuration file.
      * @return A unique pointer to a ConfigService instance.
      */
-    static std::unique_ptr<ConfigService> createConfigService(const std::string& configPath);
-
+    static std::unique_ptr<IConfigService> createConfigService(const std::string& configPath);
     /**
      * @brief Creates a screenshot manager instance.
      *

@@ -12,7 +12,7 @@
 #define FIRST_RUN_H
 
 #include "config/iconfig_service.h"
-#include "config/ui/config_gui.h"
+#include "config/ui/config_ui.h"
 #include "core/gui_manager.h"
 #include <SDL2/SDL.h>
 

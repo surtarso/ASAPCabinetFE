@@ -18,7 +18,7 @@
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
 #include "capture/iscreenshot_manager.h"
-#include "config/ui/config_gui.h"
+#include "config/ui/config_ui.h"
 #include "core/iwindow_manager.h"
 #include <map>
 #include <vector>

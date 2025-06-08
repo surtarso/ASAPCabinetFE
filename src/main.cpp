@@ -151,7 +151,7 @@ struct SDLBootstrap {
  * @return 0 on successful execution or version display, non-zero on failure.
  */
 int main(int argc, char* argv[]) {
-    std::string configPath = "config.ini";
+    std::string configPath = "data/settings.json";
 
     // Handle --version argument
     if (argc > 1 && std::string(argv[1]) == "--version") {

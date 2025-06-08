@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- 1st run cannot create config.ini from scratch if deleted.
 - table match count not reseting after a full scan.(loading screen)
 - name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
@@ -9,21 +8,17 @@ FIX:
 - refactor the monoliths...
 
 QOL:
-- add button to reset current config ui section to default 
-- auto disable vpsdb and/or full rescan after a full rescan
+- user friendly name on keybind ui
 - thread vps parser!
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 
 UI:
-- use reasonable values on uiwidgets section elements
-- overall polish on config ui (imgui)
 - show a couple of prev/next table wheels?
 
 On hold:
-- review the entire config class and save/load pipeline (messsss)
 - abstract linux commands with an interface for crossplat later
-- use json instead of memory for standart info
+- use json instead of memory for standart info (filename)
 - attract mode (random table on a timer if idle) (optional)
 - create default videos?
 
@@ -34,6 +29,3 @@ Later:
 - incorporate generate_media.sh?
 - integrate vpxguitools and vice versa thru process launchers?
 - adapt to be crossplatform?
-
-SANITY:
-- RE-DO ENTIRE Config/ folder pretty much. WHAT A MESS!

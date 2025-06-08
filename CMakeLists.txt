@@ -141,17 +141,9 @@ set(SOURCES
     src/capture/screenshot_capture.cpp
     src/capture/screenshot_manager.cpp
     src/capture/screenshot_window.cpp
-    src/config/default_config_factory.cpp
-    src/config/config_schema.cpp
     src/config/config_service.cpp
-    src/config/config_file_handler.cpp
-    src/config/settings_parser.cpp
-    src/config/ui/button_handler.cpp
-    src/config/ui/config_state.cpp
-    src/config/ui/config_gui.cpp
-    src/config/ui/input_handler.cpp
+    src/config/ui/config_ui.cpp
     src/config/ui/section_renderer.cpp
-    src/config/ui/ui_element_renderer.cpp
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/render/asset_manager.cpp
@@ -272,17 +264,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         ${CMAKE_SOURCE_DIR}/assets/img ${CMAKE_BINARY_DIR}/img
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets/snd ${CMAKE_BINARY_DIR}/snd
-        # config:
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/src/config.ini ${CMAKE_BINARY_DIR}/config.ini
         # tools:
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/tools/generate_media.sh ${CMAKE_BINARY_DIR}/generate_media.sh
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/tools/missing_media.sh ${CMAKE_BINARY_DIR}/missing_media.sh
-        # logs:
+        # logs/data:
         COMMAND ${CMAKE_COMMAND} -E make_directory
         ${CMAKE_BINARY_DIR}/logs
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_BINARY_DIR}/data
     )
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -295,11 +286,12 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
     # Install resource directories directly into the root of the install prefix
     # Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
+    install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
+    install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
-    install(FILES "${CMAKE_SOURCE_DIR}/src/config.ini" DESTINATION .)
-    install(FILES "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
-    install(FILES "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
+    install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
+    install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
     endif()
 
     # Set output directory (this is for the build directory, not install)

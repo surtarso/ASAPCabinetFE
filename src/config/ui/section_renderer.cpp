@@ -1,362 +1,248 @@
-#include "config/ui/section_renderer.h"
-#include "config/ui/ui_element_renderer.h"
-#include "utils/tooltips.h"
-#include "utils/logging.h"
-#include <filesystem>
+#include "section_renderer.h"
+#include "section_config.h"
+#include "config_ui.h"
+#include <set>
 #include <algorithm>
+#include <map>
 
-SectionRenderer::SectionRenderer(IConfigService* configService, std::string& currentSection, InputHandler& inputHandler)
-    : configService_(configService), currentSection_(currentSection), inputHandler_(inputHandler) {
-    initializeFontList();
-    initializeKeyRenderers();
-}
-
-void SectionRenderer::initializeKeyRenderers() {
-    using namespace UIElementRenderer;
-    // checkboxes
-    keyRenderers_["EnableDpiScaling"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowWheel"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowTitle"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowArrowHint"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowScrollbar"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowBackglass"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowDMD"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowTopper"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["FetchVPSdb"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ForceRebuild"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ForceImagesOnly"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["UseVPinballXIni"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderCheckbox(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ShowMetadata"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderMetadataCheckbox(key, value, hasChanges_, currentSection_, configService_);
-    };
-    // rotation sliders
-    keyRenderers_["BackglassRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
-    keyRenderers_["PlayfieldRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
-    keyRenderers_["TopperRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
-    keyRenderers_["DMDRotation"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderRotationSlider(key, value, hasChanges_, currentSection_, -360, 360);
-    };
-    // color pickers
-    keyRenderers_["FontColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["FontBgColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ArrowGlowColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ArrowColorTop"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ArrowColorBottom"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ScrollbarColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["ScrollbarThumbColor"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderColorPicker(key, value, hasChanges_, currentSection_);
-    };
-    // int sliders
-    keyRenderers_["FontSize"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderInt(key, value, hasChanges_, currentSection_, 10, 100);
-    };
-    keyRenderers_["ScreenshotWait"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderInt(key, value, hasChanges_, currentSection_, 1, 40);
-    };
-    // float sliders
-    keyRenderers_["MetadataPanelWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
-    };
-    keyRenderers_["MetadataPanelHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
-    };
-    keyRenderers_["MetadataPanelAlpha"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
-    };
-    keyRenderers_["ArrowHintWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 500.0f);
-    };
-    keyRenderers_["ArrowHintHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 500.0f);
-    };
-    keyRenderers_["ArrowThickness"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
-    };
-    keyRenderers_["ArrowAlpha"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
-    };
-    keyRenderers_["ArrowGlow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 100.0f);
-    };
-    keyRenderers_["ScrollbarWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
-    };
-    keyRenderers_["ThumbWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 1.0f, 100.0f);
-    };
-    keyRenderers_["ScrollbarLength"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderSliderFloat(key, value, hasChanges_, currentSection_, 0.1f, 1.0f);
-    };
-    // resolution
-    keyRenderers_["PlayfieldWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["PlayfieldHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["PlayfieldMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["PlayfieldMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["BackglassWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["BackglassHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["BackglassMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["BackglassMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["DMDMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TopperWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TopperHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TopperMediaWidth"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TopperMediaHeight"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderResolution(key, value, hasChanges_, currentSection_);
-    };
-    // audio mute
-    keyRenderers_["MediaAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TableMusicMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["InterfaceAudioMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["InterfaceAmbienceMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["MasterMute"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderAudioMuteButton(key, value, hasChanges_, currentSection_);
-    };
-    // volume scales
-    keyRenderers_["MediaAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
-    };
-    keyRenderers_["TableMusicVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
-    };
-    keyRenderers_["InterfaceAudioVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
-    };
-    keyRenderers_["InterfaceAmbienceVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
-    };
-    keyRenderers_["MasterVol"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderVolumeScale(key, value, hasChanges_, currentSection_, section);
-    };
-    // dropdowns
-    keyRenderers_["VideoBackend"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderVideoBackendDropdown(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TitleSource"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderTitleDropdown(key, value, hasChanges_, currentSection_, configService_);
-    };
-    keyRenderers_["TitleWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["WheelWindow"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderWheelTitleWindowDropdown(key, value, hasChanges_, currentSection_);
-    };
-    keyRenderers_["TitleSortBy"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderTitleSortDropdown(key, value, hasChanges_, currentSection_);
-    };
-    // misc
-    keyRenderers_["FontPath"] = [this](const std::string& key, std::string& value, SettingsSection&) {
-        renderFontPath(key, value, hasChanges_, currentSection_, availableFonts_);
-    };
-    keyRenderers_["DpiScale"] = [this](const std::string& key, std::string& value, SettingsSection& section) {
-        renderDpiScale(key, value, hasChanges_, currentSection_, section);
-    };
-}
-
-void SectionRenderer::renderKeyValue(const std::string& key, std::string& value, SettingsSection& section) {
-    using namespace UIElementRenderer;
-    if (currentSection_ == "Keybinds") {
-        renderKeybind(key, value, inputHandler_, hasChanges_, currentSection_);
-    } else if (keyRenderers_.count(key)) {
-        keyRenderers_[key](key, value, section); // Check dispatcher first
-    } else if (key.find("VPXTablesPath") != std::string::npos || 
-                key.find("VPinballXPath") != std::string::npos ||
-                 key.find("VPXIniPath") != std::string::npos) {
-        renderPathOrExecutable(key, value, hasChanges_, currentSection_); // Only for non-FontPath "Path" keys
-    } else if (key.back() == 'X' || key.back() == 'Y' ||
-               key.find("WheelMediaWidth") != std::string::npos || key.find("WheelMediaHeight") != std::string::npos) {
-        renderGenericTextShort(key, value, hasChanges_, currentSection_);
-    } else {
-        renderGenericText(key, value, hasChanges_, currentSection_);
+void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, ImGuiFileDialog* fileDialog, bool defaultOpen, bool& isDialogOpen, std::string& dialogKey) {
+    SectionConfig config;
+    std::string displayName = config.getSectionDisplayName(sectionName);
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
+    if (defaultOpen) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
     }
-}
+    if (ImGui::CollapsingHeader(displayName.c_str(), flags)) {
+        ImGui::Indent();
+        float singleFieldWidth = ImGui::GetContentRegionAvail().x * 0.5f;
+        float pairedFieldWidth = ImGui::GetContentRegionAvail().x * 0.25f;
 
-void SectionRenderer::initializeFontList() {
-    std::string fontDir = "/usr/share/fonts/";
-    if (std::filesystem::exists(fontDir)) {
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(fontDir)) {
-            if (entry.path().extension() == ".ttf") {
-                availableFonts_.push_back(entry.path().string());
-            }
-        }
-        std::sort(availableFonts_.begin(), availableFonts_.end());
-        //LOG_DEBUG("SectionRenderer: Found " << availableFonts_.size() << " .ttf fonts in " << fontDir);
-    } else {
-        LOG_ERROR("SectionRenderer: Font directory " << fontDir << " not found! Font selection will be limited.");
-    }
-}
+        const std::map<std::pair<std::string, std::string>, std::string> groupedKeys = {
+            {{"playfieldWindowWidth", "playfieldWindowHeight"}, "Playfield Window Size [W,H]"},
+            {{"playfieldX", "playfieldY"}, "Playfield Window Position [X,Y]"},
+            {{"dmdWindowWidth", "dmdWindowHeight"}, "DMD Window Size [W,H]"},
+            {{"dmdX", "dmdY"}, "DMD Window Position [X,Y]"},
+            {{"backglassWindowWidth", "backglassWindowHeight"}, "Backglass Window Size [W,H]"},
+            {{"backglassX", "backglassY"}, "Backglass Window Position [X,Y]"},
+            {{"topperWindowWidth", "topperWindowHeight"}, "Topper Window Size [W,H]"},
+            {{"topperWindowX", "topperWindowY"}, "Topper Window Position [X,Y]"},
+            {{"titleX", "titleY"}, "Title Position [X,Y]"},
+            {{"arrowHintWidth", "arrowHintHeight"}, "Arrow Widget Size [W,H]"},
+            {{"metadataPanelWidth", "metadataPanelHeight"}, "Metadata Panel Size [W,H]"},
+            {{"wheelMediaWidth", "wheelMediaHeight"}, "Wheel Media Size [W,H]"},
+            {{"wheelMediaX", "wheelMediaY"}, "Wheel Media Position [X,Y]"},
+            {{"playfieldMediaWidth", "playfieldMediaHeight"}, "Playfield Media Size [W,H]"},
+            {{"playfieldMediaX", "playfieldMediaY"}, "Playfield Media Position [X,Y]"},
+            {{"backglassMediaWidth", "backglassMediaHeight"}, "Backglass Media Size [W,H]"},
+            {{"backglassMediaX", "backglassMediaY"}, "Backglass Media Position [X,Y]"},
+            {{"dmdMediaWidth", "dmdMediaHeight"}, "DMD Media Size [W,H]"},
+            {{"dmdMediaX", "dmdMediaY"}, "DMD Media Position [X,Y]"},
+            {{"topperMediaWidth", "topperMediaHeight"}, "Topper Media Size [W,H]"},
+            {{"topperMediaX", "topperMediaY"}, "Topper Window Position [X,Y]"}
+        };
+        std::set<std::string> processedKeys;
 
-void SectionRenderer::renderSectionsPane(const std::vector<std::string>& sectionOrder) {
-    ImGui::BeginChild("SectionsPane", ImVec2(250, 0), false);
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
-    ImGui::TextColored(ImVec4(0.9f, 0.9f, 1.0f, 1.0f), "Configuration Sections");
-    ImGui::Separator();
+        std::set<std::string> orderedSet(orderedKeys_.begin(), orderedKeys_.end());
+        for (const auto& key : orderedKeys_) {
+            if (!sectionData.contains(key)) continue;
+            ImGui::PushID(key.c_str());
+            auto& value = sectionData[key];
+            std::string keyDisplayName = config.getKeyDisplayName(sectionName, key);
+            ImGui::PushItemWidth(singleFieldWidth);
 
-    for (const auto& section : sectionOrder) {
-        if (configService_->getIniData().count(section)) {
-            bool selected = (currentSection_ == section);
-            if (ImGui::Selectable(section.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
-                currentSection_ = section;
-                LOG_DEBUG("SectionRenderer: Selected section: " << section);
-            }
-            if (selected) ImGui::SetItemDefaultFocus();
-        }
-    }
-    ImGui::PopStyleVar();
-    ImGui::EndChild();
-}
-
-void SectionRenderer::renderKeyValuesPane(std::map<std::string, SettingsSection>& iniData, bool& hasChanges) {
-    ImGui::BeginChild("KeyValuesPane", ImVec2(0, 0), false);
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
-    ImGui::TextColored(ImVec4(0.9f, 0.9f, 1.0f, 1.0f), "Settings - %s", currentSection_.c_str());
-    ImGui::Separator();
-
-    if (!currentSection_.empty() && iniData.count(currentSection_)) {
-        auto& section = iniData[currentSection_];
-        hasChanges_ = false; // Reset changes flag for this section
-
-        if (currentSection_ == "AudioSettings") {
-            // If the current section is "AudioSettings", render the custom mixer
-            // The dummy key/value are needed because renderAudioSettingsMixer has a signature
-            // that expects them, even if it doesn't strictly use them internally for its core logic.
-            // It gets the actual audio settings from 'sectionData' (which is 'section' here).
-            std::string dummyKey = "";
-            std::string dummyValue = "";
-            UIElementRenderer::renderAudioSettingsMixer(dummyKey, dummyValue, hasChanges_, currentSection_, section);
-
-            // Propagate changes from renderAudioSettingsMixer to the main 'hasChanges' flag
-            if (hasChanges_) {
-                hasChanges = true;
-            }
-        } else {
-            // For all other sections, proceed with the generic key-value rendering loop
-            float maxKeyWidth = 150.0f; // This variable is only relevant for generic rendering
-
-            // Iterate and render each key-value pair
-            for (auto& [key, value] : section.keyValues) {
-                ImGui::PushID(key.c_str());
-                ImGui::AlignTextToFramePadding();
-                ImGui::Text("%s:", key.c_str());
-                ImGui::SameLine(maxKeyWidth);
-
-                // Render the '?' button for tooltips
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-                if (ImGui::Button("?", ImVec2(16, 0))) {} // Button for tooltip trigger
-                ImGui::PopStyleVar();
-                ImGui::PopStyleColor(3);
-                renderTooltip(key); // Assuming renderTooltip is in UIElementRenderer namespace or globally accessible
-                ImGui::SameLine();
-
-                // Call renderKeyValue for individual elements
-                bool oldHasChanges = hasChanges; // Capture global hasChanges state before renderKeyValue
-                renderKeyValue(key, value, section); // Call into UIElementRenderer namespace
-                if (hasChanges_ && !oldHasChanges) { // Check if renderKeyValue set hasChanges_
-                    hasChanges = true; // Propagate to ConfigUI if a change was made
-                    LOG_DEBUG("SectionRenderer: Change detected in " << currentSection_ << "." << key << " = " << value);
+            for (const auto& [keyPair, groupLabel] : groupedKeys) {
+                const auto& [key1, key2] = keyPair;
+                if (key == key1 && sectionData.contains(key2) && !processedKeys.count(key1)) {
+                    ImGui::PushItemWidth(pairedFieldWidth);
+                    if (value.is_number_integer()) {
+                        int val = value.get<int>();
+                        if (ImGui::InputInt("##first", &val)) {
+                            value = val;
+                        }
+                    } else if (value.is_number_float()) {
+                        float val = value.get<float>();
+                        if (ImGui::InputFloat("##first", &val)) {
+                            value = val;
+                        }
+                    } else {
+                        LOG_DEBUG("ConfigUI: Skipping invalid type for " << key1 << ", expected number, got " << value.type_name());
+                        int val = 0;
+                        ImGui::InputInt("##first", &val);
+                    }
+                    ImGui::SameLine();
+                    auto& value2 = sectionData[key2];
+                    if (value2.is_number_integer()) {
+                        int val = value2.get<int>();
+                        if (ImGui::InputInt("##second", &val)) {
+                            value2 = val;
+                        }
+                    } else if (value2.is_number_float()) {
+                        float val = value2.get<float>();
+                        if (ImGui::InputFloat("##second", &val)) {
+                            value2 = val;
+                        }
+                    } else {
+                        LOG_DEBUG("ConfigUI: Skipping invalid type for " << key2 << ", expected number, got " << value2.type_name());
+                        int val = 0;
+                        ImGui::InputInt("##second", &val);
+                    }
+                    ImGui::SameLine();
+                    ImGui::Text("%s", groupLabel.c_str());
+                    ImGui::PopItemWidth();
+                    processedKeys.insert(key1);
+                    processedKeys.insert(key2);
+                    LOG_DEBUG("ConfigUI: Rendered group " << groupLabel << " with keys " << key1 << ", " << key2);
+                    break;
                 }
-                ImGui::PopID();
+            }
+
+            if (!processedKeys.count(key)) {
+                if (value.is_boolean()) {
+                    renderBool(keyDisplayName, value, sectionName);
+                } else if (value.is_number_float()) {
+                    float minVal = (key.find("Alpha") != std::string::npos || key.find("Scale") != std::string::npos) ? 0.0f : 0.0f;
+                    float maxVal = (key.find("Alpha") != std::string::npos || key.find("Scale") != std::string::npos) ? 1.0f : 100.0f;
+                    renderFloat(keyDisplayName, value, sectionName, minVal, maxVal);
+                } else if (value.is_number_integer()) {
+                    if (key.find("Rotation") != std::string::npos) {
+                        renderRotation(keyDisplayName, value, sectionName);
+                    } else {
+                        renderInt(keyDisplayName, value, sectionName);
+                    }
+                } else if (value.is_string()) {
+                    const auto& options = config.getDropdownOptions(sectionName, key);
+                    if (!options.empty()) {
+                        std::string val = value.get<std::string>();
+                        int currentIndex = -1;
+                        for (size_t i = 0; i < options.size(); ++i) {
+                            if (options[i] == val) {
+                                currentIndex = static_cast<int>(i);
+                                break;
+                            }
+                        }
+                        if (ImGui::Combo(keyDisplayName.c_str(), &currentIndex, [](void* data, int idx, const char** out_text) {
+                            auto& options = *static_cast<std::vector<std::string>*>(data);
+                            if (idx >= 0 && idx < static_cast<int>(options.size())) {
+                                *out_text = options[idx].c_str();
+                                return true;
+                            }
+                            return false;
+                        }, (void*)&options, static_cast<int>(options.size()))) {
+                            if (currentIndex >= 0 && currentIndex < static_cast<int>(options.size())) {
+                                value = options[currentIndex];
+                                LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
+                            }
+                        }
+                    } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
+                        LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
+                        renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
+                    } else if (sectionName == "Keybinds") {
+                        renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
+                    } else {
+                        renderString(keyDisplayName, value, sectionName);
+                    }
+                } else if (value.is_array() && value.size() == 4) {
+                    renderColor(keyDisplayName, value, sectionName);
+                } else {
+                    LOG_DEBUG("ConfigUI: Skipping invalid type for " << keyDisplayName << ", expected valid type, got " << value.type_name());
+                    int val = 0;
+                    ImGui::InputInt(keyDisplayName.c_str(), &val);
+                }
+                if (ImGui::IsItemHovered()) {
+                    auto it = Settings::settingsMetadata.find(key);
+                    if (it != Settings::settingsMetadata.end()) {
+                        ImGui::BeginTooltip();
+                        ImGui::TextUnformatted(it->second.second.c_str());
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
+            ImGui::PopItemWidth();
+            ImGui::PopID();
+        }
+
+        std::vector<std::string> remainingKeys;
+        for (const auto& [key, _] : sectionData.items()) {
+            if (!orderedSet.count(key) && !processedKeys.count(key)) remainingKeys.push_back(key);
+        }
+        std::sort(remainingKeys.begin(), remainingKeys.end());
+
+        for (const auto& key : remainingKeys) {
+            ImGui::PushID(key.c_str());
+            auto& value = sectionData[key];
+            std::string keyDisplayName = config.getKeyDisplayName(sectionName, key);
+            ImGui::PushItemWidth(singleFieldWidth);
+
+            if (value.is_boolean()) {
+                renderBool(keyDisplayName, value, sectionName);
+            } else if (value.is_number_float()) {
+                float minVal = (key.find("Alpha") != std::string::npos || key.find("Scale") != std::string::npos) ? 0.0f : 0.0f;
+                float maxVal = (key.find("Alpha") != std::string::npos || key.find("Scale") != std::string::npos) ? 1.0f : 100.0f;
+                renderFloat(keyDisplayName, value, sectionName, minVal, maxVal);
+            } else if (value.is_number_integer()) {
+                if (key.find("Rotation") != std::string::npos) {
+                    renderRotation(keyDisplayName, value, sectionName);
+                } else {
+                    renderInt(keyDisplayName, value, sectionName);
+                }
+            } else if (value.is_string()) {
+                const auto& options = config.getDropdownOptions(sectionName, key);
+                if (!options.empty()) {
+                    std::string val = value.get<std::string>();
+                    int currentIndex = -1;
+                    for (size_t i = 0; i < options.size(); ++i) {
+                        if (options[i] == val) {
+                            currentIndex = static_cast<int>(i);
+                            break;
+                        }
+                    }
+                    if (ImGui::Combo(keyDisplayName.c_str(), &currentIndex, [](void* data, int idx, const char** out_text) {
+                        auto& options = *static_cast<std::vector<std::string>*>(data);
+                        if (idx >= 0 && idx < static_cast<int>(options.size())) {
+                            *out_text = options[idx].c_str();
+                            return true;
+                        }
+                        return false;
+                    }, (void*)&options, static_cast<int>(options.size()))) {
+                        if (currentIndex >= 0 && currentIndex < static_cast<int>(options.size())) {
+                            value = options[currentIndex];
+                            LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
+                        }
+                    }
+                } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
+                    LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
+                    renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
+                } else if (sectionName == "Keybinds") {
+                    renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
+                } else {
+                    renderString(keyDisplayName, value, sectionName);
+                }
+            } else if (value.is_array() && value.size() == 4) {
+                renderColor(keyDisplayName, value, sectionName);
+            } else {
+                LOG_DEBUG("ConfigUI: Skipping invalid type for " << keyDisplayName << ", expected valid type, got " << value.type_name());
+                int val = 0;
+                ImGui::InputInt(keyDisplayName.c_str(), &val);
+            }
+            if (ImGui::IsItemHovered()) {
+                auto it = Settings::settingsMetadata.find(key);
+                if (it != Settings::settingsMetadata.end()) {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted(it->second.second.c_str());
+                    ImGui::EndTooltip();
+                }
+            }
+            ImGui::PopItemWidth();
+            ImGui::PopID();
+        }
+        ImGui::PushID("ResetButton");
+        if (ImGui::Button("Reset to Defaults", ImVec2(130, 0))) {
+            ConfigUI* configUI = dynamic_cast<ConfigUI*>(this);
+            if (configUI) {
+                configUI->resetSectionToDefault(sectionName);
             }
         }
+        ImGui::PopID();
+        ImGui::Unindent();
     }
-    ImGui::PopStyleVar();
-    ImGui::EndChild();
-}
-
-void SectionRenderer::renderTooltip(const std::string& key) {
-    //LOG_DEBUG("SectionRenderer::renderTooltip called for key: " << key);
-    const auto& tooltips = Tooltips::getTooltips(); // Use reference to avoid copy
-    if (tooltips.count(key) && ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(tooltips.at(key).c_str()); // Use .at() for safety
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-    //LOG_DEBUG("SectionRenderer::renderTooltip completed for key: " << key);
 }

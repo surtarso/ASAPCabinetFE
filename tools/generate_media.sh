@@ -18,7 +18,7 @@ BLUE="\033[0;34m"
 NC="\033[0m"  # No Color
 
 # **File Paths**
-CONFIG_FILE="config.ini"
+CONFIG_FILE="data/settings.json"
 
 mkdir -p logs/
 ERROR_LOG_FILE="logs/error.log"
@@ -38,26 +38,28 @@ WINDOW_TITLE_DMD=("ScoreView" "FlexDMD" "PinMAME" "B2SDMD") #for now, in order o
 NODMDFOUND_FILE="noDMDfound.txt"
 
 # Reads a value from the specified section and key in the INI file
-get_ini_value() {
+get_json_value() {
     local section="$1"
     local key="$2"
-    awk -F= -v section="$section" -v key="$key" '
-        BEGIN { inside_section=0 }
-        /^\[.*\]$/ { inside_section=($0 == "[" section "]") }
-        inside_section && $1 ~ "^[ \t]*" key "[ \t]*$" { gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/\r/, "", $2); print $2; exit }
-    ' "$CONFIG_FILE"
+
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Error: CONFIG_FILE not found: $CONFIG_FILE" >&2
+        return 1
+    fi
+
+    jq -r --arg section "$section" --arg key "$key" '.[$section][$key] // empty' "$CONFIG_FILE"
 }
 
 # **Load Configuration from config.ini**
 if [[ -f "$CONFIG_FILE" ]]; then
-    ROOT_FOLDER=$(get_ini_value "VPX" "VPXTablesPath")
-    VPX_EXECUTABLE=$(get_ini_value "VPX" "VPinballXPath")
-    TABLE_VIDEO=$(get_ini_value "CustomMedia" "PlayfieldVideo")
-    TABLE_IMAGE=$(get_ini_value "CustomMedia" "PlayfieldImage")
-    BACKGLASS_VIDEO=$(get_ini_value "CustomMedia" "BackglassVideo")
-    BACKGLASS_IMAGE=$(get_ini_value "CustomMedia" "BackglassImage")
-    DMD_VIDEO=$(get_ini_value "CustomMedia" "DmdVideo")
-    DMD_IMAGE=$(get_ini_value "CustomMedia" "DmdImage")
+    ROOT_FOLDER=$(get_json_value "VPX" "VPXTablesPath")
+    VPX_EXECUTABLE=$(get_json_value "VPX" "VPinballXPath")
+    TABLE_VIDEO=$(get_json_value "CustomMedia" "customPlayfieldVideo")
+    TABLE_IMAGE=$(get_json_value "CustomMedia" "customPlayfieldImage")
+    BACKGLASS_VIDEO=$(get_json_value "CustomMedia" "customBackglassVideo")
+    BACKGLASS_IMAGE=$(get_json_value "CustomMedia" "customBackglassImage")
+    DMD_VIDEO=$(get_json_value "CustomMedia" "customDmdVideo")
+    DMD_IMAGE=$(get_json_value "CustomMedia" "customDmdImage")
     echo -e "${GREEN}Loaded config.ini${NC}"
 else
     echo -e "${RED}-------------------------------------------------------------${NC}"
