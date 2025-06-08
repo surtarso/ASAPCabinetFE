@@ -338,24 +338,34 @@ void ConfigUI::saveConfig() {
                     }
                     break;
                 case Settings::ReloadType::Font:
-                    appCallbacks_->reloadFont(standaloneMode_);
-                    LOG_DEBUG("ConfigUI: Triggered reloadFont for ReloadType " << static_cast<int>(reloadType));
+                    if (appCallbacks_) {
+                        appCallbacks_->reloadFont(standaloneMode_);
+                        LOG_DEBUG("ConfigUI: Triggered reloadFont for ReloadType " << static_cast<int>(reloadType));
+                    }
                     break;
                 case Settings::ReloadType::Windows:
-                    appCallbacks_->reloadWindows();
-                    LOG_DEBUG("ConfigUI: Triggered reloadWindows");
+                    if (appCallbacks_) {
+                        appCallbacks_->reloadWindows();
+                        LOG_DEBUG("ConfigUI: Triggered reloadWindows");
+                    }
                     break;
                 case Settings::ReloadType::Assets:
-                    appCallbacks_->reloadAssetsAndRenderers();
-                    LOG_DEBUG("ConfigUI: Triggered reloadAssetsAndRenderers for ReloadType " << static_cast<int>(reloadType));
+                    if (appCallbacks_) {
+                        appCallbacks_->reloadAssetsAndRenderers();
+                        LOG_DEBUG("ConfigUI: Triggered reloadAssetsAndRenderers for ReloadType " << static_cast<int>(reloadType));
+                    }
                     break;
                 case Settings::ReloadType::Tables:
-                    appCallbacks_->reloadTablesAndTitle();
-                    LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
+                    if (appCallbacks_) {
+                        appCallbacks_->reloadTablesAndTitle();
+                        LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
+                    }
                     break;
                 case Settings::ReloadType::Overlay:
-                    appCallbacks_->reloadOverlaySettings();
-                    LOG_DEBUG("ConfigUI: Triggered reloadOverlaySettings");
+                    if (appCallbacks_) {
+                        appCallbacks_->reloadOverlaySettings();
+                        LOG_DEBUG("ConfigUI: Triggered reloadOverlaySettings");
+                    }
                     break;
                 case Settings::ReloadType::Audio:
                     if (appCallbacks_) {

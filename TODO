@@ -3,6 +3,8 @@ TODO
 FOR PR:
 - use reasonable values on uiwidgets section elements
 - re-enable dpi settings
+- close button should quit in standalone mode
+- crash in dialog
 
 -------------------------------------------------------------------
 
