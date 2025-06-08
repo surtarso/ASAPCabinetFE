@@ -1,6 +1,6 @@
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
-#include "utils/tooltips.h"
+// #include "utils/tooltips.h"
 #include <algorithm>
 #include <fstream>
 #include <ostream>
@@ -97,10 +97,10 @@ std::vector<std::string> KeybindManager::getActions() const {
     return actions;
 }
 
-std::string KeybindManager::getTooltip(const std::string& action) const {
-    const auto& tooltips = Tooltips::getTooltips();
-    return tooltips.count(action) ? tooltips.at(action) : "";
-}
+// std::string KeybindManager::getTooltip(const std::string& action) const {
+//     const auto& tooltips = Tooltips::getTooltips();
+//     return tooltips.count(action) ? tooltips.at(action) : "";
+// }
 
 // --- Load and Save Keybinds ---
 void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keybindData) {

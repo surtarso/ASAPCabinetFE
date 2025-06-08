@@ -12,7 +12,7 @@
 #define KEYBIND_MANAGER_H
 
 #include "keybinds/ikeybind_provider.h"
-#include "utils/tooltips.h"
+// #include "utils/tooltips.h"
 #include <map>
 #include <string>
 #include <variant>
@@ -79,7 +79,7 @@ public:
      * @param action The action identifier.
      * @return The tooltip string, or empty if not found.
      */
-    std::string getTooltip(const std::string& action) const override;
+    // std::string getTooltip(const std::string& action) const override;
 
     /**
      * @brief Sets a joystick button binding for an action.

@@ -256,8 +256,8 @@ void ConfigUI::saveConfig() {
                     std::string fullKey = key;
                     auto it = Settings::settingsMetadata.find(fullKey);
                     if (it != Settings::settingsMetadata.end()) {
-                        reloadTypes.insert(it->second);
-                        LOG_DEBUG("ConfigUI: Detected change in " << sectionName << "." << key << ", ReloadType: " << static_cast<int>(it->second));
+                        reloadTypes.insert(it->second.first); // Insert only the ReloadType from the pair
+                        LOG_DEBUG("ConfigUI: Detected change in " << sectionName << "." << key << ", ReloadType: " << static_cast<int>(it->second.first));
                     } else {
                         LOG_DEBUG("ConfigUI: No ReloadType found for " << sectionName << "." << key);
                     }

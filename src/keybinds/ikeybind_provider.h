@@ -68,7 +68,7 @@ public:
      * @param action The action identifier.
      * @return The tooltip string, or empty if not found.
      */
-    virtual std::string getTooltip(const std::string& action) const = 0;
+    // virtual std::string getTooltip(const std::string& action) const = 0;
 
     /**
      * @brief Sets a joystick button binding for an action.

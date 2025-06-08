@@ -23,8 +23,9 @@ struct Settings {
     };
 
     // Metadata for each setting: field name -> reload type
-    static const std::unordered_map<std::string, ReloadType> settingsMetadata;
-
+    // static const std::unordered_map<std::string, ReloadType> settingsMetadata;
+    static const std::map<std::string, std::pair<ReloadType, std::string>> settingsMetadata;
+    
     // [VPX]
     std::string VPXTablesPath = "$HOME/Games/VPX_Tables/"; // imguifiledialog
     std::string VPinballXPath = "$HOME/Games/vpinball/build/VPinballX_BGFX"; // imguifiledialog
@@ -647,172 +648,274 @@ private:
 };
 
 // Define settingsMetadata
-inline const std::unordered_map<std::string, Settings::ReloadType> Settings::settingsMetadata = {
-    // VPX (done?)
-    {"VPXTablesPath", Settings::ReloadType::None},
-    {"VPinballXPath", Settings::ReloadType::None},
-    {"vpxIniPath", Settings::ReloadType::None},
-    {"vpxStartArgs", Settings::ReloadType::None},
-    {"vpxEndArgs", Settings::ReloadType::None},
-    // DPISettings (TODO)
-    {"dpiScale", Settings::ReloadType::None}, // ?
-    {"enableDpiScaling", Settings::ReloadType::None}, // ?
-    // DefaultMedia (done)
-    {"defaultPlayfieldImage", Settings::ReloadType::Tables},
-    {"defaultBackglassImage", Settings::ReloadType::Tables},
-    {"defaultDmdImage", Settings::ReloadType::Tables},
-    {"defaultWheelImage", Settings::ReloadType::Tables},
-    {"defaultTopperImage", Settings::ReloadType::Tables},
-    {"defaultPlayfieldVideo", Settings::ReloadType::Tables},
-    {"defaultBackglassVideo", Settings::ReloadType::Tables},
-    {"defaultDmdVideo", Settings::ReloadType::Tables},
-    {"defaultTopperVideo", Settings::ReloadType::Tables},
-    // CustomMedia (done)
-    {"customPlayfieldImage", Settings::ReloadType::Tables},
-    {"customBackglassImage", Settings::ReloadType::Tables},
-    {"customDmdImage", Settings::ReloadType::Tables},
-    {"customWheelImage", Settings::ReloadType::Tables},
-    {"customTopperImage", Settings::ReloadType::Tables},
-    {"customPlayfieldVideo", Settings::ReloadType::Tables},
-    {"customBackglassVideo", Settings::ReloadType::Tables},
-    {"customDmdVideo", Settings::ReloadType::Tables},
-    {"customTopperVideo", Settings::ReloadType::Tables},
-    {"tableMusic", Settings::ReloadType::Tables},
-    {"customLaunchSound", Settings::ReloadType::Tables},
-    // WindowSettings (done except marked)
-    {"videoBackend", Settings::ReloadType::Assets},
-    {"useVPinballXIni", Settings::ReloadType::None}, //call vpxiniscanner
-    {"playfieldWindowWidth", Settings::ReloadType::Assets}, 
-    {"playfieldWindowHeight", Settings::ReloadType::Assets}, 
-    {"playfieldX", Settings::ReloadType::Assets}, 
-    {"playfieldY", Settings::ReloadType::Assets}, 
-    {"showBackglass", Settings::ReloadType::Assets}, 
-    {"backglassWindowWidth", Settings::ReloadType::Assets}, 
-    {"backglassWindowHeight", Settings::ReloadType::Assets}, 
-    {"backglassX", Settings::ReloadType::Assets}, 
-    {"backglassY", Settings::ReloadType::Assets}, 
-    {"showDMD", Settings::ReloadType::Assets}, 
-    {"dmdWindowWidth", Settings::ReloadType::Assets}, 
-    {"dmdWindowHeight", Settings::ReloadType::Assets}, 
-    {"dmdX", Settings::ReloadType::Assets}, 
-    {"dmdY", Settings::ReloadType::Assets}, 
-    {"showTopper", Settings::ReloadType::Assets}, 
-    {"topperWindowWidth", Settings::ReloadType::Assets}, 
-    {"topperWindowHeight", Settings::ReloadType::Assets}, 
-    {"topperWindowX", Settings::ReloadType::Assets}, 
-    {"topperWindowY", Settings::ReloadType::Assets}, 
-    // TableMetadata (done except marked)
-    {"titleSource", Settings::ReloadType::Tables},
-    {"fetchVPSdb", Settings::ReloadType::None},
-    {"forceRebuildMetadata", Settings::ReloadType::None},
-    {"titleSortBy", Settings::ReloadType::Tables},
-    {"showMetadata", Settings::ReloadType::Overlay},
-    {"metadataPanelWidth", Settings::ReloadType::None},
-    {"metadataPanelHeight", Settings::ReloadType::None},
-    {"metadataPanelAlpha", Settings::ReloadType::None},
-    // UIWidgets (done)
-    {"showArrowHint", Settings::ReloadType::None},
-    {"arrowHintWidth", Settings::ReloadType::None},
-    {"arrowHintHeight", Settings::ReloadType::None},
-    {"arrowThickness", Settings::ReloadType::None},
-    {"arrowAlpha", Settings::ReloadType::None},
-    {"arrowGlow", Settings::ReloadType::None},
-    {"arrowGlowColor", Settings::ReloadType::None},
-    {"arrowColorTop", Settings::ReloadType::None},
-    {"arrowColorBottom", Settings::ReloadType::None},
-    {"showScrollbar", Settings::ReloadType::None},
-    {"scrollbarWidth", Settings::ReloadType::None},
-    {"thumbWidth", Settings::ReloadType::None},
-    {"scrollbarLength", Settings::ReloadType::None},
-    {"scrollbarColor", Settings::ReloadType::None},
-    {"scrollbarThumbColor", Settings::ReloadType::None},
+inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>> Settings::settingsMetadata = {
+    // VPX
+    {"VPXTablesPath", {Settings::ReloadType::Tables, "Defines the absolute path to the folder containing VPX table files.\n"
+                                                    "\n"
+                                                    "It must be a full path.\n"
+                                                    "(e.g., /home/user/tables/).\n"
+                                                    "\n"
+                                                    "Final command:\n"
+                                                    "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
+    {"VPinballXPath", {Settings::ReloadType::None, "Defines the absolute path to the VPinballX executable.\n"
+                                                  "\n"
+                                                  "Final command:\n"
+                                                  "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
+    {"vpxIniPath", {Settings::ReloadType::None, "Defines the absolute path to the VPinballX.ini file.\n"
+                                               "If left empty it will search the default location\n"
+                                               "~/.vpinball/VPinballX.ini"}},
+    {"vpxStartArgs", {Settings::ReloadType::None, "Optional command-line arguments to prepend to the executable.\n"
+                                                 "\n"
+                                                 "Final command:\n"
+                                                 "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
+    {"vpxEndArgs", {Settings::ReloadType::None, "Optional arguments to append after the table file in the command.\n"
+                                               "\n"
+                                               "Final command:\n"
+                                               "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
+    // DPISettings
+    {"dpiScale", {Settings::ReloadType::Windows, "Manual DPI scale override.\n"
+                                                "Only used when EnableDpiScaling is false.\n"
+                                                "1.0 = 100%, 1.5 = 150%, etc."}},
+    {"enableDpiScaling", {Settings::ReloadType::Windows, "Enable automatic DPI scaling based on system settings.\n"
+                                                        "When enabled, the frontend will scale according to your monitor's DPI.\n"
+                                                        "Disable for manual control via DpiScale."}},
+    // DefaultMedia
+    {"defaultPlayfieldImage", {Settings::ReloadType::Tables, "Relative path to the default table preview image.\n"
+                                                            "Used when a table has no custom image."}},
+    {"defaultBackglassImage", {Settings::ReloadType::Tables, "Relative path to the default backglass image.\n"
+                                                            "Used when a table has no custom backglass."}},
+    {"defaultDmdImage", {Settings::ReloadType::Tables, "Relative path to the default DMD image.\n"
+                                                      "Used when a table has no custom DMD image."}},
+    {"defaultWheelImage", {Settings::ReloadType::Tables, "Relative path to the default wheel image.\n"
+                                                        "Used when a table has no custom wheel art."}},
+    {"defaultTopperImage", {Settings::ReloadType::Tables, "Relative path to the default Topper image.\n"
+                                                         "Used when a table has no custom Topper art."}},
+    {"defaultPlayfieldVideo", {Settings::ReloadType::Tables, "Relative path to the default table preview video.\n"
+                                                            "Used when a table has no custom video."}},
+    {"defaultBackglassVideo", {Settings::ReloadType::Tables, "Relative path to the default backglass video.\n"
+                                                            "Used when a table has no custom backglass video."}},
+    {"defaultDmdVideo", {Settings::ReloadType::Tables, "Relative path to the default DMD video.\n"
+                                                      "Used when a table has no custom DMD video."}},
+    {"defaultTopperVideo", {Settings::ReloadType::Tables, "Relative path to the default Topper video.\n"
+                                                         "Used when a table has no custom Topper video."}},
+    // CustomMedia
+    {"customPlayfieldImage", {Settings::ReloadType::Tables, "Relative path to the table's preview image.\n"
+                                                           "These are relative to your table folder.\n"
+                                                           "/path/to/tables/<table_folder>/"}},
+    {"customBackglassImage", {Settings::ReloadType::Tables, "Relative path to the backglass image.\n"
+                                                           "These are relative to your table folder.\n"
+                                                           "/path/to/tables/<table_folder>/"}},
+    {"customDmdImage", {Settings::ReloadType::Tables, "Relative path to the DMD image.\n"
+                                                     "These are relative to your table folder.\n"
+                                                     "/path/to/tables/<table_folder>/"}},
+    {"customWheelImage", {Settings::ReloadType::Tables, "Relative path to the wheel image for the table.\n"
+                                                       "These are relative to your table folder.\n"
+                                                       "/path/to/tables/<table_folder>/"}},
+    {"customTopperImage", {Settings::ReloadType::Tables, "Relative path to the topper image.\n"
+                                                        "These are relative to your table folder.\n"
+                                                        "/path/to/tables/<table_folder>/"}},
+    {"customPlayfieldVideo", {Settings::ReloadType::Tables, "Relative path to the table preview video.\n"
+                                                           "These are relative to your table folder.\n"
+                                                           "/path/to/tables/<table_folder>/"}},
+    {"customBackglassVideo", {Settings::ReloadType::Tables, "Relative path to the backglass video.\n"
+                                                           "These are relative to your table folder.\n"
+                                                           "/path/to/tables/<table_folder>/"}},
+    {"customDmdVideo", {Settings::ReloadType::Tables, "Relative path to the DMD video.\n"
+                                                     "These are relative to your table folder.\n"
+                                                     "/path/to/tables/<table_folder>/"}},
+    {"customTopperVideo", {Settings::ReloadType::Tables, "Relative path to the topper video.\n"
+                                                        "These are relative to your table folder.\n"
+                                                        "/path/to/tables/<table_folder>/"}},
+    {"tableMusic", {Settings::ReloadType::Tables, "Relative path to the table music file.\n"
+                                                 "These are relative to your table folder.\n"
+                                                 "/path/to/tables/<table_folder>/"}},
+    {"customLaunchSound", {Settings::ReloadType::Tables, "Relative path to the table launch audio file.\n"
+                                                        "These are relative to your table folder.\n"
+                                                        "/path/to/tables/<table_folder>/"}},
+    // WindowSettings
+    {"videoBackend", {Settings::ReloadType::Assets, "Select video playback backend:\n"
+                                                   "VLC: Reliable software-based playback with broad format support. Ideal for compatibility.\n"
+                                                   "FFmpeg: Efficient software-based playback with extensive codec support. Suitable for most systems.\n"
+                                                   "GStreamer: Flexible playback with plugin-based architecture. Good for customized setups."}},
+    {"useVPinballXIni", {Settings::ReloadType::Windows, "Uses sizes and positions from ~/.vpinball/VPinballX.ini\n"
+                                                       "Using this option will override options below."}},
+    {"playfieldWindowWidth", {Settings::ReloadType::Assets, "Width of the Playfield window in pixels.\n"
+                                                           "This should be relative to your Playfield media width."}},
+    {"playfieldWindowHeight", {Settings::ReloadType::Assets, "Height of the Playfield window in pixels.\n"
+                                                            "This should be relative to your Playfield media height."}},
+    {"playfieldX", {Settings::ReloadType::Assets, "X position of the Playfield window.\n"
+                                                 "You can drag and double-click a window to save its position"}},
+    {"playfieldY", {Settings::ReloadType::Assets, "Y position of the Playfield window.\n"
+                                                 "You can drag and double-click a window to save its position"}},
+    {"showBackglass", {Settings::ReloadType::Assets, "Show/hide the backglass window."}},
+    {"backglassWindowWidth", {Settings::ReloadType::Assets, "Width of the Backglass window in pixels.\n"
+                                                           "This should be relative to your Backglass media width."}},
+    {"backglassWindowHeight", {Settings::ReloadType::Assets, "Height of the Backglass window in pixels.\n"
+                                                            "This should be relative to your Backglass media height."}},
+    {"backglassX", {Settings::ReloadType::Assets, "X position of the Backglass window.\n"
+                                                 "You can drag and double-click a window to save its position"}},
+    {"backglassY", {Settings::ReloadType::Assets, "Y position of the Backglass window.\n"
+                                                 "You can drag and double-click a window to save its position"}},
+    {"showDMD", {Settings::ReloadType::Assets, "Show/hide the DMD window."}},
+    {"dmdWindowWidth", {Settings::ReloadType::Assets, "Width of the DMD window in pixels.\n"
+                                                     "This should be relative to your DMD media width."}},
+    {"dmdWindowHeight", {Settings::ReloadType::Assets, "Height of the DMD window in pixels.\n"
+                                                      "This should be relative to your DMD media height."}},
+    {"dmdX", {Settings::ReloadType::Assets, "X position of the DMD window.\n"
+                                           "You can drag and double-click a window to save its position"}},
+    {"dmdY", {Settings::ReloadType::Assets, "Y position of the DMD window.\n"
+                                           "You can drag and double-click a window to save its position"}},
+    {"showTopper", {Settings::ReloadType::Assets, "Show/hide the Topper window."}},
+    {"topperWindowWidth", {Settings::ReloadType::Assets, "Width of the Topper window in pixels.\n"
+                                                        "This should be relative to your Topper media width."}},
+    {"topperWindowHeight", {Settings::ReloadType::Assets, "Height of the Topper window in pixels.\n"
+                                                         "This should be relative to your Topper media height."}},
+    {"topperWindowX", {Settings::ReloadType::Assets, "X position of the Topper window.\n"
+                                                    "You can drag and double-click a window to save its position"}},
+    {"topperWindowY", {Settings::ReloadType::Assets, "Y position of the Topper window.\n"
+                                                    "You can drag and double-click a window to save its position"}},
+    // TableMetadata
+    {"titleSource", {Settings::ReloadType::Tables, "Select the source of the title info.\n"
+                                                  "- 'filename' to use filename as table title.\n"
+                                                  "- 'metadata' to use table title from metadata. (requires vpxtool)\n"}},
+    {"fetchVPSdb", {Settings::ReloadType::None, "Fetches Virtual Pinball Spreadsheet database and\n"
+                                               "attempts to match with vpxtool metadata.\n"
+                                               "TIP: Leave this off after you're happy with the metadata.\n"
+                                               "Leaving this on will check for updates every full table reload."}},
+    {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
+                                                           "Applying will DELETE asapcab_index.json\n"
+                                                           "TIP: Remember to turn this OFF AFTER rebuilding metadata."}},
+    {"titleSortBy", {Settings::ReloadType::Tables, "Select the sorting of tables.\n"
+                                                  "- Requires rich metadata.(vpxtool + vpsdb)"}},
+    {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
+                                                    "TitleSource must be set to 'metadata' for the panel to display something."}},
+    {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Width of the metadata panel as a fraction of the screen (0.1-1.0)"}},
+    {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Height of the metadata panel as a fraction of the screen (0.1-1.0)"}},
+    {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.1-1.0)"}},
+    // UIWidgets
+    {"showArrowHint", {Settings::ReloadType::None, "Toggle visibility of the arrow hint widget."}},
+    {"arrowHintWidth", {Settings::ReloadType::None, "Width of the arrow hint in pixels."}},
+    {"arrowHintHeight", {Settings::ReloadType::None, "Height of the arrow hint in pixels."}},
+    {"arrowThickness", {Settings::ReloadType::None, "Thickness of the arrow hint in pixels."}},
+    {"arrowAlpha", {Settings::ReloadType::None, "Transparency of the arrow hint (0.1-1.0)"}},
+    {"arrowGlow", {Settings::ReloadType::None, "Glow effect size of the arrow hint."}},
+    {"arrowGlowColor", {Settings::ReloadType::None, "Color of the arrow hint glow."}},
+    {"arrowColorTop", {Settings::ReloadType::None, "Top color of the arrow hint gradient."}},
+    {"arrowColorBottom", {Settings::ReloadType::None, "Bottom color of the arrow hint gradient."}},
+    {"showScrollbar", {Settings::ReloadType::None, "Toggle visibility of the scrollbar."}},
+    {"scrollbarWidth", {Settings::ReloadType::None, "Width of the scrollbar in pixels."}},
+    {"thumbWidth", {Settings::ReloadType::None, "Width of the scrollbar thumb in pixels."}},
+    {"scrollbarLength", {Settings::ReloadType::None, "Length of the scrollbar as a fraction of the screen (0.1-1.0)"}},
+    {"scrollbarColor", {Settings::ReloadType::None, "Color of the scrollbar."}},
+    {"scrollbarThumbColor", {Settings::ReloadType::None, "Color of the scrollbar thumb."}},
     // TitleDisplay
-    {"showWheel", Settings::ReloadType::None},
-    {"wheelWindow", Settings::ReloadType::Tables},
-    {"showTitle", Settings::ReloadType::None},
-    {"titleWindow", Settings::ReloadType::Tables},
-    {"fontPath", Settings::ReloadType::Font},
-    {"fontColor", Settings::ReloadType::Font},
-    {"fontBgColor", Settings::ReloadType::Font},
-    {"fontSize", Settings::ReloadType::Font},
-    {"titleX", Settings::ReloadType::Title},
-    {"titleY", Settings::ReloadType::Title},
-    // MediaDimensions (done)
-    {"forceImagesOnly", Settings::ReloadType::Tables},
-    {"wheelMediaHeight", Settings::ReloadType::None},
-    {"wheelMediaWidth", Settings::ReloadType::None},
-    {"wheelMediaX", Settings::ReloadType::None},
-    {"wheelMediaY", Settings::ReloadType::None},
-    {"playfieldMediaWidth", Settings::ReloadType::None},
-    {"playfieldMediaHeight", Settings::ReloadType::None},
-    {"playfieldMediaX", Settings::ReloadType::None},
-    {"playfieldMediaY", Settings::ReloadType::None},
-    {"playfieldRotation", Settings::ReloadType::None},
-    {"backglassMediaWidth", Settings::ReloadType::None},
-    {"backglassMediaHeight", Settings::ReloadType::None},
-    {"backglassMediaX", Settings::ReloadType::None},
-    {"backglassMediaY", Settings::ReloadType::None},
-    {"backglassRotation", Settings::ReloadType::None},
-    {"dmdMediaWidth", Settings::ReloadType::None},
-    {"dmdMediaHeight", Settings::ReloadType::None},
-    {"dmdMediaX", Settings::ReloadType::None},
-    {"dmdMediaY", Settings::ReloadType::None},
-    {"dmdRotation", Settings::ReloadType::None},
-    {"topperMediaWidth", Settings::ReloadType::None},
-    {"topperMediaHeight", Settings::ReloadType::None},
-    {"topperMediaX", Settings::ReloadType::None},
-    {"topperMediaY", Settings::ReloadType::None},
-    {"topperRotation", Settings::ReloadType::None},
-    // AudioSettings (done)
-    {"masterMute", Settings::ReloadType::Audio},
-    {"masterVol", Settings::ReloadType::Audio},
-    {"mediaAudioMute", Settings::ReloadType::Audio},
-    {"mediaAudioVol", Settings::ReloadType::Audio},
-    {"tableMusicMute", Settings::ReloadType::Audio},
-    {"tableMusicVol", Settings::ReloadType::Audio},
-    {"interfaceAudioMute", Settings::ReloadType::Audio},
-    {"interfaceAudioVol", Settings::ReloadType::Audio},
-    {"interfaceAmbienceMute", Settings::ReloadType::Audio},
-    {"interfaceAmbienceVol", Settings::ReloadType::Audio},
-    // UISounds (done)
-    {"scrollPrevSound", Settings::ReloadType::Tables},
-    {"scrollNextSound", Settings::ReloadType::Tables},
-    {"scrollFastPrevSound", Settings::ReloadType::Tables},
-    {"scrollFastNextSound", Settings::ReloadType::Tables},
-    {"scrollJumpPrevSound", Settings::ReloadType::Tables},
-    {"scrollJumpNextSound", Settings::ReloadType::Tables},
-    {"scrollRandomSound", Settings::ReloadType::Tables},
-    {"launchTableSound", Settings::ReloadType::Tables},
-    {"launchScreenshotSound", Settings::ReloadType::Tables},
-    {"configToggleSound", Settings::ReloadType::Tables},
-    {"configSaveSound", Settings::ReloadType::Tables},
-    {"screenshotTakeSound", Settings::ReloadType::Tables},
-    {"screenshotQuitSound", Settings::ReloadType::Tables},
-    {"ambienceSound", Settings::ReloadType::Tables},
-    // Internal (done)
-    {"vpxSubCmd", Settings::ReloadType::None},
-    {"logFile", Settings::ReloadType::None},
-    {"vpsDbPath", Settings::ReloadType::None},
-    {"vpsDbUpdateFrequency", Settings::ReloadType::None},
-    {"vpsDbLastUpdated", Settings::ReloadType::None},
-    {"vpxtoolIndex", Settings::ReloadType::None},
-    {"indexPath", Settings::ReloadType::None},
-    {"screenshotWait", Settings::ReloadType::None},
+    {"showWheel", {Settings::ReloadType::None, "Toggle visibility of the wheel image in the main window.\n"
+                                              "Set to true to show the wheel, false to hide it."}},
+    {"wheelWindow", {Settings::ReloadType::Tables, "Select the window to display the wheel art."}},
+    {"showTitle", {Settings::ReloadType::None, "Toggle visibility of table titles in the main window.\n"
+                                              "Set to true to show titles, false to hide them."}},
+    {"titleWindow", {Settings::ReloadType::Tables, "Select the window to display the table title."}},
+    {"fontPath", {Settings::ReloadType::Font, "Select a font for the table title display."}},
+    {"fontColor", {Settings::ReloadType::Font, "Color of the table title display text."}},
+    {"fontBgColor", {Settings::ReloadType::Font, "Background color behind the table title."}},
+    {"fontSize", {Settings::ReloadType::Font, "Font size in points for table title text rendering."}},
+    {"titleX", {Settings::ReloadType::Title, "X position of the table title"}},
+    {"titleY", {Settings::ReloadType::Title, "Y position of the table title"}},
+    // MediaDimensions
+    {"forceImagesOnly", {Settings::ReloadType::Tables, "Use only images (skip videos)."}},
+    {"wheelMediaHeight", {Settings::ReloadType::None, "Height of the wheel image in pixels."}},
+    {"wheelMediaWidth", {Settings::ReloadType::None, "Width of the wheel image in pixels."}},
+    {"wheelMediaX", {Settings::ReloadType::None, "X position of the wheel image."}},
+    {"wheelMediaY", {Settings::ReloadType::None, "Y position of the wheel image."}},
+    {"playfieldMediaWidth", {Settings::ReloadType::None, "Width of the playfield media in pixels."}},
+    {"playfieldMediaHeight", {Settings::ReloadType::None, "Height of the playfield media in pixels."}},
+    {"playfieldMediaX", {Settings::ReloadType::None, "X position of the playfield media.\n"
+                                                    "This position is relative to the playfield window."}},
+    {"playfieldMediaY", {Settings::ReloadType::None, "Y position of the playfield media.\n"
+                                                    "This position is relative to the playfield window."}},
+    {"playfieldRotation", {Settings::ReloadType::None, "Rotation of the Playfield media.\n"
+                                                      "0 = no rotation\n"
+                                                      "90, 180, 270, -90, etc"}},
+    {"backglassMediaWidth", {Settings::ReloadType::None, "Width of the backglass media in pixels."}},
+    {"backglassMediaHeight", {Settings::ReloadType::None, "Height of the backglass media in pixels."}},
+    {"backglassMediaX", {Settings::ReloadType::None, "X position of the backglass media.\n"
+                                                    "This position is relative to the backglass window."}},
+    {"backglassMediaY", {Settings::ReloadType::None, "Y position of the backglass media.\n"
+                                                    "This position is relative to the backglass window."}},
+    {"backglassRotation", {Settings::ReloadType::None, "Rotation of the Backglass media.\n"
+                                                      "0 = no rotation\n"
+                                                      "90, 180, 270, -90, etc"}},
+    {"dmdMediaWidth", {Settings::ReloadType::None, "Width of the DMD media in pixels."}},
+    {"dmdMediaHeight", {Settings::ReloadType::None, "Height of the DMD media in pixels.\n"
+                                                   "This should match your DMD window height."}},
+    {"dmdMediaX", {Settings::ReloadType::None, "X position of the DMD media.\n"
+                                              "This position is relative to the DMD window."}},
+    {"dmdMediaY", {Settings::ReloadType::None, "Y position of the DMD media.\n"
+                                              "This position is relative to the DMD window."}},
+    {"dmdRotation", {Settings::ReloadType::None, "Rotation of the DMD media.\n"
+                                                "0 = no rotation\n"
+                                                "90, 180, 270, -90, etc"}},
+    {"topperMediaWidth", {Settings::ReloadType::None, "Width of the Topper media in pixels."}},
+    {"topperMediaHeight", {Settings::ReloadType::None, "Height of the Topper media in pixels.\n"
+                                                      "This should match your Topper window height."}},
+    {"topperMediaX", {Settings::ReloadType::None, "X position of the Topper media.\n"
+                                                 "This position is relative to the Topper window."}},
+    {"topperMediaY", {Settings::ReloadType::None, "Y position of the Topper media.\n"
+                                                 "This position is relative to the Topper window."}},
+    {"topperRotation", {Settings::ReloadType::None, "Rotation of the Topper media.\n"
+                                                   "0 = no rotation\n"
+                                                   "90, 180, 270, -90, etc"}},
+    // AudioSettings
+    {"masterMute", {Settings::ReloadType::Audio, "Mute all audio"}},
+    {"masterVol", {Settings::ReloadType::Audio, "Adjust all volume."}},
+    {"mediaAudioMute", {Settings::ReloadType::Audio, "Mute playfield, backglass and DMD audio"}},
+    {"mediaAudioVol", {Settings::ReloadType::Audio, "Adjust playfield, backglass and DMD video volume."}},
+    {"tableMusicMute", {Settings::ReloadType::Audio, "Mute current table music."}},
+    {"tableMusicVol", {Settings::ReloadType::Audio, "Adjust current table music volume."}},
+    {"interfaceAudioMute", {Settings::ReloadType::Audio, "Mute interface sounds."}},
+    {"interfaceAudioVol", {Settings::ReloadType::Audio, "Adjust interface sounds volume."}},
+    {"interfaceAmbienceMute", {Settings::ReloadType::Audio, "Mute interface ambience."}},
+    {"interfaceAmbienceVol", {Settings::ReloadType::Audio, "Adjust interface ambience volume."}},
+    // UISounds
+    {"scrollPrevSound", {Settings::ReloadType::Tables, "Sound played when scrolling to previous table."}},
+    {"scrollNextSound", {Settings::ReloadType::Tables, "Sound played when scrolling to next table."}},
+    {"scrollFastPrevSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling backward."}},
+    {"scrollFastNextSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling forward."}},
+    {"scrollJumpPrevSound", {Settings::ReloadType::Tables, "Sound played when jumping to previous letter."}},
+    {"scrollJumpNextSound", {Settings::ReloadType::Tables, "Sound played when jumping to next letter."}},
+    {"scrollRandomSound", {Settings::ReloadType::Tables, "Sound played when selecting a random table."}},
+    {"launchTableSound", {Settings::ReloadType::Tables, "Sound played when launching a table."}},
+    {"launchScreenshotSound", {Settings::ReloadType::Tables, "Sound played when entering screenshot mode."}},
+    {"configToggleSound", {Settings::ReloadType::Tables, "Sound played when opening or closing configuration."}},
+    {"configSaveSound", {Settings::ReloadType::Tables, "Sound played when saving configuration."}},
+    {"screenshotTakeSound", {Settings::ReloadType::Tables, "Sound played when taking a screenshot."}},
+    {"screenshotQuitSound", {Settings::ReloadType::Tables, "Sound played when exiting screenshot mode."}},
+    {"ambienceSound", {Settings::ReloadType::Tables, "Sound played on the background if there is no table music."}},
+    // Internal
+    {"vpxSubCmd", {Settings::ReloadType::None, "VPinballX internal command to play .vpx tables.\n"
+                                              "Use VPinballX --help command line menu to see more."}},
+    {"vpsDbPath", {Settings::ReloadType::None, "Path to the VPS database file, relative to exec dir."}},
+    {"vpsDbUpdateFrequency", {Settings::ReloadType::None, "Choose when to fetch for updates in VPS database.\n"
+                                                         "The only option for now is 'startup'."}},
+    {"vpsDbLastUpdated", {Settings::ReloadType::None, "Path to the VPS database update file, relative to exec dir."}},
+    {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file, relative to tables folder by default."}},
+    {"indexPath", {Settings::ReloadType::None, "Path to the main table index file, relative to exec dir."}},
+    {"screenshotWait", {Settings::ReloadType::None, "Time for the screenshot tool to wait until there are visible windows in VPX."}},
     // Keybinds
-    {"PreviousTable", Settings::ReloadType::None},
-    {"NextTable", Settings::ReloadType::None},
-    {"FastPrevTable", Settings::ReloadType::None},
-    {"FastNextTable", Settings::ReloadType::None},
-    {"JumpNextLetter", Settings::ReloadType::None},
-    {"JumpPrevLetter", Settings::ReloadType::None},
-    {"RandomTable", Settings::ReloadType::None},
-    {"LaunchTable", Settings::ReloadType::None},
-    {"ToggleConfig", Settings::ReloadType::None},
-    {"Quit", Settings::ReloadType::None},
-    {"ConfigClose", Settings::ReloadType::None},
-    {"ScreenshotMode", Settings::ReloadType::None},
-    {"ScreenshotKey", Settings::ReloadType::None},
-    {"ScreenshotQuit", Settings::ReloadType::None}
+    {"PreviousTable", {Settings::ReloadType::None, "Key to select the previous table in the list."}},
+    {"NextTable", {Settings::ReloadType::None, "Key to select the next table in the list."}},
+    {"FastPrevTable", {Settings::ReloadType::None, "Key to quickly jump back 10 tables."}},
+    {"FastNextTable", {Settings::ReloadType::None, "Key to quickly jump forward 10 tables."}},
+    {"JumpNextLetter", {Settings::ReloadType::None, "Key to jump to the next table starting with a different letter."}},
+    {"JumpPrevLetter", {Settings::ReloadType::None, "Key to jump to the previous table starting with a different letter."}},
+    {"RandomTable", {Settings::ReloadType::None, "Key to jump to a random table."}},
+    {"LaunchTable", {Settings::ReloadType::None, "Key to launch the selected table."}},
+    {"ToggleConfig", {Settings::ReloadType::None, "Key to open or close the configuration menu."}},
+    {"Quit", {Settings::ReloadType::None, "Key to exit menus and application."}},
+    {"ConfigClose", {Settings::ReloadType::None, "Key to close the configuration menu without saving."}},
+    {"ScreenshotMode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
+    {"ScreenshotKey", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
+    {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}}
 };
 
 #endif // SETTINGS_H

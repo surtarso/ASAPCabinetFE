@@ -2,8 +2,8 @@ TODO
 
 FOR PR:
 - use reasonable values on uiwidgets section elements
-- integrate tooltips back
-
+- imguifiledialog for vpxpath, tablepath, vpxini [VPX]
+- re-enable dpi settings
 
 -------------------------------------------------------------------
 

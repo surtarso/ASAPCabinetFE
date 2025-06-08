@@ -163,6 +163,15 @@ void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::js
                     int val = 0; // Fallback value
                     ImGui::InputInt(keyDisplayName.c_str(), &val);
                 }
+                // Add tooltip for the current item
+                if (ImGui::IsItemHovered()) {
+                    auto it = Settings::settingsMetadata.find(key);
+                    if (it != Settings::settingsMetadata.end()) {
+                        ImGui::BeginTooltip();
+                        ImGui::TextUnformatted(it->second.second.c_str()); // Display tooltip
+                        ImGui::EndTooltip();
+                    }
+                }
             }
             ImGui::PopItemWidth();
             ImGui::PopID(); // End field ID scope
@@ -233,7 +242,15 @@ void GenericSectionRenderer::render(const std::string& sectionName, nlohmann::js
                 int val = 0; // Fallback value
                 ImGui::InputInt(keyDisplayName.c_str(), &val);
             }
-
+            // Add tooltip for the current item
+            if (ImGui::IsItemHovered()) {
+                auto it = Settings::settingsMetadata.find(key);
+                if (it != Settings::settingsMetadata.end()) {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted(it->second.second.c_str()); // Display tooltip
+                    ImGui::EndTooltip();
+                }
+            }
             ImGui::PopItemWidth();
             ImGui::PopID(); // End field ID scope
         }
