@@ -156,8 +156,19 @@ void ConfigUI::drawGUI() {
             showConfig_ = false;
         }
     }
+    ImGui::SameLine();
     if (hasChanges) {
-        ImGui::PopStyleColor(3);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));
+    }
+    if (ImGui::Button("Close", ImVec2(100, 0))) {
+        jsonData_ = originalJsonData_; // Discard changes
+        showConfig_ = false; // Close the UI
+    }
+    if (hasChanges) {
+        ImGui::PopStyleColor(3); // Pop Close button colors
+        ImGui::PopStyleColor(3); // Pop Apply button colors
     }
 
     ImGui::End();
