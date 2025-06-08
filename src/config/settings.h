@@ -648,13 +648,13 @@ private:
 
 // Define settingsMetadata
 inline const std::unordered_map<std::string, Settings::ReloadType> Settings::settingsMetadata = {
-    // VPX
+    // VPX (done?)
     {"VPXTablesPath", Settings::ReloadType::None},
     {"VPinballXPath", Settings::ReloadType::None},
     {"vpxIniPath", Settings::ReloadType::None},
     {"vpxStartArgs", Settings::ReloadType::None},
     {"vpxEndArgs", Settings::ReloadType::None},
-    // DPISettings
+    // DPISettings (TODO)
     {"dpiScale", Settings::ReloadType::None}, // ?
     {"enableDpiScaling", Settings::ReloadType::None}, // ?
     // DefaultMedia (done)
@@ -680,7 +680,7 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"tableMusic", Settings::ReloadType::Tables},
     {"customLaunchSound", Settings::ReloadType::Tables},
     // WindowSettings (done except marked)
-    {"videoBackend", Settings::ReloadType::None}, //on table switch?
+    {"videoBackend", Settings::ReloadType::Assets},
     {"useVPinballXIni", Settings::ReloadType::None}, //call vpxiniscanner
     {"playfieldWindowWidth", Settings::ReloadType::Assets}, 
     {"playfieldWindowHeight", Settings::ReloadType::Assets}, 
@@ -703,8 +703,8 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"topperWindowY", Settings::ReloadType::Assets}, 
     // TableMetadata (done except marked)
     {"titleSource", Settings::ReloadType::Tables},
-    {"fetchVPSdb", Settings::ReloadType::None}, // flip on save!
-    {"forceRebuildMetadata", Settings::ReloadType::None}, // flip on save!
+    {"fetchVPSdb", Settings::ReloadType::None},
+    {"forceRebuildMetadata", Settings::ReloadType::None},
     {"titleSortBy", Settings::ReloadType::Tables},
     {"showMetadata", Settings::ReloadType::Overlay},
     {"metadataPanelWidth", Settings::ReloadType::None},
@@ -726,11 +726,11 @@ inline const std::unordered_map<std::string, Settings::ReloadType> Settings::set
     {"scrollbarLength", Settings::ReloadType::None},
     {"scrollbarColor", Settings::ReloadType::None},
     {"scrollbarThumbColor", Settings::ReloadType::None},
-    // TitleDisplay (done except marked)
+    // TitleDisplay
     {"showWheel", Settings::ReloadType::None},
-    {"wheelWindow", Settings::ReloadType::None}, //on table switch?
+    {"wheelWindow", Settings::ReloadType::Tables},
     {"showTitle", Settings::ReloadType::None},
-    {"titleWindow", Settings::ReloadType::None}, //on table switch?
+    {"titleWindow", Settings::ReloadType::Tables},
     {"fontPath", Settings::ReloadType::Font},
     {"fontColor", Settings::ReloadType::Font},
     {"fontBgColor", Settings::ReloadType::Font},

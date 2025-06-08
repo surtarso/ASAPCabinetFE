@@ -82,6 +82,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             }
             DataEnricher::enrich(settings, tables, progress);
             if (progress) {
+            // Stage 4: Save index
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Saving index...";
                 progress->currentStage = 4;

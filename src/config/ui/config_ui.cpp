@@ -257,6 +257,13 @@ void ConfigUI::saveConfig() {
             }
         }
 
+        // Reset forceRebuildMetadata if it was true and a rebuild was triggered
+        if (originalSettings.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", false)) {
+            settings.forceRebuildMetadata = false;
+            jsonData_["TableMetadata"]["forceRebuildMetadata"] = false;
+            LOG_INFO("ConfigUI: Reset forceRebuildMetadata to false after rebuild");
+        }
+
         configService_->saveConfig();
         LOG_DEBUG("ConfigUI: Config saved successfully.");
 

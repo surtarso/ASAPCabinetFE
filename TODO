@@ -2,7 +2,6 @@ TODO
 
 FOR PR:
 - integrate vpx_ini_reader to startup/config
-- auto disable vpsdb and/or full rescan after a full rescan
 - use reasonable values on uiwidgets section elements
 - integrate 1st run validconfig check (and window config)
 
