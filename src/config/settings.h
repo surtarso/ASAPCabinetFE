@@ -193,7 +193,7 @@ struct Settings {
     std::string vpsDbPath = "data/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
     std::string vpsDbLastUpdated = "data/vpsdb_last_updated.txt";
-    std::string vpxtoolIndex = "data/vpxtool_index.json";
+    std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapca_index.json";
     int screenshotWait = 4; // 0-60
 

@@ -28,6 +28,9 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->currentTablesLoaded = 0;
         progress->totalTablesToLoad = 0;
         progress->currentStage = 0;
+        progress->numMatched = 0;    // Reset numMatched
+        progress->numNoMatch = 0;    // Reset numNoMatch
+        progress->logMessages.clear();// Clear log
     }
 
     // Stage 1: Fetching VPSDB (if needed)
