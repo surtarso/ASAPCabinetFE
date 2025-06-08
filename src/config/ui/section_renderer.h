@@ -2,6 +2,7 @@
 #define SECTION_RENDERER_H
 
 #include "isection_renderer.h"
+#include "config_ui.h"
 #include <vector>
 #include <string>
 
@@ -11,12 +12,13 @@
  */
 class SectionRenderer : public BaseSectionRenderer {
 public:
-    SectionRenderer(const std::vector<std::string>& orderedKeys)
-        : orderedKeys_(orderedKeys) {}
+    SectionRenderer(ConfigUI* configUI, const std::vector<std::string>& orderedKeys)
+        : configUI_(configUI), orderedKeys_(orderedKeys) {}
 
     void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, ImGuiFileDialog* fileDialog, bool defaultOpen = false, bool& isDialogOpen = *(new bool(false)), std::string& dialogKey = *(new std::string()));
 
 private:
+    ConfigUI* configUI_;
     std::vector<std::string> orderedKeys_;
 };
 

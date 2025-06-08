@@ -237,9 +237,8 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
         }
         ImGui::PushID("ResetButton");
         if (ImGui::Button("Reset to Defaults", ImVec2(130, 0))) {
-            ConfigUI* configUI = dynamic_cast<ConfigUI*>(this);
-            if (configUI) {
-                configUI->resetSectionToDefault(sectionName);
+            if (configUI_) {  // Check that the pointer is valid
+                configUI_->resetSectionToDefault(sectionName);
             }
         }
         ImGui::PopID();

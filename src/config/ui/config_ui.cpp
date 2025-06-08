@@ -47,6 +47,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
 void ConfigUI::initializeRenderers() {
     for (const auto& section : sectionConfig_.getSectionOrder()) {
         renderers_[section] = std::make_unique<SectionRenderer>(
+            this,  // Pass the ConfigUI instance
             sectionConfig_.getKeyOrder(section));
     }
 }

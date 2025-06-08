@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- Reset button not working
 - table match count not reseting after a full scan.(loading screen)
 - name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
