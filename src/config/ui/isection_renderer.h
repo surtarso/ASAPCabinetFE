@@ -119,7 +119,7 @@ protected:
         int val = value.get<int>();
         static std::unordered_map<std::string, int> lastLoggedValues;
         int currentValue = snapToStep(val);
-        LOG_DEBUG("BaseSectionRenderer: Rendering " << key << " with currentValue " << currentValue);
+        //LOG_DEBUG("BaseSectionRenderer: Rendering " << key << " with currentValue " << currentValue);
         if (ImGui::SliderInt(key.c_str(), &currentValue, 0, 360, "%d°")) {
             int snappedValue = snapToStep(currentValue);
             if (snappedValue != lastLoggedValues[key]) {

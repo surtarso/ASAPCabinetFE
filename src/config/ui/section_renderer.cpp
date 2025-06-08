@@ -91,7 +91,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                     ImGui::PopItemWidth();
                     processedKeys.insert(key1);
                     processedKeys.insert(key2);
-                    LOG_DEBUG("ConfigUI: Rendered group " << groupLabel << " with keys " << key1 << ", " << key2);
+                    //LOG_DEBUG("ConfigUI: Rendered group " << groupLabel << " with keys " << key1 << ", " << key2);
                     break;
                 }
             }
@@ -134,7 +134,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                             }
                         }
                     } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
-                        LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
+                        //LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "Keybinds") {
                         renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
