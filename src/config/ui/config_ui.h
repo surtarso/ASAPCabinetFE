@@ -44,8 +44,8 @@ private:
     SectionConfig sectionConfig_;
     std::unordered_map<std::string, std::unique_ptr<ISectionRenderer>> renderers_;
     std::unordered_map<std::string, bool> sectionCollapseStates_;
-    float windowWidthRatio_ = 0.8f;
-    float windowHeightRatio_ = 0.8f;
+    // float windowWidthRatio_ = 0.8f;
+    // float windowHeightRatio_ = 0.8f;
 
     bool isCapturingKey_ = false;
     std::string capturingKeyName_;

@@ -62,10 +62,25 @@ void ConfigUI::drawGUI() {
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
     } else {
-        float configWidth = io.DisplaySize.x * windowWidthRatio_;
-        float configHeight = io.DisplaySize.y * windowHeightRatio_;
-        float configX = io.DisplaySize.x / 2 - configWidth / 2;
-        float configY = io.DisplaySize.y / 2 - configHeight / 2;
+        float configUIWidth = 0.8f;  // Default if not found
+        float configUIHeight = 0.5f; // Default if not found
+        try {
+            if (jsonData_.contains("Internal")) {
+                if (jsonData_["Internal"].contains("configUIWidth")) {
+                    configUIWidth = jsonData_["Internal"]["configUIWidth"].get<float>();
+                }
+                if (jsonData_["Internal"].contains("configUIHeight")) {
+                    configUIHeight = jsonData_["Internal"]["configUIHeight"].get<float>();
+                }
+            }
+        } catch (const std::exception& e) {
+            LOG_ERROR("ConfigUI: Error accessing window size ratios: " << e.what());
+        }
+
+        float configWidth = io.DisplaySize.x * configUIWidth;
+        float configHeight = io.DisplaySize.y * configUIHeight;
+        float configX = io.DisplaySize.x / 2.0f - configWidth / 2.0f;
+        float configY = io.DisplaySize.y / 2.0f - configHeight / 2.0f;
         
         ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);

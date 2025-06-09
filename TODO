@@ -1,6 +1,9 @@
 TODO
 
 FIX:
+- fix behavior of toggling force rescan to off after save
+- add online scan to that too rule too
+
 - name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)

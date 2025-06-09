@@ -196,6 +196,9 @@ struct Settings {
     std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapca_index.json";
     int screenshotWait = 4; // 0-60
+    // defaults in ConfigUI::drawGUI()
+    float configUIWidth = 0.8f;
+    float configUIHeight = 0.5f;
 
     // [Keybinds]
     std::unordered_map<std::string, SDL_Keycode> keybinds_ = {
@@ -430,7 +433,9 @@ private:
                 {"vpsDbLastUpdated", s.vpsDbLastUpdated},
                 {"vpxtoolIndex", s.vpxtoolIndex},
                 {"indexPath", s.indexPath},
-                {"screenshotWait", s.screenshotWait}
+                {"screenshotWait", s.screenshotWait},
+                {"configUIWidth", s.configUIWidth},
+                {"configUIHeight", s.configUIHeight}
             }},
             {"Keybinds", s.keybinds_}
         };
@@ -631,6 +636,8 @@ private:
         s.vpsDbLastUpdated = j.value("Internal", nlohmann::json{}).value("vpsDbLastUpdated", s.vpsDbLastUpdated);
         s.vpxtoolIndex = j.value("Internal", nlohmann::json{}).value("vpxtoolIndex", s.vpxtoolIndex);
         s.indexPath = j.value("Internal", nlohmann::json{}).value("indexPath", s.indexPath);
+        s.configUIWidth = j.value("Internal", nlohmann::json{}).value("configUIWidth", s.configUIWidth);
+        s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
         
         // Keybinds
@@ -901,6 +908,8 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file, relative to tables folder by default."}},
     {"indexPath", {Settings::ReloadType::None, "Path to the main table index file, relative to exec dir."}},
     {"screenshotWait", {Settings::ReloadType::None, "Time for the screenshot tool to wait until there are visible windows in VPX."}},
+    {"configUIWidth", {Settings::ReloadType::None, "Config window width."}},
+    {"configUIHeight", {Settings::ReloadType::None, "Config window height."}},
     // Keybinds
     {"PreviousTable", {Settings::ReloadType::None, "Key to select the previous table in the list."}},
     {"NextTable", {Settings::ReloadType::None, "Key to select the next table in the list."}},
@@ -915,7 +924,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ConfigClose", {Settings::ReloadType::None, "Key to close the configuration menu without saving."}},
     {"ScreenshotMode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
     {"ScreenshotKey", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
-    {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}}
+    {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
+    {"configUIWidth", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
+    {"configUIHeight", {Settings::ReloadType::None, "Key to quit screenshot mode."}}
 };
 
 #endif // SETTINGS_H

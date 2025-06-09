@@ -56,6 +56,9 @@ protected:
                    key == "interfaceAudioVol" || key == "interfaceAmbienceVol") {
             minVal = 0.0f;
             maxVal = 100.0f;
+        } else if (key == "configUIWidth" || key == "configUIHeight") {
+            minVal = 0.1f;
+            maxVal = 1.0f;
         }
         if (ImGui::SliderFloat(key.c_str(), &val, minVal, maxVal, format)) {
             value = val;

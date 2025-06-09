@@ -38,7 +38,8 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             {{"dmdMediaWidth", "dmdMediaHeight"}, "DMD Media Size [W,H]"},
             {{"dmdMediaX", "dmdMediaY"}, "DMD Media Position [X,Y]"},
             {{"topperMediaWidth", "topperMediaHeight"}, "Topper Media Size [W,H]"},
-            {{"topperMediaX", "topperMediaY"}, "Topper Window Position [X,Y]"}
+            {{"topperMediaX", "topperMediaY"}, "Topper Window Position [X,Y]"},
+            {{"configUIWidth", "configUIHeight"}, "Config Window Size [W,H]"}
         };
         std::set<std::string> processedKeys;
 
