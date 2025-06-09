@@ -43,7 +43,7 @@ jobs:
       run: |
         # Make sure core packages are installed for CI
         sudo apt-get update
-        sudo apt-get install findutils apt-utils git doxygen graphviz -y -qq
+        sudo apt-get install findutils apt-utils git doxygen graphviz pdf2svg -y -qq
         
         # Tell git to trust workspace dir
         git config --global --add safe.directory "${GITHUB_WORKSPACE}"
