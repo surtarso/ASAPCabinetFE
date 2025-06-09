@@ -347,7 +347,12 @@ void ConfigUI::saveConfig() {
         if (originalSettings.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", false)) {
             settings.forceRebuildMetadata = false;
             jsonData_["TableMetadata"]["forceRebuildMetadata"] = false;
-            LOG_INFO("ConfigUI: Reset forceRebuildMetadata to false after rebuild");
+            LOG_INFO("'forceRebuildMetadata' was reset to false after rebuild.");
+        }
+        if (originalSettings.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", false)) {
+            settings.fetchVPSdb = false;
+            jsonData_["TableMetadata"]["fetchVPSdb"] = false;
+            LOG_INFO("'fetchVPSdb' was reset to false after rebuild.");
         }
 
         configService_->saveConfig();
