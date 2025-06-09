@@ -13,7 +13,9 @@
 
 #include <string>
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL_keycode.h>
+#include <SDL_joystick.h>
+#include <SDL_events.h>
 
 /**
  * @class IKeybindProvider

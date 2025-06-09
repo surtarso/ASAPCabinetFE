@@ -12,11 +12,9 @@
 #define KEYBIND_MANAGER_H
 
 #include "keybinds/ikeybind_provider.h"
-// #include "utils/tooltips.h"
 #include <map>
 #include <string>
 #include <variant>
-#include <SDL2/SDL.h>
 
 /**
  * @class KeybindManager

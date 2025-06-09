@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 #include "config/iconfig_service.h"
-#include "tables/table_loader.h"
+#include "tables/itable_loader.h"
 #include "core/iwindow_manager.h"
 #include "render/ivideo_player.h"
 

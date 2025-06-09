@@ -11,8 +11,6 @@
 #define WINDOW_MANAGER_H
 
 #include "core/iwindow_manager.h"
-#include <SDL2/SDL.h>
-#include <memory>
 #include "config/iconfig_service.h"
 
 /**

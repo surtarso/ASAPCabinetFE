@@ -12,6 +12,7 @@
 #define RENDERER_H
 
 #include "render/irenderer.h"
+#include "render/ivideo_player.h"
 #include <SDL.h>
 
 /**

@@ -18,8 +18,7 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL_events.h>
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
 #include "keybinds/iinput_manager.h"
@@ -37,6 +36,7 @@
 #include "core/iapp_callbacks.h"
 #include "core/loading_progress.h"
 #include "core/loading_screen.h"
+struct Mix_Chunk;
 
 /**
  * @class App

@@ -1,6 +1,5 @@
 #include "keybinds/keybind_manager.h"
 #include "utils/logging.h"
-// #include "utils/tooltips.h"
 #include <algorithm>
 #include <fstream>
 #include <ostream>

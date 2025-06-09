@@ -24,7 +24,6 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
-#include <SDL.h>
 
 /**
  * @class InputManager

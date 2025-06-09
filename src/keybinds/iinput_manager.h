@@ -12,7 +12,7 @@
 #define IINPUT_MANAGER_H
 
 #include "tables/table_data.h"
-#include <SDL2/SDL.h>
+#include <SDL_events.h>
 #include <string>
 #include <functional>
 #include <vector>

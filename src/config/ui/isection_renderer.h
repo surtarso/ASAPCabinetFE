@@ -1,3 +1,12 @@
+/**
+ * @file isection_renderer.h
+ * @brief Defines the ISectionRenderer interface for rendering configuration sections in ASAPCabinetFE.
+ *
+ * This header provides the ISectionRenderer interface and the BaseSectionRenderer base class,
+ * which specify methods and utilities for rendering configuration sections in the UI using ImGui.
+ * It is implemented by classes like SectionRenderer to handle section-specific rendering logic.
+ */
+
 #ifndef ISECTION_RENDERER_H
 #define ISECTION_RENDERER_H
 
@@ -11,19 +20,57 @@
 /**
  * @class ISectionRenderer
  * @brief Interface for rendering configuration sections in the UI.
+ *
+ * This pure virtual class defines a method for rendering configuration sections, including
+ * handling JSON data, capturing keybindings, and managing file dialogs. Implementers provide
+ * specific rendering logic for different configuration sections in ASAPCabinetFE.
  */
 class ISectionRenderer {
 public:
+    /**
+     * @brief Virtual destructor for proper cleanup of derived classes.
+     *
+     * Ensures proper cleanup of any derived classes implementing this interface.
+     */
     virtual ~ISectionRenderer() = default;
+
+    /**
+     * @brief Renders a configuration section in the UI.
+     *
+     * Renders the specified section with its JSON data, handling key capture, file dialogs,
+     * and optional default open state or dialog management.
+     *
+     * @param sectionName The name of the configuration section to render.
+     * @param sectionData Reference to the JSON data for the section.
+     * @param isCapturing Reference to a flag indicating if a key is being captured.
+     * @param capturingKeyName Reference to the name of the key being captured.
+     * @param fileDialog Pointer to the ImGuiFileDialog instance for file selection.
+     * @param defaultOpen Optional flag to open the section by default (default: false).
+     * @param isDialogOpen Reference to a flag indicating if a file dialog is open (default: new bool(false)).
+     * @param dialogKey Reference to the key associated with the open dialog (default: new std::string()).
+     */
     virtual void render(const std::string& sectionName, nlohmann::json& sectionData, bool& isCapturing, std::string& capturingKeyName, ImGuiFileDialog* fileDialog, bool defaultOpen = false, bool& isDialogOpen = *(new bool(false)), std::string& dialogKey = *(new std::string())) = 0;
 };
 
 /**
  * @class BaseSectionRenderer
  * @brief Base class providing common rendering utilities for configuration sections.
+ *
+ * This class extends ISectionRenderer and provides protected methods for rendering
+ * common data types (bool, float, int, string, color, rotation, keybind, path) using ImGui.
+ * Derived classes can reuse these utilities for section-specific rendering.
  */
 class BaseSectionRenderer : public ISectionRenderer {
 protected:
+    /**
+     * @brief Renders a boolean value as a checkbox.
+     *
+     * Updates the JSON value if the checkbox state changes.
+     *
+     * @param key The key of the boolean value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     */
     void renderBool(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         bool val = value.get<bool>();
         if (ImGui::Checkbox(key.c_str(), &val)) {
@@ -32,6 +79,18 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders a float value as a slider with custom ranges.
+     *
+     * Updates the JSON value if the slider is adjusted, with ranges tailored to specific keys.
+     *
+     * @param key The key of the float value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     * @param minVal Minimum value for the slider (default: 0.0f).
+     * @param maxVal Maximum value for the slider (default: 1.0f).
+     * @param format Format string for the slider display (default: "%.2f").
+     */
     void renderFloat(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                      float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
         float val = value.get<float>();
@@ -88,6 +147,17 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders an integer value as an input field with custom ranges.
+     *
+     * Updates the JSON value if the input changes, clamping to the specified range.
+     *
+     * @param key The key of the integer value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     * @param minVal Minimum value for the input (default: 0).
+     * @param maxVal Maximum value for the input (default: 10000).
+     */
     void renderString(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         std::string val = value.get<std::string>();
         char buffer[256];
@@ -99,6 +169,15 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders a color value as a color editor.
+     *
+     * Updates the JSON array [R,G,B,A] if the color is edited.
+     *
+     * @param key The key of the color value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     */
     void renderColor(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         float color[4] = {
             value[0].get<float>() / 255.0f,
@@ -118,6 +197,15 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders a rotation value as a slider with 90-degree steps.
+     *
+     * Updates the JSON value if the slider is adjusted, snapping to 0°, 90°, 180°, 270°, or 360°.
+     *
+     * @param key The key of the rotation value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     */
     void renderRotation(const std::string& key, nlohmann::json& value, const std::string& sectionName) {
         int val = value.get<int>();
         static std::unordered_map<std::string, int> lastLoggedValues;
@@ -133,6 +221,17 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders a keybind value with a capture button.
+     *
+     * Initiates key capture if the button is clicked and the capture flag is not set.
+     *
+     * @param key The key of the keybind value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     * @param isCapturing Reference to a flag indicating if a key is being captured.
+     * @param capturingKeyName Reference to the name of the key being captured.
+     */
     void renderKeybind(const std::string& key, nlohmann::json& value, const std::string& sectionName, bool& isCapturing, std::string& capturingKeyName) {
         if (!value.is_string()) {
             LOG_DEBUG("BaseSectionRenderer: Invalid type for keybind " << key << ", expected string, got " << value.type_name());
@@ -153,6 +252,18 @@ protected:
         }
     }
 
+    /**
+     * @brief Renders a path or executable value with a browse button.
+     *
+     * Opens a file dialog for selecting paths or executables based on the key.
+     *
+     * @param key The key of the path value in the JSON.
+     * @param value Reference to the JSON value to render and update.
+     * @param sectionName The name of the section for logging.
+     * @param fileDialog Pointer to the ImGuiFileDialog instance.
+     * @param isDialogOpen Reference to a flag indicating if a file dialog is open.
+     * @param dialogKey Reference to the key associated with the open dialog.
+     */
     void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName, ImGuiFileDialog* fileDialog, bool& isDialogOpen, std::string& dialogKey) {
         std::string val = value.get<std::string>();
         char buffer[1024];
@@ -187,6 +298,14 @@ protected:
         }
     }
 
+    /**
+     * @brief Snaps a value to the nearest 90-degree step.
+     *
+     * Returns the nearest value from {0, 90, 180, 270, 360}.
+     *
+     * @param value The value to snap.
+     * @return The snapped value.
+     */
     int snapToStep(int value) {
         const int steps[] = {0, 90, 180, 270, 360};
         int nearestStep = 0;

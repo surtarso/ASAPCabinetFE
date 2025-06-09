@@ -1,19 +1,15 @@
 #include "core/app.h"
-#include "core/iwindow_manager.h"
 #include "core/window_manager.h"
-#include "core/dependency_factory.h"
-#include "core/joystick_manager.h"
 #include "core/first_run.h"
-#include "core/playfield_overlay.h"
 #include "tables/table_loader.h"
 #include "utils/logging.h"
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
 #include <iostream>
 #include <filesystem>
 #include <unistd.h>
 #include <limits.h>
 #include <thread> // Added for std::thread
+struct SDL_Surface;
 
 namespace fs = std::filesystem;
 

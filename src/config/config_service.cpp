@@ -2,6 +2,7 @@
 #include "utils/logging.h"
 #include <fstream>
 #include <stdexcept>
+#include <filesystem>
 
 ConfigService::ConfigService(const std::string& configPath)
     : configPath_(configPath), keybindManager_() {
@@ -196,6 +197,7 @@ KeybindManager& ConfigService::getKeybindManager() {
     return keybindManager_;
 }
 
+/// @bug this should resolve the path of the executable, not current.
 void ConfigService::applyPostProcessing() {
     std::string exeDir = std::filesystem::current_path().string() + "/";
     settings_.applyPostProcessing(exeDir);

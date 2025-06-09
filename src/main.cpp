@@ -22,10 +22,34 @@
 #include <filesystem>
 
 // Global GStreamer event loop and thread
+/**
+ * @var g_main_loop_global
+ * @brief Global GMainLoop instance for the GStreamer event loop.
+ *
+ * This pointer is used to manage the GStreamer event processing loop, initialized
+ * during SDLBootstrap construction and cleaned up during destruction.
+ */
 static GMainLoop* g_main_loop_global = nullptr;
+
+/**
+ * @var g_main_loop_thread_global
+ * @brief Global GThread instance for the GStreamer event loop thread.
+ *
+ * This pointer represents the thread running the GStreamer event loop, created
+ * during SDLBootstrap construction and joined during destruction.
+ */
 static GThread* g_main_loop_thread_global = nullptr;
 
 // Function to run the GStreamer event loop
+/**
+ * @brief Runs the GStreamer event loop in a separate thread.
+ *
+ * This function is executed in a dedicated thread to process GStreamer events.
+ * It runs the global GMainLoop until quit is called.
+ *
+ * @param data Unused parameter (cast to void to suppress warnings).
+ * @return NULL to indicate thread completion.
+ */
 static gpointer run_gstreamer_event_loop(gpointer data) {
     (void)data; // Cast to void to suppress unused parameter warning
     g_main_loop_run(g_main_loop_global);
@@ -49,9 +73,8 @@ struct SDLBootstrap {
      * @brief Constructs an SDLBootstrap and initializes GST and SDL subsystems.
      *
      * Initializes SDL with video, events, joystick, and audio subsystems, retrieves
-     * system DPI, sets DPI awareness hints, and initializes SDL_ttf and SDL_image and
-     * initializes gstreamer.
-     * Logs errors and throws runtime_error on failure.
+     * system DPI, sets DPI awareness hints, and initializes SDL_ttf, SDL_image, and
+     * GStreamer. Logs errors and throws runtime_error on failure.
      *
      * @throws std::runtime_error If GST, SDL, SDL_ttf, or SDL_image initialization fails.
      */
@@ -110,6 +133,7 @@ struct SDLBootstrap {
      * @brief Destroys the SDLBootstrap and cleans up SDL subsystems.
      *
      * Cleans up SDL_image, SDL_ttf, and SDL subsystems, logging the cleanup process.
+     * Also quits and joins the GStreamer event loop thread gracefully.
      */
     ~SDLBootstrap() {
         IMG_Quit();
@@ -118,18 +142,18 @@ struct SDLBootstrap {
         SDL_Quit();
 
         // Quit and join the global GStreamer event loop thread gracefully
-        if (g_main_loop_global && g_main_loop_is_running(g_main_loop_global)) { // Corrected function call [cite: 1]
+        if (g_main_loop_global && g_main_loop_is_running(g_main_loop_global)) {
             g_main_loop_quit(g_main_loop_global);
             LOG_DEBUG("Main: GStreamer global GMainLoop quit requested.");
         }
         if (g_main_loop_thread_global) {
             g_thread_join(g_main_loop_thread_global);
-            g_thread_unref(g_main_loop_thread_global); // Unref the thread
+            g_thread_unref(g_main_loop_thread_global);
             g_main_loop_thread_global = nullptr;
             LOG_DEBUG("Main: GStreamer global event thread joined and unref'd.");
         }
         if (g_main_loop_global) {
-            g_main_loop_unref(g_main_loop_global); // Unref the loop
+            g_main_loop_unref(g_main_loop_global);
             g_main_loop_global = nullptr;
             LOG_DEBUG("Main: GStreamer global GMainLoop unref'd.");
         }
