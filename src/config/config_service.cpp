@@ -256,3 +256,37 @@ void ConfigService::updateJsonWithIniValues(const std::optional<VPinballXIniSett
     updateJsonValue("topperWindowWidth", iniSettings->topperWidth);
     updateJsonValue("topperWindowHeight", iniSettings->topperHeight);
 }
+
+// Helper for saving windows size and position as they are when used
+void ConfigService::updateWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                            int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                            int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                            int& topperX, int& topperY, int& topperWidth, int& topperHeight) {
+
+    settings_.playfieldX = playfieldX;
+    settings_.playfieldY = playfieldY;
+    settings_.playfieldWindowWidth = playfieldWidth;
+    settings_.playfieldWindowHeight = playfieldHeight;
+
+    settings_.backglassX = backglassX;
+    settings_.backglassY = backglassY;
+    settings_.backglassWindowWidth = backglassWidth;
+    settings_.backglassWindowHeight = backglassHeight;
+
+    settings_.dmdX = dmdX;
+    settings_.dmdY = dmdY;
+    settings_.dmdWindowWidth = dmdWidth;
+    settings_.dmdWindowHeight = dmdHeight;
+
+    settings_.topperWindowX = topperX;
+    settings_.topperWindowY = topperY;
+    settings_.topperWindowWidth = topperWidth;
+    settings_.topperWindowHeight = topperHeight;
+
+    saveConfig();
+
+    LOG_INFO("Window setup saved: P(" << playfieldX << "," << playfieldY << "," << playfieldWidth << "," << playfieldHeight
+             << "), B(" << backglassX << "," << backglassY << "," << backglassWidth << "," << backglassHeight
+             << "), D(" << dmdX << "," << dmdY << "," << dmdWidth << "," << dmdHeight
+             << "), T(" << topperX << "," << topperY << "," << topperWidth << "," << topperHeight << ")");
+}

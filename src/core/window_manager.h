@@ -122,8 +122,10 @@ public:
      * @param topperX The x-coordinate of the topper window.
      * @param topperY The y-coordinate of the topper window.
      */
-    void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
-                            int& dmdX, int& dmdY, int& topperX, int& topperY) override;
+    void getWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                        int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                        int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                        int& topperX, int& topperY, int& topperWidth, int& topperHeight) override;
 
 private:
     /**

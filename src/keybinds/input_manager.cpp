@@ -490,9 +490,22 @@ void InputManager::handleDoubleClick(const SDL_Event& event) {
         auto it = lastClickTimes_.find(windowID);
         if (it != lastClickTimes_.end() && (currentTime - it->second) <= DOUBLE_CLICK_TIME) {
             LOG_DEBUG("InputManager: Double-click detected on window ID: " << windowID);
-            int playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY;
-            windowManager_->getWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY);
-            // settingsManager_->updateWindowPositions(playfieldX, playfieldY, backglassX, backglassY, dmdX, dmdY, topperX, topperY);
+
+            int playfieldX, playfieldY, playfieldWidth, playfieldHeight,
+                backglassX, backglassY, backglassWidth, backglassHeight,
+                dmdX, dmdY, dmdWidth, dmdHeight,
+                topperX, topperY, topperWidth, topperHeight;
+
+            windowManager_->getWindowSetup(playfieldX, playfieldY, playfieldWidth, playfieldHeight,
+                                            backglassX, backglassY, backglassWidth, backglassHeight,
+                                            dmdX, dmdY, dmdWidth, dmdHeight,
+                                            topperX, topperY, topperWidth, topperHeight);
+
+            settingsManager_->updateWindowSetup(playfieldX, playfieldY, playfieldWidth, playfieldHeight,
+                                            backglassX, backglassY, backglassWidth, backglassHeight,
+                                            dmdX, dmdY, dmdWidth, dmdHeight,
+                                            topperX, topperY, topperWidth, topperHeight);
+
             soundManager_->playUISound("config_save");
             lastClickTimes_.erase(it); // Clear to reset double-click detection
         } else {

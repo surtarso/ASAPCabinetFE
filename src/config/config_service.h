@@ -17,6 +17,11 @@ public:
     void saveConfig() override;
     KeybindManager& getKeybindManager() override;
 
+    void updateWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                            int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                            int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                            int& topperX, int& topperY, int& topperWidth, int& topperHeight) override;
+
 private:
     std::string configPath_;
     Settings settings_;

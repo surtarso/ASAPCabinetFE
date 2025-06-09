@@ -30,6 +30,13 @@ public:
     virtual const Settings& getSettings() const = 0;
 
     /**
+     * @brief Gets the keybinding manager.
+     *
+     * @return A reference to the KeybindManager object.
+     */
+    virtual KeybindManager& getKeybindManager() = 0;
+
+    /**
      * @brief Checks if the configuration is valid.
      *
      * @return True if the configuration is valid, false otherwise.
@@ -46,12 +53,10 @@ public:
      */
     virtual void saveConfig() = 0;
 
-    /**
-     * @brief Gets the keybinding manager.
-     *
-     * @return A reference to the KeybindManager object.
-     */
-    virtual KeybindManager& getKeybindManager() = 0;
+    virtual void updateWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                                int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                                int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                                int& topperX, int& topperY, int& topperWidth, int& topperHeight) = 0;
 };
 
 #endif // ICONFIG_SERVICE_H

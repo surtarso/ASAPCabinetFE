@@ -127,8 +127,10 @@ public:
      * @param topperX The x-coordinate of the Topper window.
      * @param topperY The y-coordinate of the Topper window.
      */
-    virtual void getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY, 
-                                    int& dmdX, int& dmdY, int& topperX, int& topperY) = 0;
+    virtual void getWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                                int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                                int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                                int& topperX, int& topperY, int& topperWidth, int& topperHeight) = 0;
 };
 
 #endif // IWINDOW_MANAGER_H

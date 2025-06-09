@@ -123,18 +123,24 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
     }
 }
 
-void WindowManager::getWindowPositions(int& playfieldX, int& playfieldY, int& backglassX, int& backglassY,
-                                       int& dmdX, int& dmdY, int& topperX, int& topperY) {
+void WindowManager::getWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
+                                      int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                                      int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                                      int& topperX, int& topperY, int& topperWidth, int& topperHeight) {
     if (playfieldWindow_) {
         SDL_GetWindowPosition(playfieldWindow_.get(), &playfieldX, &playfieldY);
+        SDL_GetWindowSize(playfieldWindow_.get(), &playfieldWidth, &playfieldHeight);
     }
     if (backglassWindow_) {
         SDL_GetWindowPosition(backglassWindow_.get(), &backglassX, &backglassY);
+        SDL_GetWindowSize(backglassWindow_.get(), &backglassWidth, &backglassHeight);
     }
     if (dmdWindow_) {
         SDL_GetWindowPosition(dmdWindow_.get(), &dmdX, &dmdY);
+        SDL_GetWindowSize(dmdWindow_.get(), &dmdWidth, &dmdHeight);
     }
     if (topperWindow_) {
         SDL_GetWindowPosition(topperWindow_.get(), &topperX, &topperY);
+        SDL_GetWindowSize(topperWindow_.get(), &topperWidth, &topperHeight);
     }
 }
