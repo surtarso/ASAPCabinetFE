@@ -679,7 +679,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                "\n"
                                                "Final command:\n"
                                                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
-    // DPISettings
+    // DPISettings (TODO: Should also reload fonts!)
     {"dpiScale", {Settings::ReloadType::Windows, "Manual DPI scale override.\n"
                                                 "Only used when EnableDpiScaling is false.\n"
                                                 "1.0 = 100%, 1.5 = 150%, etc."}},
