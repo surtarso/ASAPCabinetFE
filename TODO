@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- re-implement double click save
 - fix behavior of toggling rescan/online to off after save
 - name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
