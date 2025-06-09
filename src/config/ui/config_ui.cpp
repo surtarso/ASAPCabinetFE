@@ -19,7 +19,6 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
     LOG_DEBUG("ConfigUI constructed.");
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
-        originalJsonData_ = jsonData_;
         if (jsonData_.contains("Keybinds")) {
             for (const auto& action : keybindProvider_->getActions()) {
                 SDL_Event event;
@@ -38,6 +37,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
                 jsonData_["Keybinds"][action] = currentBind;
             }
         }
+        originalJsonData_ = jsonData_;
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigUI: Error initializing JSON data: " << e.what());
     }
