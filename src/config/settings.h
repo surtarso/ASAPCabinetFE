@@ -925,8 +925,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ScreenshotMode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
     {"ScreenshotKey", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
     {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
-    {"configUIWidth", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
-    {"configUIHeight", {Settings::ReloadType::None, "Key to quit screenshot mode."}}
 };
 
 #endif // SETTINGS_H
