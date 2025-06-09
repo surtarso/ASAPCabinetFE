@@ -153,6 +153,21 @@ struct SDLBootstrap {
 int main(int argc, char* argv[]) {
     std::string configPath = "data/settings.json";
 
+    // Ensure the config directory exists
+    std::filesystem::path configFilePath(configPath);
+    std::filesystem::path configDir = configFilePath.parent_path();
+    if (!configDir.empty()) {
+        try {
+            if (!std::filesystem::exists(configDir)) {
+                std::filesystem::create_directories(configDir);
+                LOG_DEBUG("main: Created directory " << configDir.string());
+            }
+        } catch (const std::filesystem::filesystem_error& e) {
+            LOG_ERROR("Failed to create directory " << configDir.string() << ": " << e.what());
+            LOG_ERROR("Live changes will not persist on restart, check writing permissions.");
+        }
+    }
+
     // Handle --version argument
     if (argc > 1 && std::string(argv[1]) == "--version") {
         std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;

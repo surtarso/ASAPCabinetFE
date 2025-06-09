@@ -12,6 +12,10 @@ KeybindManager::KeybindManager() {
 }
 
 void KeybindManager::initializeDefaults() {
+    if (!keybinds_.empty()) {
+        LOG_DEBUG("KeybindManager: Skipping initializeDefaults; keybinds already loaded.");
+        return;
+    }
     keybinds_["PreviousTable"] = {SDLK_LSHIFT};
     keybinds_["NextTable"] = {SDLK_RSHIFT};
     keybinds_["FastPrevTable"] = {SDLK_LCTRL};
