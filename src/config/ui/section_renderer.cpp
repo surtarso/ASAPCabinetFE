@@ -236,13 +236,15 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             ImGui::PopItemWidth();
             ImGui::PopID();
         }
-        ImGui::PushID("ResetButton");
-        if (ImGui::Button("Reset to Defaults", ImVec2(130, 0))) {
-            if (configUI_) {  // Check that the pointer is valid
-                configUI_->resetSectionToDefault(sectionName);
+        if (!configUI_->isStandalone()) {
+            ImGui::PushID("ResetButton");
+            if (ImGui::Button("Reset to Defaults", ImVec2(130, 0))) {
+                if (configUI_) {  // Check that the pointer is valid
+                    configUI_->resetSectionToDefault(sectionName);
+                }
             }
+            ImGui::PopID();
         }
-        ImGui::PopID();
         ImGui::Unindent();
     }
 }
