@@ -2,8 +2,8 @@
 #include "core/iwindow_manager.h"
 #include "config/iconfig_service.h"
 #include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
+#include "backends/imgui_impl_sdl2.h"
+#include "backends/imgui_impl_sdlrenderer2.h"
 #include "utils/logging.h"
 
 GuiManager::GuiManager(IWindowManager* windowManager, IConfigService* configService) 

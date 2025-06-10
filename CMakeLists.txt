@@ -53,7 +53,6 @@ if (GIT_FOUND)
         )
     endif()
 
-
     # Get the short commit hash
     execute_process(
         COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
@@ -125,6 +124,30 @@ configure_file(
     @ONLY
 )
 
+include(FetchContent)
+
+FetchContent_Declare(
+    imgui
+    URL https://github.com/ocornut/imgui/archive/refs/tags/v1.91.9b.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+# We won't use FetchContent_MakeAvailable for imgui because it doesn't provide a clean target.
+# Instead, we'll get its properties and include its source files directly.
+FetchContent_GetProperties(imgui)
+if(NOT imgui_POPULATED)
+    FetchContent_Populate(imgui)
+endif()
+
+FetchContent_Declare(
+    ImGuiFileDialog
+    URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.7.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_GetProperties(ImGuiFileDialog)
+if(NOT imguifiledialog_POPULATED)
+    FetchContent_Populate(ImGuiFileDialog)
+endif()
+
 # Define source files
 set(SOURCES
     src/main.cpp
@@ -166,22 +189,19 @@ set(SOURCES
     src/tables/vpsdb/vps_utils.cpp
     src/utils/logger.cpp
     src/utils/vpinballx_ini_reader.cpp
-    # Dear ImGui sources
-    ${CMAKE_SOURCE_DIR}/external/imgui/imgui.cpp
-    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_draw.cpp
-    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_widgets.cpp
-    ${CMAKE_SOURCE_DIR}/external/imgui/imgui_tables.cpp
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdl2.cpp
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_sdlrenderer2.cpp
-    # ImGui File Dialog
-    ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog/ImGuiFileDialog.cpp
+    # Dear ImGui sources added directly from FetchContent path
+    "${imgui_SOURCE_DIR}/imgui.cpp"
+    "${imgui_SOURCE_DIR}/imgui_draw.cpp"
+    "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
+    "${imgui_SOURCE_DIR}/imgui_tables.cpp"
+    "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp"
+    "${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp"
+    # ImGui File Dialog source
+    "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp"
 )
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
-
-# Suppress all warnings for ImGuiFileDialog.cpp
-set_source_files_properties(${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog/ImGuiFileDialog.cpp PROPERTIES COMPILE_FLAGS "-w")
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -200,13 +220,19 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/tables/vpsdb
     ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils
-    # Dear ImGui
-    ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends
-    # ImGui File Dialog
-    ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog
-    ${CMAKE_BINARY_DIR}  # Where version.h is generated
+    # Dear ImGui includes
+    "${imgui_SOURCE_DIR}"
+    "${imgui_SOURCE_DIR}/backends"
+    # ImGui File Dialog includes
+    "${imguifiledialog_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}"  # Where version.h is generated
 )
+
+# Suppress warnings for ImGuiFileDialog.cpp and ensure it finds imgui.h
+set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
+    COMPILE_FLAGS "-w"
+)
+
 
 # --- Dependencies Start ---
 find_package(PkgConfig REQUIRED)
@@ -241,6 +267,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${FFMPEG_LIBRARIES}
     ${GSTREAMER_LIBRARIES}
     CURL::libcurl
+    # Remove -limgui here as we are not linking to a pre-built library
 )
 # --- Dependencies End ---
 
@@ -292,9 +319,9 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
     install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
     install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
-    endif()
+endif()
 
-    # Set output directory (this is for the build directory, not install)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-    )
+# Set output directory (this is for the build directory, not install)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)

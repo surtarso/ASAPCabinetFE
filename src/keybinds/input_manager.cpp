@@ -1,7 +1,7 @@
 #include "keybinds/input_manager.h"
 #include "utils/logging.h"
 #include "imgui.h"
-#include "imgui_impl_sdl2.h" // Required for ImGui_ImplSDL2_ProcessEvent
+#include "backends/imgui_impl_sdl2.h" // Required for ImGui_ImplSDL2_ProcessEvent
 #include <iostream>
 #include <random>
 #include <SDL.h> // For SDL_GetTicks() and SDL_Event

@@ -34,7 +34,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        # submodules: recursive # no longer using submodules
         fetch-depth: 0
         lfs: true # Enable Git LFS to fetch actual files instead of links
 
