@@ -13,6 +13,7 @@ FIX:
 - Add a mutex for logFile_ writes to prevent race conditions in multi-threaded scenarios.
 - use const for methods that dont modify state
 - Combine vpxscanner counting and scanning into a single pass to improve performance.
+- regression in path handling for default media
 
 QOL:
 - Add ui user notifications for critical failures like missing config files.
@@ -20,8 +21,11 @@ QOL:
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
+- edit current table metadata panel trhu config
+- pick fields to be shown on metadata panel
 
 On hold:
+- auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - attract mode (random table on a timer if idle) (optional)
 - support animated png for wheel/marquee
