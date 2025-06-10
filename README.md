@@ -7,8 +7,9 @@
 [![CMake](https://img.shields.io/badge/CMake-3.x-orange?logo=cmake&logoColor=white)](https://cmake.org/)
 [![Latest Compile](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml/badge.svg?branch=main)](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml)
 [![Latest Release](https://img.shields.io/github/v/release/surtarso/ASAPCabinetFE)](https://github.com/surtarso/ASAPCabinetFE/releases)
-[![Artifacts](https://img.shields.io/badge/Artifacts-Releases-lightgrey)](https://github.com/surtarso/ASAPCabinetFE/actions)
-[![Documentation](https://img.shields.io/badge/Docs-Doxygen-blueviolet)](https://surtarso.github.io/ASAPCabinetFE/)
+<img alt="GitHub commits since latest release" src="https://img.shields.io/github/commits-since/surtarso/ASAPCabinetFE/latest">
+<!-- [![Artifacts](https://img.shields.io/badge/Artifacts-Releases-lightgrey)](https://github.com/surtarso/ASAPCabinetFE/actions)
+[![Documentation](https://img.shields.io/badge/Docs-Doxygen-blueviolet)](https://surtarso.github.io/ASAPCabinetFE/) -->
 
 </div>
 
