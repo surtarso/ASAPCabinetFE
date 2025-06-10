@@ -1,7 +1,7 @@
 #ifndef VPS_DATA_ENRICHER_H
 #define VPS_DATA_ENRICHER_H
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "tables/table_data.h"
 #include "vps_utils.h"
 #include "core/loading_progress.h"

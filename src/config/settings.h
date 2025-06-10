@@ -3,7 +3,7 @@
 
 #include <string>
 #include <SDL2/SDL.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <vector>
 #include <cstdlib>

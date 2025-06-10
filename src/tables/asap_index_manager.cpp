@@ -13,7 +13,7 @@
 #include "utils/logging.h"
 #include <filesystem>
 #include <fstream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage

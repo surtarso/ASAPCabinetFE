@@ -10,7 +10,7 @@
 #ifndef ISECTION_RENDERER_H
 #define ISECTION_RENDERER_H
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 #include <imgui.h>

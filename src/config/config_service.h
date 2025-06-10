@@ -13,7 +13,7 @@
 
 #include "utils/vpinballx_ini_reader.h"
 #include "iconfig_service.h"
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 
 /**

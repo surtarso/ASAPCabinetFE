@@ -17,7 +17,7 @@
 #include "config/settings.h" // Configuration settings for paths and VPSDB options
 #include "core/loading_progress.h" // Structure for tracking enrichment progress
 #include <vector> // For passing vectors of TableData
-#include <json.hpp> // For nlohmann::json to handle JSON parsing
+#include <nlohmann/json.hpp> // For nlohmann::json to handle JSON parsing
 
 /**
  * @class DataEnricher

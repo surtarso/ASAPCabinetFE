@@ -13,7 +13,7 @@
 #define VPS_DATABASE_LOADER_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to handle file paths
-#include <json.hpp> // For nlohmann::json to store the parsed VPS database
+#include <nlohmann/json.hpp> // For nlohmann::json to store the parsed VPS database
 #include "core/loading_progress.h" // Structure for tracking loading progress
 
 /**

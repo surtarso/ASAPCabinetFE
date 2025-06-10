@@ -13,7 +13,7 @@
 #include "vps_database_updater.h"
 #include <curl/curl.h>
 #include <filesystem>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "utils/logging.h"
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations

@@ -205,13 +205,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/external/imgui/backends
     # ImGui File Dialog
     ${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog
-    # nlohmann json
-    ${CMAKE_SOURCE_DIR}/external/nlohmann/single_include/nlohmann
     ${CMAKE_BINARY_DIR}  # Where version.h is generated
 )
 
 # --- Dependencies Start ---
 find_package(PkgConfig REQUIRED)
+find_package(nlohmann_json 3.11.2 REQUIRED)
 pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
@@ -233,6 +232,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    nlohmann_json::nlohmann_json
     ${SDL2_MAIN_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_TTF_LIBRARIES}
