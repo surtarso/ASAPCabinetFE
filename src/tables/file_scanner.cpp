@@ -25,20 +25,14 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         return tables;
     }
 
-    // Count total VPX files for progress tracking
-    int total = 0;
-    for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
-            total++;
-        }
-    }
+    // Initialize progress
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->totalTablesToLoad = total;
+        progress->totalTablesToLoad = 0;
         progress->currentTablesLoaded = 0;
     }
 
-    // Scan and populate TableData for each VPX file
+    // Single pass: scan and count VPX files
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             TableData table;
@@ -57,11 +51,15 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
             tables.push_back(table);
+
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->totalTablesToLoad++;
                 progress->currentTablesLoaded++;
             }
         }
     }
+
+    LOG_INFO("FileScanner: Found " << tables.size() << " VPX tables");
     return tables;
 }
