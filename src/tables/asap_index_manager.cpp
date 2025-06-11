@@ -158,14 +158,26 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         std::ofstream out(settings.indexPath);
         if (!out.is_open()) {
             LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for writing");
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->logMessages.push_back("DEBUG: Failed to open asapcab_index.json for writing");
+            }
             return false;
         }
         out << asapIndex.dump(4); // Serialize with 4-space indentation
         out.close();
         LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcab_index.json");
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->logMessages.push_back("DEBUG: Saved " + std::to_string(tables.size()) + " tables to index");
+        }
         return true;
     } catch (const std::exception& e) {
         LOG_ERROR("AsapIndexManager: Failed to save asapcab_index.json: " << e.what());
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->logMessages.push_back("DEBUG: Failed to save asapcab_index.json: " + std::string(e.what()));
+        }
         return false;
     }
 }

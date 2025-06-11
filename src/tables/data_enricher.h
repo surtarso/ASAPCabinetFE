@@ -13,11 +13,12 @@
 #ifndef DATA_ENRICHER_H
 #define DATA_ENRICHER_H // Header guard to prevent multiple inclusions
 
+#include "tables/vpsdb/vps_database_client.h"
 #include "tables/table_data.h" // Structure for storing table data
 #include "config/settings.h" // Configuration settings for paths and VPSDB options
 #include "core/loading_progress.h" // Structure for tracking enrichment progress
-#include <vector> // For passing vectors of TableData
 #include <nlohmann/json.hpp> // For nlohmann::json to handle JSON parsing
+#include <vector> // For passing vectors of TableData
 
 /**
  * @class DataEnricher
@@ -60,7 +61,6 @@ public:
      */
     static std::string cleanString(const std::string& input);
 
-private:
     /**
      * @brief Safely extracts a string value from a JSON object.
      *

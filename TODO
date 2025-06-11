@@ -2,7 +2,6 @@ TODO
 
 FIX:
 - fix behavior of toggling rescan/online to off after save
-- name parsing should fallback to filename with bad match
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
@@ -17,7 +16,6 @@ FIX:
 
 QOL:
 - Add ui user notifications for critical failures like missing config files.
-- thread vps parser!
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config

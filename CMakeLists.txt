@@ -124,6 +124,7 @@ configure_file(
     @ONLY
 )
 
+# -------------------- Fetch modules ---------------------
 include(FetchContent)
 
 FetchContent_Declare(
@@ -147,6 +148,110 @@ FetchContent_GetProperties(ImGuiFileDialog)
 if(NOT imguifiledialog_POPULATED)
     FetchContent_Populate(ImGuiFileDialog)
 endif()
+
+# --- Rust Library Integration Start ---
+
+# 1. Fetch the vpin Rust library
+FetchContent_Declare(
+    vpin
+    URL https://github.com/francisdb/vpin/archive/refs/tags/v0.18.0.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_GetProperties(vpin)
+if(NOT vpin_POPULATED)
+    FetchContent_Populate(vpin)
+endif()
+
+# 2. Find Rust Toolchain (cargo)
+find_program(CARGO_EXECUTABLE cargo REQUIRED)
+find_program(RUSTC_EXECUTABLE rustc REQUIRED)
+
+# Set the path to your local Rust FFI wrapper SOURCE directory
+set(VPIN_FFI_WRAPPER_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src/vpin_ffi_wrapper")
+set(VPIN_FFI_WRAPPER_LIB_NAME "vpin_ffi_wrapper") # Name from Cargo.toml
+
+# Define the directory where the Rust wrapper's Cargo.toml AND SOURCE will be GENERATED/COPIED
+# This will now be inside the _deps folder, alongside other fetched dependencies.
+set(VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR "${CMAKE_BINARY_DIR}/_deps/${VPIN_FFI_WRAPPER_LIB_NAME}-build")
+file(MAKE_DIRECTORY "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}")
+
+# Calculate the relative path for Cargo.toml.in to point to the fetched vpin crate.
+# This path is relative from the *generated* Cargo.toml
+# (e.g., build/_deps/vpin_ffi_wrapper-build/Cargo.toml)
+# to the fetched vpin source directory (e.g., build/_deps/vpin-src).
+file(RELATIVE_PATH VPIN_CRATE_PATH_REL "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}" "${vpin_SOURCE_DIR}")
+message(STATUS "Calculated VPIN_CRATE_PATH_REL: ${VPIN_CRATE_PATH_REL}") # For debugging
+
+# Configure Cargo.toml for the Rust FFI wrapper
+configure_file(
+    "${VPIN_FFI_WRAPPER_SOURCE_DIR}/Cargo.toml.in"
+    "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+    @ONLY
+)
+
+# Copy the Rust source directory and include directory into the build location within _deps
+add_custom_command(
+    OUTPUT "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp" # Use a stamp file
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${VPIN_FFI_WRAPPER_SOURCE_DIR}/src"
+            "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/src"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${VPIN_FFI_WRAPPER_SOURCE_DIR}/include"
+            "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/include"
+    COMMAND ${CMAKE_COMMAND} -E touch "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp" # Create the stamp file
+    COMMENT "Copying Rust FFI wrapper source and headers into _deps build directory..."
+    # Dependencies: This ensures the copy command runs if source files change
+    # List all files that, if changed, should trigger a re-copy
+    DEPENDS
+        "${VPIN_FFI_WRAPPER_SOURCE_DIR}/Cargo.toml.in"
+        "${VPIN_FFI_WRAPPER_SOURCE_DIR}/include/vpin_wrapper.h"
+        # You might want to list all .rs files in src/ too, for example:
+        "${VPIN_FFI_WRAPPER_SOURCE_DIR}/src/lib.rs"
+        # If you have more .rs files, you'd add them here
+        # E.g., "${VPIN_FFI_WRAPPER_SOURCE_DIR}/src/another_module.rs"
+)
+
+
+# Set output directory for the Rust library (Cargo's target directory)
+set(RUST_TARGET_DIR "${CMAKE_BINARY_DIR}/_deps/rust_lib_target") # Keep this separate for all Cargo output
+file(MAKE_DIRECTORY "${RUST_TARGET_DIR}")
+
+# # Determine Cargo build profile (debug/release)
+# string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+# if(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
+#     set(CARGO_PROFILE_FLAG "") # Default debug build, no extra flag needed
+#     set(RUST_LIB_SUBDIR "debug")
+# else()
+set(CARGO_PROFILE_FLAG "--release")
+set(RUST_LIB_SUBDIR "release")
+# endif()
+
+# 3. Build the Rust FFI wrapper as a static library
+add_custom_command(
+    OUTPUT "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
+    COMMAND ${CARGO_EXECUTABLE} build
+            --manifest-path "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+            --target-dir "${RUST_TARGET_DIR}"
+            ${CARGO_PROFILE_FLAG}
+    WORKING_DIRECTORY "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}"
+    COMMENT "Building Rust FFI wrapper library..."
+    # Depend on the configured Cargo.toml AND the stamp file from the copy command
+    DEPENDS "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+            "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp" # <-- Crucial dependency
+)
+
+add_custom_target(build_rust_lib ALL
+    DEPENDS "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
+)
+
+# Create an interface library for C++ to link against
+add_library(${VPIN_FFI_WRAPPER_LIB_NAME} STATIC IMPORTED)
+set_target_properties(${VPIN_FFI_WRAPPER_LIB_NAME} PROPERTIES
+    IMPORTED_LOCATION "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
+    INTERFACE_INCLUDE_DIRECTORIES "${VPIN_FFI_WRAPPER_SOURCE_DIR}/include" # Point to your original source include
+)
+
+# --- Rust Library Integration End ---
 
 # Define source files
 set(SOURCES
@@ -203,6 +308,9 @@ set(SOURCES
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+# Ensure the Rust library is built before linking the main executable
+add_dependencies(${PROJECT_NAME} build_rust_lib)
+
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src
@@ -225,6 +333,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${imgui_SOURCE_DIR}/backends"
     # ImGui File Dialog includes
     "${imguifiledialog_SOURCE_DIR}"
+    # Rust FFI wrapper include
+    "${VPIN_FFI_WRAPPER_SOURCE_DIR}/include"
     "${CMAKE_BINARY_DIR}"  # Where version.h is generated
 )
 
@@ -266,8 +376,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${GSTREAMER_LIBRARIES}
+    ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
-    # Remove -limgui here as we are not linking to a pre-built library
 )
 # --- Dependencies End ---
 

@@ -1,9 +1,12 @@
 #include "vps_data_enricher.h"
+#include "vps_utils.h"
 #include <fstream>
 #include <regex>
 #include <mutex>
 #include <algorithm>
 #include <filesystem>
+#include <set>
+#include <sstream>
 #include "utils/logging.h"
 
 namespace fs = std::filesystem;
@@ -11,6 +14,30 @@ namespace fs = std::filesystem;
 VpsDataEnricher::VpsDataEnricher(const nlohmann::json& vpsDb) : vpsDb_(vpsDb) {}
 
 static std::mutex mismatchLogMutex;
+
+// Helper function to split string into words
+std::set<std::string> splitIntoWords(const std::string& str, const VpsUtils& utils) {
+    std::set<std::string> words;
+    std::string normalized = utils.normalizeStringLessAggressive(str);
+    std::istringstream iss(normalized);
+    std::string word;
+    while (iss >> word) {
+        words.insert(word);
+    }
+    return words;
+}
+
+// Check if there’s any word overlap between two strings
+bool hasWordOverlap(const std::string& str1, const std::string& str2, const VpsUtils& utils) {
+    std::set<std::string> words1 = splitIntoWords(str1, utils);
+    std::set<std::string> words2 = splitIntoWords(str2, utils);
+    for (const auto& word : words1) {
+        if (words2.count(word) > 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
 size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::string& s2) const {
     const size_t len1 = s1.size(), len2 = s2.size();
@@ -27,7 +54,7 @@ size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::st
 }
 
 bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
-    LOG_DEBUG("Starting enrichTableData for table path: " << vpxTable.value("path", "N/A"));
+    LOG_DEBUG("Starting enrichTableData for table path: " << vpxTable.value("path", "N/A") << ", tableName=" << tableData.tableName << ", manufacturer=" << tableData.manufacturer << ", year=" << tableData.year);
 
     {
         std::lock_guard<std::mutex> lock(mismatchLogMutex);
@@ -40,52 +67,51 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         return false;
     }
 
-    std::string vpxTableName_source, vpxGameName, vpxTableVersion_source, vpxAuthorName, vpxTableDescription;
     std::string filename;
-
     if (vpxTable.contains("path") && vpxTable["path"].is_string()) {
         filename = fs::path(vpxTable["path"].get<std::string>()).stem().string();
     }
 
+    std::string vpxTableName_source;
+    bool useMetadataTableName = false;
+    if (vpxTable.contains("table_info") && vpxTable["table_info"].is_object()) {
+        vpxTableName_source = vpxTable["table_info"].value("table_name", "");
+        if (!vpxTableName_source.empty() && !filename.empty() && hasWordOverlap(vpxTableName_source, filename, utils_)) {
+            useMetadataTableName = true;
+            LOG_DEBUG("Metadata table name has overlap with filename: tableName=" << vpxTableName_source << ", filename=" << filename);
+        } else {
+            LOG_DEBUG("No overlap or empty metadata, preferring filename: tableName=" << vpxTableName_source << ", filename=" << filename);
+        }
+    }
+
+    // Update tableData, default to filename unless metadata has overlap
     try {
         if (vpxTable.contains("table_info") && vpxTable["table_info"].is_object()) {
             const auto& tableInfo = vpxTable["table_info"];
-            vpxTableName_source = tableInfo.value("table_name", "");
-            vpxTableVersion_source = tableInfo.contains("table_version") && !tableInfo["table_version"].is_null() ?
-                (tableInfo["table_version"].is_string() ? tableInfo["table_version"].get<std::string>() :
-                 std::to_string(tableInfo["table_version"].get<double>())) : "";
-            vpxAuthorName = tableInfo.value("author_name", "");
-            vpxTableDescription = tableInfo.value("table_description", "");
-        }
-        vpxGameName = vpxTable.value("game_name", "");
-
-        if (!vpxTableName_source.empty()) {
-            tableData.tableName = vpxTableName_source;
-        }
-        if (tableData.tableName.empty() && !filename.empty()) {
-            tableData.tableName = filename;
-        }
-        tableData.tableVersion = vpxTableVersion_source;
-        tableData.authorName = vpxAuthorName;
-        tableData.tableDescription = vpxTableDescription;
-        tableData.romPath = vpxGameName;
-        tableData.gameName = vpxGameName;
-
-        if (!filename.empty()) {
-            std::regex yearRegex(R"(\b(\d{4})\b)");
-            std::smatch match;
-            if (std::regex_search(filename, match, yearRegex) && tableData.year.empty()) {
-                tableData.year = match[1].str();
-                LOG_DEBUG("Extracted year from filename: " << tableData.year);
+            tableData.tableName = useMetadataTableName ? vpxTableName_source : filename;
+            LOG_DEBUG("Set tableName to: " << tableData.tableName);
+            if (tableData.authorName.empty()) {
+                tableData.authorName = tableInfo.value("author_name", "");
+                LOG_DEBUG("Set authorName from vpxTable: " << tableData.authorName);
             }
-
-            std::regex manufRegex(R"(\(([^)]+?)(?:\s+\d{4})?\))");
-            if (std::regex_search(filename, match, manufRegex) && tableData.manufacturer.empty()) {
-                tableData.manufacturer = match[1].str();
-                LOG_DEBUG("Extracted manufacturer from filename: " << tableData.manufacturer);
+            if (tableData.tableDescription.empty()) {
+                tableData.tableDescription = tableInfo.value("table_description", "");
+                LOG_DEBUG("Set tableDescription from vpxTable: " << tableData.tableDescription);
+            }
+            if (tableData.tableVersion.empty()) {
+                tableData.tableVersion = tableInfo.contains("table_version") && !tableInfo["table_version"].is_null() ?
+                    (tableInfo["table_version"].is_string() ? tableInfo["table_version"].get<std::string>() :
+                     std::to_string(tableInfo["table_version"].get<double>())) : "";
+                LOG_DEBUG("Set tableVersion from vpxTable: " << tableData.tableVersion);
             }
         }
+        if (tableData.gameName.empty()) {
+            tableData.gameName = vpxTable.value("game_name", "");
+            tableData.romPath = tableData.gameName;
+            LOG_DEBUG("Set gameName and romPath from vpxTable: " << tableData.gameName);
+        }
 
+        // Extract year and manufacturer from tableName or filename
         if (tableData.year.empty() && !tableData.tableName.empty()) {
             std::regex yearRegex(R"(\b(\d{4})\b)");
             std::smatch match;
@@ -102,8 +128,26 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
                 LOG_DEBUG("Extracted manufacturer from tableName: " << tableData.manufacturer);
             }
         }
+        if (!filename.empty()) {
+            if (tableData.year.empty()) {
+                std::regex yearRegex(R"(\b(\d{4})\b)");
+                std::smatch match;
+                if (std::regex_search(filename, match, yearRegex)) {
+                    tableData.year = match[1].str();
+                    LOG_DEBUG("Extracted year from filename: " << tableData.year);
+                }
+            }
+            if (tableData.manufacturer.empty()) {
+                std::regex manufRegex(R"(\(([^)]+?)(?:\s+\d{4})?\))");
+                std::smatch match;
+                if (std::regex_search(filename, match, manufRegex)) {
+                    tableData.manufacturer = match[1].str();
+                    LOG_DEBUG("Extracted manufacturer from filename: " << tableData.manufacturer);
+                }
+            }
+        }
     } catch (const std::exception& e) {
-        LOG_DEBUG("Error processing table data: " << e.what());
+        LOG_DEBUG("Error processing vpxTable: " << e.what());
     }
 
     bool matched_to_vpsdb = false;
@@ -112,22 +156,19 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
     std::string bestMatchVpsName;
     float bestMatchScore = -1.0f;
 
-    std::string normVpxTableNameAggressive = utils_.normalizeString(tableData.tableName);
-    std::string normVpxTableNameLessAggressive = utils_.normalizeStringLessAggressive(tableData.tableName);
-    std::string normVpxGameName = utils_.normalizeString(tableData.gameName);
+    std::string normTableNameAggressive = utils_.normalizeString(tableData.tableName);
+    std::string normTableNameLessAggressive = utils_.normalizeStringLessAggressive(tableData.tableName);
+    std::string normGameName = utils_.normalizeString(tableData.gameName);
     std::string normFilename = utils_.normalizeStringLessAggressive(filename);
 
-    LOG_DEBUG("Attempting to match table: " << tableData.tableName);
+    LOG_DEBUG("Attempting to match table: tableName=" << tableData.tableName << ", gameName=" << tableData.gameName << ", filename=" << filename);
 
     size_t totalVpsEntries = vpsDb_.size();
     size_t processedVpsEntries = 0;
 
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
-        std::stringstream ss;
-        ss << "Matching VPSDB " << totalVpsEntries << " entries...";
-        progress->currentTask = ss.str();
-        // Do not set totalTablesToLoad here to preserve local table count
+        progress->currentTask = "Matching VPSDB " + std::to_string(totalVpsEntries) + " entries...";
         progress->currentTablesLoaded = 0;
     }
 
@@ -165,13 +206,13 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
             std::string normVpsNameLessAggressive = utils_.normalizeStringLessAggressive(vpsName);
             float currentMatchScore = 0.0f;
 
-            if (!normVpxGameName.empty() && vpsDbEntry.contains("tableFiles") && vpsDbEntry["tableFiles"].is_array()) {
+            if (!normGameName.empty() && vpsDbEntry.contains("tableFiles") && vpsDbEntry["tableFiles"].is_array()) {
                 for (const auto& tableFile : vpsDbEntry["tableFiles"]) {
                     if (tableFile.contains("roms") && tableFile["roms"].is_array()) {
                         for (const auto& rom : tableFile["roms"]) {
                             if (rom.contains("name") && rom["name"].is_string()) {
                                 std::string romName = rom["name"].get<std::string>();
-                                if (!romName.empty() && utils_.normalizeString(romName) == normVpxGameName) {
+                                if (!romName.empty() && utils_.normalizeString(romName) == normGameName) {
                                     currentMatchScore += 5.0f;
                                     LOG_DEBUG("ROM match found for: " << tableData.gameName);
                                     break;
@@ -185,31 +226,38 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
             float nameSimilarityTableName = 0.0f;
             float nameSimilarityFilename = 0.0f;
 
-            if (!normVpxTableNameAggressive.empty() && normVpxTableNameAggressive == normVpsNameAggressive) {
+            if (!normTableNameAggressive.empty() && normTableNameAggressive == normVpsNameAggressive) {
                 nameSimilarityTableName = 3.0f;
-            } else if (!normVpxTableNameLessAggressive.empty() && normVpxTableNameLessAggressive == normVpsNameLessAggressive) {
+                LOG_DEBUG("Exact tableName match: " << tableData.tableName);
+            } else if (!normTableNameLessAggressive.empty() && normTableNameLessAggressive == normVpsNameLessAggressive) {
                 nameSimilarityTableName = 2.0f;
-            } else {
-                size_t dist = levenshteinDistance(normVpxTableNameLessAggressive, normVpsNameLessAggressive);
-                float similarity = 1.0f - static_cast<float>(dist) / std::max(normVpxTableNameLessAggressive.size(), normVpsNameLessAggressive.size());
+                LOG_DEBUG("Fuzzy tableName match: " << tableData.tableName);
+            } else if (!normTableNameLessAggressive.empty()) {
+                size_t dist = levenshteinDistance(normTableNameLessAggressive, normVpsNameLessAggressive);
+                float similarity = 1.0f - static_cast<float>(dist) / std::max(normTableNameLessAggressive.size(), normVpsNameLessAggressive.size());
                 if (similarity > 0.7f) {
                     nameSimilarityTableName = similarity * 2.0f;
+                    LOG_DEBUG("Levenshtein tableName match, similarity=" << similarity);
                 }
             }
 
-            if (!normFilename.empty() && normFilename == normVpsNameLessAggressive) {
-                nameSimilarityFilename = 2.0f;
-            } else {
-                size_t dist = levenshteinDistance(normFilename, normVpsNameLessAggressive);
-                float similarity = 1.0f - static_cast<float>(dist) / std::max(normFilename.size(), normVpsNameLessAggressive.size());
-                if (similarity > 0.7f) {
-                    nameSimilarityFilename = similarity * 2.0f;
+            if (!normFilename.empty()) {
+                if (normFilename == normVpsNameLessAggressive) {
+                    nameSimilarityFilename = 3.0f; // Always prioritize filename
+                    LOG_DEBUG("Filename match: " << filename << ", score=" << nameSimilarityFilename);
+                } else {
+                    size_t dist = levenshteinDistance(normFilename, normVpsNameLessAggressive);
+                    float similarity = 1.0f - static_cast<float>(dist) / std::max(normFilename.size(), normVpsNameLessAggressive.size());
+                    if (similarity > 0.7f) {
+                        nameSimilarityFilename = similarity * 3.0f;
+                        LOG_DEBUG("Levenshtein filename match, similarity=" << similarity << ", score=" << nameSimilarityFilename);
+                    }
                 }
             }
 
             currentMatchScore += std::max(nameSimilarityTableName, nameSimilarityFilename);
             if (nameSimilarityFilename > nameSimilarityTableName) {
-                LOG_DEBUG("Filename match better than table_name for: " << tableData.tableName << ", filename: " << filename);
+                LOG_DEBUG("Filename match better than tableName: filename=" << filename << ", tableName=" << tableData.tableName);
             }
 
             if (!tableData.year.empty() && !vpsYear.empty() && tableData.year == vpsYear) {
@@ -228,7 +276,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
                 latestVpsVersionFound = currentVpsEntryLatestVersion;
                 bestMatchVpsName = vpsName;
                 matched_to_vpsdb = true;
-                LOG_DEBUG("New best match, score: " << bestMatchScore);
+                LOG_DEBUG("New best match, score=" << bestMatchScore << ", vpsName=" << vpsName);
             }
         } catch (const std::exception& e) {
             LOG_DEBUG("Error in VPSDB entry: " << e.what());
@@ -254,7 +302,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         std::string vpsManufacturer = bestVpsDbEntry.value("manufacturer", "");
         if (!vpsManufacturer.empty() && (tableData.manufacturer.empty() || bestMatchScore > 2.0f)) {
             tableData.manufacturer = vpsManufacturer;
-            LOG_DEBUG("Updated manufacturer from VPSDB: " << tableData.manufacturer);
+            LOG_DEBUG("Updated manufacturer from VPSDB: " << vpsManufacturer);
         }
 
         std::string vpsYear;
@@ -263,7 +311,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         }
         if (!vpsYear.empty() && (tableData.year.empty() || bestMatchScore > 2.0f)) {
             tableData.year = vpsYear;
-            LOG_DEBUG("Updated year from VPSDB: " << tableData.year);
+            LOG_DEBUG("Updated year from VPSDB: " << vpsYear);
         }
 
         if (bestVpsDbEntry.contains("tableFiles") && bestVpsDbEntry["tableFiles"].is_array()) {
@@ -283,7 +331,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         float titleSimilarity = 0.0f;
         if (!bestMatchVpsName.empty()) {
             std::string normBestVpsNameLessAggressive = utils_.normalizeStringLessAggressive(bestMatchVpsName);
-            std::string sourceName = normVpxTableNameLessAggressive.empty() ? normFilename : normVpxTableNameLessAggressive;
+            std::string sourceName = normTableNameLessAggressive.empty() ? normFilename : normTableNameLessAggressive;
             if (!sourceName.empty() && !normBestVpsNameLessAggressive.empty()) {
                 size_t dist = levenshteinDistance(sourceName, normBestVpsNameLessAggressive);
                 titleSimilarity = 1.0f - static_cast<float>(dist) / std::max(sourceName.size(), normBestVpsNameLessAggressive.size());
@@ -297,7 +345,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
             LOG_DEBUG("Title kept as: " << tableData.title);
         }
 
-        std::string currentVpxVersionNormalized = utils_.normalizeVersion(vpxTableVersion_source);
+        std::string currentVpxVersionNormalized = utils_.normalizeVersion(tableData.tableVersion);
         tableData.vpsVersion = latestVpsVersionFound;
         if (!latestVpsVersionFound.empty() && utils_.isVersionGreaterThan(latestVpsVersionFound, currentVpxVersionNormalized)) {
             if (!currentVpxVersionNormalized.empty()) {
@@ -323,7 +371,7 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         {
             std::lock_guard<std::mutex> lock(mismatchLogMutex);
             std::ofstream mismatchLog("tables/vpsdb_mismatches.log", std::ios::app);
-            mismatchLog << "No vpsdb match for table: '" << tableData.tableName << "', gameName: '" << tableData.gameName << "'\n";
+            mismatchLog << "No VPSDB match for table: '" << tableData.tableName << "', gameName: '" << tableData.gameName << "', filename: '" << filename << "'\n";
         }
         LOG_INFO("No VPSDB match, using title: " << tableData.title);
         if (progress) {
@@ -351,6 +399,6 @@ bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData&
         }
     }
 
-    LOG_DEBUG("Final table title: " << tableData.title);
+    LOG_DEBUG("Final table title: " << tableData.title << ", tableName=" << tableData.tableName << ", manufacturer=" << tableData.manufacturer << ", year=" << tableData.year);
     return matched_to_vpsdb;
 }

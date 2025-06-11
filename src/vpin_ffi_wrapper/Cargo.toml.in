@@ -1,0 +1,15 @@
+# src/vpin_ffi_wrapper/Cargo.toml.in
+
+[package]
+name = "vpin_ffi_wrapper"
+version = "0.18.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+vpin = { path = "@VPIN_CRATE_PATH_REL@" }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
