@@ -163,7 +163,7 @@ We’re dreaming big! Help us bring these features to life:
 - Dynamic custom window creation.
 - Single table overrides for settings.
 - In-game video recording.
-- Seamless switch with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
+- Integrate with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
 ## Contribute
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
