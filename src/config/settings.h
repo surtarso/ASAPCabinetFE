@@ -782,19 +782,19 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"topperWindowY", {Settings::ReloadType::Assets, "Y position of the Topper window.\n"
                                                     "You can drag and double-click a window to save its position"}},
     // TableMetadata
-    {"titleSource", {Settings::ReloadType::Tables, "Select the source of the title info.\n"
-                                                  "- 'filename' to use filename as table title.\n"
-                                                  "- 'metadata' to use table title from metadata. (requires vpxtool)\n"}},
+    {"titleSource", {Settings::ReloadType::Tables, "Select how table info will be displayed.\n"
+                                                  "- filename: The only source of info is the filename for the table title, metadata panel will be empty.\n"
+                                                  "- metadata: Extract metadata from files to display as they come.\n"
+                                                  "TIP: If you already have vpxtool_index.json, it will read it instead of re-scanning your files."}},
     {"fetchVPSdb", {Settings::ReloadType::None, "Fetches Virtual Pinball Spreadsheet database and\n"
-                                               "attempts to match with vpxtool metadata.\n"
-                                               "TIP: Leave this off after you're happy with the metadata.\n"
-                                               "Leaving this on will check for updates every full table reload."}},
+                                               "attempts to match with file metadata to improve information.\n"
+                                               "TIP: Leave this OFF after you're happy with the metadata.\n"}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
-                                                           "Applying will DELETE asapcab_index.json\n"
-                                                           "TIP: Remember to turn this OFF AFTER rebuilding metadata."}},
+                                                           "You need to rebuild if changing metadata options.\n"
+                                                           "TIP: Leave this OFF after rebuilding metadata."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Select the sorting of tables.\n"
-                                                  "- Requires rich metadata.(vpxtool + vpsdb)"}},
-    {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window. (requires vpxtool)\n"
+                                                  "- Requires VPSdb metadata."}},
+    {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window.\n"
                                                     "TitleSource must be set to 'metadata' for the panel to display something."}},
     {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Width of the metadata panel as a fraction of the screen (0.1-1.0)"}},
     {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Height of the metadata panel as a fraction of the screen (0.1-1.0)"}},

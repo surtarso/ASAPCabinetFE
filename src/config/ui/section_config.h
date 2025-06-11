@@ -55,7 +55,7 @@ public:
             "metadataPanelAlpha"
         };
         keyDisplayNames_["TableMetadata"] = {
-            {"titleSource", "Title Source"},
+            {"titleSource", "Table Info"},
             {"titleSortBy", "Sort By"},
             {"showMetadata", "Show Metadata"},
             {"fetchVPSdb", "Fetch VPS Database"},
