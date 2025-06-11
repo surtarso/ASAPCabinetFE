@@ -4,7 +4,8 @@
 [![GitHub forks](https://img.shields.io/github/forks/surtarso/ASAPCabinetFE.svg?style=social)](https://github.com/surtarso/ASAPCabinetFE/network/members)
 <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/surtarso/ASAPCabinetFE/total">
 [![Artifacts](https://img.shields.io/badge/Artifacts-Releases-lightgrey)](https://github.com/surtarso/ASAPCabinetFE/actions)
-[![Documentation](https://img.shields.io/badge/Docs-Doxygen-blueviolet)](https://surtarso.github.io/ASAPCabinetFE/) -->
+[![Documentation](https://img.shields.io/badge/Docs-Doxygen-blueviolet)](https://surtarso.github.io/ASAPCabinetFE/)
+<img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/surtarso/ASAPCabinetFE">-->
 [![C++ Standard](https://img.shields.io/badge/C++-20-blue.svg?logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/20)
 [![CMake](https://img.shields.io/badge/CMake-3.x-orange?logo=cmake&logoColor=white)](https://cmake.org/)
 [![Latest Compile](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml/badge.svg?branch=main)](https://github.com/surtarso/ASAPCabinetFE/actions/workflows/compile_release.yml)
@@ -30,7 +31,7 @@
 Get up and running in minutes—whether you’re a player or a code tinkerer.
 ```sh
 sudo apt-get install git findutils -y -qq
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat apt-packages.txt | xargs sudo apt-get install -y
 mkdir build && cd build
@@ -81,7 +82,7 @@ sudo apt-get install git findutils -y
 
 💏 Clone the Repository
 ```sh
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 ```
 
