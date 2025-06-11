@@ -24,12 +24,11 @@ QOL:
 - pick fields to be shown on metadata panel
 
 On hold:
+- table settings overrides
+- multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - attract mode (random table on a timer if idle) (optional)
 - support animated png for wheel/marquee
 - dynamic window creation
-- table settings overrides
 - incorporate generate_media.sh?
-- integrate vpxguitools and vice versa thru process launchers?
-- go crossplatform?
