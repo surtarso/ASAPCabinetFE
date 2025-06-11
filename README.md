@@ -50,9 +50,9 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - Full screen multi monitor display of table playfield, backglass, topper and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
 - Use `VPinballX.ini` for size and position auto-configuration.
-- Use [vpxtool](https://github.com/francisdb/vpxtool) to retrieve table metadata.
-- Enrich metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
-- Sort tables by title, type, manufacturer, year or author. (requires metadata)
+- Use [VPin](https://github.com/francisdb/vpin) to retrieve table metadata.
+- Match metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
+- Sort tables by title, type, manufacturer, year or author.
 - Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
 - Extended settings for many display configuration arrangements.
@@ -65,6 +65,7 @@ _ASAPCab_ isn’t just a frontend—it’s your gateway to a complete virtual pi
 
 ### How it works
 - Scans recursively for `.vpx` files.
+- Optionally scan file metadata or use your existing `vpxtool_index.json`.
 - Creates **up to four** windows for playfield, backglass, topper and DMD.
 - Loads default or custom media for each table.
 - Launches tables with desired VPX executable.
