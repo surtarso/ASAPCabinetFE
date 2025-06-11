@@ -98,6 +98,8 @@ public:
      */
     void resetSectionToDefault(const std::string& sectionName);
 
+    void refreshUIState();
+
 private:
     IConfigService* configService_;                  ///< Pointer to the configuration service.
     IKeybindProvider* keybindProvider_;             ///< Pointer to the keybind provider.

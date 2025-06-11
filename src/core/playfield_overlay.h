@@ -51,7 +51,7 @@ public:
      */
     PlayfieldOverlay(const std::vector<TableData>* tables, size_t* currentIndex,
                      IConfigService* configService, IWindowManager* windowManager,
-                     IAssetManager* assetManager);
+                     IAssetManager* assetManager, std::function<void()> refreshUICallback);
 
     /**
      * @brief Renders all ImGui overlay elements.
@@ -83,6 +83,8 @@ public:
      */
     void updateSettings(const Settings& settings);
 
+    void ResetMetadataFlags();
+
 private:
     const std::vector<TableData>* tables_; ///< Pointer to the list of table data used for metadata display.
     size_t* currentIndex_;                 ///< Pointer to the current table index for navigation and scrollbar positioning.
@@ -90,6 +92,8 @@ private:
     IWindowManager* windowManager_;        ///< Window manager for retrieving playfield window dimensions and positioning overlays.
     [[maybe_unused]] IAssetManager* assetManager_;          ///< Asset manager for potential texture or video assets in future enhancements.
     bool showMetadataPanel_;               ///< Flag controlling metadata panel visibility, set via configService and updated by updateSettings.
+    bool resetMetadataFlags_ = false;
+    std::function<void()> refreshUICallback_;
 
     /**
      * @brief Renders the scrollbar UI element.
@@ -108,6 +112,8 @@ private:
      * transparency are controlled by MetadataPanelSettings, enabling configUI adjustments.
      */
     void renderMetadataPanel();
+
+    void refreshUICallback();
 };
 
 #endif // PLAYFIELD_OVERLAY_H

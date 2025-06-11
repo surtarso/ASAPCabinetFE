@@ -72,15 +72,15 @@ namespace MetadataPanelSettings {
 
 PlayfieldOverlay::PlayfieldOverlay(const std::vector<TableData>* tables, size_t* currentIndex,
                                    IConfigService* configService, IWindowManager* windowManager,
-                                   IAssetManager* assetManager)
+                                   IAssetManager* assetManager, std::function<void()> refreshUICallback)
     : tables_(tables),
       currentIndex_(currentIndex),
       configService_(configService),
       windowManager_(windowManager),
       assetManager_(assetManager),
-      showMetadataPanel_(configService->getSettings().showMetadata)
-{
-    // Initialize settings pointers
+      showMetadataPanel_(configService->getSettings().showMetadata),
+      resetMetadataFlags_(false),
+      refreshUICallback_(refreshUICallback) {
     NavigationArrowSettings::settings = &configService_->getSettings();
     ScrollbarSettings::settings = &configService_->getSettings();
     MetadataPanelSettings::settings = &configService_->getSettings();
@@ -89,8 +89,17 @@ PlayfieldOverlay::PlayfieldOverlay(const std::vector<TableData>* tables, size_t*
 
 void PlayfieldOverlay::updateSettings(const Settings& settings) {
     showMetadataPanel_ = settings.showMetadata;
-    // Settings are already referenced via pointers; no need to update namespaces directly
     LOG_DEBUG("PlayfieldOverlay: Updated showMetadataPanel to " << (showMetadataPanel_ ? "true" : "false"));
+}
+
+void PlayfieldOverlay::ResetMetadataFlags() {
+    if (refreshUICallback_) {
+        refreshUICallback_();
+        // resetMetadataFlags_ = false;
+        LOG_DEBUG("PlayfieldOverlay: Refreshed ConfigUI via callback");
+    }
+    // resetMetadataFlags_ = true;
+    // LOG_DEBUG("PlayfieldOverlay: Showing metadata reset popup");
 }
 
 void PlayfieldOverlay::render() {
@@ -123,6 +132,10 @@ void PlayfieldOverlay::render() {
     if (showMetadataPanel_) {
         renderMetadataPanel();
     }
+
+    // if (resetMetadataFlags_) {
+    //     refreshUICallback();
+    // }
 
     // Navigation arrows with fade animation
     if (NavigationArrowSettings::SHOW_ARROWS()) {
@@ -205,6 +218,14 @@ void PlayfieldOverlay::render() {
     ImGui::End();
 }
 
+// void PlayfieldOverlay::refreshUICallback() {
+//     if (refreshUICallback_) {
+//         refreshUICallback_();
+//         resetMetadataFlags_ = false;
+//         LOG_DEBUG("PlayfieldOverlay: Refreshed ConfigUI via callback");
+//     }
+// }
+
 void PlayfieldOverlay::renderScrollbar() {
     if (!tables_ || tables_->empty() || tables_->size() <= 1) {
         return;
@@ -252,7 +273,9 @@ void PlayfieldOverlay::renderMetadataPanel() {
     ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight));
     ImGui::SetNextWindowBgAlpha(MetadataPanelSettings::ALPHA());
 
-    if (ImGui::Begin("Table Metadata", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
+    if (ImGui::Begin("Table Metadata", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                                                ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoInputs |
+                                                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE INFO");
         std::filesystem::path filePath(currentTable.vpxFile);
         ImGui::Text("File: %s", filePath.filename().string().c_str());

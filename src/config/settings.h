@@ -197,7 +197,7 @@ struct Settings {
     std::string indexPath = "data/asapca_index.json";
     int screenshotWait = 4; // 0-60
     // defaults in ConfigUI::drawGUI()
-    float configUIWidth = 0.8f;
+    float configUIWidth = 0.7f;
     float configUIHeight = 0.5f;
 
     // [Keybinds]
@@ -786,7 +786,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                   "- filename: The only source of info is the filename for the table title, metadata panel will be empty.\n"
                                                   "- metadata: Extract metadata from files to display as they come.\n"
                                                   "TIP: If you already have vpxtool_index.json, it will read it instead of re-scanning your files."}},
-    {"fetchVPSdb", {Settings::ReloadType::None, "Fetches Virtual Pinball Spreadsheet database and\n"
+    {"fetchVPSdb", {Settings::ReloadType::Tables, "Fetches Virtual Pinball Spreadsheet database and\n"
                                                "attempts to match with file metadata to improve information.\n"
                                                "TIP: Leave this OFF after you're happy with the metadata.\n"}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"

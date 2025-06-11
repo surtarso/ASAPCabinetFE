@@ -60,9 +60,10 @@ void ConfigUI::drawGUI() {
     if (standaloneMode_) {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
+        ImGui::SetNextWindowFocus();
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
     } else {
-        float configUIWidth = 0.8f;  // Default if not found
+        float configUIWidth = 0.7f;  // Default if not found
         float configUIHeight = 0.5f; // Default if not found
         try {
             if (jsonData_.contains("Internal")) {
@@ -84,6 +85,7 @@ void ConfigUI::drawGUI() {
         
         ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowFocus();
         ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
     }
 
@@ -344,17 +346,6 @@ void ConfigUI::saveConfig() {
             }
         }
 
-        // if (originalSettings.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", false)) {
-        //     settings.forceRebuildMetadata = false;
-        //     jsonData_["TableMetadata"]["forceRebuildMetadata"] = false;
-        //     LOG_INFO("'forceRebuildMetadata' was reset to false after rebuild.");
-        // }
-        // if (originalSettings.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", false)) {
-        //     settings.fetchVPSdb = false;
-        //     jsonData_["TableMetadata"]["fetchVPSdb"] = false;
-        //     LOG_INFO("'fetchVPSdb' was reset to false after rebuild.");
-        // }
-
         configService_->saveConfig();
         LOG_DEBUG("ConfigUI: Config saved successfully.");
 
@@ -434,5 +425,16 @@ void ConfigUI::resetSectionToDefault(const std::string& sectionName) {
         LOG_DEBUG("ConfigUI: Section " << sectionName << " reset to default values.");
     } else {
         LOG_ERROR("ConfigUI: No default data found for section " << sectionName);
+    }
+}
+
+void ConfigUI::refreshUIState() {
+    LOG_DEBUG("ConfigUI: Refreshing UI state");
+    try {
+        jsonData_ = nlohmann::json(configService_->getSettings());
+        originalJsonData_ = jsonData_;
+        LOG_DEBUG("ConfigUI: UI state refreshed successfully");
+    } catch (const std::exception& e) {
+        LOG_ERROR("ConfigUI: Error refreshing UI state: " << e.what());
     }
 }

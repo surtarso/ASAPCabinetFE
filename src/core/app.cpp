@@ -189,6 +189,25 @@ void App::loadTablesThreaded(size_t oldIndex) {
                 currentIndex_ = (oldIndex >= tables_.size()) ? tables_.size() - 1 : oldIndex;
             }
 
+            // save fetchVPSdb and forceRebuildMetadata as false after loading tables
+            // this correctly saves to settings.json but in-memory settings (and ui)
+            // are still unchanged. This prevents loading the app with 'true'.
+            bool flagsReset = false;
+            {
+                Settings& settings = const_cast<Settings&>(configManager_->getSettings());
+                bool wasFetchVPSdb = settings.fetchVPSdb;
+                bool wasForceRebuild = settings.forceRebuildMetadata;
+                if (wasFetchVPSdb || wasForceRebuild) {
+                    settings.fetchVPSdb = false;
+                    settings.forceRebuildMetadata = false;
+                    configManager_->saveConfig();
+                    flagsReset = true;
+                    LOG_INFO("App: Reset fetchVPSdb and forceRebuildMetadata to false after table loading");
+                } else {
+                    LOG_DEBUG("App: fetchVPSdb and forceRebuildMetadata were already false, no reset needed");
+                }
+            }
+
             SDL_Event event;
             event.type = SDL_USEREVENT;
             SDL_PushEvent(&event);
@@ -198,6 +217,9 @@ void App::loadTablesThreaded(size_t oldIndex) {
                 isLoadingTables_ = false;
                 Logger::getInstance().setLoadingProgress(nullptr);
                 LOG_INFO("Loaded " << tables_.size() << " table(s).");
+                if (flagsReset && playfieldOverlay_) {
+                    playfieldOverlay_->ResetMetadataFlags();
+                }
             }
             loadingCV_.notify_all();
         } catch (const std::exception& e) {
@@ -244,7 +266,8 @@ void App::initializeDependencies() {
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     playfieldOverlay_ = std::make_unique<PlayfieldOverlay>(
-        &tables_, &currentIndex_, configManager_.get(), windowManager_.get(), assets_.get()
+        &tables_, &currentIndex_, configManager_.get(), windowManager_.get(), assets_.get(),
+        [this]() { if (configEditor_) configEditor_->refreshUIState(); }
     );
 
     inputManager_->setRuntimeEditor(configEditor_.get());

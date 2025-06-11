@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- fix behavior of toggling rescan/online to off after save
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
@@ -31,3 +30,4 @@ On hold:
 - support animated png for wheel/marquee
 - dynamic window creation
 - incorporate generate_media.sh?
+
