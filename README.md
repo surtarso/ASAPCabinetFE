@@ -30,7 +30,7 @@
 Get up and running in minutes—whether you’re a player or a code tinkerer.
 ```sh
 sudo apt-get install git findutils -y -qq
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat apt-packages.txt | xargs sudo apt-get install -y
 mkdir build && cd build
@@ -81,7 +81,7 @@ sudo apt-get install git findutils -y
 
 💏 Clone the Repository
 ```sh
-git clone --recurse-submodules --shallow-submodules https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 ```
 
