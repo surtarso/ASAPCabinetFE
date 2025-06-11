@@ -1,4 +1,4 @@
-#include "tables/data_enricher.h"
+#include "tables/vpin_scanner.h"
 #include "tables/vpsdb/vps_database_client.h"
 #include "tables/asap_index_manager.h"
 #include "utils/logging.h"
@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-std::string DataEnricher::cleanString(const std::string& input) {
+std::string VPinScanner::cleanString(const std::string& input) {
     std::string result = input;
     result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
     result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
@@ -25,7 +25,7 @@ std::string DataEnricher::cleanString(const std::string& input) {
     return result.substr(first, last - first + 1);
 }
 
-std::string DataEnricher::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
+std::string VPinScanner::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
     if (j.contains(key)) {
         if (j[key].is_string()) {
             return j[key].get<std::string>();
@@ -41,28 +41,28 @@ std::string DataEnricher::safeGetString(const nlohmann::json& j, const std::stri
     return defaultValue;
 }
 
-void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
+void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     std::string jsonPath = settings.VPXTablesPath + settings.vpxtoolIndex;
     bool vpxtoolLoaded = false;
     json vpxtoolJson;
 
-    LOG_DEBUG("DataEnricher: Starting enrich with titleSource=" << settings.titleSource << ", fetchVPSdb=" << settings.fetchVPSdb << ", vpxtoolIndex=" << jsonPath);
+    LOG_DEBUG("VPinScanner: Starting enrich with titleSource=" << settings.titleSource << ", fetchVPSdb=" << settings.fetchVPSdb << ", vpxtoolIndex=" << jsonPath);
 
     // Try loading vpxtool_index.json if it exists
     if (settings.titleSource == "metadata" && fs::exists(jsonPath)) {
         try {
-            LOG_DEBUG("DataEnricher: Attempting to load vpxtool_index.json from: " << jsonPath);
+            LOG_DEBUG("VPinScanner: Attempting to load vpxtool_index.json from: " << jsonPath);
             std::ifstream file(jsonPath);
             file >> vpxtoolJson;
             file.close();
             if (vpxtoolJson.contains("tables") && vpxtoolJson["tables"].is_array()) {
                 vpxtoolLoaded = true;
-                LOG_INFO("DataEnricher: Loaded vpxtool_index.json from: " << jsonPath);
+                LOG_INFO("VPinScanner: Loaded vpxtool_index.json from: " << jsonPath);
             } else {
-                LOG_ERROR("DataEnricher: Invalid vpxtool_index.json: 'tables' missing or not an array");
+                LOG_ERROR("VPinScanner: Invalid vpxtool_index.json: 'tables' missing or not an array");
             }
         } catch (const std::exception& e) {
-            LOG_ERROR("DataEnricher: Failed to parse vpxtool_index.json: " << e.what());
+            LOG_ERROR("VPinScanner: Failed to parse vpxtool_index.json: " << e.what());
         }
     }
 
@@ -82,9 +82,9 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
     bool vpsLoaded = false;
     if (settings.fetchVPSdb && vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
         vpsLoaded = true;
-        LOG_INFO("DataEnricher: VPSDB loaded successfully");
+        LOG_INFO("VPinScanner: VPSDB loaded successfully");
     } else if (settings.fetchVPSdb) {
-        LOG_ERROR("DataEnricher: Failed to load vpsdb.json");
+        LOG_ERROR("VPinScanner: Failed to load vpsdb.json");
     }
 
     // Process tables using vpxtool_index.json if loaded
@@ -93,12 +93,12 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
         for (const auto& tableJson : vpxtoolJson["tables"]) {
             try {
                 if (!tableJson.is_object()) {
-                    LOG_DEBUG("DataEnricher: Skipping non-object table entry");
+                    LOG_DEBUG("VPinScanner: Skipping non-object table entry");
                     continue;
                 }
                 std::string path = safeGetString(tableJson, "path");
                 if (path.empty()) {
-                    LOG_DEBUG("DataEnricher: Skipping table with empty path");
+                    LOG_DEBUG("VPinScanner: Skipping table with empty path");
                     continue;
                 }
 
@@ -125,13 +125,13 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                     std::string filename = filePath.stem().string();
                     table.title = table.tableName.empty() ? cleanString(filename) : table.tableName;
 
-                    LOG_DEBUG("DataEnricher: vpxtool table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                    LOG_DEBUG("VPinScanner: vpxtool table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                     if (vpsLoaded) {
                         vpsClient.enrichTableData(tableJson, table, progress);
                     }
 
-                    LOG_DEBUG("DataEnricher: vpxtool table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                    LOG_DEBUG("VPinScanner: vpxtool table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
                     break;
                 }
                 processed++;
@@ -144,7 +144,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                     progress->currentTablesLoaded = processed;
                 }
             } catch (const json::exception& e) {
-                LOG_DEBUG("DataEnricher: JSON parsing error for table with path " << safeGetString(tableJson, "path", "N/A") << ": " << e.what());
+                LOG_DEBUG("VPinScanner: JSON parsing error for table with path " << safeGetString(tableJson, "path", "N/A") << ": " << e.what());
                 continue;
             }
         }
@@ -161,7 +161,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                         try {
                             it->get();
                         } catch (const std::exception& e) {
-                            LOG_ERROR("DataEnricher: Thread exception for " << table.vpxFile << ": " << e.what());
+                            LOG_ERROR("VPinScanner: Thread exception for " << table.vpxFile << ": " << e.what());
                         }
                         it = futures.erase(it);
                     } else {
@@ -173,10 +173,10 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
 
             futures.push_back(std::async(std::launch::async, [&table, progress, &processed, &tables]() {
                 std::string vpxFile = table.vpxFile;
-                LOG_DEBUG("DataEnricher: Processing VPX file with vpin: " << vpxFile);
+                LOG_DEBUG("VPinScanner: Processing VPX file with vpin: " << vpxFile);
                 char* json_result = get_vpx_table_info_as_json(vpxFile.c_str());
                 if (!json_result) {
-                    LOG_ERROR("DataEnricher: Failed to get metadata for " << vpxFile);
+                    LOG_ERROR("VPinScanner: Failed to get metadata for " << vpxFile);
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->numNoMatch++;
@@ -203,7 +203,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                         table.year = cleanString(safeGetString(vpinJson["properties"], "year", ""));
                     }
 
-                    LOG_DEBUG("DataEnricher: vpin table after processing: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                    LOG_DEBUG("VPinScanner: vpin table after processing: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -211,14 +211,14 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                         progress->logMessages.push_back("DEBUG: Processed: " + vpxFile);
                     }
                 } catch (const json::exception& e) {
-                    LOG_ERROR("DataEnricher: JSON parsing error for " << vpxFile << ": " << e.what());
+                    LOG_ERROR("VPinScanner: JSON parsing error for " << vpxFile << ": " << e.what());
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->numNoMatch++;
                         progress->logMessages.push_back("DEBUG: JSON error: " + vpxFile);
                     }
                 } catch (...) {
-                    LOG_ERROR("DataEnricher: Unexpected error processing " << vpxFile);
+                    LOG_ERROR("VPinScanner: Unexpected error processing " << vpxFile);
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->numNoMatch++;
@@ -240,7 +240,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
             try {
                 future.get();
             } catch (const std::exception& e) {
-                LOG_ERROR("DataEnricher: Thread exception: " << e.what());
+                LOG_ERROR("VPinScanner: Thread exception: " << e.what());
             }
         }
 
@@ -250,7 +250,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
             progress->currentTask = "Saving vpin metadata to index...";
             progress->logMessages.push_back("DEBUG: Saving vpin metadata to asapcab_index.json");
         }
-        LOG_DEBUG("DataEnricher: Saving asapcab_index.json after vpin for " << tables.size() << " tables");
+        LOG_DEBUG("VPinScanner: Saving asapcab_index.json after vpin for " << tables.size() << " tables");
         AsapIndexManager::save(settings, tables, progress);
 
         // Update progress before VPSDB enrichment
@@ -277,7 +277,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                             try {
                                 it->get();
                             } catch (const std::exception& e) {
-                                LOG_ERROR("DataEnricher: VPSDB thread exception for " << table.vpxFile << ": " << e.what());
+                                LOG_ERROR("VPinScanner: VPSDB thread exception for " << table.vpxFile << ": " << e.what());
                             }
                             it = vpsFutures.erase(it);
                         } else {
@@ -306,11 +306,11 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                         {"year", table.year}
                     };
 
-                    LOG_DEBUG("DataEnricher: vpin table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                    LOG_DEBUG("VPinScanner: vpin table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                     vpsClient.enrichTableData(tableJson, table, progress);
 
-                    LOG_DEBUG("DataEnricher: vpin table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                    LOG_DEBUG("VPinScanner: vpin table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -325,7 +325,7 @@ void DataEnricher::enrich(const Settings& settings, std::vector<TableData>& tabl
                 try {
                     future.get();
                 } catch (const std::exception& e) {
-                    LOG_ERROR("DataEnricher: VPSDB thread exception: " << e.what());
+                    LOG_ERROR("VPinScanner: VPSDB thread exception: " << e.what());
                 }
             }
         }

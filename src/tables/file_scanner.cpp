@@ -1,8 +1,8 @@
 /**
  * @file vpx_scanner.cpp
- * @brief Implements the VpxScanner class for scanning VPX table files in ASAPCabinetFE.
+ * @brief Implements the FileScanner class for scanning VPX table files in ASAPCabinetFE.
  *
- * This file provides the implementation of the VpxScanner class, which recursively scans
+ * This file provides the implementation of the FileScanner class, which recursively scans
  * a directory for VPX files and constructs TableData objects with file paths and media
  * asset paths. The scanner uses Settings to determine the base path and media preferences
  * (e.g., images vs. videos with forceImagesOnly), and supports progress tracking via
@@ -10,18 +10,18 @@
  * via configUI (e.g., additional path rules or media types).
  */
 
-#include "tables/vpx_scanner.h"
+#include "tables/file_scanner.h"
 #include "tables/path_utils.h"
 #include "utils/logging.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
 
-std::vector<TableData> VpxScanner::scan(const Settings& settings, LoadingProgress* progress) {
+std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
 
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
-        LOG_ERROR("VpxScanner: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
+        LOG_ERROR("FileScanner: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
     }
 

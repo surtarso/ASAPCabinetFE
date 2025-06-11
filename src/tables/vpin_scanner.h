@@ -1,8 +1,8 @@
 /**
  * @file data_enricher.h
- * @brief Defines the DataEnricher class for enriching table data in ASAPCabinetFE.
+ * @brief Defines the VPinScanner class for enriching table data in ASAPCabinetFE.
  *
- * This header provides the DataEnricher class, which contains static methods to enrich
+ * This header provides the VPinScanner class, which contains static methods to enrich
  * TableData objects with metadata from vpxtool_index.json and VPSDB. The class supports
  * progress tracking via LoadingProgress, string cleaning for metadata fields, and safe
  * JSON value extraction. The enrichment process is configurable via Settings (e.g.,
@@ -10,8 +10,8 @@
  * metadata sources or cleaning rules in the future.
  */
 
-#ifndef DATA_ENRICHER_H
-#define DATA_ENRICHER_H // Header guard to prevent multiple inclusions
+#ifndef VPIN_SCANNER_H
+#define VPIN_SCANNER_H // Header guard to prevent multiple inclusions
 
 #include "tables/vpsdb/vps_database_client.h"
 #include "tables/table_data.h" // Structure for storing table data
@@ -21,7 +21,7 @@
 #include <vector> // For passing vectors of TableData
 
 /**
- * @class DataEnricher
+ * @class VPinScanner
  * @brief Enriches table data with metadata in ASAPCabinetFE.
  *
  * This class provides static methods to enrich TableData objects by extracting metadata
@@ -31,7 +31,7 @@
  * LoadingProgress, and can be configured via Settings, with potential for configUI
  * enhancements (e.g., custom metadata sources).
  */
-class DataEnricher {
+class VPinScanner {
 public:
     /**
      * @brief Enriches table data with metadata from vpxtool_index.json and VPSDB.
@@ -77,4 +77,4 @@ public:
     static std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
 };
 
-#endif // DATA_ENRICHER_H
+#endif // VPIN_SCANNER_H

@@ -1,4 +1,4 @@
-#include "vps_data_enricher.h"
+#include "vps_data_scanner.h"
 #include "vps_utils.h"
 #include <fstream>
 #include <regex>
@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-VpsDataEnricher::VpsDataEnricher(const nlohmann::json& vpsDb) : vpsDb_(vpsDb) {}
+VpsDataScanner::VpsDataScanner(const nlohmann::json& vpsDb) : vpsDb_(vpsDb) {}
 
 static std::mutex mismatchLogMutex;
 
@@ -39,7 +39,7 @@ bool hasWordOverlap(const std::string& str1, const std::string& str2, const VpsU
     return false;
 }
 
-size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::string& s2) const {
+size_t VpsDataScanner::levenshteinDistance(const std::string& s1, const std::string& s2) const {
     const size_t len1 = s1.size(), len2 = s2.size();
     std::vector<std::vector<size_t>> dp(len1 + 1, std::vector<size_t>(len2 + 1));
     for (size_t i = 0; i <= len1; ++i) dp[i][0] = i;
@@ -53,7 +53,7 @@ size_t VpsDataEnricher::levenshteinDistance(const std::string& s1, const std::st
     return dp[len1][len2];
 }
 
-bool VpsDataEnricher::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
+bool VpsDataScanner::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
     LOG_DEBUG("Starting enrichTableData for table path: " << vpxTable.value("path", "N/A") << ", tableName=" << tableData.tableName << ", manufacturer=" << tableData.manufacturer << ", year=" << tableData.year);
 
     {

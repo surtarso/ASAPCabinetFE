@@ -4,7 +4,7 @@
  *
  * This file provides the implementation of the VpsDatabaseClient class, which serves as
  * a unified interface for loading, updating, and enriching table data using the VPS
- * database (vpsdb.json). It delegates tasks to VpsDatabaseLoader, VpsDataEnricher, and
+ * database (vpsdb.json). It delegates tasks to VpsDatabaseLoader, VpsDataScanner, and
  * VpsDatabaseUpdater, all initialized with a common vpsDbPath. The process supports
  * progress tracking via LoadingProgress and can be extended with configUI for custom
  * settings (e.g., update frequency or enrichment rules) in the future.

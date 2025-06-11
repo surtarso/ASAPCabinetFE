@@ -12,8 +12,8 @@
 
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
-#include "tables/vpx_scanner.h"
-#include "tables/data_enricher.h"
+#include "tables/file_scanner.h"
+#include "tables/vpin_scanner.h"
 #include "tables/vpsdb/vps_database_client.h"
 #include "utils/logging.h"
 #include <algorithm>
@@ -70,7 +70,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentTask = "Scanning VPX files...";
             progress->currentStage = 2;
         }
-        tables = VpxScanner::scan(settings, progress);
+        tables = FileScanner::scan(settings, progress);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->totalTablesToLoad = tables.size();
@@ -83,7 +83,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->currentTask = "Enriching data...";
                 progress->currentStage = 3;
             }
-            DataEnricher::enrich(settings, tables, progress);
+            VPinScanner::enrich(settings, tables, progress);
             if (progress) {
             // Stage 4: Save index
                 std::lock_guard<std::mutex> lock(progress->mutex);

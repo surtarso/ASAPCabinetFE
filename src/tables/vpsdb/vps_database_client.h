@@ -4,7 +4,7 @@
  *
  * This header provides the VpsDatabaseClient class, which serves as a unified interface
  * for loading, updating, and enriching table data using the VPS database (vpsdb.json).
- * The class integrates VpsDatabaseLoader, VpsDataEnricher, and VpsDatabaseUpdater, and
+ * The class integrates VpsDatabaseLoader, VpsDataScanner, and VpsDatabaseUpdater, and
  * supports progress tracking via LoadingProgress. The process is configurable via the
  * vpsDbPath, with potential for configUI enhancements (e.g., custom update schedules).
  */
@@ -15,7 +15,7 @@
 #include <string> // For std::string to handle file paths
 #include "tables/table_data.h" // Structure for storing table data
 #include "vps_database_loader.h" // Class for loading the VPS database
-#include "vps_data_enricher.h" // Class for enriching table data with VPS data
+#include "vps_data_scanner.h" // Class for enriching table data with VPS data
 #include "vps_database_updater.h" // Class for updating the VPS database
 #include "core/loading_progress.h" // Structure for tracking progress
 
@@ -25,7 +25,7 @@
  *
  * This class provides a high-level interface to load, update, and enrich TableData
  * objects using the VPS database (vpsdb.json). It delegates loading to VpsDatabaseLoader,
- * enrichment to VpsDataEnricher, and updates to VpsDatabaseUpdater, all configured with
+ * enrichment to VpsDataScanner, and updates to VpsDatabaseUpdater, all configured with
  * a single vpsDbPath. Progress is tracked via LoadingProgress, and the client can be
  * extended with configUI for custom settings (e.g., update frequency or enrichment rules).
  */
@@ -57,7 +57,7 @@ public:
     /**
      * @brief Enriches a TableData object with VPS database data.
      *
-     * Delegates the enrichment process to the internal VpsDataEnricher, matching
+     * Delegates the enrichment process to the internal VpsDataScanner, matching
      * the vpxTable JSON with the tableData object. Progress is tracked via
      * LoadingProgress if provided.
      *
@@ -85,7 +85,7 @@ public:
 private:
     std::string vpsDbPath_; ///< The file path to the VPS database (vpsdb.json).
     VpsDatabaseLoader loader_; ///< The loader component for parsing the VPS database.
-    VpsDataEnricher enricher_; ///< The enricher component for updating table data.
+    VpsDataScanner enricher_; ///< The enricher component for updating table data.
     VpsDatabaseUpdater updater_; ///< The updater component for fetching database updates.
 };
 

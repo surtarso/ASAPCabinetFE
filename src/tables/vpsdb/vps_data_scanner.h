@@ -9,31 +9,31 @@
 
 /**
  * @file vps_data_enricher.h
- * @brief Defines the VpsDataEnricher class for enriching table data with VPSDB information.
+ * @brief Defines the VpsDataScanner class for enriching table data with VPSDB information.
  *
- * This header provides the VpsDataEnricher class, which enhances TableData objects with
+ * This header provides the VpsDataScanner class, which enhances TableData objects with
  * metadata from a VPS database by matching VPX table data using string similarity and
  * metadata comparison. It integrates with LoadingProgress for progress tracking.
  */
 
 /**
- * @class VpsDataEnricher
+ * @class VpsDataScanner
  * @brief Enriches TableData objects with metadata from a VPS database.
  *
  * This class uses Levenshtein distance and metadata matching (e.g., game name, year,
  * manufacturer) to enrich VPX table data with VPSDB entries. It supports progress
  * reporting and handles mismatches by logging them.
  */
-class VpsDataEnricher {
+class VpsDataScanner {
 public:
     /**
-     * @brief Constructs a VpsDataEnricher with a VPS database reference.
+     * @brief Constructs a VpsDataScanner with a VPS database reference.
      *
      * Initializes the enricher with a constant reference to the VPS database JSON.
      *
      * @param vpsDb Reference to the VPS database JSON object.
      */
-    VpsDataEnricher(const nlohmann::json& vpsDb);
+    VpsDataScanner(const nlohmann::json& vpsDb);
 
     /**
      * @brief Enriches a single TableData object with VPSDB metadata.

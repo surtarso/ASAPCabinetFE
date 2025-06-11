@@ -283,11 +283,11 @@ set(SOURCES
     src/render/video_players/gstreamer/gstreamer_player.cpp
     src/render/video_players/vlc/vlc_player.cpp
     src/tables/asap_index_manager.cpp
-    src/tables/data_enricher.cpp
+    src/tables/file_scanner.cpp
     src/tables/path_utils.cpp
     src/tables/table_loader.cpp
-    src/tables/vpx_scanner.cpp
-    src/tables/vpsdb/vps_data_enricher.cpp
+    src/tables/vpin_scanner.cpp
+    src/tables/vpsdb/vps_data_scanner.cpp
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp
     src/tables/vpsdb/vps_database_updater.cpp

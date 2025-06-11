@@ -1,8 +1,8 @@
 /**
  * @file vpx_scanner.h
- * @brief Defines the VpxScanner class for scanning VPX table files in ASAPCabinetFE.
+ * @brief Defines the FileScanner class for scanning VPX table files in ASAPCabinetFE.
  *
- * This header provides the VpxScanner class, which implements a static method to scan
+ * This header provides the FileScanner class, which implements a static method to scan
  * VPX files from a specified directory and construct TableData objects. The scanner
  * supports recursive directory traversal, progress tracking via LoadingProgress, and
  * configurable path resolution for media assets (e.g., images, videos) based on
@@ -10,8 +10,8 @@
  * forceImagesOnly, with potential for further configUI integration in the future.
  */
 
-#ifndef VPX_SCANNER_H
-#define VPX_SCANNER_H // Header guard to prevent multiple inclusions
+#ifndef FILE_SCANNER_H
+#define FILE_SCANNER_H // Header guard to prevent multiple inclusions
 
 #include "tables/table_data.h" // Structure for storing table data
 #include "config/settings.h" // Configuration settings for path and media options
@@ -21,7 +21,7 @@
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 
 /**
- * @class VpxScanner
+ * @class FileScanner
  * @brief Scans VPX table files and constructs TableData objects.
  *
  * This class provides a static method to recursively scan a directory for VPX files,
@@ -30,7 +30,7 @@ namespace fs = std::filesystem; // Namespace alias for std::filesystem to simpli
  * base path and media preferences (e.g., images vs. videos), making it configurable
  * with potential for user adjustments via configUI.
  */
-class VpxScanner {
+class FileScanner {
 public:
     /**
      * @brief Scans the VPX tables directory and returns a list of tables.
@@ -49,4 +49,4 @@ public:
     static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr);
 };
 
-#endif // VPX_SCANNER_H
+#endif // FILE_SCANNER_H
