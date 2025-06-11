@@ -1,5 +1,5 @@
-#ifndef VPS_DATA_ENRICHER_H
-#define VPS_DATA_ENRICHER_H
+#ifndef VPS_DATA_SCANNER_H
+#define VPS_DATA_SCANNER_H
 
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -49,20 +49,6 @@ public:
      */
     bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
-    /**
-     * @brief Enriches multiple TableData objects with VPSDB metadata in parallel.
-     *
-     * Processes a batch of VPX tables concurrently, matching each against the VPS
-     * database and updating the corresponding TableData objects. Reports progress
-     * if a LoadingProgress pointer is provided. The input vectors must have the same size.
-     *
-     * @param vpxTables Vector of JSON objects containing VPX table data.
-     * @param tableDatas Vector of TableData objects to enrich.
-     * @param progress Optional pointer to LoadingProgress for progress tracking (default: nullptr).
-     * @throws std::invalid_argument if vpxTables and tableDatas have different sizes.
-     */
-    void enrichTableDataBatch(const std::vector<nlohmann::json>& vpxTables, std::vector<TableData>& tableDatas, LoadingProgress* progress = nullptr) const;
-
 private:
     const nlohmann::json& vpsDb_; ///< Constant reference to the VPS database JSON.
     VpsUtils utils_;              ///< Utility object for string normalization and version comparison.
@@ -79,4 +65,4 @@ private:
     size_t levenshteinDistance(const std::string& s1, const std::string& s2) const;
 };
 
-#endif // VPS_DATA_ENRICHER_H
+#endif // VPS_DATA_SCANNER_H

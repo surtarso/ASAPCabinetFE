@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- force images only is broken when using json as source
 - fix behavior of toggling rescan/online to off after save
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)

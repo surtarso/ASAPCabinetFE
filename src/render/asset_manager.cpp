@@ -305,7 +305,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                            (w.name == std::string("dmd") && settings.showDMD != lastShowDMD) ||
                            (w.name == std::string("topper") && settings.showTopper != lastShowTopper);
 
-        if (!w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
+        if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
             if (w.tableVideo != w.videoPath || mediaWidth != w.mediaWidth || mediaHeight != w.mediaHeight || showChanged) {
                 auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
                 if (newPlayer) {
