@@ -300,7 +300,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
 
     std::vector<std::future<void>> futures;
     std::atomic<int> processedVpxTool(0); // Counter for VPXTool processed tables
-    const size_t maxThreads = std::max(1u, std::thread::hardware_concurrency() / 2);
+    const size_t maxThreads = std::max(1u, std::thread::hardware_concurrency());
 
     // First, process the vpxtool_index.json entries and update `tables` vector
     // This loop should run only if vpxtoolLoaded is true
@@ -450,7 +450,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
             progress->logMessages.push_back("DEBUG: Starting VPSDB enrichment for " + std::to_string(tables.size()) + " tables");
         }
 
-        const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency() / 2);
+        const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency());
         std::atomic<int> processedVps(0);
 
         for (auto& table : tables) {

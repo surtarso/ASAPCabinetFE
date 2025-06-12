@@ -31,7 +31,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         progress->logMessages.push_back("DEBUG: Initialized vpin scan for " + std::to_string(tables.size()) + " tables");
     }
 
-    // Load VPSDB if enabled (Load it once here, before any parallel processing)
+    // Load VPSDB if enabled (Loaded before any parallel processing)
     VpsDatabaseClient vpsClient(settings.vpsDbPath);
     bool vpsLoaded = false;
     if (settings.fetchVPSdb) {
@@ -56,7 +56,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
 
     std::vector<std::future<void>> futures;
     std::atomic<int> processedVpin(0); // Counter for VPin processed tables
-    const size_t maxThreads = std::max(1u, std::thread::hardware_concurrency() / 2);
+    const size_t maxThreads = std::max(1u, std::thread::hardware_concurrency());
 
     for (auto& table : tables) {
         while (futures.size() >= maxThreads) {
@@ -196,7 +196,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
             progress->logMessages.push_back("DEBUG: Starting VPSDB enrichment for " + std::to_string(tables.size()) + " tables");
         }
 
-        const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency() / 2);
+        const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency());
         std::vector<std::future<void>> vpsFutures;
         std::atomic<int> processedVps(0);
 
@@ -244,10 +244,9 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 };
 
                 // Add filename-derived fields explicitly for VPSDB to consider (if VPSDB client uses them)
-                // This is an optional addition, if your vpsClient.matchMetadata can consume more data.
-                // tempVpinJsonForVps["filename_title"] = table.title;
-                // tempVpinJsonForVps["filename_manufacturer"] = table.manufacturer;
-                // tempVpinJsonForVps["filename_year"] = table.year;
+                tempVpinJsonForVps["filename_title"] = table.title;
+                tempVpinJsonForVps["filename_manufacturer"] = table.manufacturer;
+                tempVpinJsonForVps["filename_year"] = table.year;
 
 
                 vpsClient.matchMetadata(tempVpinJsonForVps, table, progress);
