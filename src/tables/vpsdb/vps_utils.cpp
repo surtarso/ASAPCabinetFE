@@ -98,22 +98,69 @@ bool VpsUtils::isVersionGreaterThan(const std::string& v1, const std::string& v2
     std::string norm_v1 = normalizeVersion(v1);
     std::string norm_v2 = normalizeVersion(v2);
 
-    if (norm_v1.empty()) return false; // An empty v1 is never "greater than" anything
-    if (norm_v2.empty()) return true;  // A non-empty v1 is "greater than" an empty v2
+    if (norm_v1.empty()) return false;
+    if (norm_v2.empty()) return true;
 
-    try {
-        // Attempt to convert to float for numeric comparison
-        // This is a simple approach and might not be robust for all versioning schemes (e.g., 1.0.10 vs 1.0.2)
-        // For strict semantic versioning, a more complex parsing logic would be needed.
-        float f1 = std::stof(norm_v1);
-        float f2 = std::stof(norm_v2);
-        return f1 > f2;
-    } catch (const std::exception&) {
-        // Fallback to lexicographical comparison if float conversion fails (e.g., "alpha" vs "beta")
-        // This means "v1.2" > "v1.1", but also "beta" > "alpha"
-        LOG_DEBUG("VpsUtils: Numeric version comparison failed for '" << norm_v1 << "' vs '" << norm_v2 << "'. Falling back to lexicographical comparison.");
-        return norm_v1 > norm_v2;
+    // Split versions into components (e.g., "1.2.3" -> {"1", "2", "3"})
+    auto split_version = [](const std::string& version_str) {
+        std::vector<std::string> components;
+        std::string component;
+        std::istringstream ss(version_str);
+        while (std::getline(ss, component, '.')) {
+            components.push_back(component);
+        }
+        return components;
+    };
+
+    std::vector<std::string> components1 = split_version(norm_v1);
+    std::vector<std::string> components2 = split_version(norm_v2);
+
+    size_t max_len = std::max(components1.size(), components2.size());
+
+    for (size_t i = 0; i < max_len; ++i) {
+        // Get numeric value for each component, defaulting to 0 if component is missing or not a number
+        long long val1 = 0;
+        if (i < components1.size()) {
+            try {
+                val1 = std::stoll(components1[i]);
+            } catch (const std::exception&) {
+                // If not purely numeric, treat as 0 for numeric parts, then fall back to string comparison
+            }
+        }
+
+        long long val2 = 0;
+        if (i < components2.size()) {
+            try {
+                val2 = std::stoll(components2[i]);
+            } catch (const std::exception&) {
+                // Same here
+            }
+        }
+
+        // Compare numeric parts
+        if (val1 > val2) {
+            return true;
+        }
+        if (val1 < val2) {
+            return false;
+        }
+
+        // If numeric parts are equal, compare original string components if they are not purely numeric
+        if (i < components1.size() && i < components2.size()) {
+            // Only compare if they are not purely numeric (e.g., "alpha" vs "beta")
+            bool is_num1 = std::all_of(components1[i].begin(), components1[i].end(), ::isdigit);
+            bool is_num2 = std::all_of(components2[i].begin(), components2[i].end(), ::isdigit);
+
+            if (!is_num1 || !is_num2) { // At least one is non-numeric, do string compare
+                int cmp = components1[i].compare(components2[i]);
+                if (cmp > 0) return true;
+                if (cmp < 0) return false;
+            }
+        }
     }
+
+    // If all components are equal, versions are the same
+    return false;
 }
 
 // VpsUtils::extractYearFromDate
