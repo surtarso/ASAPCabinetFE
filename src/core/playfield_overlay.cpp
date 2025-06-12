@@ -292,8 +292,30 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.vpsId.empty()){
             ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
         }
-        if (currentTable.matchScore > 0) { // Display if there's a positive match score
-            ImGui::Text("Match Confidence: %.2f", currentTable.matchScore);
+        // if (currentTable.matchScore > 0) { // Display if there's a positive match score
+        //     ImGui::Text("Match Confidence: %.2f", currentTable.matchScore);
+        // }
+        if (currentTable.matchScore > 0) {
+            // Map matchScore (0.0-1.0) to a 0-5 scale
+            int fullStars = static_cast<int>(std::round(currentTable.matchScore * 5.0f));
+            fullStars = std::clamp(fullStars, 0, 5); // Ensure it's between 0 and 5
+
+            ImGui::Text("Match Confidence: ");
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255)); // R, G, B, A for yellow
+            // Render full stars
+            for (int i = 0; i < fullStars; ++i) {
+                ImGui::TextUnformatted("+"); // Full star
+                ImGui::SameLine();
+            }
+            ImGui::PopStyleColor();
+            // Render empty stars
+            for (int i = fullStars; i < 5; ++i) {
+                ImGui::TextUnformatted("-"); // Empty star
+                ImGui::SameLine();
+            }
+            // Remove the last SameLine if you want text on the next line
+            ImGui::NewLine(); // Move to the next line after stars
         }
         
         if (!currentTable.vpsName.empty()) {

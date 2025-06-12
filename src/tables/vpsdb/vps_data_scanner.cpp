@@ -302,7 +302,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         tableData.vpsIpdbUrl = bestVpsDbEntry.value("ipdbUrl", "");
         tableData.vpsImgUrl = ""; // Reset in case it was set from a previous match attempt
         tableData.vpsTableUrl = ""; // Reset
-        
+
         std::string vpsManufacturer = bestVpsDbEntry.value("manufacturer", "");
         if (!vpsManufacturer.empty() && (tableData.manufacturer.empty() || bestMatchScore > 2.0f)) {
             tableData.manufacturer = vpsManufacturer;
@@ -385,6 +385,38 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         }
 
         tableData.matchConfidence = bestMatchScore / 10.0f;
+
+        // --- Calculate Data Completeness Score ---
+        float dataCompletenessScore = 0.0f;
+        const float POINTS_PER_FIELD = 0.025f; // Adjust this value (e.g., 0.1 to 0.25)
+                                            // Higher value means more impact from completeness.
+                                            // Aim for a total bonus of 1.0 to 2.0.
+
+        // Check string fields
+        if (!tableData.title.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableName.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.romName.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.manufacturer.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.year.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableDescription.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.authorName.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableVersion.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableBlurb.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableRules.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.authorEmail.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.authorWebsite.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.tableType.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.companyName.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+        if (!tableData.companyYear.empty()) dataCompletenessScore += POINTS_PER_FIELD;
+
+
+        // Add the completeness score to the current match score
+        tableData.matchConfidence += dataCompletenessScore;
+
+        // LOG_DEBUG("VpsDataScanner: Data completeness bonus for '" << currentTable.vpxFile << "': " << dataCompletenessScore);
+        // LOG_DEBUG("VpsDataScanner: Total match score for '" << currentTable.vpxFile << "' vs VPSdbID '" << vpsdbEntry.id << "': " << currentMatchScore);
+
+
         tableData.matchScore = tableData.matchConfidence;
         tableData.jsonOwner = "Virtual Pinball Spreadsheet";
         LOG_INFO("Matched table to VPSDB, confidence: " << tableData.matchScore);
