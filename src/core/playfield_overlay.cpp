@@ -401,7 +401,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
         }
         // Only show Table Version if it's not already covered by VPSdb version (e.g., if it has "(Latest VPS: ...)")
         if (!currentTable.tableVersion.empty()) {
-             if (currentTable.vpsVersion.empty() || !currentTable.tableVersion.rfind(" (Latest VPS: ", 0) == 0) {
+             if ((currentTable.vpsVersion.empty()) || !(currentTable.tableVersion.rfind(" (Latest VPS: ", 0) == 0)) {
                  ImGui::Text("Version: %s", currentTable.tableVersion.c_str());
              }
         }
