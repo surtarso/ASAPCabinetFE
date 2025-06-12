@@ -60,21 +60,22 @@ struct TableData {
 
     // ------------ FILE METADATA (vpin/vpxtool) -----------
     // we must keep repeated fields if found for better vpsdb matching 
-    std::string tableName;       ///< Table name from file metadata.
-    std::string authorName;      ///< Author(s) from file metadata.
-    std::string tableDescription;///< Description from file metadata
-    std::string tableSaveDate;   ///< Save date from file metadata.
-    std::string lastModified;    ///< Last modified date from file metadata.
-    std::string releaseDate;     ///< Release date from file metadata.
-    std::string tableVersion;    ///< Table version from file or vpsdb.
-    std::string tableRevision;   ///< Table revision from file metadata.   
-    //TODO (not yet being collected from table_info?)
-    std::string tableyear;
-    std::string tableRules;
-    //these are inside 'properties' indent in 'table_info'
-    std::string tableType;
-    std::string companyName;     ///< for "manufacturer"
-    std::string companyYear;     ///< for "year"
+    std::string tableName;       ///< Table name from file metadata (e.g., from vpin's `table_name`).
+    std::string authorName;      ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
+    std::string tableDescription;///< Description from file metadata (e.g., from vpin's `table_description`).
+    std::string tableSaveDate;   ///< Save date from file metadata (e.g., from vpin's `table_save_date`).
+    std::string lastModified;    ///< Last modified date from file metadata (this is usually from file system, not internal metadata).
+    std::string releaseDate;     ///< Release date from file metadata (e.g., from vpin's `release_date`).
+    std::string tableVersion;    ///< Table version from file metadata (e.g., from vpin's `table_version`).
+    std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).   
+    std::string tableBlurb;      ///< Short blurb/summary from file metadata (from vpin's `table_blurb`).
+    std::string tableRules;      ///< Rules from file metadata (from vpin's `table_rules`).
+    std::string authorEmail;     ///< Author's email from file metadata (from vpin's `author_email`).
+    std::string authorWebsite;   ///< Author's website from file metadata (from vpin's `author_website`).
+    // These are inside 'properties' dictionary in 'table_info'
+    std::string tableType;       ///< Table type from file metadata properties (e.g., from vpin's `properties.TableType`). (NEW)
+    std::string companyName;     ///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`). (NEW)
+    std::string companyYear;     ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`). (NEW)
 
     // --------------- VPSDB METADATA -------------
     std::string vpsId;           ///< Unique ID from vpsdb.json.

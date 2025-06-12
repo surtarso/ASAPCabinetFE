@@ -1,5 +1,7 @@
+// tables/vpin_scanner.cpp
+
 #include "tables/vpin_scanner.h"
-#include "tables/asap_index_manager.h" // Keep if used for saving, otherwise remove
+#include "tables/asap_index_manager.h"
 #include "tables/vpsdb/vps_database_client.h"
 #include "utils/logging.h"
 #include "vpin_wrapper.h" // For get_vpx_table_info_as_json and free_rust_string
@@ -81,12 +83,10 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 LOG_ERROR("VPinFileScanner: Failed to get metadata for " << vpxFile);
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numNoMatch++; // This counter tracks successful VPin metadata extraction
+                    progress->numNoMatch++;
                     progress->logMessages.push_back("DEBUG: Failed to process: " + vpxFile);
                 }
-                // Free the possibly null json_result to avoid issues
-                free_rust_string(json_result);
-                // Update processed count for this phase
+                free_rust_string(json_result); // Safely handles null
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->currentTablesLoaded = ++processedVpin;
@@ -99,39 +99,68 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 std::string json_str(json_result);
                 json vpinJson = json::parse(json_str);
 
-                table.tableName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_name", table.title));
+                // --- Populate File Metadata fields (from vpin's TableInfo struct) ---
+                // These are new or updated fields in TableData, retaining their existing names.
+                table.tableName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_name", ""));
                 table.authorName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_name", ""));
                 table.tableDescription = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_description", ""));
                 table.tableSaveDate = PathUtils::safeGetString(vpinJson, "table_save_date", "");
                 table.releaseDate = PathUtils::safeGetString(vpinJson, "release_date", "");
                 table.tableVersion = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_version", ""));
                 table.tableRevision = PathUtils::safeGetString(vpinJson, "table_save_rev", "");
-                table.title = table.tableName.empty() ? PathUtils::cleanString(fs::path(vpxFile).stem().string()) : table.tableName;
+                
+                // NEW fields from TableInfo
+                table.tableBlurb = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_blurb", ""));
+                table.tableRules = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_rules", ""));
+                table.authorEmail = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_email", ""));
+                table.authorWebsite = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_website", ""));
+
+                // --- Populate fields from 'properties' HashMap ---
+                if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
+                    const json& properties = vpinJson["properties"];
+                    
+                    // TableType (e.g., "VPinMame")
+                    table.tableType = PathUtils::cleanString(PathUtils::safeGetString(properties, "TableType", ""));
+                    
+                    // Company Name (check for "CompanyName" first, then "Company")
+                    table.companyName = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyName", 
+                                                                 PathUtils::safeGetString(properties, "Company", "")));
+                    
+                    // Company Year (check for "CompanyYear" first, then "Year")
+                    table.companyYear = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyYear", 
+                                                                 PathUtils::safeGetString(properties, "Year", "")));
+                }
+
+                // IMPORTANT: Do NOT overwrite `table.title`, `table.manufacturer`, `table.year`, `table.romName` here.
+                // These are populated by FileScanner and serve as primary "local" identification for comparison.
+                // The new `tableName`, `companyName`, `companyYear` hold the VPin internal data.
+                // The `jsonOwner` is still correctly set here.
                 table.jsonOwner = "VPin Filescan";
 
-                if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
-                    table.manufacturer = PathUtils::cleanString(PathUtils::safeGetString(vpinJson["properties"], "manufacturer", ""));
-                    table.year = PathUtils::cleanString(PathUtils::safeGetString(vpinJson["properties"], "year", ""));
-                }
-                // LOG_DEBUG("VPinFileScanner: vpin table scanned: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                LOG_DEBUG("VPinFileScanner: vpin table scanned: path=" << table.vpxFile 
+                          << ", filename_title=" << table.title 
+                          << ", vpin_table_name=" << table.tableName 
+                          << ", filename_man=" << table.manufacturer 
+                          << ", vpin_company_name=" << table.companyName 
+                          << ", rom=" << table.romName);
 
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numMatched++; // This counter tracks successful VPin metadata extraction
+                    progress->numMatched++;
                     progress->logMessages.push_back("DEBUG: Processed: " + vpxFile);
                 }
             } catch (const json::exception& e) {
                 LOG_ERROR("VPinFileScanner: JSON parsing error for " << vpxFile << ": " << e.what());
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numNoMatch++; // This counter tracks successful VPin metadata extraction
+                    progress->numNoMatch++;
                     progress->logMessages.push_back("DEBUG: JSON error: " + vpxFile);
                 }
             } catch (...) {
                 LOG_ERROR("VPinFileScanner: Unexpected error processing " << vpxFile);
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numNoMatch++; // This counter tracks successful VPin metadata extraction
+                    progress->numNoMatch++;
                     progress->logMessages.push_back("DEBUG: Unexpected error: " + vpxFile);
                 }
             }
@@ -160,10 +189,10 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Matching tables to VPSDB...";
-            progress->currentTablesLoaded = 0; // Reset for this new sub-phase
-            progress->totalTablesToLoad = tables.size(); // Still the same total tables
-            progress->numMatched = 0;    // Reset VPSDB match count
-            progress->numNoMatch = 0;    // Reset VPSDB no-match count
+            progress->currentTablesLoaded = 0;
+            progress->totalTablesToLoad = tables.size();
+            progress->numMatched = 0;
+            progress->numNoMatch = 0;
             progress->logMessages.push_back("DEBUG: Starting VPSDB enrichment for " + std::to_string(tables.size()) + " tables");
         }
 
@@ -189,29 +218,39 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
             }
 
             vpsFutures.push_back(std::async(std::launch::async, [&table, &vpsClient, progress, &processedVps, &tables]() {
-                // Construct a temporary JSON object for VPSDB matching, using data already extracted by VPin
+                // Construct a temporary JSON object for VPSDB matching, using all available data
                 json tempVpinJsonForVps;
                 tempVpinJsonForVps["path"] = table.vpxFile;
-                tempVpinJsonForVps["game_name"] = table.romName; // Use romName from vpin scan if available
+                tempVpinJsonForVps["game_name"] = table.romName; // romName comes from FileScanner (pinmame detection)
+
                 tempVpinJsonForVps["table_info"] = {
+                    // Use file metadata fields here for VPSDB matching
                     {"table_name", table.tableName},
                     {"author_name", table.authorName},
                     {"table_description", table.tableDescription},
                     {"table_version", table.tableVersion},
                     {"table_save_date", table.tableSaveDate},
                     {"release_date", table.releaseDate},
-                    {"table_save_rev", table.tableRevision}
+                    {"table_save_rev", table.tableRevision},
+                    {"table_blurb", table.tableBlurb},       // NEW
+                    {"table_rules", table.tableRules},       // NEW
+                    {"author_email", table.authorEmail},     // NEW
+                    {"author_website", table.authorWebsite}  // NEW
                 };
                 tempVpinJsonForVps["properties"] = {
-                    {"manufacturer", table.manufacturer},
-                    {"year", table.year}
+                    {"manufacturer", table.companyName}, // Use companyName for manufacturer property
+                    {"year", table.companyYear},       // Use companyYear for year property
+                    {"TableType", table.tableType}     // NEW
                 };
 
-                // LOG_DEBUG("VPinFileScanner: vpin table before VPSDB (enrichment phase): path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
+                // Add filename-derived fields explicitly for VPSDB to consider (if VPSDB client uses them)
+                // This is an optional addition, if your vpsClient.matchMetadata can consume more data.
+                // tempVpinJsonForVps["filename_title"] = table.title;
+                // tempVpinJsonForVps["filename_manufacturer"] = table.manufacturer;
+                // tempVpinJsonForVps["filename_year"] = table.year;
+
 
                 vpsClient.matchMetadata(tempVpinJsonForVps, table, progress);
-
-                // LOG_DEBUG("VPinFileScanner: vpin table after VPSDB (enrichment phase): path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
