@@ -23,16 +23,16 @@ pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *m
     };
 
     let path = PathBuf::from(path_str);
-    eprintln!("get_vpx_table_info_as_json: Processing file '{}'", path_str);
+    // eprintln!("get_vpx_table_info_as_json: Processing file '{}'", path_str);
 
     let result = catch_unwind(|| {
-        eprintln!("get_vpx_table_info_as_json: Opening file '{}'", path_str);
+        // eprintln!("get_vpx_table_info_as_json: Opening file '{}'", path_str);
         match vpin::vpx::open(&path) {
             Ok(mut vpx_file) => {
-                eprintln!("get_vpx_table_info_as_json: Reading table info for '{}'", path_str);
+                // eprintln!("get_vpx_table_info_as_json: Reading table info for '{}'", path_str);
                 match vpx_file.read_tableinfo() {
                     Ok(table_info) => {
-                        eprintln!("get_vpx_table_info_as_json: Table info read succeeded for '{}'", path_str);
+                        // eprintln!("get_vpx_table_info_as_json: Table info read succeeded for '{}'", path_str);
                         let mut json_object = json!({
                             "table_name": table_info.table_name,
                             "author_name": table_info.author_name,
@@ -47,15 +47,15 @@ pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *m
                             "table_description": table_info.table_description,
                         });
 
-                        eprintln!("get_vpx_table_info_as_json: Building properties for '{}'", path_str);
+                        // eprintln!("get_vpx_table_info_as_json: Building properties for '{}'", path_str);
                         let mut properties_obj = serde_json::Map::new();
                         for (key, value) in table_info.properties {
-                            eprintln!("get_vpx_table_info_as_json: Adding property '{}' = '{}' for '{}'", key, value, path_str);
+                            // eprintln!("get_vpx_table_info_as_json: Adding property '{}' = '{}' for '{}'", key, value, path_str);
                             properties_obj.insert(key, Value::String(value));
                         }
                         json_object["properties"] = Value::Object(properties_obj);
 
-                        eprintln!("get_vpx_table_info_as_json: Serializing JSON for '{}'", path_str);
+                        // eprintln!("get_vpx_table_info_as_json: Serializing JSON for '{}'", path_str);
                         let json_string = match serde_json::to_string(&json_object) {
                             Ok(s) => s,
                             Err(_e) => {
@@ -64,10 +64,10 @@ pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *m
                             }
                         };
 
-                        eprintln!("get_vpx_table_info_as_json: Converting to CString for '{}'", path_str);
+                        // eprintln!("get_vpx_table_info_as_json: Converting to CString for '{}'", path_str);
                         match CString::new(json_string) {
                             Ok(c_string) => {
-                                eprintln!("get_vpx_table_info_as_json: Success for '{}'", path_str);
+                                // eprintln!("get_vpx_table_info_as_json: Success for '{}'", path_str);
                                 Some(c_string.into_raw())
                             }
                             Err(_e) => {
