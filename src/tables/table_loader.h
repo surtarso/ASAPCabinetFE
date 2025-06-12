@@ -14,9 +14,13 @@
 #ifndef TABLE_LOADER_H
 #define TABLE_LOADER_H // Header guard to prevent multiple inclusions
 
-#include "tables/itable_loader.h" // Interface for table loading
-#include "core/loading_progress.h" // Structure for tracking loading progress
-#include <filesystem> // For std::filesystem namespace alias (fs) to handle file paths
+#include "tables/itable_loader.h"    // Interface for table loading
+#include "core/loading_progress.h"   // Structure for tracking loading progress
+#include "config/settings.h"                // For Settings class
+#include <vector>                    // For std::vector
+#include <string>                    // For std::string
+#include <map>                       // For std::map
+#include <filesystem>                // For std::filesystem namespace alias (fs) to handle file paths
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file path operations
 

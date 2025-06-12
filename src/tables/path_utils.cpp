@@ -52,6 +52,33 @@ std::string PathUtils::getAudioPath(const std::string& root, const std::string& 
     return ""; // Return empty string if file doesn't exist or isn't regular
 }
 
+std::string PathUtils::cleanString(const std::string& input) {
+    std::string result = input;
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end());
+    size_t first = result.find_first_not_of(" \t");
+    size_t last = result.find_last_not_of(" \t");
+    if (first == std::string::npos) return "";
+    return result.substr(first, last - first + 1);
+}
+
+std::string PathUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
+    if (j.contains(key)) {
+        if (j[key].is_string()) {
+            return j[key].get<std::string>();
+        } else if (j[key].is_number()) {
+            return std::to_string(j[key].get<double>());
+        } else if (j[key].is_null()) {
+            return defaultValue;
+        } else {
+            LOG_DEBUG("Field " << key << " is not a string, number, or null, type: " << j[key].type_name());
+            return defaultValue;
+        }
+    }
+    return defaultValue;
+}
+
 // TODO:
 // getPupPath
 // getPinmamePath

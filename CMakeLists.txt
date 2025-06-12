@@ -287,6 +287,7 @@ set(SOURCES
     src/tables/path_utils.cpp
     src/tables/table_loader.cpp
     src/tables/vpin_scanner.cpp
+    src/tables/vpxtool_scanner.cpp
     src/tables/vpsdb/vps_data_scanner.cpp
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp

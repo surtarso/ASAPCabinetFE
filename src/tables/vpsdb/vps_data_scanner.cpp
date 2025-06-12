@@ -295,11 +295,11 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     if (matched_to_vpsdb) {
         tableData.vpsId = bestVpsDbEntry.value("id", "");
         tableData.vpsName = bestMatchVpsName;
-        tableData.vpsType = bestVpsDbEntry.value("vpsType", "");
+        tableData.vpsType = bestVpsDbEntry.value("type", "");
         tableData.vpsThemes = bestVpsDbEntry.contains("theme") && bestVpsDbEntry["theme"].is_array() ? utils_.join(bestVpsDbEntry["theme"], ", ") : "";
-        tableData.vpsDesigners = bestVpsDbEntry.contains("vpsDesigners") && bestVpsDbEntry["vpsDesigners"].is_array() ? utils_.join(bestVpsDbEntry["vpsDesigners"], ", ") : "";
-        tableData.vpsPlayers = bestVpsDbEntry.contains("vpsPlayers") && !bestVpsDbEntry["vpsPlayers"].is_null() && bestVpsDbEntry["vpsPlayers"].is_number_integer() ? std::to_string(bestVpsDbEntry["vpsPlayers"].get<int>()) : "";
-        tableData.vpsIpdbUrl = bestVpsDbEntry.value("vpsIpdbUrl", "");
+        tableData.vpsDesigners = bestVpsDbEntry.contains("designers") && bestVpsDbEntry["designers"].is_array() ? utils_.join(bestVpsDbEntry["designers"], ", ") : "";
+        tableData.vpsPlayers = bestVpsDbEntry.contains("players") && !bestVpsDbEntry["players"].is_null() && bestVpsDbEntry["players"].is_number_integer() ? std::to_string(bestVpsDbEntry["players"].get<int>()) : "";
+        tableData.vpsIpdbUrl = bestVpsDbEntry.value("ipdbUrl", "");
 
         std::string vpsManufacturer = bestVpsDbEntry.value("manufacturer", "");
         if (!vpsManufacturer.empty() && (tableData.manufacturer.empty() || bestMatchScore > 2.0f)) {
@@ -328,7 +328,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             for (const auto& file : bestVpsDbEntry["tableFiles"]) {
                 if (file.value("tableFormat", "") == "VPX") {
                     tableData.vpsAuthors = file.contains("authors") && file["authors"].is_array() ? utils_.join(file["authors"], ", ") : "";
-                    tableData.vpsFeatures = file.contains("vpsFeatures") && file["vpsFeatures"].is_array() ? utils_.join(file["vpsFeatures"], ", ") : "";
+                    tableData.vpsFeatures = file.contains("features") && file["features"].is_array() ? utils_.join(file["features"], ", ") : "";
                     std::string current_vps_comment = file.value("comment", "");
                     if (!current_vps_comment.empty() && (tableData.tableDescription.empty() || current_vps_comment.length() > tableData.tableDescription.length())) {
                         tableData.tableDescription = current_vps_comment;

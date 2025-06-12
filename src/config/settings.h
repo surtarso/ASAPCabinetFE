@@ -193,6 +193,7 @@ struct Settings {
     std::string vpsDbPath = "data/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
     std::string vpsDbLastUpdated = "data/vpsdb_last_updated.txt";
+    std::string vpxtoolBin = "";
     std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapcab_index.json";
     int screenshotWait = 4; // 0-60
@@ -431,6 +432,7 @@ private:
                 {"vpsDbPath", s.vpsDbPath},
                 {"vpsDbUpdateFrequency", s.vpsDbUpdateFrequency},
                 {"vpsDbLastUpdated", s.vpsDbLastUpdated},
+                {"vpxtoolBin", s.vpxtoolBin},
                 {"vpxtoolIndex", s.vpxtoolIndex},
                 {"indexPath", s.indexPath},
                 {"screenshotWait", s.screenshotWait},
@@ -635,6 +637,7 @@ private:
         s.vpsDbUpdateFrequency = j.value("Internal", nlohmann::json{}).value("vpsDbUpdateFrequency", s.vpsDbUpdateFrequency);
         s.vpsDbLastUpdated = j.value("Internal", nlohmann::json{}).value("vpsDbLastUpdated", s.vpsDbLastUpdated);
         s.vpxtoolIndex = j.value("Internal", nlohmann::json{}).value("vpxtoolIndex", s.vpxtoolIndex);
+        s.vpxtoolBin = j.value("Internal", nlohmann::json{}).value("vpxtoolBin", s.vpxtoolBin);
         s.indexPath = j.value("Internal", nlohmann::json{}).value("indexPath", s.indexPath);
         s.configUIWidth = j.value("Internal", nlohmann::json{}).value("configUIWidth", s.configUIWidth);
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
@@ -906,6 +909,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                          "The only option for now is 'startup'."}},
     {"vpsDbLastUpdated", {Settings::ReloadType::None, "Path to the VPS database update file, relative to exec dir."}},
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file, relative to tables folder by default."}},
+    {"vpxtoolBin", {Settings::ReloadType::None, "Path to the vpxtool binary file if not in $PATH."}},
     {"indexPath", {Settings::ReloadType::None, "Path to the main table index file, relative to exec dir."}},
     {"screenshotWait", {Settings::ReloadType::None, "Time for the screenshot tool to wait until there are visible windows in VPX."}},
     {"configUIWidth", {Settings::ReloadType::None, "Config window width."}},

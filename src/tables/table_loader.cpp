@@ -10,14 +10,18 @@
  * future customization via configUI.
  */
 
-#include "tables/table_loader.h"
-#include "tables/asap_index_manager.h"
-#include "tables/file_scanner.h"
-#include "tables/vpin_scanner.h"
-#include "tables/vpsdb/vps_database_client.h"
+#include "table_loader.h"
+#include "asap_index_manager.h"
+#include "file_scanner.h"
+#include "vpin_scanner.h" // Renamed from vpin_scanner.h
+#include "vpxtool_scanner.h"   // New scanner
+#include "vpsdb/vps_database_client.h" // Still needed for VPSDB client within scanners
 #include "utils/logging.h"
 #include <algorithm>
 #include <cctype>
+
+// Note: letterIndex is now a non-static member of TableLoader, so it's not initialized here.
+// Each instance of TableLoader will have its own letterIndex.
 
 std::vector<TableData> TableLoader::loadTableList(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
@@ -33,28 +37,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->logMessages.clear();// Clear log
     }
 
-    // Stage 1: Fetching VPSDB (if needed)
-    // if (settings.fetchVPSdb) {
-    //     if (progress) {
-    //         std::lock_guard<std::mutex> lock(progress->mutex);
-    //         progress->currentTask = "Fetching VPSDB...";
-    //         progress->currentStage = 1;
-    //     }
-    //     VpsDatabaseClient vpsClient(settings.vpsDbPath);
-    //     if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
-    //         LOG_INFO("TableLoader: VPSDB fetched and loaded successfully");
-    //     } else {
-    //         LOG_ERROR("TableLoader: Failed to fetch/load VPSDB, proceeding without it");
-    //     }
-    // } else {
-    //     if (progress) {
-    //         std::lock_guard<std::mutex> lock(progress->mutex);
-    //         progress->currentTask = "Skipping VPSDB fetch...";
-    //         progress->currentStage = 1;
-    //     }
-    // }
-
-    // Stage 2a: Load from index 
+    // Stage 1: Load from index or scan VPX files
     if (!settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
         LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from ASAP index");
         if (progress) {
@@ -64,7 +47,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentTask = "Loaded from index";
             progress->currentStage = 1;
         }
-    // Stage 2b: or scan VPX files
     } else {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
@@ -77,25 +59,39 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->totalTablesToLoad = tables.size();
             progress->currentTask = "Scanning complete";
         }
+
         if (settings.titleSource == "metadata") {
-            // Stage 3: Scan file metadata with VPin or use vpxtool_index.json
+            // Stage 2: Attempt to scan with VPXToolScanner first
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Scanning File Metadata...";
+                progress->currentTask = "Scanning metadata with VPXTool...";
                 progress->currentStage = 2;
             }
-            VPinScanner::scanFiles(settings, tables, progress);
+            // If VPXToolScanner successfully loaded and processed vpxtool_index.json,
+            // it will have updated the tables. We don't need to call VPinFileScanner.
+            if (!VPXToolScanner::scanFiles(settings, tables, progress)) {
+                // If VPXToolScanner skipped (e.g., no vpxtool_index.json or invalid),
+                // then proceed with VPinFileScanner.
+                LOG_INFO("TableLoader: VPXToolScanner skipped or failed. Proceeding with VPinFileScanner.");
+                if (progress) {
+                    std::lock_guard<std::mutex> lock(progress->mutex);
+                    progress->currentTask = "Scanning metadata with VPin...";
+                    progress->currentStage = 2; // Still stage 2 for metadata scanning
+                }
+                VPinScanner::scanFiles(settings, tables, progress);
+            }
+
+            // Stage 3: Save asapcab_index.json after metadata enrichment (from either scanner)
             if (progress) {
-            // Stage 4: Save asapcab_index.json
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Matching with VPSdb...";
+                progress->currentTask = "Saving metadata to index...";
                 progress->currentStage = 3;
             }
             AsapIndexManager::save(settings, tables, progress);
         }
     }
 
-    // Stage 5: Sorting and Indexing
+    // Stage 4: Sorting and Indexing
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
@@ -110,7 +106,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->totalTablesToLoad = tables.size();
         progress->currentStage = 5;
     }
-
     return tables;
 }
 
@@ -150,7 +145,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Building letter index...";
     }
-    letterIndex.clear();
+    letterIndex.clear(); // Clear the member letterIndex
     for (size_t i = 0; i < tables.size(); ++i) {
         if (tables[i].title.empty()) {
             LOG_DEBUG("TableLoader: Empty title at index " << i);

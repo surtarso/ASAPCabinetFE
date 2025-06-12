@@ -13,6 +13,9 @@
 #define PATH_UTILS_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to represent file paths
+#include <nlohmann/json.hpp>
+#include <algorithm> // For std::remove_if, std::remove
+#include <cctype>    // For std::iscntrl, std::isspace
 
 /**
  * @class PathUtils
@@ -70,6 +73,8 @@ public:
      * @return The resolved path as a string (valid path if exists, empty otherwise).
      */
     static std::string getAudioPath(const std::string& root, const std::string& musicPath);
+    static std::string cleanString(const std::string& input);
+    static std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
 };
 
 // TODO:

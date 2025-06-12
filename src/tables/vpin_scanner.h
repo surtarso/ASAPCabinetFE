@@ -47,34 +47,7 @@ public:
      * @param tables Reference to the vector of TableData to enrich.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      */
-    static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
-
-    /**
-     * @brief Cleans a string by removing control characters and trimming whitespace.
-     *
-     * Removes carriage returns, newlines, control characters, and leading/trailing
-     * whitespace from the input string. Returns an empty string if the result is
-     * all whitespace. This method is used to sanitize metadata fields during enrichment.
-     *
-     * @param input The input string to clean.
-     * @return The cleaned string, or empty if invalid.
-     */
-    static std::string cleanString(const std::string& input);
-
-    /**
-     * @brief Safely extracts a string value from a JSON object.
-     *
-     * Retrieves the value associated with the specified key from the JSON object.
-     * If the value is a string, it is returned directly; if it is a number, it is
-     * converted to a string; otherwise, the defaultValue is returned with a debug log.
-     * This method ensures robust JSON parsing during enrichment.
-     *
-     * @param j The JSON object to query.
-     * @param key The key to look up in the JSON object.
-     * @param defaultValue The fallback value if the key is missing or invalid.
-     * @return The extracted string value, or defaultValue if extraction fails.
-     */
-    static std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
+    static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress);
 };
 
 #endif // VPIN_SCANNER_H
