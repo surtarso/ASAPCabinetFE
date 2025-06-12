@@ -34,41 +34,42 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     }
 
     // Stage 1: Fetching VPSDB (if needed)
-    if (settings.titleSource == "metadata" && settings.fetchVPSdb) {
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = "Fetching VPSDB...";
-            progress->currentStage = 1;
-        }
-        VpsDatabaseClient vpsClient(settings.vpsDbPath);
-        if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
-            LOG_INFO("TableLoader: VPSDB fetched and loaded successfully");
-        } else {
-            LOG_ERROR("TableLoader: Failed to fetch/load VPSDB, proceeding without it");
-        }
-    } else {
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = "Skipping VPSDB fetch...";
-            progress->currentStage = 1;
-        }
-    }
+    // if (settings.fetchVPSdb) {
+    //     if (progress) {
+    //         std::lock_guard<std::mutex> lock(progress->mutex);
+    //         progress->currentTask = "Fetching VPSDB...";
+    //         progress->currentStage = 1;
+    //     }
+    //     VpsDatabaseClient vpsClient(settings.vpsDbPath);
+    //     if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
+    //         LOG_INFO("TableLoader: VPSDB fetched and loaded successfully");
+    //     } else {
+    //         LOG_ERROR("TableLoader: Failed to fetch/load VPSDB, proceeding without it");
+    //     }
+    // } else {
+    //     if (progress) {
+    //         std::lock_guard<std::mutex> lock(progress->mutex);
+    //         progress->currentTask = "Skipping VPSDB fetch...";
+    //         progress->currentStage = 1;
+    //     }
+    // }
 
-    // Stage 2: Load from index or scan VPX files
-    if (settings.titleSource == "metadata" && !settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
+    // Stage 2a: Load from index 
+    if (!settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
         LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from ASAP index");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTablesLoaded = tables.size();
             progress->totalTablesToLoad = tables.size();
             progress->currentTask = "Loaded from index";
-            progress->currentStage = 2;
+            progress->currentStage = 1;
         }
+    // Stage 2b: or scan VPX files
     } else {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Scanning VPX files...";
-            progress->currentStage = 2;
+            progress->currentStage = 1;
         }
         tables = FileScanner::scan(settings, progress);
         if (progress) {
@@ -77,18 +78,18 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentTask = "Scanning complete";
         }
         if (settings.titleSource == "metadata") {
-            // Stage 3: Enrich metadata and Stage 4: Save index (only when scanning)
+            // Stage 3: Scan file metadata with VPin or use vpxtool_index.json
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Enriching data...";
-                progress->currentStage = 3;
+                progress->currentTask = "Scanning File Metadata...";
+                progress->currentStage = 2;
             }
-            VPinScanner::enrich(settings, tables, progress);
+            VPinScanner::scanFiles(settings, tables, progress);
             if (progress) {
-            // Stage 4: Save index
+            // Stage 4: Save asapcab_index.json
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Saving index...";
-                progress->currentStage = 4;
+                progress->currentTask = "Matching with VPSdb...";
+                progress->currentStage = 3;
             }
             AsapIndexManager::save(settings, tables, progress);
         }
@@ -98,7 +99,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
-        progress->currentStage = 5;
+        progress->currentStage = 4;
     }
     sortTables(tables, settings.titleSortBy, progress);
 
@@ -128,7 +129,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         });
     } else if (sortBy == "type") {
         std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            return a.type < b.type;
+            return a.vpsType < b.vpsType;
         });
     } else if (sortBy == "manufacturer") {
         std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {

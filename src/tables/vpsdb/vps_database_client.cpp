@@ -23,8 +23,8 @@ bool VpsDatabaseClient::load(LoadingProgress* progress) {
     return loader_.load(progress); // Delegate loading to the loader component
 }
 
-bool VpsDatabaseClient::enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
-    return enricher_.enrichTableData(vpxTable, tableData, progress); // Delegate enrichment to the enricher component
+bool VpsDatabaseClient::matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
+    return enricher_.matchMetadata(vpxTable, tableData, progress); // Delegate enrichment to the enricher component
 }
 
 bool VpsDatabaseClient::fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress) {

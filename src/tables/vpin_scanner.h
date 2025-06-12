@@ -27,7 +27,7 @@
  * This class provides static methods to enrich TableData objects by extracting metadata
  * from a vpxtool_index.json file and optionally a VPSDB database. It includes utility
  * methods for cleaning strings and safely extracting JSON values. The enrichment process
- * updates fields like tableName, authorName, and gameName, tracks progress with
+ * updates fields like tableName, authorName, and romName, tracks progress with
  * LoadingProgress, and can be configured via Settings, with potential for configUI
  * enhancements (e.g., custom metadata sources).
  */
@@ -47,7 +47,7 @@ public:
      * @param tables Reference to the vector of TableData to enrich.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      */
-    static void enrich(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
+    static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
 
     /**
      * @brief Cleans a string by removing control characters and trimming whitespace.

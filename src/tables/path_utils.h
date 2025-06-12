@@ -69,7 +69,14 @@ public:
      * @param musicPath The path to the music file.
      * @return The resolved path as a string (valid path if exists, empty otherwise).
      */
-    static std::string getMusicPath(const std::string& root, const std::string& musicPath);
+    static std::string getAudioPath(const std::string& root, const std::string& musicPath);
 };
+
+// TODO:
+// getPupPath
+// getPinmamePath
+// getAltcolorPath
+// getAltsoundPath
+// getRomPath
 
 #endif // PATH_UTILS_H

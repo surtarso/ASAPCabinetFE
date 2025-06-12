@@ -66,7 +66,7 @@ public:
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      * @return True if enrichment succeeds, false otherwise.
      */
-    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
+    bool matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
     /**
      * @brief Fetches the VPS database if an update is needed.

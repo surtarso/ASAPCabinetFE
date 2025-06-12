@@ -279,27 +279,34 @@ void PlayfieldOverlay::renderMetadataPanel() {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE INFO");
         std::filesystem::path filePath(currentTable.vpxFile);
         ImGui::Text("File: %s", filePath.filename().string().c_str());
+        if (!currentTable.vpsId.empty()){
+            ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
+        }
+        if (currentTable.matchScore != 0) {
+            ImGui::Text("Match Confidence: %f", currentTable.matchScore);
+        }
+        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
         ImGui::Text("Table Name: %s", currentTable.tableName.c_str());
         if (!currentTable.vpsName.empty()) {
-            ImGui::Text("VPS Name: %s", currentTable.vpsName.c_str());
+            ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
         }
-        ImGui::Text("ROM: %s", currentTable.gameName.c_str());
+        ImGui::Text("ROM: %s", currentTable.romName.c_str());
         ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
         ImGui::Text("Year: %s", currentTable.year.c_str());
-        if (!currentTable.type.empty()) {
-            ImGui::Text("Type: %s", currentTable.type.c_str());
+        if (!currentTable.vpsType.empty()) {
+            ImGui::Text("Type: %s", currentTable.vpsType.c_str());
         }
-        if (!currentTable.themes.empty()) {
-            ImGui::Text("Themes: %s", currentTable.themes.c_str());
+        if (!currentTable.vpsThemes.empty()) {
+            ImGui::Text("Themes: %s", currentTable.vpsThemes.c_str());
         }
-        if (!currentTable.designers.empty()) {
-            ImGui::Text("Designers: %s", currentTable.designers.c_str());
+        if (!currentTable.vpsDesigners.empty()) {
+            ImGui::Text("Designers: %s", currentTable.vpsDesigners.c_str());
         }
-        if (!currentTable.players.empty() && currentTable.players != "0") {
-            ImGui::Text("Players: %s", currentTable.players.c_str());
+        if (!currentTable.vpsPlayers.empty() && currentTable.vpsPlayers != "0") {
+            ImGui::Text("Players: %s", currentTable.vpsPlayers.c_str());
         }
-        if (!currentTable.ipdbUrl.empty()) {
-            ImGui::Text("IPDB URL: %s", currentTable.ipdbUrl.c_str());
+        if (!currentTable.vpsIpdbUrl.empty()) {
+            ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
         }
         ImGui::Text("Release Date: %s", currentTable.releaseDate.c_str());
         ImGui::Text("Version: %s", currentTable.tableVersion.c_str());
@@ -309,14 +316,17 @@ void PlayfieldOverlay::renderMetadataPanel() {
         ImGui::Text("Revision: %s", currentTable.tableRevision.c_str());
         ImGui::Text("Save Date: %s", currentTable.tableSaveDate.c_str());
         ImGui::Text("Last Modified: %s", currentTable.lastModified.c_str());
-        ImGui::Text("Authors: %s", currentTable.authorName.c_str());
+        ImGui::Text("File Authors: %s", currentTable.authorName.c_str());
         if (!currentTable.vpsAuthors.empty()) {
-            ImGui::Text("VPS Authors: %s", currentTable.vpsAuthors.c_str());
+            ImGui::Text("VPSdb Authors: %s", currentTable.vpsAuthors.c_str());
         }
-        if (!currentTable.features.empty()) {
-            ImGui::Text("Features: %s", currentTable.features.c_str());
+        if (!currentTable.vpsFeatures.empty()) {
+            ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
         }
         ImGui::Separator();
+        if (!currentTable.vpsComment.empty()) {
+            ImGui::TextWrapped("Comments: %s", currentTable.vpsComment.c_str());
+        }
         ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());
         ImGui::End();
     }

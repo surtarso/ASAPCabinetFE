@@ -41,7 +41,7 @@ std::string VPinScanner::safeGetString(const nlohmann::json& j, const std::strin
     return defaultValue;
 }
 
-void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
+void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     std::string jsonPath = settings.VPXTablesPath + settings.vpxtoolIndex;
     bool vpxtoolLoaded = false;
     json vpxtoolJson;
@@ -117,9 +117,10 @@ void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& table
                         table.tableVersion = safeGetString(tableInfo, "table_version");
                         table.tableRevision = safeGetString(tableInfo, "table_save_rev");
                     }
-                    table.gameName = cleanString(safeGetString(tableJson, "game_name"));
+                    table.romName = cleanString(safeGetString(tableJson, "game_name"));
                     table.romPath = safeGetString(tableJson, "rom_path");
                     table.lastModified = safeGetString(tableJson, "last_modified");
+                    table.jsonOwner = "VPXTool Index";
 
                     fs::path filePath(path);
                     std::string filename = filePath.stem().string();
@@ -128,7 +129,7 @@ void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& table
                     LOG_DEBUG("VPinScanner: vpxtool table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
                     if (vpsLoaded) {
-                        vpsClient.enrichTableData(tableJson, table, progress);
+                        vpsClient.matchMetadata(tableJson, table, progress);
                     }
 
                     LOG_DEBUG("VPinScanner: vpxtool table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
@@ -197,6 +198,10 @@ void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& table
                     table.tableVersion = cleanString(safeGetString(vpinJson, "table_version", ""));
                     table.tableRevision = safeGetString(vpinJson, "table_save_rev", "");
                     table.title = table.tableName.empty() ? cleanString(fs::path(vpxFile).stem().string()) : table.tableName;
+                    // we get these from file scan now
+                    // table.romName = cleanString(safeGetString(vpinJson, "game_name"));
+                    // table.romPath = safeGetString(vpinJson, "rom_path");
+                    table.jsonOwner = "VPin Filescan";
 
                     if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
                         table.manufacturer = cleanString(safeGetString(vpinJson["properties"], "manufacturer", ""));
@@ -299,7 +304,7 @@ void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& table
                         {"release_date", table.releaseDate},
                         {"table_save_rev", table.tableRevision}
                     };
-                    tableJson["game_name"] = table.gameName;
+                    tableJson["rom_name"] = table.romName;
                     tableJson["rom_path"] = table.romPath;
                     tableJson["properties"] = {
                         {"manufacturer", table.manufacturer},
@@ -308,7 +313,7 @@ void VPinScanner::enrich(const Settings& settings, std::vector<TableData>& table
 
                     LOG_DEBUG("VPinScanner: vpin table before VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 
-                    vpsClient.enrichTableData(tableJson, table, progress);
+                    vpsClient.matchMetadata(tableJson, table, progress);
 
                     LOG_DEBUG("VPinScanner: vpin table after VPSDB: path=" << table.vpxFile << ", title=" << table.title << ", tableName=" << table.tableName << ", manufacturer=" << table.manufacturer << ", year=" << table.year);
 

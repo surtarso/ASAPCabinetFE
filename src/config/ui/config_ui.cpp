@@ -60,7 +60,7 @@ void ConfigUI::drawGUI() {
     if (standaloneMode_) {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
-        ImGui::SetNextWindowFocus();
+        // ImGui::SetNextWindowFocus();
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
     } else {
         float configUIWidth = 0.7f;  // Default if not found
@@ -85,7 +85,7 @@ void ConfigUI::drawGUI() {
         
         ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
-        ImGui::SetNextWindowFocus();
+        // ImGui::SetNextWindowFocus();
         ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
     }
 

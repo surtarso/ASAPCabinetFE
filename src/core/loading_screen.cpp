@@ -120,7 +120,7 @@ void LoadingScreen::render() {
 
     // Left Column: Pipeline Stages (Vertical)
     ImGui::Text("Pipeline:");
-    const char* stages[] = {"Fetching VPSDB", "Scanning VPX", "Enriching", "Saving Index", "Sorting"};
+    const char* stages[] = {"Loading Tables Index", "Scanning VPX Files", "Parsing Metadata", "Saving Index", "Sorting"};
     for (int i = 0; i < loadingProgress_->totalStages; ++i) {
         float alpha = (i == loadingProgress_->currentStage) ? (0.8f + 0.2f * std::sin(ImGui::GetTime() * 2.0f)) : (i < loadingProgress_->currentStage ? 0.8f : 0.3f);
         ImGui::TextColored(ImVec4(colorTimelineNode_.x, colorTimelineNode_.y, colorTimelineNode_.z, alpha), "%s", stages[i]);

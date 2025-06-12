@@ -47,7 +47,7 @@ public:
      * @param progress Optional pointer to LoadingProgress for progress tracking (default: nullptr).
      * @return True if a VPSDB match was found, false otherwise.
      */
-    bool enrichTableData(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
+    bool matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
 private:
     const nlohmann::json& vpsDb_; ///< Constant reference to the VPS database JSON.

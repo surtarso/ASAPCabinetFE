@@ -194,7 +194,7 @@ struct Settings {
     std::string vpsDbUpdateFrequency = "startup";
     std::string vpsDbLastUpdated = "data/vpsdb_last_updated.txt";
     std::string vpxtoolIndex = "vpxtool_index.json";
-    std::string indexPath = "data/asapca_index.json";
+    std::string indexPath = "data/asapcab_index.json";
     int screenshotWait = 4; // 0-60
     // defaults in ConfigUI::drawGUI()
     float configUIWidth = 0.7f;

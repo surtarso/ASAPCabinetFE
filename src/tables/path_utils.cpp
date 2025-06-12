@@ -38,7 +38,7 @@ std::string PathUtils::getVideoPath(const std::string& root, const std::string& 
     return ""; // Return empty string if neither custom nor default exists
 }
 
-std::string PathUtils::getMusicPath(const std::string& root, const std::string& musicPath) {
+std::string PathUtils::getAudioPath(const std::string& root, const std::string& musicPath) {
     if (musicPath.empty()) {
         LOG_DEBUG("PathUtils: Music path from settings is empty for root: " << root); // Log debug if path is empty
         return "";
@@ -51,3 +51,10 @@ std::string PathUtils::getMusicPath(const std::string& root, const std::string& 
     //LOG_DEBUG("PathUtils: No music file found or not a regular file for: " << musicFile.string()); // Commented debug log
     return ""; // Return empty string if file doesn't exist or isn't regular
 }
+
+// TODO:
+// getPupPath
+// getPinmamePath
+// getAltcolorPath
+// getAltsoundPath
+// getRomPath

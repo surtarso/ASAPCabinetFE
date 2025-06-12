@@ -36,11 +36,14 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             TableData table;
+            // table file and folder
             table.vpxFile = entry.path().string();
             table.folder = entry.path().parent_path().string();
+            // basic title from filename without extension
             table.title = entry.path().stem().string();
-            table.music = PathUtils::getMusicPath(table.folder, settings.tableMusic);
-            table.launchAudio = PathUtils::getMusicPath(table.folder, settings.customLaunchSound);
+            //media paths (audios, images, videos)
+            table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
+            table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
             table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
             table.wheelImage = PathUtils::getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
             table.backglassImage = PathUtils::getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
@@ -50,6 +53,27 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
+
+            // Check for pinmame/roms/ folder and extract romName and romPath
+            // TODO: getRomPath from pathUtils
+            fs::path romsFolder = fs::path(table.folder) / "pinmame" / "roms";
+            if (fs::exists(romsFolder) && fs::is_directory(romsFolder)) {
+                for (const auto& romEntry : fs::directory_iterator(romsFolder)) {
+                    if (romEntry.is_regular_file() && romEntry.path().extension() == ".zip") {
+                        table.romPath = romEntry.path().string();
+                        table.romName = romEntry.path().stem().string();
+                        LOG_DEBUG("FileScanner: Found ROM for table " << table.vpxFile << ": romName=" << table.romName << ", romPath=" << table.romPath);
+                        break; // Take the first .zip file
+                    }
+                }
+                if (table.romName.empty()) {
+                    LOG_DEBUG("FileScanner: No .zip file found in " << romsFolder.string() << " for table " << table.vpxFile);
+                }
+            } else {
+                LOG_DEBUG("FileScanner: No pinmame/roms folder found at " << romsFolder.string() << " for table " << table.vpxFile);
+            }
+            //TODO: Assign the json owner for incremental updates
+            table.jsonOwner = "File Scan";
             tables.push_back(table);
 
             if (progress) {
