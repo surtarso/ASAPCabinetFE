@@ -113,9 +113,13 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("vpsComment") && table["vpsComment"].is_string()) tableData.vpsComment = table["vpsComment"].get<std::string>();
             if (table.contains("vpsManufacturer") && table["vpsManufacturer"].is_string()) tableData.vpsManufacturer = table["vpsManufacturer"].get<std::string>();
             if (table.contains("vpsYear") && table["vpsYear"].is_string()) tableData.vpsYear = table["vpsYear"].get<std::string>();
-            if (table.contains("vpsImgUrl") && table["vpsImgUrl"].is_string()) tableData.vpsImgUrl = table["vpsImgUrl"].get<std::string>();
+            if (table.contains("vpsTableImgUrl") && table["vpsTableImgUrl"].is_string()) tableData.vpsTableImgUrl = table["vpsTableImgUrl"].get<std::string>();
             if (table.contains("vpsTableUrl") && table["vpsTableUrl"].is_string()) tableData.vpsTableUrl = table["vpsTableUrl"].get<std::string>();
+            if (table.contains("vpsB2SImgUrl") && table["vpsB2SImgUrl"].is_string()) tableData.vpsB2SImgUrl = table["vpsB2SImgUrl"].get<std::string>();
+            if (table.contains("vpsB2SUrl") && table["vpsB2SUrl"].is_string()) tableData.vpsB2SUrl = table["vpsB2SUrl"].get<std::string>();
+            if (table.contains("vpsFormat") && table["vpsFormat"].is_string()) tableData.vpsFormat = table["vpsFormat"].get<std::string>();
 
+            
             // --------------- OPERATIONAL TAGS ------------------
             // Check for float type for confidence/score
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
@@ -180,8 +184,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["altSound"] = table.altSound;
         tableJson["altColor"] = table.altColor;
         tableJson["hasPup"] = table.hasPup;
-        tableJson["hasAltMusic"] = table.hasAltMusic; // New boolean
-        tableJson["hasUltraDMD"] = table.hasUltraDMD; // New boolean
+        tableJson["hasAltMusic"] = table.hasAltMusic; 
+        tableJson["hasUltraDMD"] = table.hasUltraDMD; 
 
 
         // ------------ FILE METADATA (vpin/vpxtool) -----------
@@ -193,13 +197,13 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["releaseDate"] = table.releaseDate;
         tableJson["tableVersion"] = table.tableVersion;
         tableJson["tableRevision"] = table.tableRevision;
-        tableJson["tableBlurb"] = table.tableBlurb; // New field
-        tableJson["tableRules"] = table.tableRules; // New field
-        tableJson["authorEmail"] = table.authorEmail; // New field
-        tableJson["authorWebsite"] = table.authorWebsite; // New field
-        tableJson["tableType"] = table.tableType; // New field
-        tableJson["companyName"] = table.companyName; // New field
-        tableJson["companyYear"] = table.companyYear; // New field
+        tableJson["tableBlurb"] = table.tableBlurb;
+        tableJson["tableRules"] = table.tableRules;
+        tableJson["authorEmail"] = table.authorEmail;
+        tableJson["authorWebsite"] = table.authorWebsite;
+        tableJson["tableType"] = table.tableType; 
+        tableJson["companyName"] = table.companyName;
+        tableJson["companyYear"] = table.companyYear; 
 
 
         // --------------- VPSDB METADATA -------------
@@ -214,17 +218,19 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["vpsAuthors"] = table.vpsAuthors;
         tableJson["vpsFeatures"] = table.vpsFeatures;
         tableJson["vpsComment"] = table.vpsComment;
-        tableJson["vpsManufacturer"] = table.vpsManufacturer; // New field
-        tableJson["vpsYear"] = table.vpsYear; // New field
-        tableJson["vpsImgUrl"] = table.vpsImgUrl; // New field
-        tableJson["vpsTableUrl"] = table.vpsTableUrl; // New field
-
+        tableJson["vpsManufacturer"] = table.vpsManufacturer;
+        tableJson["vpsYear"] = table.vpsYear;
+        tableJson["vpsTableImgUrl"] = table.vpsTableImgUrl;
+        tableJson["vpsTableUrl"] = table.vpsTableUrl;
+        tableJson["vpsB2SImgUrl"] = table.vpsB2SImgUrl;
+        tableJson["vpsB2SUrl"] = table.vpsB2SUrl;
+        tableJson["vpsFormat"] = table.vpsFormat;
 
         // --------------- OPERATIONAL TAGS ------------------
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["matchScore"] = table.matchScore;
         tableJson["jsonOwner"] = table.jsonOwner;
-        tableJson["playCount"] = table.playCount; // New field
+        tableJson["playCount"] = table.playCount; 
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {

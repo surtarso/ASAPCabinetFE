@@ -92,9 +92,11 @@ struct TableData {
     std::string vpsComment;      ///< Comment from vpsdb.json tableFiles (tableFiles[].comment).
     std::string vpsManufacturer; ///< Manufacturer from vpsdb (game.manufacturer).
     std::string vpsYear;         ///< Year from vpsdb (game.year).
-    std::string vpsImgUrl;       ///< table image from vpsdb (from tableFiles[].imgUrl, or other media files). (CONFIRMED)
-    std::string vpsTableUrl;     ///< table URL to download (from tableFiles[].urls[0].url). (CONFIRMED)
-
+    std::string vpsTableImgUrl;  ///< table image from vpsdb (from tableFiles[].imgUrl, or other media files).
+    std::string vpsTableUrl;     ///< table URL to download (from tableFiles[].urls[0].url).
+    std::string vpsB2SImgUrl;    ///< table image from vpsdb (from b2sFiles[].imgUrl, or other media files).
+    std::string vpsB2SUrl;       ///< table URL to download (from b2sFiles[].urls[0].url).
+    std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
     // --------------- OPERATIONAL TAGS ------------------
     // this later should be a "rating" for the metadata with 1-5 stars or w.e.
     float matchConfidence = 0.0f; ///< Confidence score of match with vpsdb

@@ -300,7 +300,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         tableData.vpsDesigners = bestVpsDbEntry.contains("designers") && bestVpsDbEntry["designers"].is_array() ? utils_.join(bestVpsDbEntry["designers"], ", ") : "";
         tableData.vpsPlayers = bestVpsDbEntry.contains("players") && !bestVpsDbEntry["players"].is_null() && bestVpsDbEntry["players"].is_number_integer() ? std::to_string(bestVpsDbEntry["players"].get<int>()) : "";
         tableData.vpsIpdbUrl = bestVpsDbEntry.value("ipdbUrl", "");
-        tableData.vpsImgUrl = ""; // Reset in case it was set from a previous match attempt
+        tableData.vpsTableImgUrl = ""; // Reset in case it was set from a previous match attempt
         tableData.vpsTableUrl = ""; // Reset
 
         std::string vpsManufacturer = bestVpsDbEntry.value("manufacturer", "");
@@ -326,28 +326,41 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             LOG_DEBUG("Updated year from VPSDB: " << vpsYear);
         }
 
+        // get playfield links 
         if (bestVpsDbEntry.contains("tableFiles") && bestVpsDbEntry["tableFiles"].is_array()) {
             for (const auto& file : bestVpsDbEntry["tableFiles"]) {
-                if (file.value("tableFormat", "") == "VPX") {
-                    // Populate vpsImgUrl
-                    if (file.contains("imgUrl") && file["imgUrl"].is_string()) {
-                        tableData.vpsImgUrl = file["imgUrl"].get<std::string>();
-                        LOG_DEBUG("Set vpsImgUrl: " << tableData.vpsImgUrl);
+                tableData.vpsFormat = file.value("tableFormat", "");
+                // Populate vpsTableImgUrl
+                if (file.contains("imgUrl") && file["imgUrl"].is_string()) {
+                    tableData.vpsTableImgUrl = file["imgUrl"].get<std::string>();
+                    LOG_DEBUG("Set vpsTableImgUrl: " << tableData.vpsTableImgUrl);
+                }
+                // Populate vpsTableUrl (taking the first URL if available)
+                if (file.contains("urls") && file["urls"].is_array() && !file["urls"].empty()) {
+                    if (file["urls"][0].contains("url") && file["urls"][0]["url"].is_string()) {
+                        tableData.vpsTableUrl = file["urls"][0]["url"].get<std::string>();
+                        LOG_DEBUG("Set vpsTableUrl: " << tableData.vpsTableUrl);
                     }
-                    // Populate vpsTableUrl (taking the first URL if available)
-                    if (file.contains("urls") && file["urls"].is_array() && !file["urls"].empty()) {
-                        if (file["urls"][0].contains("url") && file["urls"][0]["url"].is_string()) {
-                            tableData.vpsTableUrl = file["urls"][0]["url"].get<std::string>();
-                            LOG_DEBUG("Set vpsTableUrl: " << tableData.vpsTableUrl);
-                        }
+                }
+                tableData.vpsAuthors = file.contains("authors") && file["authors"].is_array() ? utils_.join(file["authors"], ", ") : "";
+                tableData.vpsFeatures = file.contains("features") && file["features"].is_array() ? utils_.join(file["features"], ", ") : "";
+                tableData.vpsComment = file.value("comment", "");
+            }
+        }
+
+        // get blackglass links
+        if (bestVpsDbEntry.contains("b2sFiles") && bestVpsDbEntry["b2sFiles"].is_array()) {
+            for (const auto& file : bestVpsDbEntry["b2sFiles"]) {
+                if (file.contains("imgUrl") && file["imgUrl"].is_string()) {
+                    tableData.vpsB2SImgUrl = file["imgUrl"].get<std::string>();
+                    LOG_DEBUG("Set vpsB2SImgUrl: " << tableData.vpsB2SImgUrl);
+                }
+                // Populate vpsTableUrl (taking the first URL if available)
+                if (file.contains("urls") && file["urls"].is_array() && !file["urls"].empty()) {
+                    if (file["urls"][0].contains("url") && file["urls"][0]["url"].is_string()) {
+                        tableData.vpsB2SUrl = file["urls"][0]["url"].get<std::string>();
+                        LOG_DEBUG("Set vpsB2SUrl: " << tableData.vpsB2SUrl);
                     }
-                    tableData.vpsAuthors = file.contains("authors") && file["authors"].is_array() ? utils_.join(file["authors"], ", ") : "";
-                    tableData.vpsFeatures = file.contains("features") && file["features"].is_array() ? utils_.join(file["features"], ", ") : "";
-                    std::string current_vps_comment = file.value("comment", "");
-                    if (!current_vps_comment.empty() && (tableData.tableDescription.empty() || current_vps_comment.length() > tableData.tableDescription.length())) {
-                        tableData.tableDescription = current_vps_comment;
-                    }
-                    tableData.vpsComment = current_vps_comment;
                 }
             }
         }
@@ -412,11 +425,6 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
 
         // Add the completeness score to the current match score
         tableData.matchConfidence += dataCompletenessScore;
-
-        // LOG_DEBUG("VpsDataScanner: Data completeness bonus for '" << currentTable.vpxFile << "': " << dataCompletenessScore);
-        // LOG_DEBUG("VpsDataScanner: Total match score for '" << currentTable.vpxFile << "' vs VPSdbID '" << vpsdbEntry.id << "': " << currentMatchScore);
-
-
         tableData.matchScore = tableData.matchConfidence;
         tableData.jsonOwner = "Virtual Pinball Spreadsheet";
         LOG_INFO("Matched table to VPSDB, confidence: " << tableData.matchScore);

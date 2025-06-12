@@ -292,9 +292,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.vpsId.empty()){
             ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
         }
-        // if (currentTable.matchScore > 0) { // Display if there's a positive match score
-        //     ImGui::Text("Match Confidence: %.2f", currentTable.matchScore);
-        // }
+
         if (currentTable.matchScore > 0) {
             // Map matchScore (0.0-1.0) to a 0-5 scale
             int fullStars = static_cast<int>(std::round(currentTable.matchScore * 5.0f));
@@ -345,7 +343,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
             !currentTable.vpsDesigners.empty() || (!currentTable.vpsPlayers.empty() && currentTable.vpsPlayers != "0") ||
             !currentTable.vpsIpdbUrl.empty() || !currentTable.vpsAuthors.empty() ||
             !currentTable.vpsFeatures.empty() || !currentTable.vpsVersion.empty() ||
-            !currentTable.vpsImgUrl.empty() || !currentTable.vpsTableUrl.empty() ||
+            !currentTable.vpsTableImgUrl.empty() || !currentTable.vpsTableUrl.empty() ||
             !currentTable.vpsManufacturer.empty() || !currentTable.vpsYear.empty() ) {
             
             ImGui::Separator();
@@ -353,10 +351,10 @@ void PlayfieldOverlay::renderMetadataPanel() {
             vpsdb_section_started = true;
         }
 
-        if (!currentTable.vpsManufacturer.empty() && currentTable.vpsManufacturer != currentTable.manufacturer) {
+        if (!currentTable.vpsManufacturer.empty()) {
             ImGui::Text("VPSdb Manufacturer: %s", currentTable.vpsManufacturer.c_str());
         }
-        if (!currentTable.vpsYear.empty() && currentTable.vpsYear != currentTable.year) {
+        if (!currentTable.vpsYear.empty()) {
             ImGui::Text("VPSdb Year: %s", currentTable.vpsYear.c_str());
         }
         if (!currentTable.vpsType.empty()) {
@@ -383,11 +381,20 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.vpsFeatures.empty()) {
             ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
         }
-        if (!currentTable.vpsImgUrl.empty()) {
-            ImGui::Text("VPSdb Image: %s", currentTable.vpsImgUrl.c_str());
+        if (!currentTable.vpsFormat.empty()) {
+            ImGui::Text("Table Format: %s", currentTable.vpsFormat.c_str());
+        }
+        if (!currentTable.vpsTableImgUrl.empty()) {
+            ImGui::Text("Table Image: %s", currentTable.vpsTableImgUrl.c_str());
         }
         if (!currentTable.vpsTableUrl.empty()) {
-            ImGui::Text("VPSdb Download: %s", currentTable.vpsTableUrl.c_str());
+            ImGui::Text("Table Download: %s", currentTable.vpsTableUrl.c_str());
+        }
+        if (!currentTable.vpsB2SImgUrl.empty()) {
+            ImGui::Text("Backglass Image: %s", currentTable.vpsB2SImgUrl.c_str());
+        }
+        if (!currentTable.vpsB2SUrl.empty()) {
+            ImGui::Text("Backglass Download: %s", currentTable.vpsB2SUrl.c_str());
         }
 
         // --- File Metadata (from vpin/vpxtool) ---
@@ -453,7 +460,6 @@ void PlayfieldOverlay::renderMetadataPanel() {
         }
         
         // --- Operational Tags / Status ---
-        // Add this section if playCount is implemented
         if (!currentTable.playCount.empty() || currentTable.hasPup || currentTable.altColor || currentTable.altSound ||
             currentTable.hasAltMusic || currentTable.hasUltraDMD) { // Add other operational tags here
             
@@ -494,14 +500,12 @@ void PlayfieldOverlay::renderMetadataPanel() {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DESCRIPTION & COMMENTS");
         
         // Prefer vpsComment for tableDescription if it's more descriptive, otherwise show both if they differ
-        if (!currentTable.tableDescription.empty() && currentTable.tableDescription != currentTable.vpsComment) {
+        if (!currentTable.tableDescription.empty()) {
             ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());
         }
         if (!currentTable.vpsComment.empty()) {
-            ImGui::TextWrapped("VPSdb Comments: %s", currentTable.vpsComment.c_str());
+            ImGui::TextWrapped("Comments: %s", currentTable.vpsComment.c_str());
         }
-        // If vpsComment was used as tableDescription, and it's not empty, it will be displayed by the above logic.
-        // If tableDescription is empty, but vpsComment is not, it will be displayed by the above vpsComment check.
 
         ImGui::End();
     }

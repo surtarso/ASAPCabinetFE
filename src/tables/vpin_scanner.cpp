@@ -100,7 +100,6 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 json vpinJson = json::parse(json_str);
 
                 // --- Populate File Metadata fields (from vpin's TableInfo struct) ---
-                // These are new or updated fields in TableData, retaining their existing names.
                 table.tableName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_name", ""));
                 table.authorName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_name", ""));
                 table.tableDescription = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_description", ""));
@@ -108,8 +107,6 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 table.releaseDate = PathUtils::safeGetString(vpinJson, "release_date", "");
                 table.tableVersion = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_version", ""));
                 table.tableRevision = PathUtils::safeGetString(vpinJson, "table_save_rev", "");
-                
-                // NEW fields from TableInfo
                 table.tableBlurb = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_blurb", ""));
                 table.tableRules = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_rules", ""));
                 table.authorEmail = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_email", ""));
@@ -185,7 +182,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
 
     // Phase 2: VPSDB enrichment (after initial VPin scan is complete for all tables)
     if (vpsLoaded) {
-        // Reset progress counters for the *new* VPSDB matching phase
+        // Reset progress counters for the VPSDB matching phase
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Matching tables to VPSDB...";
@@ -232,15 +229,15 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                     {"table_save_date", table.tableSaveDate},
                     {"release_date", table.releaseDate},
                     {"table_save_rev", table.tableRevision},
-                    {"table_blurb", table.tableBlurb},       // NEW
-                    {"table_rules", table.tableRules},       // NEW
-                    {"author_email", table.authorEmail},     // NEW
-                    {"author_website", table.authorWebsite}  // NEW
+                    {"table_blurb", table.tableBlurb},
+                    {"table_rules", table.tableRules}, 
+                    {"author_email", table.authorEmail},
+                    {"author_website", table.authorWebsite}
                 };
                 tempVpinJsonForVps["properties"] = {
-                    {"manufacturer", table.companyName}, // Use companyName for manufacturer property
-                    {"year", table.companyYear},       // Use companyYear for year property
-                    {"TableType", table.tableType}     // NEW
+                    {"manufacturer", table.companyName}, // manufacturer property
+                    {"year", table.companyYear},       // year property
+                    {"TableType", table.tableType}
                 };
 
                 // Add filename-derived fields explicitly for VPSDB to consider (if VPSDB client uses them)
