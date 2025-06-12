@@ -78,22 +78,22 @@ struct TableData {
     std::string companyYear;     ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`). (NEW)
 
     // --------------- VPSDB METADATA -------------
-    std::string vpsId;           ///< Unique ID from vpsdb.json.
-    std::string vpsName;         ///< Table name from vpsdb.json.
-    std::string vpsType;         ///< Table vpsType (e.g., SS, EM) from vpsdb.json.
-    std::string vpsThemes;       ///< Comma-separated vpsThemes from vpsdb.json.
-    std::string vpsDesigners;    ///< Comma-separated Designers from vpsdb.json.
-    std::string vpsPlayers;      ///< Number of Players from vpsdb.json.
-    std::string vpsIpdbUrl;      ///< IPDB URL from vpsdb.json.
-    std::string vpsVersion;      ///< Table version from vpsdb.json tableFiles.
-    std::string vpsAuthors;      ///< Comma-separated authors from vpsdb.json tableFiles.
-    std::string vpsFeatures;     ///< Comma-separated vpsFeatures from vpsdb.json tableFiles.
-    std::string vpsComment;      ///< Comment from vpsdb.json tableFiles.
-    //TODO (not yet being collected)
-    std::string vpsManufacturer; ///< Manufacturer from vpsdb
-    std::string vpsYear;         ///< Year from vpsdb
-    std::string vpsImgUrl;       ///< table image from vpsdb (to show)
-    std::string vpsTableUrl;     ///< table URL to download.
+    // These fields will be populated ONLY IF a match is found in the VPS database.
+    std::string vpsId;           ///< Unique ID from vpsdb.json (game.id).
+    std::string vpsName;         ///< Table name from vpsdb.json (game.name).
+    std::string vpsType;         ///< Table type (e.g., SS, EM) from vpsdb.json (game.type).
+    std::string vpsThemes;       ///< Comma-separated themes from vpsdb.json (game.theme).
+    std::string vpsDesigners;    ///< Comma-separated Designers from vpsdb.json (game.designers).
+    std::string vpsPlayers;      ///< Number of Players from vpsdb.json (game.players).
+    std::string vpsIpdbUrl;      ///< IPDB URL from vpsdb.json (game.ipdbUrl).
+    std::string vpsVersion;      ///< Table version from vpsdb.json tableFiles (tableFiles[].version).
+    std::string vpsAuthors;      ///< Comma-separated authors from vpsdb.json tableFiles (tableFiles[].authors).
+    std::string vpsFeatures;     ///< Comma-separated features from vpsdb.json tableFiles (tableFiles[].features).
+    std::string vpsComment;      ///< Comment from vpsdb.json tableFiles (tableFiles[].comment).
+    std::string vpsManufacturer; ///< Manufacturer from vpsdb (game.manufacturer).
+    std::string vpsYear;         ///< Year from vpsdb (game.year).
+    std::string vpsImgUrl;       ///< table image from vpsdb (from tableFiles[].imgUrl, or other media files). (CONFIRMED)
+    std::string vpsTableUrl;     ///< table URL to download (from tableFiles[].urls[0].url). (CONFIRMED)
 
     // --------------- OPERATIONAL TAGS ------------------
     // this later should be a "rating" for the metadata with 1-5 stars or w.e.

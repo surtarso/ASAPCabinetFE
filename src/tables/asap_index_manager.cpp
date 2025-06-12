@@ -20,19 +20,25 @@ using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
 
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
-        LOG_INFO("AsapIndexManager: asapcab_index.json not found at: " << settings.indexPath);
+        LOG_INFO("AsapIndexManager: asapcab_index.json not found at: " << settings.indexPath << ". Will create a new one on save.");
         return false;
     }
 
     try {
         std::ifstream indexFile(settings.indexPath);
+        if (!indexFile.is_open()) {
+            LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for reading.");
+            return false;
+        }
+
         json asapIndex;
         indexFile >> asapIndex; // Parse JSON from file
         indexFile.close();
 
         if (!asapIndex.contains("tables") || !asapIndex["tables"].is_array()) {
-            LOG_ERROR("AsapIndexManager: Invalid asapcab_index.json : 'tables' missing or not an array");
-            return false;
+            LOG_ERROR("AsapIndexManager: Invalid asapcab_index.json: 'tables' key missing or not an array. Attempting to clear and rebuild index.");
+            // Consider clearing the file or backing it up if it's malformed to prevent constant errors
+            return false; // Indicate failure to load
         }
 
         if (progress) {
@@ -42,17 +48,58 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             progress->currentTablesLoaded = 0;
         }
 
-        tables.clear();
+        tables.clear(); // Clear existing tables before loading
         for (const auto& table : asapIndex["tables"]) {
             TableData tableData;
-            if (table.contains("vpxFile") && table["vpxFile"].is_string()) tableData.vpxFile = table["vpxFile"].get<std::string>();
-            if (table.contains("folder") && table["folder"].is_string()) tableData.folder = table["folder"].get<std::string>();
-            if (table.contains("romName") && table["romName"].is_string()) tableData.romName = table["romName"].get<std::string>();
-            if (table.contains("romPath") && table["romPath"].is_string()) tableData.romPath = table["romPath"].get<std::string>();
+            // ----------------- BEST MATCHES --------------------
             if (table.contains("title") && table["title"].is_string()) tableData.title = table["title"].get<std::string>();
             if (table.contains("manufacturer") && table["manufacturer"].is_string()) tableData.manufacturer = table["manufacturer"].get<std::string>();
             if (table.contains("year") && table["year"].is_string()) tableData.year = table["year"].get<std::string>();
+            
+            // ------------------ FILE PATHS ------------------
+            if (table.contains("vpxFile") && table["vpxFile"].is_string()) tableData.vpxFile = table["vpxFile"].get<std::string>();
+            if (table.contains("folder") && table["folder"].is_string()) tableData.folder = table["folder"].get<std::string>();
+            if (table.contains("romPath") && table["romPath"].is_string()) tableData.romPath = table["romPath"].get<std::string>();
+            if (table.contains("romName") && table["romName"].is_string()) tableData.romName = table["romName"].get<std::string>();
+            if (table.contains("playfieldImage") && table["playfieldImage"].is_string()) tableData.playfieldImage = table["playfieldImage"].get<std::string>();
+            if (table.contains("wheelImage") && table["wheelImage"].is_string()) tableData.wheelImage = table["wheelImage"].get<std::string>();
+            if (table.contains("backglassImage") && table["backglassImage"].is_string()) tableData.backglassImage = table["backglassImage"].get<std::string>();
+            if (table.contains("dmdImage") && table["dmdImage"].is_string()) tableData.dmdImage = table["dmdImage"].get<std::string>();
+            if (table.contains("topperImage") && table["topperImage"].is_string()) tableData.topperImage = table["topperImage"].get<std::string>();
+            if (table.contains("playfieldVideo") && table["playfieldVideo"].is_string()) tableData.playfieldVideo = table["playfieldVideo"].get<std::string>();
+            if (table.contains("backglassVideo") && table["backglassVideo"].is_string()) tableData.backglassVideo = table["backglassVideo"].get<std::string>();
+            if (table.contains("dmdVideo") && table["dmdVideo"].is_string()) tableData.dmdVideo = table["dmdVideo"].get<std::string>();
+            if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
+            if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
+            if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
+            
+            // Boolean flags (ensure they are boolean type in JSON)
+            if (table.contains("altSound") && table["altSound"].is_boolean()) tableData.altSound = table["altSound"].get<bool>();
+            if (table.contains("altColor") && table["altColor"].is_boolean()) tableData.altColor = table["altColor"].get<bool>();
+            if (table.contains("hasPup") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
+            if (table.contains("hasAltMusic") && table["hasAltMusic"].is_boolean()) tableData.hasAltMusic = table["hasAltMusic"].get<bool>();
+            if (table.contains("hasUltraDMD") && table["hasUltraDMD"].is_boolean()) tableData.hasUltraDMD = table["hasUltraDMD"].get<bool>();
+
+
+            // ------------ FILE METADATA (vpin/vpxtool) -----------
+            if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
+            if (table.contains("authorName") && table["authorName"].is_string()) tableData.authorName = table["authorName"].get<std::string>();
             if (table.contains("tableDescription") && table["tableDescription"].is_string()) tableData.tableDescription = table["tableDescription"].get<std::string>();
+            if (table.contains("tableSaveDate") && table["tableSaveDate"].is_string()) tableData.tableSaveDate = table["tableSaveDate"].get<std::string>();
+            if (table.contains("lastModified") && table["lastModified"].is_string()) tableData.lastModified = table["lastModified"].get<std::string>();
+            if (table.contains("releaseDate") && table["releaseDate"].is_string()) tableData.releaseDate = table["releaseDate"].get<std::string>();
+            if (table.contains("tableVersion") && table["tableVersion"].is_string()) tableData.tableVersion = table["tableVersion"].get<std::string>();
+            if (table.contains("tableRevision") && table["tableRevision"].is_string()) tableData.tableRevision = table["tableRevision"].get<std::string>();
+            if (table.contains("tableBlurb") && table["tableBlurb"].is_string()) tableData.tableBlurb = table["tableBlurb"].get<std::string>();
+            if (table.contains("tableRules") && table["tableRules"].is_string()) tableData.tableRules = table["tableRules"].get<std::string>();
+            if (table.contains("authorEmail") && table["authorEmail"].is_string()) tableData.authorEmail = table["authorEmail"].get<std::string>();
+            if (table.contains("authorWebsite") && table["authorWebsite"].is_string()) tableData.authorWebsite = table["authorWebsite"].get<std::string>();
+            if (table.contains("tableType") && table["tableType"].is_string()) tableData.tableType = table["tableType"].get<std::string>();
+            if (table.contains("companyName") && table["companyName"].is_string()) tableData.companyName = table["companyName"].get<std::string>();
+            if (table.contains("companyYear") && table["companyYear"].is_string()) tableData.companyYear = table["companyYear"].get<std::string>();
+
+
+            // --------------- VPSDB METADATA -------------
             if (table.contains("vpsId") && table["vpsId"].is_string()) tableData.vpsId = table["vpsId"].get<std::string>();
             if (table.contains("vpsName") && table["vpsName"].is_string()) tableData.vpsName = table["vpsName"].get<std::string>();
             if (table.contains("vpsType") && table["vpsType"].is_string()) tableData.vpsType = table["vpsType"].get<std::string>();
@@ -64,34 +111,18 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("vpsAuthors") && table["vpsAuthors"].is_string()) tableData.vpsAuthors = table["vpsAuthors"].get<std::string>();
             if (table.contains("vpsFeatures") && table["vpsFeatures"].is_string()) tableData.vpsFeatures = table["vpsFeatures"].get<std::string>();
             if (table.contains("vpsComment") && table["vpsComment"].is_string()) tableData.vpsComment = table["vpsComment"].get<std::string>();
-            if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
-            if (table.contains("authorName") && table["authorName"].is_string()) tableData.authorName = table["authorName"].get<std::string>();
-            if (table.contains("tableSaveDate") && table["tableSaveDate"].is_string()) tableData.tableSaveDate = table["tableSaveDate"].get<std::string>();
-            if (table.contains("lastModified") && table["lastModified"].is_string()) tableData.lastModified = table["lastModified"].get<std::string>();
-            if (table.contains("releaseDate") && table["releaseDate"].is_string()) tableData.releaseDate = table["releaseDate"].get<std::string>();
-            if (table.contains("tableVersion") && table["tableVersion"].is_string()) tableData.tableVersion = table["tableVersion"].get<std::string>();
-            if (table.contains("tableRevision") && table["tableRevision"].is_string()) tableData.tableRevision = table["tableRevision"].get<std::string>();
-            // Media Files
-            if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
-            if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
-            if (table.contains("playfieldImage") && table["playfieldImage"].is_string()) tableData.playfieldImage = table["playfieldImage"].get<std::string>();
-            if (table.contains("wheelImage") && table["wheelImage"].is_string()) tableData.wheelImage = table["wheelImage"].get<std::string>();
-            if (table.contains("backglassImage") && table["backglassImage"].is_string()) tableData.backglassImage = table["backglassImage"].get<std::string>();
-            if (table.contains("dmdImage") && table["dmdImage"].is_string()) tableData.dmdImage = table["dmdImage"].get<std::string>();
-            if (table.contains("topperImage") && table["topperImage"].is_string()) tableData.topperImage = table["topperImage"].get<std::string>();
-            if (table.contains("playfieldVideo") && table["playfieldVideo"].is_string()) tableData.playfieldVideo = table["playfieldVideo"].get<std::string>();
-            if (table.contains("backglassVideo") && table["backglassVideo"].is_string()) tableData.backglassVideo = table["backglassVideo"].get<std::string>();
-            if (table.contains("dmdVideo") && table["dmdVideo"].is_string()) tableData.dmdVideo = table["dmdVideo"].get<std::string>();
-            if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
-            // For Icons
-            if (table.contains("altColor") && table["altColor"].is_boolean()) tableData.altColor = table["altColor"].get<bool>();
-            if (table.contains("altColor") && table["altSound"].is_boolean()) tableData.altSound = table["altSound"].get<bool>();
-            if (table.contains("altColor") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
-            // Operational
+            if (table.contains("vpsManufacturer") && table["vpsManufacturer"].is_string()) tableData.vpsManufacturer = table["vpsManufacturer"].get<std::string>();
+            if (table.contains("vpsYear") && table["vpsYear"].is_string()) tableData.vpsYear = table["vpsYear"].get<std::string>();
+            if (table.contains("vpsImgUrl") && table["vpsImgUrl"].is_string()) tableData.vpsImgUrl = table["vpsImgUrl"].get<std::string>();
+            if (table.contains("vpsTableUrl") && table["vpsTableUrl"].is_string()) tableData.vpsTableUrl = table["vpsTableUrl"].get<std::string>();
+
+            // --------------- OPERATIONAL TAGS ------------------
+            // Check for float type for confidence/score
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
-            if (table.contains("matchScore") && table["matchScore"].is_number_float()) tableData.matchConfidence = table["matchScore"].get<float>();
+            if (table.contains("matchScore") && table["matchScore"].is_number_float()) tableData.matchScore = table["matchScore"].get<float>(); // Corrected: assign to matchScore
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
-            
+            if (table.contains("playCount") && table["playCount"].is_string()) tableData.playCount = table["playCount"].get<std::string>(); // Assuming playCount is a string for now
+
             tables.push_back(tableData);
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
@@ -100,6 +131,10 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
         }
         LOG_INFO("AsapIndexManager: Loaded " << tables.size() << " tables from asapcab_index.json");
         return !tables.empty();
+    } catch (const json::exception& e) {
+        LOG_ERROR("AsapIndexManager: JSON parsing error while loading asapcab_index.json: " << e.what() << ". File might be corrupt.");
+        // Potentially rename/backup the corrupt file here
+        return false;
     } catch (const std::exception& e) {
         LOG_ERROR("AsapIndexManager: Failed to load asapcab_index.json: " << e.what());
         return false;
@@ -113,20 +148,61 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Saving tables to index...";
-        progress->totalTablesToLoad = tables.size();
+        progress->totalTablesToLoad = tables.size(); // Use tables.size() for total
         progress->currentTablesLoaded = 0;
     }
 
     for (const auto& table : tables) {
         json tableJson;
-        tableJson["vpxFile"] = table.vpxFile;
-        tableJson["folder"] = table.folder;
-        tableJson["romName"] = table.romName;
-        tableJson["romPath"] = table.romPath;
+        // ----------------- BEST MATCHES --------------------
         tableJson["title"] = table.title;
         tableJson["manufacturer"] = table.manufacturer;
         tableJson["year"] = table.year;
+        
+        // ------------------ FILE PATHS ------------------
+        tableJson["vpxFile"] = table.vpxFile;
+        tableJson["folder"] = table.folder;
+        tableJson["romPath"] = table.romPath;
+        tableJson["romName"] = table.romName;
+        tableJson["playfieldImage"] = table.playfieldImage;
+        tableJson["wheelImage"] = table.wheelImage;
+        tableJson["backglassImage"] = table.backglassImage;
+        tableJson["dmdImage"] = table.dmdImage;
+        tableJson["topperImage"] = table.topperImage;
+        tableJson["playfieldVideo"] = table.playfieldVideo;
+        tableJson["backglassVideo"] = table.backglassVideo;
+        tableJson["dmdVideo"] = table.dmdVideo;
+        tableJson["topperVideo"] = table.topperVideo;
+        tableJson["music"] = table.music;
+        tableJson["launchAudio"] = table.launchAudio;
+        
+        // Boolean flags
+        tableJson["altSound"] = table.altSound;
+        tableJson["altColor"] = table.altColor;
+        tableJson["hasPup"] = table.hasPup;
+        tableJson["hasAltMusic"] = table.hasAltMusic; // New boolean
+        tableJson["hasUltraDMD"] = table.hasUltraDMD; // New boolean
+
+
+        // ------------ FILE METADATA (vpin/vpxtool) -----------
+        tableJson["tableName"] = table.tableName;
+        tableJson["authorName"] = table.authorName;
         tableJson["tableDescription"] = table.tableDescription;
+        tableJson["tableSaveDate"] = table.tableSaveDate;
+        tableJson["lastModified"] = table.lastModified;
+        tableJson["releaseDate"] = table.releaseDate;
+        tableJson["tableVersion"] = table.tableVersion;
+        tableJson["tableRevision"] = table.tableRevision;
+        tableJson["tableBlurb"] = table.tableBlurb; // New field
+        tableJson["tableRules"] = table.tableRules; // New field
+        tableJson["authorEmail"] = table.authorEmail; // New field
+        tableJson["authorWebsite"] = table.authorWebsite; // New field
+        tableJson["tableType"] = table.tableType; // New field
+        tableJson["companyName"] = table.companyName; // New field
+        tableJson["companyYear"] = table.companyYear; // New field
+
+
+        // --------------- VPSDB METADATA -------------
         tableJson["vpsId"] = table.vpsId;
         tableJson["vpsName"] = table.vpsName;
         tableJson["vpsType"] = table.vpsType;
@@ -138,33 +214,17 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["vpsAuthors"] = table.vpsAuthors;
         tableJson["vpsFeatures"] = table.vpsFeatures;
         tableJson["vpsComment"] = table.vpsComment;
-        tableJson["tableName"] = table.tableName;
-        tableJson["authorName"] = table.authorName;
-        tableJson["tableSaveDate"] = table.tableSaveDate;
-        tableJson["lastModified"] = table.lastModified;
-        tableJson["releaseDate"] = table.releaseDate;
-        tableJson["tableVersion"] = table.tableVersion;
-        tableJson["tableRevision"] = table.tableRevision;
-        // Media files
-        tableJson["music"] = table.music;
-        tableJson["launchAudio"] = table.launchAudio;
-        tableJson["playfieldImage"] = table.playfieldImage;
-        tableJson["wheelImage"] = table.wheelImage;
-        tableJson["backglassImage"] = table.backglassImage;
-        tableJson["dmdImage"] = table.dmdImage;
-        tableJson["topperImage"] = table.topperImage;
-        tableJson["playfieldVideo"] = table.playfieldVideo;
-        tableJson["backglassVideo"] = table.backglassVideo;
-        tableJson["dmdVideo"] = table.dmdVideo;
-        tableJson["topperVideo"] = table.topperVideo;
-        // For icons
-        tableJson["altSound"] = table.altSound;
-        tableJson["altColor"] = table.altColor;
-        tableJson["hasPup"] = table.hasPup;
-        // Operational
+        tableJson["vpsManufacturer"] = table.vpsManufacturer; // New field
+        tableJson["vpsYear"] = table.vpsYear; // New field
+        tableJson["vpsImgUrl"] = table.vpsImgUrl; // New field
+        tableJson["vpsTableUrl"] = table.vpsTableUrl; // New field
+
+
+        // --------------- OPERATIONAL TAGS ------------------
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["matchScore"] = table.matchScore;
         tableJson["jsonOwner"] = table.jsonOwner;
+        tableJson["playCount"] = table.playCount; // New field
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {
@@ -174,29 +234,32 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
     }
 
     try {
-        fs::create_directories(fs::path(settings.indexPath).parent_path()); // Ensure parent directories exist
-        std::ofstream out(settings.indexPath);
+        // Ensure parent directories exist before writing the file
+        fs::path outputPath = settings.indexPath;
+        fs::create_directories(outputPath.parent_path()); 
+        
+        std::ofstream out(outputPath);
         if (!out.is_open()) {
-            LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for writing");
+            LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for writing. Check permissions.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->logMessages.push_back("DEBUG: Failed to open asapcab_index.json for writing");
+                progress->logMessages.push_back("ERROR: Failed to open asapcab_index.json for writing. Check permissions.");
             }
             return false;
         }
-        out << asapIndex.dump(4); // Serialize with 4-space indentation
+        out << asapIndex.dump(4); // Serialize with 4-space indentation for readability
         out.close();
         LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcab_index.json");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->logMessages.push_back("DEBUG: Saved " + std::to_string(tables.size()) + " tables to index");
+            progress->logMessages.push_back("INFO: Saved " + std::to_string(tables.size()) + " tables to index.");
         }
         return true;
     } catch (const std::exception& e) {
         LOG_ERROR("AsapIndexManager: Failed to save asapcab_index.json: " << e.what());
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->logMessages.push_back("DEBUG: Failed to save asapcab_index.json: " + std::string(e.what()));
+            progress->logMessages.push_back("ERROR: Failed to save asapcab_index.json: " + std::string(e.what()));
         }
         return false;
     }
