@@ -13,6 +13,8 @@ FIX:
 - regression in path handling for default media
 
 QOL:
+- better vpsdb matchmaking without slowing it down
+- matchmaking menu for tolerances (metadata)
 - Add ui user notifications for critical failures like missing config files.
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold
