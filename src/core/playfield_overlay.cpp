@@ -254,7 +254,6 @@ void PlayfieldOverlay::renderScrollbar() {
 
 void PlayfieldOverlay::renderMetadataPanel() {
     if (!tables_ || tables_->empty() || *currentIndex_ >= tables_->size()) {
-        // LOG_DEBUG("PlayfieldOverlay: No table data to display in metadata panel");
         return;
     }
 
@@ -278,21 +277,39 @@ void PlayfieldOverlay::renderMetadataPanel() {
                                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE INFO");
         std::filesystem::path filePath(currentTable.vpxFile);
+        
+        // Always display source, assuming it's always "File Scan" or "VPS" etc.
+        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
+        // Always display file and table name, as they are essential
         ImGui::Text("File: %s", filePath.filename().string().c_str());
+        
+        // Display other fields only if they are not empty
+        if (!currentTable.tableName.empty()){
+            ImGui::Text("Table Name: %s", currentTable.tableName.c_str());
+        }
         if (!currentTable.vpsId.empty()){
             ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
         }
-        if (currentTable.matchScore != 0) {
-            ImGui::Text("Match Confidence: %f", currentTable.matchScore);
+        if (currentTable.matchScore != 0) { // Assuming 0 is the default/no match score
+            ImGui::Text("Match Confidence: %.2f", currentTable.matchScore);
         }
-        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
-        ImGui::Text("Table Name: %s", currentTable.tableName.c_str());
+        
         if (!currentTable.vpsName.empty()) {
             ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
         }
-        ImGui::Text("ROM: %s", currentTable.romName.c_str());
-        ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
-        ImGui::Text("Year: %s", currentTable.year.c_str());
+        // ROM name special handling ("NO ROM" vs empty)
+        if (!currentTable.romName.empty()) { // Should always be populated, even with "NO ROM"
+             ImGui::Text("ROM: %s", currentTable.romName.c_str());
+        }
+        // Manufacturer and Year
+        if (!currentTable.manufacturer.empty()) {
+            ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str()); // Already capitalized
+        }
+        if (!currentTable.year.empty()) {
+            ImGui::Text("Year: %s", currentTable.year.c_str());
+        }
+
+        // Other VPSdb/Table fields
         if (!currentTable.vpsType.empty()) {
             ImGui::Text("Type: %s", currentTable.vpsType.c_str());
         }
@@ -302,32 +319,84 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.vpsDesigners.empty()) {
             ImGui::Text("Designers: %s", currentTable.vpsDesigners.c_str());
         }
+        // Check for "0" for players
         if (!currentTable.vpsPlayers.empty() && currentTable.vpsPlayers != "0") {
             ImGui::Text("Players: %s", currentTable.vpsPlayers.c_str());
         }
         if (!currentTable.vpsIpdbUrl.empty()) {
             ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
         }
-        ImGui::Text("Release Date: %s", currentTable.releaseDate.c_str());
-        ImGui::Text("Version: %s", currentTable.tableVersion.c_str());
+        if (!currentTable.releaseDate.empty()) {
+            ImGui::Text("Release Date: %s", currentTable.releaseDate.c_str());
+        }
+        if (!currentTable.tableVersion.empty()) {
+            ImGui::Text("Version: %s", currentTable.tableVersion.c_str());
+        }
         if (!currentTable.vpsVersion.empty()) {
             ImGui::Text("VPS Version: %s", currentTable.vpsVersion.c_str());
         }
-        ImGui::Text("Revision: %s", currentTable.tableRevision.c_str());
-        ImGui::Text("Save Date: %s", currentTable.tableSaveDate.c_str());
-        ImGui::Text("Last Modified: %s", currentTable.lastModified.c_str());
-        ImGui::Text("File Authors: %s", currentTable.authorName.c_str());
+        if (!currentTable.tableRevision.empty()) {
+            ImGui::Text("Revision: %s", currentTable.tableRevision.c_str());
+        }
+        if (!currentTable.tableSaveDate.empty()) {
+            ImGui::Text("Save Date: %s", currentTable.tableSaveDate.c_str());
+        }
+        if (!currentTable.lastModified.empty()) {
+            ImGui::Text("Last Modified: %s", currentTable.lastModified.c_str());
+        }
+        if (!currentTable.authorName.empty()) {
+            ImGui::Text("File Authors: %s", currentTable.authorName.c_str());
+        }
         if (!currentTable.vpsAuthors.empty()) {
             ImGui::Text("VPSdb Authors: %s", currentTable.vpsAuthors.c_str());
         }
         if (!currentTable.vpsFeatures.empty()) {
             ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
         }
+        
+        // --- Display Boolean Features ---
+        // Only show the FEATURES header if at least one feature is true
+        if (currentTable.hasPup || currentTable.altColor || currentTable.altSound ||
+            currentTable.hasAltMusic || currentTable.hasUltraDMD) { // ADD NEW BOOLS HERE
+            
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FEATURES:");
+
+            // Conditionally display each feature
+            if (currentTable.hasPup) {
+                ImGui::SameLine();
+                ImGui::Text(" PUP");
+            }
+            if (currentTable.altColor) {
+                ImGui::SameLine();
+                ImGui::Text(" AltColor");
+            }
+            if (currentTable.altSound) {
+                ImGui::SameLine();
+                ImGui::Text(" AltSound");
+            }
+            // NEW: Display Alt Music status
+            if (currentTable.hasAltMusic) {
+                ImGui::SameLine();
+                ImGui::Text(" AltMusic");
+            }
+            // NEW: Display UltraDMD status
+            if (currentTable.hasUltraDMD) {
+                ImGui::SameLine();
+                ImGui::Text(" UltraDMD");
+            }
+        }
+        // ------------------------------------------
+
         ImGui::Separator();
+        // Always display comments and description if they exist, possibly multiline
         if (!currentTable.vpsComment.empty()) {
             ImGui::TextWrapped("Comments: %s", currentTable.vpsComment.c_str());
         }
-        ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());
+        if (!currentTable.tableDescription.empty()) { // Ensure tableDescription is also checked
+             ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());
+        }
+
         ImGui::End();
     }
 }

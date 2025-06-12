@@ -1,19 +1,22 @@
 /**
- * @file vpx_scanner.cpp
+ * @file file_scanner.cpp
  * @brief Implements the FileScanner class for scanning VPX table files in ASAPCabinetFE.
  *
  * This file provides the implementation of the FileScanner class, which recursively scans
  * a directory for VPX files and constructs TableData objects with file paths and media
  * asset paths. The scanner uses Settings to determine the base path and media preferences
  * (e.g., images vs. videos with forceImagesOnly), and supports progress tracking via
- * LoadingProgress. The process is configurable, with potential for future customization
- * via configUI (e.g., additional path rules or media types).
+ * LoadingProgress.
  */
 
 #include "tables/file_scanner.h"
+#include "tables/manufacturers.h"
 #include "tables/path_utils.h"
 #include "utils/logging.h"
 #include <filesystem>
+#include <regex>     // For year extraction
+#include <algorithm> // For std::transform (for manufacturer search)
+#include <cctype>    // For std::tolower (for manufacturer search)
 
 namespace fs = std::filesystem;
 
@@ -32,6 +35,10 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         progress->currentTablesLoaded = 0;
     }
 
+    // Prepare regex for year extraction (19xx or 20xx)
+    // \b word boundary, (19|20) matches 19 or 20, \d{2} matches two digits, \b word boundary
+    std::regex year_regex(R"(\b(19|20)\d{2}\b)");
+
     // Single pass: scan and count VPX files
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
@@ -41,6 +48,33 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.folder = entry.path().parent_path().string();
             // basic title from filename without extension
             table.title = entry.path().stem().string();
+
+            // --- Extract Year from filename ---
+            std::smatch match;
+            if (std::regex_search(table.title, match, year_regex)) {
+                table.year = match.str(0); // The entire matched year string
+                LOG_DEBUG("FileScanner: Found year '" << table.year << "' for table: " << table.title);
+            } else {
+                table.year = ""; // Ensure it's empty if not found
+            }
+
+            // --- Extract Manufacturer from filename and CAPITALIZE IT ---
+            std::string lowerTitle = table.title;
+            std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(),
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+
+            for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+                if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
+                    // Store the capitalized manufacturer name directly in TableData
+                    table.manufacturer = PathUtils::capitalizeWords(manufacturerNameLower);
+                    LOG_DEBUG("FileScanner: Found manufacturer '" << table.manufacturer << "' for table: " << table.title);
+                    break;
+                }
+            }
+            if (table.manufacturer.empty()) {
+                LOG_DEBUG("FileScanner: No known manufacturer found in filename: " << table.title);
+            }
+
             //media paths (audios, images, videos)
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
@@ -53,25 +87,24 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
+            table.hasPup = PathUtils::getPupPath(table.folder);
+            table.hasAltMusic = PathUtils::getAltMusic(table.folder);
+            table.hasUltraDMD = PathUtils::getUltraDmdPath(table.folder);
 
-            // Check for pinmame/roms/ folder and extract romName and romPath
-            // TODO: getRomPath from pathUtils
-            fs::path romsFolder = fs::path(table.folder) / "pinmame" / "roms";
-            if (fs::exists(romsFolder) && fs::is_directory(romsFolder)) {
-                for (const auto& romEntry : fs::directory_iterator(romsFolder)) {
-                    if (romEntry.is_regular_file() && romEntry.path().extension() == ".zip") {
-                        table.romPath = romEntry.path().string();
-                        table.romName = romEntry.path().stem().string();
-                        LOG_DEBUG("FileScanner: Found ROM for table " << table.vpxFile << ": romName=" << table.romName << ", romPath=" << table.romPath);
-                        break; // Take the first .zip file
-                    }
-                }
-                if (table.romName.empty()) {
-                    LOG_DEBUG("FileScanner: No .zip file found in " << romsFolder.string() << " for table " << table.vpxFile);
-                }
+            std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
+            if (!pinmamePath.empty()) {
+                // Assign bools directly
+                table.altColor = PathUtils::getAltcolorPath(pinmamePath);
+                table.altSound = PathUtils::getAltsoundPath(pinmamePath);
+                table.romPath = PathUtils::getRomPath(pinmamePath, table.romName); // romName is passed by reference
             } else {
-                LOG_DEBUG("FileScanner: No pinmame/roms folder found at " << romsFolder.string() << " for table " << table.vpxFile);
+                LOG_DEBUG("FileScanner: No pinmame folder found at " << table.folder << ", skipping AltColor/AltSound/ROM checks.");
+                // Ensure these are explicitly false/empty if pinmamePath isn't found
+                table.altColor = false;
+                table.altSound = false;
+                table.romPath = "";
             }
+            
             //TODO: Assign the json owner for incremental updates
             table.jsonOwner = "File Scan";
             tables.push_back(table);

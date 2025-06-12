@@ -73,15 +73,26 @@ public:
      * @return The resolved path as a string (valid path if exists, empty otherwise).
      */
     static std::string getAudioPath(const std::string& root, const std::string& musicPath);
+    
+    // Directory finders
+    static bool getPupPath(const std::string& root); 
+    static std::string getPinmamePath(const std::string& root); 
+    static bool getAltcolorPath(const std::string& pinmamePath); 
+    static bool getAltsoundPath(const std::string& pinmamePath);
+    static bool getAltMusic(const std::string& tableRoot);
+    static bool getUltraDmdPath(const std::string& tableRoot);
+    static std::string getRomPath(const std::string& pinmamePath, std::string& outRomName);
+    
+    // String helpers
     static std::string cleanString(const std::string& input);
     static std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
+    static std::string capitalizeWords(const std::string& input); 
+    
+private:
+    // Self helpers
+    static bool containsRegularFiles(const std::string& directoryPath);
+    static std::string findSubfolderCaseInsensitive(const std::string& parentPath, const std::string& targetFolderNameLowercase);
+    static std::string findSubfolderBySuffixCaseInsensitive(const std::string& parentPath, const std::string& targetSuffixLowercase);
 };
-
-// TODO:
-// getPupPath
-// getPinmamePath
-// getAltcolorPath
-// getAltsoundPath
-// getRomPath
 
 #endif // PATH_UTILS_H

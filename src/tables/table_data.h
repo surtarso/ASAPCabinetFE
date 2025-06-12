@@ -50,14 +50,14 @@ struct TableData {
     std::string topperVideo;     ///< Path to the topper video, if available.
     std::string music;           ///< Path to the music file, if available.
     std::string launchAudio;     ///< Path to the custom launch audio, if available.
-    //TODO: still need to fix the logic for these
     std::string romPath;         ///< Path to the pinmame/roms/'romname'.zip
     std::string romName;         ///< file found in romPath without extension.
-    //TODO: these should be icons on metadata panel (maybe bools?)
-    std::string altSound;        ///< Path to the pinmame/altsound folder (non-empty)
-    std::string altColor;        ///< Path to the pinmame/AltColor folder (non-empty)
-    std::string hasPup;          ///< Path to the pupvideos/ folder (non-empty)
-    
+    bool altSound = false;       ///< True if found the pinmame/altsound folder (non-empty)
+    bool altColor = false;       ///< True if found the pinmame/AltColor folder (non-empty)
+    bool hasPup = false;         ///< True if found the pupvideos/ folder (non-empty)
+    bool hasAltMusic = false;    ///< True if found the music/ folder (non-empty)
+    bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
+
     // ------------ FILE METADATA (vpin/vpxtool) -----------
     // we must keep repeated fields if found for better vpsdb matching 
     std::string tableName;       ///< Table name from file metadata.

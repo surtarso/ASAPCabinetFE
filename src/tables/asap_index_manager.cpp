@@ -47,6 +47,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             TableData tableData;
             if (table.contains("vpxFile") && table["vpxFile"].is_string()) tableData.vpxFile = table["vpxFile"].get<std::string>();
             if (table.contains("folder") && table["folder"].is_string()) tableData.folder = table["folder"].get<std::string>();
+            if (table.contains("romName") && table["romName"].is_string()) tableData.romName = table["romName"].get<std::string>();
+            if (table.contains("romPath") && table["romPath"].is_string()) tableData.romPath = table["romPath"].get<std::string>();
             if (table.contains("title") && table["title"].is_string()) tableData.title = table["title"].get<std::string>();
             if (table.contains("manufacturer") && table["manufacturer"].is_string()) tableData.manufacturer = table["manufacturer"].get<std::string>();
             if (table.contains("year") && table["year"].is_string()) tableData.year = table["year"].get<std::string>();
@@ -64,13 +66,12 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("vpsComment") && table["vpsComment"].is_string()) tableData.vpsComment = table["vpsComment"].get<std::string>();
             if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
             if (table.contains("authorName") && table["authorName"].is_string()) tableData.authorName = table["authorName"].get<std::string>();
-            if (table.contains("romName") && table["romName"].is_string()) tableData.romName = table["romName"].get<std::string>();
-            if (table.contains("romPath") && table["romPath"].is_string()) tableData.romPath = table["romPath"].get<std::string>();
             if (table.contains("tableSaveDate") && table["tableSaveDate"].is_string()) tableData.tableSaveDate = table["tableSaveDate"].get<std::string>();
             if (table.contains("lastModified") && table["lastModified"].is_string()) tableData.lastModified = table["lastModified"].get<std::string>();
             if (table.contains("releaseDate") && table["releaseDate"].is_string()) tableData.releaseDate = table["releaseDate"].get<std::string>();
             if (table.contains("tableVersion") && table["tableVersion"].is_string()) tableData.tableVersion = table["tableVersion"].get<std::string>();
             if (table.contains("tableRevision") && table["tableRevision"].is_string()) tableData.tableRevision = table["tableRevision"].get<std::string>();
+            // Media Files
             if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
             if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
             if (table.contains("playfieldImage") && table["playfieldImage"].is_string()) tableData.playfieldImage = table["playfieldImage"].get<std::string>();
@@ -82,9 +83,15 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("backglassVideo") && table["backglassVideo"].is_string()) tableData.backglassVideo = table["backglassVideo"].get<std::string>();
             if (table.contains("dmdVideo") && table["dmdVideo"].is_string()) tableData.dmdVideo = table["dmdVideo"].get<std::string>();
             if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
+            // For Icons
+            if (table.contains("altColor") && table["altColor"].is_boolean()) tableData.altColor = table["altColor"].get<bool>();
+            if (table.contains("altColor") && table["altSound"].is_boolean()) tableData.altSound = table["altSound"].get<bool>();
+            if (table.contains("altColor") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
+            // Operational
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
             if (table.contains("matchScore") && table["matchScore"].is_number_float()) tableData.matchConfidence = table["matchScore"].get<float>();
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
+            
             tables.push_back(tableData);
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
@@ -114,6 +121,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         json tableJson;
         tableJson["vpxFile"] = table.vpxFile;
         tableJson["folder"] = table.folder;
+        tableJson["romName"] = table.romName;
+        tableJson["romPath"] = table.romPath;
         tableJson["title"] = table.title;
         tableJson["manufacturer"] = table.manufacturer;
         tableJson["year"] = table.year;
@@ -131,13 +140,12 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["vpsComment"] = table.vpsComment;
         tableJson["tableName"] = table.tableName;
         tableJson["authorName"] = table.authorName;
-        tableJson["romName"] = table.romName;
-        tableJson["romPath"] = table.romPath;
         tableJson["tableSaveDate"] = table.tableSaveDate;
         tableJson["lastModified"] = table.lastModified;
         tableJson["releaseDate"] = table.releaseDate;
         tableJson["tableVersion"] = table.tableVersion;
         tableJson["tableRevision"] = table.tableRevision;
+        // Media files
         tableJson["music"] = table.music;
         tableJson["launchAudio"] = table.launchAudio;
         tableJson["playfieldImage"] = table.playfieldImage;
@@ -149,9 +157,15 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["backglassVideo"] = table.backglassVideo;
         tableJson["dmdVideo"] = table.dmdVideo;
         tableJson["topperVideo"] = table.topperVideo;
+        // For icons
+        tableJson["altSound"] = table.altSound;
+        tableJson["altColor"] = table.altColor;
+        tableJson["hasPup"] = table.hasPup;
+        // Operational
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["matchScore"] = table.matchScore;
         tableJson["jsonOwner"] = table.jsonOwner;
+
         asapIndex["tables"].push_back(tableJson);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);

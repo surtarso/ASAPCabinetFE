@@ -13,6 +13,8 @@
 #include "tables/path_utils.h"
 #include "utils/logging.h"
 #include <filesystem>
+#include <algorithm> // Required for std::transform
+#include <cctype>    // Required for std::tolower
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify path operations
 
@@ -79,9 +81,182 @@ std::string PathUtils::safeGetString(const nlohmann::json& j, const std::string&
     return defaultValue;
 }
 
-// TODO:
-// getPupPath
-// getPinmamePath
-// getAltcolorPath
-// getAltsoundPath
-// getRomPath
+// Helper to check if a directory exists and contains any regular files
+bool PathUtils::containsRegularFiles(const std::string& directoryPath) {
+    if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
+        return false;
+    }
+    for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        if (entry.is_regular_file()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string PathUtils::findSubfolderCaseInsensitive(const std::string& parentPath, const std::string& targetFolderNameLowercase) {
+    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
+        return "";
+    }
+
+    for (const auto& entry : fs::directory_iterator(parentPath)) {
+        if (entry.is_directory()) {
+            std::string currentFolderName = entry.path().filename().string();
+            // Convert current folder name to lowercase for comparison
+            std::transform(currentFolderName.begin(), currentFolderName.end(), currentFolderName.begin(),
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); }); // Use static_cast for safety
+
+            if (currentFolderName == targetFolderNameLowercase) {
+                // Found a match (case-insensitively), return the actual path (with original casing)
+                return entry.path().string();
+            }
+        }
+    }
+    return ""; // No matching subfolder found
+}
+
+std::string PathUtils::findSubfolderBySuffixCaseInsensitive(const std::string& parentPath, const std::string& targetSuffixLowercase) {
+    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
+        return "";
+    }
+
+    for (const auto& entry : fs::directory_iterator(parentPath)) {
+        if (entry.is_directory()) {
+            std::string currentFolderName = entry.path().filename().string();
+            std::string lowerCurrentFolderName = currentFolderName;
+            std::transform(lowerCurrentFolderName.begin(), lowerCurrentFolderName.end(), lowerCurrentFolderName.begin(),
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+
+            // Check if the lowercase folder name ends with the target suffix
+            if (lowerCurrentFolderName.length() >= targetSuffixLowercase.length() &&
+                lowerCurrentFolderName.substr(lowerCurrentFolderName.length() - targetSuffixLowercase.length()) == targetSuffixLowercase) {
+                return entry.path().string(); // Return the original (correct case) path
+            }
+        }
+    }
+    return "";
+}
+
+// PathUtils::getAltMusic - Checks for 'music' subfolder
+bool PathUtils::getAltMusic(const std::string& tableRoot) {
+    std::string musicFolderActualPath = findSubfolderCaseInsensitive(tableRoot, "music");
+    // Check if folder exists and is NOT empty (contains any files or subdirectories)
+    if (!musicFolderActualPath.empty() && fs::exists(musicFolderActualPath) && !fs::is_empty(musicFolderActualPath)) {
+        LOG_DEBUG("PathUtils: Found 'music' folder with content for table: " << tableRoot);
+        return true;
+    }
+    LOG_DEBUG("PathUtils: No 'music' folder with content found in " << tableRoot);
+    return false;
+}
+
+// PathUtils::getUltraDmdPath - Checks for any folder ending with '.ultradmd'
+bool PathUtils::getUltraDmdPath(const std::string& tableRoot) {
+    std::string ultraDmdFolderActualPath = findSubfolderBySuffixCaseInsensitive(tableRoot, ".ultradmd");
+    // Check if folder exists and is NOT empty (contains any files or subdirectories)
+    if (!ultraDmdFolderActualPath.empty() && fs::exists(ultraDmdFolderActualPath) && !fs::is_empty(ultraDmdFolderActualPath)) {
+        LOG_DEBUG("PathUtils: Found '.UltraDMD' folder with content for table: " << tableRoot);
+        return true;
+    }
+    LOG_DEBUG("PathUtils: No '.UltraDMD' folder with content found in " << tableRoot);
+    return false;
+}
+
+// PathUtils::getPupPath - NOW uses !fs::is_empty() for content check
+bool PathUtils::getPupPath(const std::string& root) {
+    std::string pupFolderActualPath = findSubfolderCaseInsensitive(root, "pupvideos");
+    // Check if folder exists and is NOT empty (contains any files or subdirectories)
+    if (!pupFolderActualPath.empty() && fs::exists(pupFolderActualPath) && !fs::is_empty(pupFolderActualPath)) {
+        LOG_DEBUG("PathUtils: Found pupvideos folder with content: " << pupFolderActualPath);
+        return true;
+    }
+    LOG_DEBUG("PathUtils: No pupvideos folder with content found in " << root);
+    return false;
+}
+
+// PathUtils::getPinmamePath - NOW uses findSubfolderCaseInsensitive
+std::string PathUtils::getPinmamePath(const std::string& root) {
+    std::string pinmameFolderActualPath = findSubfolderCaseInsensitive(root, "pinmame");
+    if (!pinmameFolderActualPath.empty()) { // findSubfolderCaseInsensitive already checks exists and is_directory
+        LOG_DEBUG("PathUtils: Found pinmame folder: " << pinmameFolderActualPath);
+        return pinmameFolderActualPath;
+    }
+    LOG_DEBUG("PathUtils: No pinmame folder found at " << root); // Log parent folder if not found
+    return "";
+}
+
+// PathUtils::getAltcolorPath - NOW uses !fs::is_empty() for content check
+bool PathUtils::getAltcolorPath(const std::string& pinmamePath) {
+    if (pinmamePath.empty()) {
+        LOG_DEBUG("PathUtils: pinmamePath is empty, skipping AltColor check.");
+        return false;
+    }
+    std::string altcolorFolderActualPath = findSubfolderCaseInsensitive(pinmamePath, "altcolor");
+    // Check if folder exists and is NOT empty (contains any files or subdirectories)
+    if (!altcolorFolderActualPath.empty() && fs::exists(altcolorFolderActualPath) && !fs::is_empty(altcolorFolderActualPath)) {
+        LOG_DEBUG("PathUtils: Found AltColor folder with content: " << altcolorFolderActualPath);
+        return true;
+    }
+    LOG_DEBUG("PathUtils: No AltColor folder with content found in " << pinmamePath);
+    return false;
+}
+
+// PathUtils::getAltsoundPath - NOW uses !fs::is_empty() for content check
+bool PathUtils::getAltsoundPath(const std::string& pinmamePath) {
+    if (pinmamePath.empty()) {
+        LOG_DEBUG("PathUtils: pinmamePath is empty, skipping AltSound check.");
+        return false;
+    }
+    std::string altsoundFolderActualPath = findSubfolderCaseInsensitive(pinmamePath, "altsound");
+    // Check if folder exists and is NOT empty (contains any files or subdirectories)
+    if (!altsoundFolderActualPath.empty() && fs::exists(altsoundFolderActualPath) && !fs::is_empty(altsoundFolderActualPath)) {
+        LOG_DEBUG("PathUtils: Found AltSound folder with content: " << altsoundFolderActualPath);
+        return true;
+    }
+    LOG_DEBUG("PathUtils: No AltSound folder with content found in " << pinmamePath);
+    return false;
+}
+
+std::string PathUtils::getRomPath(const std::string& pinmamePath, std::string& outRomName) {
+    outRomName = ""; // Ensure romName is cleared initially
+    if (pinmamePath.empty()) {
+        LOG_DEBUG("PathUtils: pinmamePath is empty, skipping ROM check.");
+        return "";
+    }
+
+    fs::path romsFolder = fs::path(pinmamePath) / "roms";
+    if (fs::exists(romsFolder) && fs::is_directory(romsFolder)) {
+        for (const auto& romEntry : fs::directory_iterator(romsFolder)) {
+            if (romEntry.is_regular_file() && romEntry.path().extension() == ".zip") {
+                outRomName = romEntry.path().stem().string();
+                LOG_DEBUG("PathUtils: Found ROM for pinmame path " << pinmamePath << ": romName=" << outRomName << ", romPath=" << romEntry.path().string());
+                return romEntry.path().string(); // Take the first .zip file
+            }
+        }
+        LOG_DEBUG("PathUtils: No .zip file found in " << romsFolder.string());
+    } else {
+        LOG_DEBUG("PathUtils: No pinmame/roms folder found at " << romsFolder.string());
+    }
+    return ""; // No ROM found
+}
+
+// Function to capitalize the first letter of each word
+std::string PathUtils::capitalizeWords(const std::string& input) {
+    if (input.empty()) {
+        return "";
+    }
+
+    std::string result = input;
+    bool capitalizeNext = true; // Flag to indicate if the next char should be capitalized
+
+    for (char &c : result) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
+            capitalizeNext = true; // Spaces indicate start of a new word
+        } else if (capitalizeNext) {
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            capitalizeNext = false; // Only capitalize the first letter of the word
+        } else {
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c))); // Convert subsequent letters to lowercase
+        }
+    }
+    return result;
+}

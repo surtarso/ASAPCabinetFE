@@ -47,6 +47,8 @@ public:
      * @return A vector of TableData objects representing the scanned tables.
      */
     static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr);
+private:
+    static const std::vector<std::string> MANUFACTURERS_LOWERCASE;
 };
 
 #endif // FILE_SCANNER_H
