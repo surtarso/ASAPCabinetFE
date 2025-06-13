@@ -278,10 +278,10 @@ void PlayfieldOverlay::renderMetadataPanel() {
             ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
         }
 
-        if (currentTable.matchScore > 0) {
-            // Map matchScore (0.0-1.0) to a 0-5 scale
-            int fullStars = static_cast<int>(std::round(currentTable.matchScore * 5.0f));
-            fullStars = std::clamp(fullStars, 0, 5); // Ensure it's between 0 and 5
+        if (currentTable.matchConfidence > 0) {
+            // Map matchScore (0.0-1.0) to a 0-10 scale
+            int fullStars = static_cast<int>(std::round(currentTable.matchConfidence * 10.0f));
+            fullStars = std::clamp(fullStars, 0, 10); // Ensure it's between 0 and 10
 
             ImGui::Text("Match Confidence: ");
             ImGui::SameLine();
@@ -293,7 +293,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
             }
             ImGui::PopStyleColor();
             // Render empty stars
-            for (int i = fullStars; i < 5; ++i) {
+            for (int i = fullStars; i < 10; ++i) {
                 ImGui::TextUnformatted("-"); // Empty star
                 ImGui::SameLine();
             }
@@ -385,12 +385,12 @@ void PlayfieldOverlay::renderMetadataPanel() {
         // --- File Metadata (from vpin/vpxtool) ---
         // Only add this section if any of these fields are available
         bool file_meta_section_started = false;
-        if (!currentTable.authorName.empty() || !currentTable.tableSaveDate.empty() ||
-            !currentTable.lastModified.empty() || !currentTable.releaseDate.empty() ||
+        if (!currentTable.tableAuthor.empty() || !currentTable.tableSaveDate.empty() ||
+            !currentTable.tableLastModified.empty() || !currentTable.tableReleaseDate.empty() ||
             !currentTable.tableVersion.empty() || !currentTable.tableRevision.empty() ||
             !currentTable.tableBlurb.empty() || !currentTable.tableRules.empty() ||
-            !currentTable.authorEmail.empty() || !currentTable.authorWebsite.empty() ||
-            !currentTable.tableType.empty() || !currentTable.companyName.empty() || !currentTable.companyYear.empty()) {
+            !currentTable.tableAuthorEmail.empty() || !currentTable.tableAuthorWebsite.empty() ||
+            !currentTable.tableType.empty() || !currentTable.tableManufacturer.empty() || !currentTable.tableYear.empty()) {
             
             if (vpsdb_section_started) ImGui::Separator(); // Add separator only if previous section was displayed
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FILE METADATA");
@@ -401,17 +401,17 @@ void PlayfieldOverlay::renderMetadataPanel() {
              // If tableName is just the filename and no better title, show it here
              ImGui::Text("Table Name: %s", currentTable.tableName.c_str());
         }
-        if (!currentTable.authorName.empty()) {
-            ImGui::Text("Author(s): %s", currentTable.authorName.c_str());
+        if (!currentTable.tableAuthor.empty()) {
+            ImGui::Text("Author(s): %s", currentTable.tableAuthor.c_str());
         }
         if (!currentTable.tableSaveDate.empty()) {
             ImGui::Text("Save Date: %s", currentTable.tableSaveDate.c_str());
         }
-        if (!currentTable.lastModified.empty()) {
-            ImGui::Text("Last Modified: %s", currentTable.lastModified.c_str());
+        if (!currentTable.tableLastModified.empty()) {
+            ImGui::Text("Last Modified: %s", currentTable.tableLastModified.c_str());
         }
-        if (!currentTable.releaseDate.empty()) {
-            ImGui::Text("Release Date: %s", currentTable.releaseDate.c_str());
+        if (!currentTable.tableReleaseDate.empty()) {
+            ImGui::Text("Release Date: %s", currentTable.tableReleaseDate.c_str());
         }
         // Only show Table Version if it's not already covered by VPSdb version (e.g., if it has "(Latest VPS: ...)")
         if (!currentTable.tableVersion.empty()) {
@@ -425,11 +425,11 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.tableType.empty()) {
             ImGui::Text("Table Type: %s", currentTable.tableType.c_str());
         }
-        if (!currentTable.companyName.empty()) {
-            ImGui::Text("Company: %s", currentTable.companyName.c_str());
+        if (!currentTable.tableManufacturer.empty()) {
+            ImGui::Text("Company: %s", currentTable.tableManufacturer.c_str());
         }
-        if (!currentTable.companyYear.empty()) {
-            ImGui::Text("Company Year: %s", currentTable.companyYear.c_str());
+        if (!currentTable.tableYear.empty()) {
+            ImGui::Text("Company Year: %s", currentTable.tableYear.c_str());
         }
         if (!currentTable.tableBlurb.empty()) {
             ImGui::TextWrapped("Blurb: %s", currentTable.tableBlurb.c_str());
@@ -437,11 +437,11 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.tableRules.empty()) {
             ImGui::TextWrapped("Rules: %s", currentTable.tableRules.c_str());
         }
-        if (!currentTable.authorEmail.empty()) {
-            ImGui::Text("Author Email: %s", currentTable.authorEmail.c_str());
+        if (!currentTable.tableAuthorEmail.empty()) {
+            ImGui::Text("Author Email: %s", currentTable.tableAuthorEmail.c_str());
         }
-        if (!currentTable.authorWebsite.empty()) {
-            ImGui::Text("Author Website: %s", currentTable.authorWebsite.c_str());
+        if (!currentTable.tableAuthorWebsite.empty()) {
+            ImGui::Text("Author Website: %s", currentTable.tableAuthorWebsite.c_str());
         }
         
         // --- Operational Tags / Status ---

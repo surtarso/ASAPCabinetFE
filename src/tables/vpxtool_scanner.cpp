@@ -380,16 +380,16 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 if (tableJson.contains("table_info") && tableJson["table_info"].is_object()) {
                     const auto& tableInfo = tableJson["table_info"];
                     currentTable->tableName = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "table_name", currentTable->title));
-                    currentTable->authorName = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "author_name"));
+                    currentTable->tableAuthor = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "author_name"));
                     currentTable->tableDescription = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "table_description"));
                     currentTable->tableSaveDate = PathUtils::safeGetString(tableInfo, "table_save_date");
-                    currentTable->releaseDate = PathUtils::safeGetString(tableInfo, "release_date");
+                    currentTable->tableReleaseDate = PathUtils::safeGetString(tableInfo, "release_date");
                     currentTable->tableVersion = PathUtils::safeGetString(tableInfo, "table_version");
                     currentTable->tableRevision = PathUtils::safeGetString(tableInfo, "table_save_rev");
                 }
                 currentTable->romName = PathUtils::cleanString(PathUtils::safeGetString(tableJson, "game_name"));
                 currentTable->romPath = PathUtils::safeGetString(tableJson, "rom_path");
-                currentTable->lastModified = PathUtils::safeGetString(tableJson, "last_modified");
+                currentTable->tableLastModified = PathUtils::safeGetString(tableJson, "last_modified");
                 currentTable->jsonOwner = "VPXTool Index";
 
                 fs::path filePath(path);
@@ -478,11 +478,11 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 tempVpxToolJsonForVps["game_name"] = table.romName; // Use romName from vpxtool scan if available
                 tempVpxToolJsonForVps["table_info"] = {
                     {"table_name", table.tableName},
-                    {"author_name", table.authorName},
+                    {"author_name", table.tableAuthor},
                     {"table_description", table.tableDescription},
                     {"table_version", table.tableVersion},
                     {"table_save_date", table.tableSaveDate},
-                    {"release_date", table.releaseDate},
+                    {"release_date", table.tableReleaseDate},
                     {"table_save_rev", table.tableRevision}
                 };
                 tempVpxToolJsonForVps["properties"] = {

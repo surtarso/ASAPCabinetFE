@@ -27,7 +27,7 @@
  * This class provides static methods to enrich TableData objects by extracting metadata
  * from a vpxtool_index.json file and optionally a VPSDB database. It includes utility
  * methods for cleaning strings and safely extracting JSON values. The enrichment process
- * updates fields like tableName, authorName, and romName, tracks progress with
+ * updates fields like tableName, tableAuthor, and romName, tracks progress with
  * LoadingProgress, and can be configured via Settings, with potential for configUI
  * enhancements (e.g., custom metadata sources).
  */
@@ -39,7 +39,7 @@ public:
      * Processes the provided tables vector by matching entries with metadata from
      * vpxtool_index.json (located at settings.VPXTablesPath + vpxtoolIndex) and
      * optionally enriching further with VPSDB data if enabled. Updates fields like
-     * tableName, authorName, and title, and tracks progress via LoadingProgress,
+     * tableName, tableAuthor, and title, and tracks progress via LoadingProgress,
      * including numNoMatch for unmatched tables. The method is configurable via
      * Settings and supports future configUI customization.
      *

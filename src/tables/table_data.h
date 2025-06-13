@@ -22,6 +22,7 @@
  * It supports rendering and sorting of tables in the ASAPCabinetFE application.
  */
 struct TableData {
+    // ------------------ FILE PATHS ------------------
     // We need to get the most out of the files before trying to
     // match with vpsdb. We should get the most without any tool, than
     // upgrade the metadata with vpin to get best of both, than finally
@@ -36,7 +37,6 @@ struct TableData {
     std::string manufacturer;    ///< Manufacturer from title, vpin/vpxtool or vpsdb, used for sorting.
     std::string year;            ///< Year from title, vpin/vpxtool or vpsdb, used for sorting.
     
-    // ------------------ FILE PATHS ------------------
     std::string vpxFile;         ///< Full path to the .vpx file.
     std::string folder;          ///< Directory containing the .vpx file.
     std::string playfieldImage;  ///< Path to the static playfield image.
@@ -61,21 +61,21 @@ struct TableData {
     // ------------ FILE METADATA (vpin/vpxtool) -----------
     // we must keep repeated fields if found for better vpsdb matching 
     std::string tableName;       ///< Table name from file metadata (e.g., from vpin's `table_name`).
-    std::string authorName;      ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
+    std::string tableAuthor;      ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
     std::string tableDescription;///< Description from file metadata (e.g., from vpin's `table_description`).
     std::string tableSaveDate;   ///< Save date from file metadata (e.g., from vpin's `table_save_date`).
-    std::string lastModified;    ///< Last modified date from file metadata (this is usually from file system, not internal metadata).
-    std::string releaseDate;     ///< Release date from file metadata (e.g., from vpin's `release_date`).
+    std::string tableLastModified;    ///< Last modified date from file metadata (this is usually from file system, not internal metadata).
+    std::string tableReleaseDate;     ///< Release date from file metadata (e.g., from vpin's `release_date`).
     std::string tableVersion;    ///< Table version from file metadata (e.g., from vpin's `table_version`).
     std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).   
     std::string tableBlurb;      ///< Short blurb/summary from file metadata (from vpin's `table_blurb`).
     std::string tableRules;      ///< Rules from file metadata (from vpin's `table_rules`).
-    std::string authorEmail;     ///< Author's email from file metadata (from vpin's `author_email`).
-    std::string authorWebsite;   ///< Author's website from file metadata (from vpin's `author_website`).
+    std::string tableAuthorEmail;     ///< Author's email from file metadata (from vpin's `author_email`).
+    std::string tableAuthorWebsite;   ///< Author's website from file metadata (from vpin's `author_website`).
     // These are inside 'properties' dictionary in 'table_info'
     std::string tableType;       ///< Table type from file metadata properties (e.g., from vpin's `properties.TableType`). (NEW)
-    std::string companyName;     ///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`). (NEW)
-    std::string companyYear;     ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`). (NEW)
+    std::string tableManufacturer;     ///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`). (NEW)
+    std::string tableYear;     ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`). (NEW)
 
     // --------------- VPSDB METADATA -------------
     // These fields will be populated ONLY IF a match is found in the VPS database.
@@ -97,10 +97,10 @@ struct TableData {
     std::string vpsB2SImgUrl;    ///< table image from vpsdb (from b2sFiles[].imgUrl, or other media files).
     std::string vpsB2SUrl;       ///< table URL to download (from b2sFiles[].urls[0].url).
     std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
+    
     // --------------- OPERATIONAL TAGS ------------------
     // this later should be a "rating" for the metadata with 1-5 stars or w.e.
     float matchConfidence = 0.0f; ///< Confidence score of match with vpsdb
-    float matchScore = 0.0f;      ///< for display
     std::string jsonOwner; /// < file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
     //TODO (not yet implemented)
     std::string playCount;

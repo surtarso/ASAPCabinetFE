@@ -101,16 +101,16 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
 
                 // --- Populate File Metadata fields (from vpin's TableInfo struct) ---
                 table.tableName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_name", ""));
-                table.authorName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_name", ""));
+                table.tableAuthor = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_name", ""));
                 table.tableDescription = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_description", ""));
                 table.tableSaveDate = PathUtils::safeGetString(vpinJson, "table_save_date", "");
-                table.releaseDate = PathUtils::safeGetString(vpinJson, "release_date", "");
+                table.tableReleaseDate = PathUtils::safeGetString(vpinJson, "release_date", "");
                 table.tableVersion = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_version", ""));
                 table.tableRevision = PathUtils::safeGetString(vpinJson, "table_save_rev", "");
                 table.tableBlurb = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_blurb", ""));
                 table.tableRules = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_rules", ""));
-                table.authorEmail = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_email", ""));
-                table.authorWebsite = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_website", ""));
+                table.tableAuthorEmail = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_email", ""));
+                table.tableAuthorWebsite = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_website", ""));
 
                 // --- Populate fields from 'properties' HashMap ---
                 if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
@@ -120,17 +120,17 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                     table.tableType = PathUtils::cleanString(PathUtils::safeGetString(properties, "TableType", ""));
                     
                     // Company Name (check for "CompanyName" first, then "Company")
-                    table.companyName = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyName", 
+                    table.tableManufacturer = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyName", 
                                                                  PathUtils::safeGetString(properties, "Company", "")));
                     
                     // Company Year (check for "CompanyYear" first, then "Year")
-                    table.companyYear = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyYear", 
+                    table.tableYear = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyYear", 
                                                                  PathUtils::safeGetString(properties, "Year", "")));
                 }
 
                 // IMPORTANT: Do NOT overwrite `table.title`, `table.manufacturer`, `table.year`, `table.romName` here.
                 // These are populated by FileScanner and serve as primary "local" identification for comparison.
-                // The new `tableName`, `companyName`, `companyYear` hold the VPin internal data.
+                // The new `tableName`, `tableManufacturer`, `tableYear` hold the VPin internal data.
                 // The `jsonOwner` is still correctly set here.
                 table.jsonOwner = "VPin Filescan";
 
@@ -138,7 +138,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                           << ", filename_title=" << table.title 
                           << ", vpin_table_name=" << table.tableName 
                           << ", filename_man=" << table.manufacturer 
-                          << ", vpin_company_name=" << table.companyName 
+                          << ", vpin_company_name=" << table.tableManufacturer 
                           << ", rom=" << table.romName);
 
                 if (progress) {
@@ -218,25 +218,25 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 // Construct a temporary JSON object for VPSDB matching, using all available data
                 json tempVpinJsonForVps;
                 tempVpinJsonForVps["path"] = table.vpxFile;
-                tempVpinJsonForVps["game_name"] = table.romName; // romName comes from FileScanner (pinmame detection)
+                tempVpinJsonForVps["rom"] = table.romName; // romName comes from FileScanner (pinmame detection)
 
                 tempVpinJsonForVps["table_info"] = {
                     // Use file metadata fields here for VPSDB matching
                     {"table_name", table.tableName},
-                    {"author_name", table.authorName},
+                    {"author_name", table.tableAuthor},
                     {"table_description", table.tableDescription},
                     {"table_version", table.tableVersion},
                     {"table_save_date", table.tableSaveDate},
-                    {"release_date", table.releaseDate},
+                    {"release_date", table.tableReleaseDate},
                     {"table_save_rev", table.tableRevision},
                     {"table_blurb", table.tableBlurb},
                     {"table_rules", table.tableRules}, 
-                    {"author_email", table.authorEmail},
-                    {"author_website", table.authorWebsite}
+                    {"author_email", table.tableAuthorEmail},
+                    {"author_website", table.tableAuthorWebsite}
                 };
                 tempVpinJsonForVps["properties"] = {
-                    {"manufacturer", table.companyName}, // manufacturer property
-                    {"year", table.companyYear},       // year property
+                    {"manufacturer", table.tableManufacturer}, // manufacturer property
+                    {"year", table.tableYear},       // year property
                     {"TableType", table.tableType}
                 };
 

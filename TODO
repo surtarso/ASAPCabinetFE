@@ -1,6 +1,9 @@
 TODO
 
 FIX:
+- metadata: non matched tables use tablename as display
+- metadata: some false positives, some obvious non-matches.
+- metadata: scan slowed down quite a bit, need to re-evaluate after refactor
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes

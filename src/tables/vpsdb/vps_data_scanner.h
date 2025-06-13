@@ -52,17 +52,6 @@ public:
 private:
     const nlohmann::json& vpsDb_; ///< Constant reference to the VPS database JSON.
     VpsUtils utils_;              ///< Utility object for string normalization and version comparison.
-    /**
-     * @brief Computes the Levenshtein distance between two strings.
-     *
-     * Calculates the minimum number of single-character edits required to transform
-     * one string into another.
-     *
-     * @param s1 First string to compare.
-     * @param s2 Second string to compare.
-     * @return The Levenshtein distance between s1 and s2.
-     */
-    size_t levenshteinDistance(const std::string& s1, const std::string& s2) const;
 };
 
 #endif // VPS_DATA_SCANNER_H

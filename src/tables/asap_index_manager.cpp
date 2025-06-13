@@ -83,20 +83,20 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
 
             // ------------ FILE METADATA (vpin/vpxtool) -----------
             if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
-            if (table.contains("authorName") && table["authorName"].is_string()) tableData.authorName = table["authorName"].get<std::string>();
+            if (table.contains("tableAuthor") && table["tableAuthor"].is_string()) tableData.tableAuthor = table["tableAuthor"].get<std::string>();
             if (table.contains("tableDescription") && table["tableDescription"].is_string()) tableData.tableDescription = table["tableDescription"].get<std::string>();
             if (table.contains("tableSaveDate") && table["tableSaveDate"].is_string()) tableData.tableSaveDate = table["tableSaveDate"].get<std::string>();
-            if (table.contains("lastModified") && table["lastModified"].is_string()) tableData.lastModified = table["lastModified"].get<std::string>();
-            if (table.contains("releaseDate") && table["releaseDate"].is_string()) tableData.releaseDate = table["releaseDate"].get<std::string>();
+            if (table.contains("tableLastModified") && table["tableLastModified"].is_string()) tableData.tableLastModified = table["tableLastModified"].get<std::string>();
+            if (table.contains("tableReleaseDate") && table["tableReleaseDate"].is_string()) tableData.tableReleaseDate = table["tableReleaseDate"].get<std::string>();
             if (table.contains("tableVersion") && table["tableVersion"].is_string()) tableData.tableVersion = table["tableVersion"].get<std::string>();
             if (table.contains("tableRevision") && table["tableRevision"].is_string()) tableData.tableRevision = table["tableRevision"].get<std::string>();
             if (table.contains("tableBlurb") && table["tableBlurb"].is_string()) tableData.tableBlurb = table["tableBlurb"].get<std::string>();
             if (table.contains("tableRules") && table["tableRules"].is_string()) tableData.tableRules = table["tableRules"].get<std::string>();
-            if (table.contains("authorEmail") && table["authorEmail"].is_string()) tableData.authorEmail = table["authorEmail"].get<std::string>();
-            if (table.contains("authorWebsite") && table["authorWebsite"].is_string()) tableData.authorWebsite = table["authorWebsite"].get<std::string>();
+            if (table.contains("tableAuthorEmail") && table["tableAuthorEmail"].is_string()) tableData.tableAuthorEmail = table["tableAuthorEmail"].get<std::string>();
+            if (table.contains("tableAuthorWebsite") && table["tableAuthorWebsite"].is_string()) tableData.tableAuthorWebsite = table["tableAuthorWebsite"].get<std::string>();
             if (table.contains("tableType") && table["tableType"].is_string()) tableData.tableType = table["tableType"].get<std::string>();
-            if (table.contains("companyName") && table["companyName"].is_string()) tableData.companyName = table["companyName"].get<std::string>();
-            if (table.contains("companyYear") && table["companyYear"].is_string()) tableData.companyYear = table["companyYear"].get<std::string>();
+            if (table.contains("tableManufacturer") && table["tableManufacturer"].is_string()) tableData.tableManufacturer = table["tableManufacturer"].get<std::string>();
+            if (table.contains("tableYear") && table["tableYear"].is_string()) tableData.tableYear = table["tableYear"].get<std::string>();
 
 
             // --------------- VPSDB METADATA -------------
@@ -123,7 +123,6 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             // --------------- OPERATIONAL TAGS ------------------
             // Check for float type for confidence/score
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
-            if (table.contains("matchScore") && table["matchScore"].is_number_float()) tableData.matchScore = table["matchScore"].get<float>(); // Corrected: assign to matchScore
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
             if (table.contains("playCount") && table["playCount"].is_string()) tableData.playCount = table["playCount"].get<std::string>(); // Assuming playCount is a string for now
 
@@ -190,20 +189,20 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
 
         // ------------ FILE METADATA (vpin/vpxtool) -----------
         tableJson["tableName"] = table.tableName;
-        tableJson["authorName"] = table.authorName;
+        tableJson["tableAuthor"] = table.tableAuthor;
         tableJson["tableDescription"] = table.tableDescription;
         tableJson["tableSaveDate"] = table.tableSaveDate;
-        tableJson["lastModified"] = table.lastModified;
-        tableJson["releaseDate"] = table.releaseDate;
+        tableJson["tableLastModified"] = table.tableLastModified;
+        tableJson["tableReleaseDate"] = table.tableReleaseDate;
         tableJson["tableVersion"] = table.tableVersion;
         tableJson["tableRevision"] = table.tableRevision;
         tableJson["tableBlurb"] = table.tableBlurb;
         tableJson["tableRules"] = table.tableRules;
-        tableJson["authorEmail"] = table.authorEmail;
-        tableJson["authorWebsite"] = table.authorWebsite;
+        tableJson["tableAuthorEmail"] = table.tableAuthorEmail;
+        tableJson["tableAuthorWebsite"] = table.tableAuthorWebsite;
         tableJson["tableType"] = table.tableType; 
-        tableJson["companyName"] = table.companyName;
-        tableJson["companyYear"] = table.companyYear; 
+        tableJson["tableManufacturer"] = table.tableManufacturer;
+        tableJson["tableYear"] = table.tableYear; 
 
 
         // --------------- VPSDB METADATA -------------
@@ -228,7 +227,6 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
 
         // --------------- OPERATIONAL TAGS ------------------
         tableJson["matchConfidence"] = table.matchConfidence;
-        tableJson["matchScore"] = table.matchScore;
         tableJson["jsonOwner"] = table.jsonOwner;
         tableJson["playCount"] = table.playCount; 
 

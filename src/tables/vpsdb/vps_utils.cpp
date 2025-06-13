@@ -18,6 +18,8 @@
 #include <vector>           // For std::vector
 #include <string>           // For std::string
 #include <stdexcept>        // For std::exception, std::stof
+#include <locale>
+#include <sstream>
 
 // VpsUtils::normalizeString
 std::string VpsUtils::normalizeString(const std::string& input) const {
@@ -253,3 +255,138 @@ std::string VpsUtils::join(const nlohmann::json& array, const std::string& delim
             [&delimiter](const std::string& a, const std::string& b) { return a + delimiter + b; });
     }
 }
+
+// VpsUtils::safeGetString
+std::string VpsUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) const {
+    if (j.contains(key) && j[key].is_string()) {
+        return j[key].get<std::string>();
+    } else if (j.contains(key) && j[key].is_null()) {
+        return defaultValue; // Explicitly handle null as default
+    }
+    return defaultValue;
+}
+
+// VpsUtils::cleanString
+std::string VpsUtils::cleanString(const std::string& input) const {
+    std::string result = input;
+    // Trim leading whitespace
+    size_t first = result.find_first_not_of(" \t\n\r\f\v");
+    if (std::string::npos == first) {
+        return ""; // String is all whitespace
+    }
+    result.erase(0, first);
+
+    // Trim trailing whitespace
+    size_t last = result.find_last_not_of(" \t\n\r\f\v");
+    result.erase(last + 1);
+
+    // Replace multiple spaces with a single space
+    std::string cleaned_result;
+    bool last_char_was_space = false;
+    for (char c : result) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
+            if (!last_char_was_space) {
+                cleaned_result += ' ';
+                last_char_was_space = true;
+            }
+        } else {
+            cleaned_result += c;
+            last_char_was_space = false;
+        }
+    }
+    return cleaned_result;
+}
+
+size_t VpsUtils::levenshteinDistance(const std::string& s1, const std::string& s2) const {
+    const size_t len1 = s1.size(), len2 = s2.size();
+    std::vector<std::vector<size_t>> dp(len1 + 1, std::vector<size_t>(len2 + 1));
+    for (size_t i = 0; i <= len1; ++i) dp[i][0] = i;
+    for (size_t j = 0; j <= len2; ++j) dp[0][j] = j;
+    for (size_t i = 1; i <= len1; ++i) {
+        for (size_t j = 1; j <= len2; ++j) {
+            size_t cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+            dp[i][j] = std::min({dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost});
+        }
+    }
+    return dp[len1][len2];
+}
+
+std::string VpsUtils::toLower(const std::string& str) const {
+    std::string lowerStr = str;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
+                    [](unsigned char c){ return std::tolower(c); });
+    return lowerStr;
+}
+
+std::string VpsUtils::extractCleanTitle(const std::string& input) const {
+    std::string cleaned = input;
+
+    // 1. Normalize common separators to spaces
+    cleaned = std::regex_replace(cleaned, std::regex(R"([_\.])"), " "); // Replace underscores and dots with spaces
+
+    // 2. Remove specific known patterns, case-insensitive. Order matters for regexes.
+    // More specific/structured patterns first.
+    // Using `(?=\s*$|\s*[\[\(])` for lookahead to ensure it's at the end or followed by a bracket.
+    // Using `$` for end-of-string specific patterns.
+
+    std::vector<std::pair<std::regex, std::string>> patterns = {
+        // (Manufacturer Year) or (Manufacturer) type patterns at the end, potentially followed by other brackets
+        // Example: "Table Name (Manufacturer 1999)" or "Table Name (Manufacturer)"
+        {std::regex(R"(\s*\(?[A-Za-z0-9\s&!+-]+\s+\d{4}\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s*\(?[A-Za-z0-9\s&!+-]+\)(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+
+        // Common version indicators at the very end
+        // Example: "Table Name v1.0", "Table Name V2", "Table Name 1.0.1"
+        {std::regex(R"(\s+v?\d+(\.\d+){0,3}\s*$)"), ""},
+        {std::regex(R"(\s+\d+\.\d+\s*$)"), ""}, // Pure decimal versions
+
+        // Common descriptive words with optional year at the end, inside parentheses or not
+        // Example: "Table Name (Mod 2020)", "Table Name Mod", "Table Name Recreation 2024"
+        {std::regex(R"(\s+\(?[Rr]emake\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Rr]emastered\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Mm]od\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Rr]eskin\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Rr]ecreation\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Oo]riginal\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Hh]omebrew\s*\d{4}\)?$)"), ""},
+        {std::regex(R"(\s+\(?[Tt]est\s*\d{4}\)?$)"), ""},
+
+        // Same descriptive words without a year, followed by end of string or other bracket
+        {std::regex(R"(\s+\(?[Rr]emake\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Rr]emastered\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Mm]od\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Rr]eskin\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Rr]ecreation\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Oo]riginal\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Hh]omebrew\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        {std::regex(R"(\s+\(?[Tt]est\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
+        
+        // Author/group indicators (should be somewhat generic to avoid false positives)
+        // Example: "Table Name by AuthorName", "Table Name (AuthorName)"
+        {std::regex(R"(\s+by\s+[A-Za-z0-9\s&\-]+$)"), ""},
+        {std::regex(R"(\s*\(\s*[A-Za-z0-9\s&\-]+\s*\)$)"), ""},
+        {std::regex(R"(\s*\[\s*[A-Za-z0-9\s&\-]+\s*\]$)"), ""},
+
+        // Standalone years or series numbers in parentheses/brackets at the very end
+        // Example: "Table Name (1999)", "Table Name [2020]"
+        {std::regex(R"(\s*\((\d{4}|\d{2})\)$)"), ""},
+        {std::regex(R"(\s*\[(\d{4}|\d{2})\]$)"), ""},
+
+        // Any trailing content in parentheses/brackets that wasn't caught (last resort clean-up)
+        // This acts as a general cleaner for remaining ( ) or [ ] blocks at the very end.
+        {std::regex(R"(\s*[\(\[][^\]\)]*[\)\]]$)"), ""}
+    };
+
+    for (const auto& pair : patterns) {
+        cleaned = std::regex_replace(cleaned, pair.first, pair.second);
+    }
+
+    // 3. Remove any remaining leading/trailing spaces, hyphens, or underscores
+    cleaned = std::regex_replace(cleaned, std::regex(R"(^\s*[\s\-\_]*|[\s\-\_]*\s*$)"), "");
+
+    // 4. Collapse multiple spaces into a single space
+    cleaned = std::regex_replace(cleaned, std::regex(R"(\s+)"), " ");
+
+    return cleaned;
+}
+

@@ -260,3 +260,4 @@ std::string PathUtils::capitalizeWords(const std::string& input) {
     }
     return result;
 }
+

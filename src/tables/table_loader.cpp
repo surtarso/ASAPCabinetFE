@@ -118,8 +118,8 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
     // Sort based on the selected criterion
     if (sortBy == "author") {
         std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            std::string aAuthor = a.vpsAuthors.empty() ? a.authorName : a.vpsAuthors;
-            std::string bAuthor = b.vpsAuthors.empty() ? b.authorName : b.vpsAuthors;
+            std::string aAuthor = a.vpsAuthors.empty() ? a.tableAuthor : a.vpsAuthors;
+            std::string bAuthor = b.vpsAuthors.empty() ? b.tableAuthor : b.vpsAuthors;
             return aAuthor < bAuthor;
         });
     } else if (sortBy == "type") {

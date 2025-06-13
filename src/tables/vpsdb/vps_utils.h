@@ -102,6 +102,36 @@ public:
      * @return The joined string, or empty if no valid elements.
      */
     std::string join(const nlohmann::json& array, const std::string& delimiter) const;
+
+    /**
+     * @brief Safely extracts a string value from a JSON object.
+     *
+     * Retrieves the string value associated with the given key from a JSON object.
+     * If the key is not found or the value is not a string, it returns a default value.
+     * Handles null values by returning the default.
+     *
+     * @param j The JSON object to extract from.
+     * @param key The key of the string value to extract.
+     * @param defaultValue The default string value to return if extraction fails.
+     * @return The extracted string value or the default value.
+     */
+    std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) const;
+
+    /**
+     * @brief Cleans a string by trimming whitespace and collapsing multiple spaces.
+     *
+     * Removes leading and trailing whitespace characters from the input string and
+     * replaces any sequence of multiple internal spaces with a single space.
+     *
+     * @param input The string to clean.
+     * @return The cleaned string.
+     */
+    std::string cleanString(const std::string& input) const;
+
+    size_t levenshteinDistance(const std::string& s1, const std::string& s2) const;
+    std::string toLower(const std::string& str) const;
+    std::string extractCleanTitle(const std::string& input) const;
+    
 };
 
 #endif // VPS_UTILS_H
