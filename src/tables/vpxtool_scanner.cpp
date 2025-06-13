@@ -261,7 +261,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
 
     // --- Step 4: If all attempts to get vpxtool_index.json fail, return false ---
     if (!vpxtoolLoaded) {
-        LOG_INFO("VPXToolScanner: All attempts to load or generate vpxtool_index.json failed. Skipping VPXTool scan and falling back.");
+        LOG_INFO("VPXToolScanner: All attempts to load or generate vpxtool_index.json failed. Skipping VPXTool.");
         return false; // Indicate failure, TableLoader will use VPinFileScanner
     }
 

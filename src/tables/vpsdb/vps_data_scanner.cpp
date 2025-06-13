@@ -427,7 +427,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         tableData.matchConfidence += dataCompletenessScore;
         tableData.matchScore = tableData.matchConfidence;
         tableData.jsonOwner = "Virtual Pinball Spreadsheet";
-        LOG_INFO("Matched table to VPSDB, confidence: " << tableData.matchScore);
+        LOG_INFO("Matched table " << tableData.vpsName << " to VPSDB, confidence: " << tableData.matchScore);
         
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);

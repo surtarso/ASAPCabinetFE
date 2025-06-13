@@ -93,7 +93,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
             if (!pinmamePath.empty()) {
-                // Assign bools directly
                 table.altColor = PathUtils::getAltcolorPath(pinmamePath);
                 table.altSound = PathUtils::getAltsoundPath(pinmamePath);
                 table.romPath = PathUtils::getRomPath(pinmamePath, table.romName); // romName is passed by reference
@@ -105,7 +104,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.romPath = "";
             }
             
-            //TODO: Assign the json owner for incremental updates
             table.jsonOwner = "File Scan";
             tables.push_back(table);
 

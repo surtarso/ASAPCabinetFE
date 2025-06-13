@@ -16,7 +16,7 @@
 
 #include "tables/itable_loader.h"    // Interface for table loading
 #include "core/loading_progress.h"   // Structure for tracking loading progress
-#include "config/settings.h"                // For Settings class
+#include "config/settings.h"         // For Settings class
 #include <vector>                    // For std::vector
 #include <string>                    // For std::string
 #include <map>                       // For std::map

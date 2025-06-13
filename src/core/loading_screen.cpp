@@ -77,7 +77,6 @@ void LoadingScreen::render() {
 
     // --- Allocate child heights dynamically to ensure they fit perfectly ---
     // We'll use remaining space for the playfield
-    // float currentYOffset = ImGui::GetCursorPosY(); // Initial Y position in the main window
     float availableHeight = ImGui::GetContentRegionAvail().y; // Total available height for children
 
     // Calculate heights, ensuring minimums are met and playfield takes the rest

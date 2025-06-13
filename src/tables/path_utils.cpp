@@ -54,89 +54,6 @@ std::string PathUtils::getAudioPath(const std::string& root, const std::string& 
     return ""; // Return empty string if file doesn't exist or isn't regular
 }
 
-std::string PathUtils::cleanString(const std::string& input) {
-    std::string result = input;
-    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
-    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
-    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end());
-    size_t first = result.find_first_not_of(" \t");
-    size_t last = result.find_last_not_of(" \t");
-    if (first == std::string::npos) return "";
-    return result.substr(first, last - first + 1);
-}
-
-std::string PathUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
-    if (j.contains(key)) {
-        if (j[key].is_string()) {
-            return j[key].get<std::string>();
-        } else if (j[key].is_number()) {
-            return std::to_string(j[key].get<double>());
-        } else if (j[key].is_null()) {
-            return defaultValue;
-        } else {
-            LOG_DEBUG("Field " << key << " is not a string, number, or null, type: " << j[key].type_name());
-            return defaultValue;
-        }
-    }
-    return defaultValue;
-}
-
-// Helper to check if a directory exists and contains any regular files
-bool PathUtils::containsRegularFiles(const std::string& directoryPath) {
-    if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
-        return false;
-    }
-    for (const auto& entry : fs::directory_iterator(directoryPath)) {
-        if (entry.is_regular_file()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string PathUtils::findSubfolderCaseInsensitive(const std::string& parentPath, const std::string& targetFolderNameLowercase) {
-    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
-        return "";
-    }
-
-    for (const auto& entry : fs::directory_iterator(parentPath)) {
-        if (entry.is_directory()) {
-            std::string currentFolderName = entry.path().filename().string();
-            // Convert current folder name to lowercase for comparison
-            std::transform(currentFolderName.begin(), currentFolderName.end(), currentFolderName.begin(),
-                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); }); // Use static_cast for safety
-
-            if (currentFolderName == targetFolderNameLowercase) {
-                // Found a match (case-insensitively), return the actual path (with original casing)
-                return entry.path().string();
-            }
-        }
-    }
-    return ""; // No matching subfolder found
-}
-
-std::string PathUtils::findSubfolderBySuffixCaseInsensitive(const std::string& parentPath, const std::string& targetSuffixLowercase) {
-    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
-        return "";
-    }
-
-    for (const auto& entry : fs::directory_iterator(parentPath)) {
-        if (entry.is_directory()) {
-            std::string currentFolderName = entry.path().filename().string();
-            std::string lowerCurrentFolderName = currentFolderName;
-            std::transform(lowerCurrentFolderName.begin(), lowerCurrentFolderName.end(), lowerCurrentFolderName.begin(),
-                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
-
-            // Check if the lowercase folder name ends with the target suffix
-            if (lowerCurrentFolderName.length() >= targetSuffixLowercase.length() &&
-                lowerCurrentFolderName.substr(lowerCurrentFolderName.length() - targetSuffixLowercase.length()) == targetSuffixLowercase) {
-                return entry.path().string(); // Return the original (correct case) path
-            }
-        }
-    }
-    return "";
-}
-
 // PathUtils::getAltMusic - Checks for 'music' subfolder
 bool PathUtils::getAltMusic(const std::string& tableRoot) {
     std::string musicFolderActualPath = findSubfolderCaseInsensitive(tableRoot, "music");
@@ -237,6 +154,89 @@ std::string PathUtils::getRomPath(const std::string& pinmamePath, std::string& o
         LOG_DEBUG("PathUtils: No pinmame/roms folder found at " << romsFolder.string());
     }
     return ""; // No ROM found
+}
+
+// Helper to check if a directory exists and contains any regular files
+bool PathUtils::containsRegularFiles(const std::string& directoryPath) {
+    if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
+        return false;
+    }
+    for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        if (entry.is_regular_file()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string PathUtils::findSubfolderCaseInsensitive(const std::string& parentPath, const std::string& targetFolderNameLowercase) {
+    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
+        return "";
+    }
+
+    for (const auto& entry : fs::directory_iterator(parentPath)) {
+        if (entry.is_directory()) {
+            std::string currentFolderName = entry.path().filename().string();
+            // Convert current folder name to lowercase for comparison
+            std::transform(currentFolderName.begin(), currentFolderName.end(), currentFolderName.begin(),
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); }); // Use static_cast for safety
+
+            if (currentFolderName == targetFolderNameLowercase) {
+                // Found a match (case-insensitively), return the actual path (with original casing)
+                return entry.path().string();
+            }
+        }
+    }
+    return ""; // No matching subfolder found
+}
+
+std::string PathUtils::findSubfolderBySuffixCaseInsensitive(const std::string& parentPath, const std::string& targetSuffixLowercase) {
+    if (!fs::exists(parentPath) || !fs::is_directory(parentPath)) {
+        return "";
+    }
+
+    for (const auto& entry : fs::directory_iterator(parentPath)) {
+        if (entry.is_directory()) {
+            std::string currentFolderName = entry.path().filename().string();
+            std::string lowerCurrentFolderName = currentFolderName;
+            std::transform(lowerCurrentFolderName.begin(), lowerCurrentFolderName.end(), lowerCurrentFolderName.begin(),
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+
+            // Check if the lowercase folder name ends with the target suffix
+            if (lowerCurrentFolderName.length() >= targetSuffixLowercase.length() &&
+                lowerCurrentFolderName.substr(lowerCurrentFolderName.length() - targetSuffixLowercase.length()) == targetSuffixLowercase) {
+                return entry.path().string(); // Return the original (correct case) path
+            }
+        }
+    }
+    return "";
+}
+
+std::string PathUtils::cleanString(const std::string& input) {
+    std::string result = input;
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end());
+    size_t first = result.find_first_not_of(" \t");
+    size_t last = result.find_last_not_of(" \t");
+    if (first == std::string::npos) return "";
+    return result.substr(first, last - first + 1);
+}
+
+std::string PathUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
+    if (j.contains(key)) {
+        if (j[key].is_string()) {
+            return j[key].get<std::string>();
+        } else if (j[key].is_number()) {
+            return std::to_string(j[key].get<double>());
+        } else if (j[key].is_null()) {
+            return defaultValue;
+        } else {
+            LOG_DEBUG("Field " << key << " is not a string, number, or null, type: " << j[key].type_name());
+            return defaultValue;
+        }
+    }
+    return defaultValue;
 }
 
 // Function to capitalize the first letter of each word

@@ -95,11 +95,8 @@ void PlayfieldOverlay::updateSettings(const Settings& settings) {
 void PlayfieldOverlay::ResetMetadataFlags() {
     if (refreshUICallback_) {
         refreshUICallback_();
-        // resetMetadataFlags_ = false;
         LOG_DEBUG("PlayfieldOverlay: Refreshed ConfigUI via callback");
     }
-    // resetMetadataFlags_ = true;
-    // LOG_DEBUG("PlayfieldOverlay: Showing metadata reset popup");
 }
 
 void PlayfieldOverlay::render() {
@@ -132,10 +129,6 @@ void PlayfieldOverlay::render() {
     if (showMetadataPanel_) {
         renderMetadataPanel();
     }
-
-    // if (resetMetadataFlags_) {
-    //     refreshUICallback();
-    // }
 
     // Navigation arrows with fade animation
     if (NavigationArrowSettings::SHOW_ARROWS()) {
@@ -217,14 +210,6 @@ void PlayfieldOverlay::render() {
 
     ImGui::End();
 }
-
-// void PlayfieldOverlay::refreshUICallback() {
-//     if (refreshUICallback_) {
-//         refreshUICallback_();
-//         resetMetadataFlags_ = false;
-//         LOG_DEBUG("PlayfieldOverlay: Refreshed ConfigUI via callback");
-//     }
-// }
 
 void PlayfieldOverlay::renderScrollbar() {
     if (!tables_ || tables_->empty() || tables_->size() <= 1) {

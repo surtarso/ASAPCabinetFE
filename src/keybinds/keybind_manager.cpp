@@ -100,11 +100,6 @@ std::vector<std::string> KeybindManager::getActions() const {
     return actions;
 }
 
-// std::string KeybindManager::getTooltip(const std::string& action) const {
-//     const auto& tooltips = Tooltips::getTooltips();
-//     return tooltips.count(action) ? tooltips.at(action) : "";
-// }
-
 // --- Load and Save Keybinds ---
 void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keybindData) {
     for (const auto& [key, value] : keybindData) {
