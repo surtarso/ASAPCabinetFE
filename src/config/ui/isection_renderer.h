@@ -95,7 +95,25 @@ protected:
                      float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
         float val = value.get<float>();
         // Custom ranges for specific float fields
-        if (key == "DPI Scale") {
+        if (key == "titleWeight") {
+            minVal = 0.2f;
+            maxVal = 0.8f;
+        } else if (key == "yearWeight") {
+            minVal = 0.0f;
+            maxVal = 0.4f;
+        } else if (key == "manufacturerWeight") {
+            minVal = 0.0f;
+            maxVal = 0.3f;
+        } else if (key == "romWeight") {
+            minVal = 0.0f;
+            maxVal = 0.5f;
+        } else if (key == "titleThreshold") {
+            minVal = 0.3f;
+            maxVal = 0.8f;
+        } else if (key == "confidenceThreshold") {
+            minVal = 0.4f;
+            maxVal = 0.9f;
+        } else if (key == "DPI Scale") {
             minVal = 0.5f;
             maxVal = 3.0f;
         } else if (key.find("Alpha") != std::string::npos || key == "scrollbarLength" ||

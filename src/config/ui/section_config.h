@@ -52,7 +52,13 @@ public:
             "metadataPanelHeight",
             "metadataPanelAlpha",
             "fetchVPSdb",
-            "forceRebuildMetadata"
+            "forceRebuildMetadata",
+            "titleWeight",
+            "yearWeight",
+            "manufacturerWeight",
+            "romWeight",
+            "titleThreshold",
+            "confidenceThreshold"
         };
         keyDisplayNames_["TableMetadata"] = {
             {"titleSource", "Table Info"},
