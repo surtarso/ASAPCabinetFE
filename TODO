@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- add sensible values on the metadata weight sliders
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
