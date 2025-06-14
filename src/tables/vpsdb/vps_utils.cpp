@@ -34,16 +34,15 @@ std::string VpsUtils::normalizeString(const std::string& input) const {
     return result;
 }
 
-// VpsUtils::normalizeStringLessAggressive
 std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) const {
     std::string result = input;
     // Convert to lowercase
     std::transform(result.begin(), result.end(), result.begin(),
                    [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
 
-    // Remove specific punctuation, preserve spaces and parentheses
+    // Remove specific punctuation, preserve spaces, parentheses, and hyphens
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
-        return (c == '_' || c == '-' || c == '.' || c == '\'' || c == ',' || c == '!' || c == '?' || c == ':' || c == '&');
+        return (c == '_' || c == '.' || c == '\'' || c == ',' || c == '!' || c == '?' || c == ':' || c == '&');
     }), result.end());
 
     // Collapse multiple spaces to single space and trim leading/trailing spaces
@@ -320,38 +319,16 @@ std::string VpsUtils::toLower(const std::string& str) const {
 
 std::string VpsUtils::extractCleanTitle(const std::string& input) const {
     std::string cleaned = input;
-
-    // 1. Normalize common separators to spaces
-    cleaned = std::regex_replace(cleaned, std::regex(R"([_\.])"), " "); // Replace underscores and dots with spaces
-
-    // 2. Remove specific known patterns, case-insensitive. Order matters for regexes.
-    // More specific/structured patterns first.
-    // Using `(?=\s*$|\s*[\[\(])` for lookahead to ensure it's at the end or followed by a bracket.
-    // Using `$` for end-of-string specific patterns.
-
+    cleaned = std::regex_replace(cleaned, std::regex(R"([_\.])"), " ");
     std::vector<std::pair<std::regex, std::string>> patterns = {
-        // (Manufacturer Year) or (Manufacturer) type patterns at the end, potentially followed by other brackets
-        // Example: "Table Name (Manufacturer 1999)" or "Table Name (Manufacturer)"
-        {std::regex(R"(\s*\(?[A-Za-z0-9\s&!+-]+\s+\d{4}\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
-        {std::regex(R"(\s*\(?[A-Za-z0-9\s&!+-]+\)(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
-
-        // Common version indicators at the very end
-        // Example: "Table Name v1.0", "Table Name V2", "Table Name 1.0.1"
+        // Remove version numbers (e.g., "v1.2.3")
         {std::regex(R"(\s+v?\d+(\.\d+){0,3}\s*$)"), ""},
-        {std::regex(R"(\s+\d+\.\d+\s*$)"), ""}, // Pure decimal versions
-
-        // Common descriptive words with optional year at the end, inside parentheses or not
-        // Example: "Table Name (Mod 2020)", "Table Name Mod", "Table Name Recreation 2024"
-        {std::regex(R"(\s+\(?[Rr]emake\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Rr]emastered\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Mm]od\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Rr]eskin\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Rr]ecreation\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Oo]riginal\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Hh]omebrew\s*\d{4}\)?$)"), ""},
-        {std::regex(R"(\s+\(?[Tt]est\s*\d{4}\)?$)"), ""},
-
-        // Same descriptive words without a year, followed by end of string or other bracket
+        // Remove specific suffixes
+        {std::regex(R"(\s*(?:Chrome Edition|Sinister Six Edition|1920 Mod|
+                    Premium|Pro|LE|Never Say Die|Power Up Edition|Classic|
+                    Pinball Wizard|Quest for Money)\s*$
+                    )", std::regex_constants::icase), ""},
+        // Remove generic tags without year
         {std::regex(R"(\s+\(?[Rr]emake\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
         {std::regex(R"(\s+\(?[Rr]emastered\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
         {std::regex(R"(\s+\(?[Mm]od\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
@@ -360,33 +337,64 @@ std::string VpsUtils::extractCleanTitle(const std::string& input) const {
         {std::regex(R"(\s+\(?[Oo]riginal\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
         {std::regex(R"(\s+\(?[Hh]omebrew\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
         {std::regex(R"(\s+\(?[Tt]est\)?(?=\s*$|\s*[\[\(]))", std::regex_constants::icase), ""},
-        
-        // Author/group indicators (should be somewhat generic to avoid false positives)
-        // Example: "Table Name by AuthorName", "Table Name (AuthorName)"
+        // Remove trailing "by Author"
         {std::regex(R"(\s+by\s+[A-Za-z0-9\s&\-]+$)"), ""},
-        {std::regex(R"(\s*\(\s*[A-Za-z0-9\s&\-]+\s*\)$)"), ""},
-        {std::regex(R"(\s*\[\s*[A-Za-z0-9\s&\-]+\s*\]$)"), ""},
-
-        // Standalone years or series numbers in parentheses/brackets at the very end
-        // Example: "Table Name (1999)", "Table Name [2020]"
-        {std::regex(R"(\s*\((\d{4}|\d{2})\)$)"), ""},
-        {std::regex(R"(\s*\[(\d{4}|\d{2})\]$)"), ""},
-
-        // Any trailing content in parentheses/brackets that wasn't caught (last resort clean-up)
-        // This acts as a general cleaner for remaining ( ) or [ ] blocks at the very end.
-        {std::regex(R"(\s*[\(\[][^\]\)]*[\)\]]$)"), ""}
+        // Remove trailing brackets/parentheses with non-critical info
+        // {std::regex(R"(\s*\[\s*[A-Za-z0-9\s&\-]+\s*\]$)"), ""}
     };
-
-    for (const auto& pair : patterns) {
-        cleaned = std::regex_replace(cleaned, pair.first, pair.second);
+    for (const auto& [pattern, replacement] : patterns) {
+        cleaned = std::regex_replace(cleaned, pattern, replacement);
     }
-
-    // 3. Remove any remaining leading/trailing spaces, hyphens, or underscores
-    cleaned = std::regex_replace(cleaned, std::regex(R"(^\s*[\s\-\_]*|[\s\-\_]*\s*$)"), "");
-
-    // 4. Collapse multiple spaces into a single space
+    cleaned.erase(0, cleaned.find_first_not_of(" \t"));
+    cleaned.erase(cleaned.find_last_not_of(" \t") + 1);
+    std::transform(cleaned.begin(), cleaned.end(), cleaned.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    static const std::unordered_map<std::string, std::string> typoFixes = {
+        {"trongacy", "tron legacy"},
+        {"theyend of zelda", "the legend of zelda"},
+        {"bigbowski", "the big lebowski pinball"},
+        {"bigbowsky", "the big lebowski pinball"},
+        {"beavis and butt-head", "beavis and butt-head pinballed"},
+        {"thal weapon", "lethal weapon"},
+        {"tas from crypt", "tales from the crypt"},
+        {"beavis and butt", "beavis and butt-head"},
+        {"lord of rings", "lord of the rings"},
+        {"queen limited", "queen limited edition"},
+        {"queen limited edition", "queen limited edition"},
+        {"last starfighter,", "the last starfighter"},
+        {"simpsons", "the simpsons"},
+        {"friday 13th", "friday the 13th"},
+        {"spider", "spider-man"},
+        {"ghostbusters slimer", "jp's ghostbusters slimer"},
+        {"id4", "independence day"},
+        {"metallica", "metallica pro"},
+        {"star wars trilogy", "star wars trilogy special edition"},
+        {"goonies,", "the goonies never say die pinball"},
+        {"bowie star man", "bowie star man"},
+        {"tommy", "tommy pinball wizard"},
+        {"doors", "the doors"},
+        {"it", "it pinball madness"},
+        {"batman dark knight", "batman the dark knight"},
+        {"ace ventura", "ace ventura pet detective"},
+        {"cheech & chong", "cheech and chong road trippin"},
+        {"scarface", "scarface balls and power"},
+        {"walking dead", "the walking dead"},
+        {"terminator 1", "the terminator"},
+        {"terminator 2", "terminator 2 judgment day"},
+        {"terminator 3", "terminator 3 rise of the machines"},
+        {"queen limited edition", "queen - the show must go on"},
+        {"halloween", "halloween 1978-1981"},
+        {"!wow!", "jp's wow monopoly"},
+        {"wow", "jp's wow monopoly"},
+        {"police academy", "police academy"},
+        {"robocop 3", "robocop 3"}
+    };
+    auto it = typoFixes.find(cleaned);
+    if (it != typoFixes.end()) {
+        cleaned = it->second;
+    }
     cleaned = std::regex_replace(cleaned, std::regex(R"(\s+)"), " ");
-
+    LOG_DEBUG("extractCleanTitle: input='" << input << "', output='" << cleaned << "'");
     return cleaned;
 }
 

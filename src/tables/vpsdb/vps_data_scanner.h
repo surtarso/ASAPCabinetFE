@@ -1,57 +1,42 @@
-#ifndef VPS_DATA_SCANNER_H
-#define VPS_DATA_SCANNER_H
-
-#include <nlohmann/json.hpp>
-#include <vector>
+#pragma once
 #include "tables/table_data.h"
-#include "vps_utils.h"
 #include "core/loading_progress.h"
-
-/**
- * @file vps_data_enricher.h
- * @brief Defines the VpsDataScanner class for enriching table data with VPSDB information.
- *
- * This header provides the VpsDataScanner class, which enhances TableData objects with
- * metadata from a VPS database by matching VPX table data using string similarity and
- * metadata comparison. It integrates with LoadingProgress for progress tracking.
- */
+#include "vps_utils.h"
+#include <nlohmann/json.hpp>
+#include <string>
 
 /**
  * @class VpsDataScanner
- * @brief Enriches TableData objects with metadata from a VPS database.
+ * @brief Matches VPX table metadata to VPS database entries in ASAPCabinetFE.
  *
- * This class uses Levenshtein distance and metadata matching (e.g., game name, year,
- * manufacturer) to enrich VPX table data with VPSDB entries. It supports progress
- * reporting and handles mismatches by logging them.
+ * This class enriches TableData objects by matching their metadata (primarily filename-derived title,
+ * manufacturer, and year) against vpsdb.json entries. It prioritizes filename-derived fields to
+ * handle unreliable internal metadata, uses simplified scoring for accuracy, and optimizes performance.
  */
 class VpsDataScanner {
 public:
     /**
-     * @brief Constructs a VpsDataScanner with a VPS database reference.
+     * @brief Constructs a VpsDataScanner instance with a loaded VPS database.
      *
-     * Initializes the enricher with a constant reference to the VPS database JSON.
-     *
-     * @param vpsDb Reference to the VPS database JSON object.
+     * @param vpsDb Reference to the parsed vpsdb.json data.
      */
     VpsDataScanner(const nlohmann::json& vpsDb);
 
     /**
-     * @brief Enriches a single TableData object with VPSDB metadata.
+     * @brief Matches a VPX table's metadata to a VPS database entry.
      *
-     * Matches the VPX table data against the VPS database using name similarity,
-     * game name, year, and manufacturer, updating the TableData object accordingly.
-     * Reports progress if a LoadingProgress pointer is provided.
+     * Compares vpxTable JSON and TableData against vpsdb.json, prioritizing filename_title.
+     * Populates TableData's VPS fields (e.g., vpsId, vpsName) for high-confidence matches.
+     * Updates progress and logs mismatches.
      *
-     * @param vpxTable JSON object containing VPX table data.
+     * @param vpxTable JSON data from a VPX table (e.g., from vpin_scanner).
      * @param tableData Reference to the TableData object to enrich.
-     * @param progress Optional pointer to LoadingProgress for progress tracking (default: nullptr).
-     * @return True if a VPSDB match was found, false otherwise.
+     * @param progress Optional pointer to LoadingProgress for real-time updates.
+     * @return True if a match is found and applied, false otherwise.
      */
     bool matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
 private:
-    const nlohmann::json& vpsDb_; ///< Constant reference to the VPS database JSON.
-    VpsUtils utils_;              ///< Utility object for string normalization and version comparison.
+    const nlohmann::json& vpsDb_; ///< Reference to the loaded VPS database.
+    VpsUtils utils_; ///< Utility functions for string processing.
 };
-
-#endif // VPS_DATA_SCANNER_H

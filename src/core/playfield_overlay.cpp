@@ -264,18 +264,30 @@ void PlayfieldOverlay::renderMetadataPanel() {
         std::filesystem::path filePath(currentTable.vpxFile);
         
         // Essential fields, always display
-        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
+        
         ImGui::Text("File: %s", filePath.filename().string().c_str());
         
-        // Prioritized metadata from VPSDB and processed sources
-        if (!currentTable.title.empty() && currentTable.title != filePath.stem().string()) {
-            ImGui::Text("Title: %s", currentTable.title.c_str()); // Display processed title if different from filename
-        } else if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string()) {
-            ImGui::Text("Table Name: %s", currentTable.tableName.c_str()); // Fallback to local table name if title is same as filename
+        if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string()) {
+            ImGui::Text("VPin Name: %s", currentTable.tableName.c_str()); // Fallback to local table name if title is same as filename
+        }
+        if (!currentTable.vpsName.empty()) {
+            ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
         }
         
-        if (!currentTable.vpsId.empty()){
-            ImGui::Text("VPSdb ID: %s", currentTable.vpsId.c_str());
+        // ROM name special handling
+        if (!currentTable.romName.empty()) {
+             ImGui::Text("ROM: %s", currentTable.romName.c_str());
+        }
+
+        // Manufacturer and Year (combined if both are available, otherwise separately)
+        bool hasManuf = !currentTable.manufacturer.empty();
+        bool hasYear = !currentTable.year.empty();
+        if (hasManuf && hasYear) {
+            ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
+        } else if (hasManuf) {
+            ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
+        } else if (hasYear) {
+            ImGui::Text("Year: %s", currentTable.year.c_str());
         }
 
         if (currentTable.matchConfidence > 0) {
@@ -300,26 +312,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
             // Remove the last SameLine if you want text on the next line
             ImGui::NewLine(); // Move to the next line after stars
         }
-        
-        if (!currentTable.vpsName.empty()) {
-            ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
-        }
-        
-        // ROM name special handling
-        if (!currentTable.romName.empty()) {
-             ImGui::Text("ROM: %s", currentTable.romName.c_str());
-        }
-
-        // Manufacturer and Year (combined if both are available, otherwise separately)
-        bool hasManuf = !currentTable.manufacturer.empty();
-        bool hasYear = !currentTable.year.empty();
-        if (hasManuf && hasYear) {
-            ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
-        } else if (hasManuf) {
-            ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
-        } else if (hasYear) {
-            ImGui::Text("Year: %s", currentTable.year.c_str());
-        }
+        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
 
         // --- VPSdb Specific Metadata ---
         bool vpsdb_section_started = false; // Flag to add a separator if any VPSdb field is printed
@@ -329,18 +322,22 @@ void PlayfieldOverlay::renderMetadataPanel() {
             !currentTable.vpsIpdbUrl.empty() || !currentTable.vpsAuthors.empty() ||
             !currentTable.vpsFeatures.empty() || !currentTable.vpsVersion.empty() ||
             !currentTable.vpsTableImgUrl.empty() || !currentTable.vpsTableUrl.empty() ||
-            !currentTable.vpsManufacturer.empty() || !currentTable.vpsYear.empty() ) {
+            !currentTable.vpsManufacturer.empty() || !currentTable.vpsYear.empty() ||
+            !currentTable.vpsId.empty()) {
             
             ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "VPSDB DETAILS");
             vpsdb_section_started = true;
         }
+        if (!currentTable.vpsId.empty()){
+            ImGui::Text("ID: %s", currentTable.vpsId.c_str());
+        }
 
         if (!currentTable.vpsManufacturer.empty()) {
-            ImGui::Text("VPSdb Manufacturer: %s", currentTable.vpsManufacturer.c_str());
+            ImGui::Text("Manufacturer: %s", currentTable.vpsManufacturer.c_str());
         }
         if (!currentTable.vpsYear.empty()) {
-            ImGui::Text("VPSdb Year: %s", currentTable.vpsYear.c_str());
+            ImGui::Text("Year: %s", currentTable.vpsYear.c_str());
         }
         if (!currentTable.vpsType.empty()) {
             ImGui::Text("Type: %s", currentTable.vpsType.c_str());
@@ -358,10 +355,10 @@ void PlayfieldOverlay::renderMetadataPanel() {
             ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
         }
         if (!currentTable.vpsVersion.empty()) {
-            ImGui::Text("VPSdb Version: %s", currentTable.vpsVersion.c_str());
+            ImGui::Text("Version: %s", currentTable.vpsVersion.c_str());
         }
         if (!currentTable.vpsAuthors.empty()) {
-            ImGui::Text("VPSdb Authors: %s", currentTable.vpsAuthors.c_str());
+            ImGui::Text("Authors: %s", currentTable.vpsAuthors.c_str());
         }
         if (!currentTable.vpsFeatures.empty()) {
             ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());

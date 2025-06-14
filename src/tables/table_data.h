@@ -32,7 +32,7 @@ struct TableData {
     // title is a generic string to be shown on the UI.
     // with filename it uses the filename, with vpin it uses the best
     // of both (for bad metadata), used to match against vpsdb.
-    std::string title;           ///< Table title (from vpxtool, vpsdb, or filename).
+    std::string title;           ///< Table title (from filename).
     // if all fails we should try to extract these from the file name.
     std::string manufacturer;    ///< Manufacturer from title, vpin/vpxtool or vpsdb, used for sorting.
     std::string year;            ///< Year from title, vpin/vpxtool or vpsdb, used for sorting.
