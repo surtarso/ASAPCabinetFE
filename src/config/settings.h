@@ -98,6 +98,13 @@ struct Settings {
     float metadataPanelHeight = 0.5f; // 0.1-1.0
     float metadataPanelAlpha = 0.6f; // 0.1-1.0
 
+    float titleWeight = 0.6f; //0.2 - 0.8
+    float yearWeight = 0.2f; //0 - 0.4
+    float manufacturerWeight = 0.1f; //0 - 0.3
+    float romWeight = 0.25f; // 0 - 0.5
+    float titleThreshold = 0.55f; //0.3 - 0.8
+    float confidenceThreshold = 0.6f; //0.4 0.9
+
     // [UIWidgets]
     bool showArrowHint = true;
     float arrowHintWidth = 20.0f;
@@ -341,7 +348,13 @@ private:
                 {"showMetadata", s.showMetadata},
                 {"metadataPanelWidth", s.metadataPanelWidth},
                 {"metadataPanelHeight", s.metadataPanelHeight},
-                {"metadataPanelAlpha", s.metadataPanelAlpha}
+                {"metadataPanelAlpha", s.metadataPanelAlpha},
+                {"titleWeight", s.titleWeight},
+                {"yearWeight", s.yearWeight},
+                {"manufacturerWeight", s.manufacturerWeight},
+                {"romWeight", s.romWeight},
+                {"titleThreshold", s.titleThreshold},
+                {"confidenceThreshold", s.confidenceThreshold}
             }},
             {"UIWidgets", {
                 {"showArrowHint", s.showArrowHint},
@@ -511,6 +524,13 @@ private:
         s.metadataPanelWidth = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelWidth", s.metadataPanelWidth);
         s.metadataPanelHeight = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelHeight", s.metadataPanelHeight);
         s.metadataPanelAlpha = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelAlpha", s.metadataPanelAlpha);
+
+        s.titleWeight = j.value("TableMetadata", nlohmann::json{}).value("titleWeight", s.titleWeight);
+        s.yearWeight = j.value("TableMetadata", nlohmann::json{}).value("yearWeight", s.yearWeight);
+        s.manufacturerWeight = j.value("TableMetadata", nlohmann::json{}).value("manufacturerWeight", s.manufacturerWeight);
+        s.romWeight = j.value("TableMetadata", nlohmann::json{}).value("romWeight", s.romWeight);
+        s.titleThreshold = j.value("TableMetadata", nlohmann::json{}).value("titleThreshold", s.titleThreshold);
+        s.confidenceThreshold = j.value("TableMetadata", nlohmann::json{}).value("confidenceThreshold", s.confidenceThreshold);
 
         // UIWidgets
         s.showArrowHint = j.value("UIWidgets", nlohmann::json{}).value("showArrowHint", s.showArrowHint);
@@ -802,6 +822,18 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Width of the metadata panel as a fraction of the screen (0.1-1.0)"}},
     {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Height of the metadata panel as a fraction of the screen (0.1-1.0)"}},
     {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.1-1.0)"}},
+    {"titleWeight", {Settings::ReloadType::None, "Weight applied to title matching in the scoring process.\n"
+                                                    "Higher values prioritize title similarity when determining a match."}},
+    {"yearWeight", {Settings::ReloadType::None, "Weight applied to year matching in the scoring process.\n"
+                                                    "Higher values emphasize year consistency for better accuracy."}},
+    {"manufacturerWeight", {Settings::ReloadType::None, "Weight applied to manufacturer matching in the scoring process.\n"
+                                                    "Higher values increase the importance of manufacturer data."}},
+    {"romWeight", {Settings::ReloadType::None, "Weight applied to ROM matching in the scoring process.\n"
+                                                    "Higher values boost the score when ROM names align."}},
+    {"titleThreshold", {Settings::ReloadType::None, "Minimum similarity score (based on Levenshtein distance) required for a title to be considered a potential match."}},
+    {"confidenceThreshold", {Settings::ReloadType::None, "Minimum total score required to confirm a table as a match in the database.\n"
+                                                    "Higher values ensure stricter matching."}},
+ 
     // UIWidgets
     {"showArrowHint", {Settings::ReloadType::None, "Toggle visibility of the arrow hint widget."}},
     {"arrowHintWidth", {Settings::ReloadType::None, "Width of the arrow hint in pixels."}},

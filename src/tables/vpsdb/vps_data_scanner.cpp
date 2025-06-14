@@ -110,12 +110,13 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     std::string year = utils_.safeGetString(vpxTable, "filename_year", "");
     if (year.empty()) year = tableData.year.empty() ? tableData.tableYear : tableData.year;
     if (year.empty()) year = utils_.extractYearFromDate(filename);
-    const float TITLE_WEIGHT = 0.6f;
-    const float YEAR_WEIGHT = 0.2f;
-    const float MANUFACTURER_WEIGHT = 0.1f;
-    const float ROM_WEIGHT = 0.25f;
-    const float LEVENSHTEIN_THRESHOLD = 0.55f;
-    const float CONFIDENCE_THRESHOLD = 0.6f;
+    //TODO: add these to settings.h for control on UI
+    const float TITLE_WEIGHT = settings_.titleWeight;// 0.6f;
+    const float YEAR_WEIGHT = settings_.yearWeight;// 0.2f;
+    const float MANUFACTURER_WEIGHT = settings_.manufacturerWeight;// 0.1f;
+    const float ROM_WEIGHT = settings_.romWeight;// 0.25f;
+    const float LEVENSHTEIN_THRESHOLD = settings_.titleThreshold;// 0.55f;
+    const float CONFIDENCE_THRESHOLD = settings_.confidenceThreshold;// 0.6f;
     float bestScore = 0.0f;
     nlohmann::json bestMatch;
     std::string bestVpsVersion;

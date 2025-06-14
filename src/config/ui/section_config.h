@@ -48,21 +48,21 @@ public:
             "titleSource",
             "titleSortBy",
             "showMetadata",
-            "fetchVPSdb",
-            "forceRebuildMetadata",
             "metadataPanelWidth",
             "metadataPanelHeight",
-            "metadataPanelAlpha"
+            "metadataPanelAlpha",
+            "fetchVPSdb",
+            "forceRebuildMetadata"
         };
         keyDisplayNames_["TableMetadata"] = {
             {"titleSource", "Table Info"},
             {"titleSortBy", "Sort By"},
             {"showMetadata", "Show Metadata"},
-            {"fetchVPSdb", "Fetch VPS Database"},
-            {"forceRebuildMetadata", "Rebuild Metadata"},
             {"metadataPanelWidth", "Panel Width"},
             {"metadataPanelHeight", "Panel Height"},
-            {"metadataPanelAlpha", "Panel Opacity"}
+            {"metadataPanelAlpha", "Panel Opacity"},
+            {"fetchVPSdb", "Fetch VPS Database"},
+            {"forceRebuildMetadata", "Rebuild Metadata"}
         };
         keyDropdownOptions_["TableMetadata"] = {
             {"titleSource", {"filename", "metadata"}},
