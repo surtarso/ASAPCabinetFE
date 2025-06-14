@@ -1,16 +1,16 @@
 /**
- * @file vps_utils.cpp
- * @brief Implements the VpsUtils class for utility functions in ASAPCabinetFE.
+ * @file string_utils.cpp
+ * @brief Implements the StringUtils class for utility functions in ASAPCabinetFE.
  *
- * This file provides the implementation of the VpsUtils class, which offers utility
+ * This file provides the implementation of the StringUtils class, which offers utility
  * methods for string normalization, version comparison, date parsing, and JSON array
  * joining. These methods support VPS metadata processing in ASAPCabinetFE, ensuring
  * consistency in matching and enrichment tasks. The functionality can be extended
  * with configUI for user-defined normalization or formatting rules in the future.
  */
 
-#include "vps_utils.h"      // Include your own header for VpsUtils
-#include "utils/logging.h"  // Assuming this is your logging header
+#include "utils/string_utils.h"      // Include your own header for StringUtils
+#include "log/logging.h"  // Assuming this is your logging header
 #include <regex>            // For std::regex
 #include <algorithm>        // For std::transform, std::remove_if, std::replace_if, std::all_of
 #include <cctype>           // For ::tolower, ::isalnum, ::isdigit, ::isspace
@@ -21,8 +21,8 @@
 #include <locale>
 #include <sstream>
 
-// VpsUtils::normalizeString
-std::string VpsUtils::normalizeString(const std::string& input) const {
+// StringUtils::normalizeString
+std::string StringUtils::normalizeString(const std::string& input) const {
     std::string result = input;
     // Convert to lowercase
     std::transform(result.begin(), result.end(), result.begin(),
@@ -34,7 +34,7 @@ std::string VpsUtils::normalizeString(const std::string& input) const {
     return result;
 }
 
-std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) const {
+std::string StringUtils::normalizeStringLessAggressive(const std::string& input) const {
     std::string result = input;
     // Convert to lowercase
     std::transform(result.begin(), result.end(), result.begin(),
@@ -67,8 +67,8 @@ std::string VpsUtils::normalizeStringLessAggressive(const std::string& input) co
     return cleaned_result;
 }
 
-// VpsUtils::normalizeVersion
-std::string VpsUtils::normalizeVersion(const std::string& version) const {
+// StringUtils::normalizeVersion
+std::string StringUtils::normalizeVersion(const std::string& version) const {
     std::string normalized = version;
 
     // Replace commas with dots
@@ -94,8 +94,8 @@ std::string VpsUtils::normalizeVersion(const std::string& version) const {
     return normalized;
 }
 
-// VpsUtils::isVersionGreaterThan
-bool VpsUtils::isVersionGreaterThan(const std::string& v1, const std::string& v2) const {
+// StringUtils::isVersionGreaterThan
+bool StringUtils::isVersionGreaterThan(const std::string& v1, const std::string& v2) const {
     std::string norm_v1 = normalizeVersion(v1);
     std::string norm_v2 = normalizeVersion(v2);
 
@@ -164,8 +164,8 @@ bool VpsUtils::isVersionGreaterThan(const std::string& v1, const std::string& v2
     return false;
 }
 
-// VpsUtils::extractYearFromDate
-std::string VpsUtils::extractYearFromDate(const std::string& dateString) const {
+// StringUtils::extractYearFromDate
+std::string StringUtils::extractYearFromDate(const std::string& dateString) const {
     if (dateString.empty()) {
         return "";
     }
@@ -213,7 +213,7 @@ std::string VpsUtils::extractYearFromDate(const std::string& dateString) const {
             // Heuristic: 00-49 -> 20xx, 50-99 -> 19xx. This is a common interpretation.
             return (year <= 49 ? "20" : "19") + yy;
         } catch (const std::exception&) {
-            LOG_DEBUG("VpsUtils: Failed to convert 2-digit year '" << yy << "' to int.");
+            LOG_DEBUG("StringUtils: Failed to convert 2-digit year '" << yy << "' to int.");
         }
     }
 
@@ -225,24 +225,24 @@ std::string VpsUtils::extractYearFromDate(const std::string& dateString) const {
     }
 
     // Step 7: No valid year found
-    LOG_DEBUG("VpsUtils: No year found in date string: '" << dateString << "'");
+    LOG_DEBUG("StringUtils: No year found in date string: '" << dateString << "'");
     return "";
 }
 
-// VpsUtils::join
-std::string VpsUtils::join(const nlohmann::json& array, const std::string& delimiter) const {
+// StringUtils::join
+std::string StringUtils::join(const nlohmann::json& array, const std::string& delimiter) const {
     std::vector<std::string> items;
     for (const auto& item : array) {
         try {
             if (item.is_string()) {
                 items.push_back(item.get<std::string>());
             } else {
-                LOG_DEBUG("VpsUtils: Skipping non-string item in JSON array during join. Type: " << item.type_name());
+                LOG_DEBUG("StringUtils: Skipping non-string item in JSON array during join. Type: " << item.type_name());
             }
         } catch (const nlohmann::json::exception& e) {
-            LOG_DEBUG("VpsUtils: JSON error skipping invalid array item in join: " << e.what());
+            LOG_DEBUG("StringUtils: JSON error skipping invalid array item in join: " << e.what());
         } catch (const std::exception& e) {
-            LOG_DEBUG("VpsUtils: General error skipping invalid array item in join: " << e.what());
+            LOG_DEBUG("StringUtils: General error skipping invalid array item in join: " << e.what());
         }
     }
 
@@ -255,8 +255,8 @@ std::string VpsUtils::join(const nlohmann::json& array, const std::string& delim
     }
 }
 
-// VpsUtils::safeGetString
-std::string VpsUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) const {
+// StringUtils::safeGetString
+std::string StringUtils::safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) const {
     if (j.contains(key) && j[key].is_string()) {
         return j[key].get<std::string>();
     } else if (j.contains(key) && j[key].is_null()) {
@@ -265,8 +265,8 @@ std::string VpsUtils::safeGetString(const nlohmann::json& j, const std::string& 
     return defaultValue;
 }
 
-// VpsUtils::cleanString
-std::string VpsUtils::cleanString(const std::string& input) const {
+// StringUtils::cleanString
+std::string StringUtils::cleanString(const std::string& input) const {
     std::string result = input;
     // Trim leading whitespace
     size_t first = result.find_first_not_of(" \t\n\r\f\v");
@@ -296,7 +296,7 @@ std::string VpsUtils::cleanString(const std::string& input) const {
     return cleaned_result;
 }
 
-size_t VpsUtils::levenshteinDistance(const std::string& s1, const std::string& s2) const {
+size_t StringUtils::levenshteinDistance(const std::string& s1, const std::string& s2) const {
     const size_t len1 = s1.size(), len2 = s2.size();
     std::vector<std::vector<size_t>> dp(len1 + 1, std::vector<size_t>(len2 + 1));
     for (size_t i = 0; i <= len1; ++i) dp[i][0] = i;
@@ -310,14 +310,14 @@ size_t VpsUtils::levenshteinDistance(const std::string& s1, const std::string& s
     return dp[len1][len2];
 }
 
-std::string VpsUtils::toLower(const std::string& str) const {
+std::string StringUtils::toLower(const std::string& str) const {
     std::string lowerStr = str;
     std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
                     [](unsigned char c){ return std::tolower(c); });
     return lowerStr;
 }
 
-std::string VpsUtils::extractCleanTitle(const std::string& input) const {
+std::string StringUtils::extractCleanTitle(const std::string& input) const {
     std::string cleaned = input;
     cleaned = std::regex_replace(cleaned, std::regex(R"([_\.])"), " ");
     std::vector<std::pair<std::regex, std::string>> patterns = {

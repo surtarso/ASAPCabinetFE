@@ -12,8 +12,8 @@
 
 #include "tables/vpxtool_scanner.h"
 #include "tables/vpsdb/vps_database_client.h"
-#include "utils/logging.h"
-#include "path_utils.h" // For PathUtils::cleanString, PathUtils::safeGetString
+#include "log/logging.h"
+#include "utils/path_utils.h" // For PathUtils::cleanString, PathUtils::safeGetString
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>

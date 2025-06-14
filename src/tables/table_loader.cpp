@@ -16,7 +16,7 @@
 #include "vpin_scanner.h" // Renamed from vpin_scanner.h
 #include "vpxtool_scanner.h"   // New scanner
 #include "vpsdb/vps_database_client.h" // Still needed for VPSDB client within scanners
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <algorithm>
 #include <cctype>
 

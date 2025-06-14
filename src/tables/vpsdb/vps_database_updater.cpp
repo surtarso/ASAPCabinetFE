@@ -14,7 +14,7 @@
 #include <curl/curl.h>
 #include <filesystem>
 #include <nlohmann/json.hpp>
-#include "utils/logging.h"
+#include "log/logging.h"
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 

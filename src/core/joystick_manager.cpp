@@ -1,5 +1,5 @@
 #include "core/joystick_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <iostream>
 
 JoystickManager::JoystickManager() {

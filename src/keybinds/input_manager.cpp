@@ -1,5 +1,5 @@
 #include "keybinds/input_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h" // Required for ImGui_ImplSDL2_ProcessEvent
 #include <iostream>

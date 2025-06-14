@@ -1,8 +1,10 @@
-#pragma once
+#ifndef VPS_DATA_SCANNER_H
+#define VPS_DATA_SCANNER_H 
+
 #include "tables/table_data.h"
 #include "core/loading_progress.h"
 #include "config/settings.h"
-#include "vps_utils.h"
+#include "utils/string_utils.h"
 #include <nlohmann/json.hpp>
 #include <string>
 
@@ -39,6 +41,8 @@ public:
 
 private:
     const nlohmann::json& vpsDb_; ///< Reference to the loaded VPS database.
-    VpsUtils utils_; ///< Utility functions for string processing.
+    StringUtils utils_; ///< Utility functions for string processing.
     Settings settings_; ///< For weight management
 };
+
+#endif // VPS_DATA_SCANNER_H

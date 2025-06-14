@@ -1,22 +1,22 @@
 /**
- * @file vps_utils.h
- * @brief Defines the VpsUtils class for utility functions in ASAPCabinetFE.
+ * @file string_utils.h
+ * @brief Defines the StringUtils class for utility functions in ASAPCabinetFE.
  *
- * This header provides the VpsUtils class, which contains utility methods for
+ * This header provides the StringUtils class, which contains utility methods for
  * string normalization, version comparison, date parsing, and JSON array joining.
  * These methods are designed to support VPS data processing in ASAPCabinetFE,
  * particularly for metadata matching and enrichment. The functionality can be
  * extended with configUI for custom normalization rules in the future.
  */
 
-#ifndef VPS_UTILS_H
-#define VPS_UTILS_H // Header guard to prevent multiple inclusions
+#ifndef STRING_UTILS_H
+#define STRING_UTILS_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to handle text data
 #include <nlohmann/json.hpp> // For nlohmann::json to process JSON arrays
 
 /**
- * @class VpsUtils
+ * @class StringUtils
  * @brief Utility class for VPS-related string and data processing in ASAPCabinetFE.
  *
  * This class provides static methods to normalize strings, compare versions,
@@ -25,7 +25,7 @@
  * enrichment tasks. The methods are stateless (const) and can be extended via
  * configUI for user-defined normalization or formatting rules.
  */
-class VpsUtils {
+class StringUtils {
 public:
     /**
      * @brief Normalizes a string for strict comparison.
@@ -134,4 +134,4 @@ public:
     
 };
 
-#endif // VPS_UTILS_H
+#endif // STRING_UTILS_H

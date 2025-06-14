@@ -2,7 +2,7 @@
 #include "core/window_manager.h"
 #include "core/first_run.h"
 #include "tables/table_loader.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 #include <filesystem>

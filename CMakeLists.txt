@@ -274,6 +274,7 @@ set(SOURCES
     src/config/ui/section_renderer.cpp
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
+    src/log/logger.cpp
     src/render/asset_manager.cpp
     src/render/renderer.cpp
     src/render/video_players/video_player_factory.cpp
@@ -284,7 +285,6 @@ set(SOURCES
     src/render/video_players/vlc/vlc_player.cpp
     src/tables/asap_index_manager.cpp
     src/tables/file_scanner.cpp
-    src/tables/path_utils.cpp
     src/tables/table_loader.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
@@ -292,8 +292,8 @@ set(SOURCES
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp
     src/tables/vpsdb/vps_database_updater.cpp
-    src/tables/vpsdb/vps_utils.cpp
-    src/utils/logger.cpp
+    src/utils/path_utils.cpp
+    src/utils/string_utils.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources added directly from FetchContent path
     "${imgui_SOURCE_DIR}/imgui.cpp"
@@ -320,6 +320,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/config
     ${CMAKE_SOURCE_DIR}/src/config/ui
     ${CMAKE_SOURCE_DIR}/src/keybinds
+    ${CMAKE_SOURCE_DIR}/src/log
     ${CMAKE_SOURCE_DIR}/src/render
     ${CMAKE_SOURCE_DIR}/src/render/video_players
     ${CMAKE_SOURCE_DIR}/src/render/video_players/ffmpeg

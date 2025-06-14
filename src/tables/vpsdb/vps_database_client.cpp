@@ -11,7 +11,7 @@
  */
 
 #include "vps_database_client.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 
 VpsDatabaseClient::VpsDatabaseClient(const std::string& vpsDbPath)
     : vpsDbPath_(vpsDbPath), // Initialize with the provided VPS database path

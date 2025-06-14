@@ -19,7 +19,7 @@
 #include "render/asset_manager.h"
 #include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 
 static std::atomic<bool> dummyIsLoadingTables{false}; // Atomic flag used as a placeholder for loading state in InputManager
 

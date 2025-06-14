@@ -16,7 +16,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include "utils/logging.h"
+#include "log/logging.h"
 
 /**
  * @class SDLInitGuard

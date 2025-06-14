@@ -10,8 +10,8 @@
  * (e.g., custom defaults or validation rules) in the future.
  */
 
-#include "tables/path_utils.h"
-#include "utils/logging.h"
+#include "utils/path_utils.h"
+#include "log/logging.h"
 #include <filesystem>
 #include <algorithm> // Required for std::transform
 #include <cctype>    // Required for std::tolower

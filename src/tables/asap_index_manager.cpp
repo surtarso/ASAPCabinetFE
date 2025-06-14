@@ -10,7 +10,7 @@
  */
 
 #include "tables/asap_index_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>

@@ -1,5 +1,5 @@
 #include "core/window_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <iostream>
 
 WindowManager::WindowManager(const Settings& settings)

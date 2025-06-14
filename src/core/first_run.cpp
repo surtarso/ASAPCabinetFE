@@ -1,5 +1,5 @@
 #include "core/first_run.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <iostream>
 
 bool runInitialConfig(IConfigService* configService, const std::string& configPath) {

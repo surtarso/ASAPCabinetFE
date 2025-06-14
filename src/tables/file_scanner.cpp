@@ -10,9 +10,9 @@
  */
 
 #include "tables/file_scanner.h"
-#include "tables/manufacturers.h"
-#include "tables/path_utils.h"
-#include "utils/logging.h"
+#include "utils/manufacturers.h"
+#include "utils/path_utils.h"
+#include "log/logging.h"
 #include <filesystem>
 #include <regex>     // For year extraction
 #include <algorithm> // For std::transform (for manufacturer search)

@@ -15,7 +15,7 @@
 #include <vector>
 #include <imgui.h>
 #include "ImGuiFileDialog.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 
 /**
  * @class ISectionRenderer

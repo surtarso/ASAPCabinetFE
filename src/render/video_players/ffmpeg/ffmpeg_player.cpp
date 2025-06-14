@@ -1,7 +1,7 @@
 #include "ffmpeg_player.h"
 #include "video_decoder.h"
 #include "audio_decoder.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 extern "C" {
 #include <libavformat/avformat.h>
 }

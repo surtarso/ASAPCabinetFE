@@ -10,7 +10,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include "utils/logger.h"
+#include "log/logger.h"
 #include <sstream>
 
 /**

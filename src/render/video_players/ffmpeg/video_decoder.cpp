@@ -1,6 +1,6 @@
 #include "video_decoder.h"
 #include "ffmpeg_player.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>

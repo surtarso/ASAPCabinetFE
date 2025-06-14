@@ -1,6 +1,6 @@
-// tables/manufacturers.h
-#ifndef ASAPCABINET_PINBALL_MANUFACTURERS_H
-#define ASAPCABINET_PINBALL_MANUFACTURERS_H
+// utils/manufacturers.h
+#ifndef PINBALL_MANUFACTURERS_H
+#define PINBALL_MANUFACTURERS_H
 
 #include <vector>
 #include <string>
@@ -69,4 +69,4 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
 
 } // namespace PinballManufacturers
 
-#endif //ASAPCABINET_PINBALL_MANUFACTURERS_H
+#endif //PINBALL_MANUFACTURERS_H

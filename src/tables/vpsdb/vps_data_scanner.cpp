@@ -1,5 +1,5 @@
 #include "tables/vpsdb/vps_data_scanner.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <filesystem>
 #include <mutex>
 #include <fstream>

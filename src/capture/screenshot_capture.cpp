@@ -1,5 +1,5 @@
 #include "capture/screenshot_capture.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL2/SDL.h>      // for SDL_Window and SDL_RaiseWindow
 #include <sstream>         // for std::ostringstream
 #include <thread>

@@ -1,5 +1,5 @@
 #include "config_service.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <fstream>
 #include <stdexcept>
 #include <filesystem>

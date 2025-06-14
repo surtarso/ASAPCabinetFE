@@ -9,7 +9,7 @@ configuration services, window management, and asset management.
 
 #include "core/playfield_overlay.h"
 #include "config/settings.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL.h>
 #include <chrono>
 #include <cmath>

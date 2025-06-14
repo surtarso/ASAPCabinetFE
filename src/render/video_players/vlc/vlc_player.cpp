@@ -1,5 +1,5 @@
 #include "vlc_player.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 
 VlcVideoPlayer::VlcVideoPlayer() : ctx_(nullptr) {}
 

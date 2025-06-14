@@ -14,7 +14,7 @@
 #include "render/video_players/gstreamer/gstreamer_player.h"
 #include "config/iconfig_service.h"
 #include "config/settings.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <map> // Required for backend string to enum mapping
 
 // ---

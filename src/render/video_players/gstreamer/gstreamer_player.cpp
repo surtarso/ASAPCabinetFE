@@ -1,5 +1,5 @@
 #include "gstreamer_player.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <SDL2/SDL.h>

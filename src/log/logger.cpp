@@ -2,8 +2,8 @@
 #include <ctime>
 #include <sstream>
 #include <filesystem>
-#include "utils/logger.h"
-#include "utils/logging.h"
+#include "log/logger.h"
+#include "log/logging.h"
 
 // ANSI color codes
 #define COLOR_RED     "\033[31m"  // For ERROR

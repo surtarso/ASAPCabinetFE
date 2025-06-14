@@ -4,7 +4,7 @@
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 
 GuiManager::GuiManager(IWindowManager* windowManager, IConfigService* configService) 
     : windowManager_(windowManager), configService_(configService), configWindow_(nullptr), configRenderer_(nullptr), context_(nullptr) {}

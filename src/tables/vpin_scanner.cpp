@@ -3,9 +3,9 @@
 #include "tables/vpin_scanner.h"
 #include "tables/asap_index_manager.h"
 #include "tables/vpsdb/vps_database_client.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include "vpin_wrapper.h" // For get_vpx_table_info_as_json and free_rust_string
-#include "path_utils.h"    // For PathUtils::cleanString, PathUtils::safeGetString
+#include "utils/path_utils.h"    // For PathUtils::cleanString, PathUtils::safeGetString
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>

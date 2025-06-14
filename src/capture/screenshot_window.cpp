@@ -1,7 +1,7 @@
 #include "capture/screenshot_window.h"
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL2/SDL_ttf.h>
 #include <unistd.h>
 

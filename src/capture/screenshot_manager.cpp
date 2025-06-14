@@ -2,7 +2,7 @@
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
 #include "sound/isound_manager.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL2/SDL.h>
 #include <unistd.h>
 

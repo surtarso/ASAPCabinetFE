@@ -1,6 +1,6 @@
 #include "capture/process_handler.h"
 #include "config/iconfig_service.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <sstream>
 #include <signal.h>
 #include <unistd.h>

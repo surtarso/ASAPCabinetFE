@@ -11,7 +11,7 @@
 #include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>

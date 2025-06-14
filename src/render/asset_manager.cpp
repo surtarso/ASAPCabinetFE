@@ -1,7 +1,7 @@
 #include "render/asset_manager.h"
 #include "render/video_players/video_player_factory.h"
 #include "config/iconfig_service.h"
-#include "utils/logging.h"
+#include "log/logging.h"
 #include <SDL_image.h>
 #include <chrono>
 
