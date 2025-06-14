@@ -91,12 +91,24 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 4: Sorting and Indexing
+    // Stage 4: Apply per-table overrides
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Applying table overrides...";
+        progress->currentStage = 4;
+    }
+    TableOverrideManager overrideManager;
+    for (auto& table : tables) {
+        overrideManager.applyOverrides(table);
+    }
+
+    // Stage 5: Sorting and Indexing
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
         progress->currentStage = 4;
     }
+    
     sortTables(tables, settings.titleSortBy, progress);
 
     if (progress) {

@@ -9,7 +9,6 @@ FIX:
 - enrichTableData catches all exceptions generically
 - If logFile_ fails to write, theres no fallback (e.g., stderr). Add a fallback mechanism to ensure critical errors are recorded.
 - Add a mutex for logFile_ writes to prevent race conditions in multi-threaded scenarios.
-- use const for methods that dont modify state
 - regression in path handling for default media
 
 QOL:
