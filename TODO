@@ -1,9 +1,6 @@
 TODO
 
 FIX:
-- metadata: non matched tables use tablename as display
-- metadata: some false positives, some obvious non-matches.
-- metadata: scan slowed down quite a bit, need to re-evaluate after refactor
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
@@ -16,8 +13,6 @@ FIX:
 - regression in path handling for default media
 
 QOL:
-- better vpsdb matchmaking without slowing it down
-- matchmaking menu for tolerances (metadata)
 - Add ui user notifications for critical failures like missing config files.
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold
