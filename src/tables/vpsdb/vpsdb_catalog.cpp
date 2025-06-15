@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include <cstdlib> // For system()
 
 namespace fs = std::filesystem;
 
@@ -252,10 +253,23 @@ bool VpsdbCatalog::render() {
 
     // Search input and button
     static char searchBuffer[256] = "";
-    ImGui::InputText("##Search", searchBuffer, IM_ARRAYSIZE(searchBuffer));
+    ImGui::InputText("##Search", searchBuffer, IM_ARRAYSIZE(searchBuffer), ImGuiInputTextFlags_EnterReturnsTrue); // Fixed to avoid crash
     ImGui::SameLine();
-    if (ImGui::Button("Search")) {
+    if (ImGui::Button("Fetch") || ImGui::IsKeyPressed(ImGuiKey_Enter, true)) {
         applySearchFilter(searchBuffer);
+    }
+    if (strlen(searchBuffer) > 0) {
+        std::string searchStr = searchBuffer;
+        std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
+        std::vector<size_t> tempIndices;
+        for (size_t i = 0; i < index_.size(); ++i) {
+            std::string name = index_[i].name;
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+            if (name.find(searchStr) != std::string::npos) {
+                tempIndices.push_back(i);
+            }
+        }
+        ImGui::Text("Found %zu matches. Use Next/Prev to cycle through them.", tempIndices.size());
     }
     ImGui::Separator();
 
@@ -300,10 +314,27 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Comment: %s", file.comment.c_str());
         ImGui::Text("Format: %s", file.tableFormat.c_str());
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
-        ImGui::Text("Image URL: %s", file.imgUrl.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
-            ImGui::Text("URL %zu: %s", j + 1, file.urls[j].url.c_str());
+            const auto& url = file.urls[j].url;
+            char buttonId[32];
+            snprintf(buttonId, sizeof(buttonId), "url_%zu_%zu", i, j); // Unique ID
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            if (ImGui::Button("Download", ImVec2(100, 0))) {
+                openUrl(url);
+                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Click to open: %s", url.c_str());
+                ImGui::EndTooltip();
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                ImVec2 p1 = ImGui::GetItemRectMin();
+                ImVec2 p2 = ImGui::GetItemRectMax();
+                draw_list->AddLine(ImVec2(p1.x, p2.y), p2, ImGui::GetColorU32(ImVec4(0.0f, 0.5f, 1.0f, 1.0f)));
+            }
+            ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
+            ImGui::PopStyleColor();
         }
         ImGui::NextColumn();
     }
@@ -319,10 +350,27 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         ImGui::Text("Comment: %s", file.comment.c_str());
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
-        ImGui::Text("Image URL: %s", file.imgUrl.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
-            ImGui::Text("URL %zu: %s", j + 1, file.urls[j].url.c_str());
+            const auto& url = file.urls[j].url;
+            char buttonId[32];
+            snprintf(buttonId, sizeof(buttonId), "url_b2s_%zu_%zu", i, j); // Unique ID
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            if (ImGui::Button("Download", ImVec2(100, 0))) {
+                openUrl(url);
+                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Click to open: %s", url.c_str());
+                ImGui::EndTooltip();
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                ImVec2 p1 = ImGui::GetItemRectMin();
+                ImVec2 p2 = ImGui::GetItemRectMax();
+                draw_list->AddLine(ImVec2(p1.x, p2.y), p2, ImGui::GetColorU32(ImVec4(0.0f, 0.5f, 1.0f, 1.0f)));
+            }
+            ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
+            ImGui::PopStyleColor();
         }
         ImGui::NextColumn();
     }
@@ -337,8 +385,26 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Authors: %s", join(file.authors, ", ").c_str());
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
-            ImGui::Text("URL %zu: %s", j + 1, file.urls[j].url.c_str());
+            const auto& url = file.urls[j].url;
+            char buttonId[32];
+            snprintf(buttonId, sizeof(buttonId), "url_wheel_%zu_%zu", i, j); // Unique ID
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            if (ImGui::Button("Download", ImVec2(100, 0))) {
+                openUrl(url);
+                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Click to open: %s", url.c_str());
+                ImGui::EndTooltip();
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                ImVec2 p1 = ImGui::GetItemRectMin();
+                ImVec2 p2 = ImGui::GetItemRectMax();
+                draw_list->AddLine(ImVec2(p1.x, p2.y), p2, ImGui::GetColorU32(ImVec4(0.0f, 0.5f, 1.0f, 1.0f)));
+            }
+            ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
+            ImGui::PopStyleColor();
         }
         ImGui::NextColumn();
     }
@@ -353,8 +419,26 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Authors: %s", join(file.authors, ", ").c_str());
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
-            ImGui::Text("URL %zu: %s", j + 1, file.urls[j].url.c_str());
+            const auto& url = file.urls[j].url;
+            char buttonId[32];
+            snprintf(buttonId, sizeof(buttonId), "url_topper_%zu_%zu", i, j); // Unique ID
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            if (ImGui::Button("Download", ImVec2(100, 0))) {
+                openUrl(url);
+                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Click to open: %s", url.c_str());
+                ImGui::EndTooltip();
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                ImVec2 p1 = ImGui::GetItemRectMin();
+                ImVec2 p2 = ImGui::GetItemRectMax();
+                draw_list->AddLine(ImVec2(p1.x, p2.y), p2, ImGui::GetColorU32(ImVec4(0.0f, 0.5f, 1.0f, 1.0f)));
+            }
+            ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
+            ImGui::PopStyleColor();
         }
         ImGui::NextColumn();
     }
@@ -457,11 +541,11 @@ bool VpsdbCatalog::render() {
     if (isTableLoading_) {
         ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-        ImGui::SetNextWindowBgAlpha(0.8f);
+        ImGui::SetNextWindowBgAlpha(0.7f); // Added for transparency
         ImGui::Begin("Loading Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
         ImVec2 textSize = ImGui::CalcTextSize("Loading Table...");
         ImGui::SetCursorPos(ImVec2(panelWidth * 0.5f - textSize.x * 0.5f, panelHeight * 0.5f - textSize.y * 0.5f));
-        ImGui::Text("Loading Table...");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Loading Table..."); // Yellow text
         ImGui::End();
     }
 
@@ -621,6 +705,19 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
         isTableLoading_ = true;
         tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
         LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << index_[newIndex].name);
+    }
+}
+
+void VpsdbCatalog::openUrl(const std::string& url) {
+    if (url.empty()) {
+        LOG_ERROR("VpsdbCatalog: Attempted to open empty URL");
+        return;
+    }
+    // On Linux, use xdg-open to launch the default browser
+    std::string command = "xdg-open \"" + url + "\" &";
+    int result = system(command.c_str());
+    if (result != 0) {
+        LOG_ERROR("VpsdbCatalog: Failed to open URL: " << url << ", system returned: " << result);
     }
 }
 

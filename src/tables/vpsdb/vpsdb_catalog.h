@@ -74,6 +74,7 @@ private:
     void applySearchFilter(const char* searchTerm);
     void initInBackground();
     void loadTableInBackground(size_t index);
+    void openUrl(const std::string& url);
 };
 
 } // namespace vpsdb
