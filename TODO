@@ -11,6 +11,9 @@ FIX:
 - regression in path handling for default media
 
 QOL:
+- single table vpsdb lookup.
+- stop deleting asapcab and instead increment/edit it.
+- save metadata back to .vpx with vpin/vpxtool
 - Add ui user notifications for critical failures like missing config files.
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold
@@ -18,6 +21,7 @@ QOL:
 - user-pick fields to be shown on metadata panel
 
 On hold:
+- some way to lookup vpsdb catalog in-app for table downloads
 - multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
