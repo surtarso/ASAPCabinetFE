@@ -64,7 +64,8 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "spinball",
     "culik pinball",
     "taito do brasil",
-    "taito"
+    "taito",
+    "playmatic"
 };
 
 } // namespace PinballManufacturers

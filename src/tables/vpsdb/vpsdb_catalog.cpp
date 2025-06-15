@@ -324,7 +324,7 @@ bool VpsdbCatalog::render() {
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
             ImGui::PushID(j); // Scope ID for each URL
-            char buttonId[32];
+            char buttonId[54];
             snprintf(buttonId, sizeof(buttonId), "table_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
@@ -364,7 +364,7 @@ bool VpsdbCatalog::render() {
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
             ImGui::PushID(j); // Scope ID for each URL
-            char buttonId[32];
+            char buttonId[54];
             snprintf(buttonId, sizeof(buttonId), "b2s_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
@@ -402,7 +402,7 @@ bool VpsdbCatalog::render() {
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
             ImGui::PushID(j); // Scope ID for each URL
-            char buttonId[32];
+            char buttonId[54];
             snprintf(buttonId, sizeof(buttonId), "wheel_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
@@ -440,7 +440,7 @@ bool VpsdbCatalog::render() {
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
             ImGui::PushID(j); // Scope ID for each URL
-            char buttonId[32];
+            char buttonId[54];
             snprintf(buttonId, sizeof(buttonId), "topper_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {

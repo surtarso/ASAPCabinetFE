@@ -168,7 +168,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
             char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
             if (letterIndex.find(key) == letterIndex.end()) {
                 letterIndex[key] = static_cast<int>(i); // Assign index of first occurrence
-                LOG_DEBUG("TableLoader: Added letter index: " << key << " -> " << i);
+                // LOG_DEBUG("TableLoader: Added letter index: " << key << " -> " << i);
             }
         } else {
             LOG_DEBUG("TableLoader: Invalid first character in title: " << tables[i].title << " at index " << i);

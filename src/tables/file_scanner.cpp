@@ -53,7 +53,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             std::smatch match;
             if (std::regex_search(table.title, match, year_regex)) {
                 table.year = match.str(0); // The entire matched year string
-                LOG_DEBUG("FileScanner: Found year '" << table.year << "' for table: " << table.title);
+                // LOG_DEBUG("FileScanner: Found year '" << table.year << "' for table: " << table.title);
             } else {
                 table.year = ""; // Ensure it's empty if not found
             }
@@ -67,7 +67,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
                     // Store the capitalized manufacturer name directly in TableData
                     table.manufacturer = PathUtils::capitalizeWords(manufacturerNameLower);
-                    LOG_DEBUG("FileScanner: Found manufacturer '" << table.manufacturer << "' for table: " << table.title);
+                    // LOG_DEBUG("FileScanner: Found manufacturer '" << table.manufacturer << "' for table: " << table.title);
                     break;
                 }
             }
@@ -97,7 +97,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.altSound = PathUtils::getAltsoundPath(pinmamePath);
                 table.romPath = PathUtils::getRomPath(pinmamePath, table.romName); // romName is passed by reference
             } else {
-                LOG_DEBUG("FileScanner: No pinmame folder found at " << table.folder << ", skipping AltColor/AltSound/ROM checks.");
+                // LOG_DEBUG("FileScanner: No pinmame folder found at " << table.folder << ", skipping AltColor/AltSound/ROM checks.");
                 // Ensure these are explicitly false/empty if pinmamePath isn't found
                 table.altColor = false;
                 table.altSound = false;

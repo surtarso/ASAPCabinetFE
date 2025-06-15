@@ -47,7 +47,7 @@ void KeybindManager::setKey(const std::string& action, SDL_Keycode key) {
     auto it = keybinds_.find(action);
     if (it != keybinds_.end()) {
         it->second.input = key;
-        LOG_DEBUG("KeybindManager: Set key for " << action << " to " << SDL_GetKeyName(key));
+        // LOG_DEBUG("KeybindManager: Set key for " << action << " to " << SDL_GetKeyName(key));
     } else {
         LOG_ERROR("KeybindManager: Cannot set key: Action not found: " << action);
     }
