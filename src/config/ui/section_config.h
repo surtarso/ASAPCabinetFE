@@ -194,7 +194,8 @@ public:
             // {"ConfigClose"},
             // {"ScreenshotMode"},
             // {"ScreenshotKey"},
-            // {"ScreenshotQuit"}
+            // {"ScreenshotQuit"},
+            // {"MetadataEdit"}
         };
 
         keyOrders_["DPISettings"] = {

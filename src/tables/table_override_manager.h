@@ -46,14 +46,32 @@ public:
     void reloadOverrides(TableData& table) const;
 
     /**
-     * @brief Saves overrides to the table's JSON file (placeholder for UI saving).
+     * @brief Saves overrides to the table's JSON file.
      *
-     * Future implementation will serialize specified TableData fields to <table_name>.json.
+     * Writes user-edited fields to <table_name>.json, merging with existing fields to preserve
+     * unedited ones. Logs errors if the file cannot be written.
      *
-     * @param table The TableData object containing fields to save.
-     * @param overrides The JSON object with fields to override.
+     * @param table The TableData object containing vpxFile for the file path.
+     * @param overrides Map of field names to edited values.
      */
-    void saveOverride(const TableData& table, const nlohmann::json& overrides) const;
+    void saveOverride(const TableData& table, const std::map<std::string, std::string>& overrides) const;
+    
+    /**
+     * @brief Deletes the override JSON file for a table if it exists.
+     *
+     * Removes <table_name>.json from the same directory as table.vpxFile.
+     *
+     * @param table The TableData object containing vpxFile.
+     */
+    void deleteOverride(const TableData& table) const;
+
+    /**
+     * @brief Checks if the override JSON file exists for a table.
+     *
+     * @param table The TableData object containing vpxFile.
+     * @return True if <table_name>.json exists, false otherwise.
+     */
+    bool overrideFileExists(const TableData& table) const;
 
 private:
     /**

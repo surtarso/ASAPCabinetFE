@@ -223,7 +223,8 @@ struct Settings {
         {"ConfigClose", SDLK_q},
         {"ScreenshotMode", SDLK_s},
         {"ScreenshotKey", SDLK_s},
-        {"ScreenshotQuit", SDLK_q}
+        {"ScreenshotQuit", SDLK_q},
+        {"MetadataEdit", SDLK_m}
     };
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
@@ -961,6 +962,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ScreenshotMode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
     {"ScreenshotKey", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
     {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
+    {"MetadataEdit", {Settings::ReloadType::None, "Key to open metadata editor."}}
 };
 
 #endif // SETTINGS_H

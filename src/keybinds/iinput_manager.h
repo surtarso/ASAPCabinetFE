@@ -107,7 +107,7 @@ public:
      */
     virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                  size_t& currentIndex, const std::vector<TableData>& tables,
-                                 bool& showConfig, const std::string& exeDir, IScreenshotManager* screenshotManager,
+                                 bool& showConfig, bool& showEditor, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                  IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) = 0;
 
     /**
@@ -125,6 +125,13 @@ public:
      * @return True if the configuration UI is visible, false otherwise.
      */
     virtual bool isConfigActive() const = 0;
+
+    /**
+     * @brief Checks if the metadata editor UI is active.
+     *
+     * @return True if the editor UI is visible, false otherwise.
+     */
+    virtual bool isEditorActive() const = 0;
 
     /**
      * @brief Checks if the application should quit.

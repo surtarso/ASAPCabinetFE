@@ -26,6 +26,8 @@
 #include "render/iasset_manager.h"
 #include "tables/itable_loader.h"
 #include "tables/table_data.h"
+#include "tables/table_override_editor.h"
+#include "tables/table_override_manager.h"
 #include "sound/isound_manager.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
@@ -115,7 +117,11 @@ private:
     std::string exeDir_;                        ///< Executable directory for resolving paths.
     std::string configPath_;                    ///< Path to the configuration file.
     bool showConfig_ = false;                   ///< Flag controlling configuration UI visibility.
+    std::unique_ptr<TableOverrideEditor> overrideEditor_; ///< Editor for table overrides
+    TableOverrideManager overrideManager_; ///< Manager for table overrides
+    bool showEditor_ = false;
     size_t currentIndex_ = 0;                   ///< Index of the current table.
+    size_t lastTableIndex_; ///< Track last table index for editor updates
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.
     std::unique_ptr<JoystickManager> joystickManager_;   ///< Manager for SDL joysticks.
     std::unique_ptr<IWindowManager> windowManager_;      ///< Manager for SDL windows and renderers.

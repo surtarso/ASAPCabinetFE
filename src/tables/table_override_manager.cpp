@@ -12,6 +12,7 @@
 #include "log/logging.h"
 #include <filesystem>
 #include <fstream>
+#include <map>
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
@@ -26,6 +27,11 @@ std::string TableOverrideManager::getOverrideFilePath(const TableData& table) co
     fs::path jsonPath = vpxPath.parent_path() / (vpxPath.stem().string() + ".json");
 
     return jsonPath.string();
+}
+
+bool TableOverrideManager::overrideFileExists(const TableData& table) const {
+    std::string overridePath = getOverrideFilePath(table);
+    return !overridePath.empty() && fs::exists(overridePath);
 }
 
 void TableOverrideManager::applyOverrides(TableData& table) const {
@@ -148,11 +154,82 @@ void TableOverrideManager::applyOverrides(TableData& table) const {
 }
 
 void TableOverrideManager::reloadOverrides(TableData& table) const {
-    // Placeholder for dynamic reloading
     LOG_DEBUG("TableOverrideManager: reloadOverrides called for table: " << table.title << " (not implemented)");
 }
 
-void TableOverrideManager::saveOverride(const TableData& table, const json& overrides) const {
-    // Placeholder for saving overrides
-    LOG_DEBUG("TableOverrideManager: saveOverride called for table: " << table.title << " (not implemented)");
+void TableOverrideManager::saveOverride(const TableData& table, const std::map<std::string, std::string>& overrides) const {
+    std::string overridePath = getOverrideFilePath(table);
+    if (overridePath.empty()) {
+        LOG_ERROR("TableOverrideManager: Cannot save override, invalid path for table: " << table.title);
+        return;
+    }
+
+    try {
+        // Load existing JSON to preserve unedited fields
+        json overrideJson;
+        if (fs::exists(overridePath)) {
+            std::ifstream inFile(overridePath);
+            if (!inFile.is_open()) {
+                LOG_ERROR("TableOverrideManager: Failed to open override file for reading: " << overridePath);
+                return;
+            }
+            inFile >> overrideJson;
+            inFile.close();
+        }
+
+        // Update only edited fields
+        bool hasChanges = false;
+        for (const auto& [key, value] : overrides) {
+            if (!value.empty()) {
+                overrideJson[key] = value;
+                hasChanges = true;
+            } else {
+                overrideJson.erase(key);
+            }
+        }
+
+        // If no changes and JSON is empty, delete the file
+        if (!hasChanges && overrideJson.empty()) {
+            deleteOverride(table);
+            LOG_DEBUG("TableOverrideManager: No overrides to save, deleted file for table: " << table.title);
+            return;
+        }
+
+        // Ensure parent directories exist
+        fs::create_directories(fs::path(overridePath).parent_path());
+
+        // Write updated JSON
+        std::ofstream outFile(overridePath);
+        if (!outFile.is_open()) {
+            LOG_ERROR("TableOverrideManager: Failed to open override file for writing: " << overridePath);
+            return;
+        }
+        outFile << overrideJson.dump(4);
+        outFile.close();
+
+        LOG_INFO("TableOverrideManager: Saved overrides for table: " << table.title << " to: " << overridePath);
+    } catch (const json::exception& e) {
+        LOG_ERROR("TableOverrideManager: JSON error while saving override file: " << overridePath << ": " << e.what());
+    } catch (const std::exception& e) {
+        LOG_ERROR("TableOverrideManager: Failed to save override file: " << overridePath << ": " << e.what());
+    }
+}
+
+void TableOverrideManager::deleteOverride(const TableData& table) const {
+    std::string overridePath = getOverrideFilePath(table);
+    if (overridePath.empty()) {
+        LOG_ERROR("TableOverrideManager: Cannot delete override, invalid path for table: " << table.title);
+        return;
+    }
+
+    if (fs::exists(overridePath)) {
+        std::error_code ec;
+        if (fs::remove(overridePath, ec)) {
+            LOG_DEBUG("TableOverrideManager: Deleted override file: " << overridePath);
+        } else {
+            LOG_ERROR("TableOverrideManager: Failed to delete override file: " << overridePath << ": " << ec.message());
+        }
+    } else {
+        LOG_DEBUG("TableOverrideManager: No override file to delete: " << overridePath);
+    }
 }

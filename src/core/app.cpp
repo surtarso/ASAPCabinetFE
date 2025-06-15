@@ -260,7 +260,7 @@ void App::initializeDependencies() {
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, exeDir_, screenshotManager_.get(),
+                                   currentIndex_, tables_, showConfig_, showEditor_, exeDir_, screenshotManager_.get(),
                                    windowManager_.get(), isLoadingTables_); // Updated
 
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
@@ -295,7 +295,6 @@ void App::handleEvents() {
             } else if (event.type == SDL_JOYDEVICEREMOVED) {
                 joystickManager_->removeJoystick(event.jdevice.which);
             }
-            // Handle custom event for asset reloading
             if (event.type == SDL_USEREVENT) {
                 assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
                 LOG_DEBUG("App: Assets reloaded after table loading");
@@ -366,6 +365,24 @@ void App::render() {
         }
         if (showConfig_) {
             configEditor_->drawGUI();
+        }
+        // Render TableOverrideEditor if toggled
+        if (showEditor_ && currentIndex_ < tables_.size()) {
+            if (!overrideEditor_ || lastTableIndex_ != currentIndex_) {
+                overrideEditor_ = std::make_unique<TableOverrideEditor>(tables_[currentIndex_], overrideManager_);
+                lastTableIndex_ = currentIndex_;
+                LOG_DEBUG("App: Initialized TableOverrideEditor for table index: " << currentIndex_ << ", title: " << tables_[currentIndex_].title);
+            }
+            if (!overrideEditor_->render()) {
+                if (overrideEditor_->wasSaved()) {
+                    reloadTablesAndTitle();
+                    LOG_DEBUG("App: Closed TableOverrideEditor after Save, triggered table reload");
+                } else {
+                    LOG_DEBUG("App: Closed TableOverrideEditor after Discard, no reload");
+                }
+                overrideEditor_.reset();
+                showEditor_ = false;
+            }
         }
     }
     

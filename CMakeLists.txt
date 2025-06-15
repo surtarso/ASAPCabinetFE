@@ -287,6 +287,7 @@ set(SOURCES
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
     src/tables/table_override_manager.cpp
+    src/tables/table_override_editor.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
     src/tables/vpsdb/vps_data_scanner.cpp
