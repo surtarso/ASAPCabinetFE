@@ -1,8 +1,6 @@
 TODO
 
 FIX:
-- catalog is not rebuilding cache, expects cache to exist.
-- speed up vpsdb catalog
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
@@ -13,7 +11,6 @@ FIX:
 - regression in path handling for default media
 
 QOL:
-- create links/buttons to follow table downloads on vpsdb catalog
 - clean up new panels (vpsdb catalog and metadata editor)
 - single table vpsdb metadata lookup for current files (not catalog)
 - stop deleting asapcab and instead increment/edit it.
