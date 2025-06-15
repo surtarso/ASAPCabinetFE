@@ -387,7 +387,7 @@ void App::render() {
         // Render vpsdb catalog
         if (showVpsdb_) {
             if (!vpsdbCatalog_) {
-                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>("data/vpsdb.json", windowManager_->getPlayfieldRenderer());
+                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(configManager_->getSettings().vpsDbPath, windowManager_->getPlayfieldRenderer());
             }
             if (!vpsdbCatalog_->render()) {
                 vpsdbCatalog_.reset();

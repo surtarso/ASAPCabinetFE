@@ -12,9 +12,9 @@ FIX:
 - regression in path handling for default media
 
 QOL:
-- create links to follow table downloads on vpsdb catalog
+- create links/buttons to follow table downloads on vpsdb catalog
 - clean up new panels (vpsdb catalog and metadata editor)
-- single table vpsdb lookup for current files (not catalog)
+- single table vpsdb metadata lookup for current files (not catalog)
 - stop deleting asapcab and instead increment/edit it.
 - save metadata back to .vpx with vpin/vpxtool
 - Add ui user notifications for critical failures like missing config files.
@@ -24,12 +24,12 @@ QOL:
 - user-pick fields to be shown on metadata panel
 
 On hold:
-- some way to lookup vpsdb catalog in-app for table downloads
 - multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - attract mode (random table on a timer if idle) (optional)
 - support animated png for wheel/marquee
 - dynamic window creation
+- some way to download tables straight from the app?
 - incorporate generate_media.sh?
 
