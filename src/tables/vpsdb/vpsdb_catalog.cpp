@@ -15,7 +15,7 @@ VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* rende
       renderer_(renderer),
       currentIndex_(0),
       loaded_(false),
-      isLoading_(false),
+      isLoading_(true),
       isTableLoading_(false),
       isOpen(false),
       backglassTexture_(nullptr, SDL_DestroyTexture),
@@ -55,9 +55,9 @@ void VpsdbCatalog::initInBackground() {
         }
     }
     progressStage_ = 2;
-    loadJson();
+    loadJson(); // Ensure JSON is loaded before setting isLoading_ to false
     progressStage_ = 3;
-    isLoading_ = false;
+    isLoading_ = false; // Set to false only after loadJson() completes
     LOG_DEBUG("VpsdbCatalog: Initialization complete in background");
 }
 
@@ -204,10 +204,15 @@ bool VpsdbCatalog::render() {
         ImGui::End();
         return true;
     }
+
+    // Wait for initialization if still running on first render
+    if (initThread_.joinable()) {
+        initThread_.join(); // Ensure initialization is complete
+    }
     
     if (!loaded_) {
-        ImGui::Text("Error: VPSDB JSON not loaded");
-        if (!isLoading_) {
+        if (!isLoading_ && index_.empty()) {
+            ImGui::Text("Error: VPSDB JSON not loaded");
             LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
         }
         return true;
@@ -303,7 +308,9 @@ bool VpsdbCatalog::render() {
     renderField("Last Created At", std::to_string(currentTable_.lastCreatedAt));
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
     ImGui::Separator();
+    ImGui::PushID("TableFiles");
     for (size_t i = 0; i < currentTable_.tableFiles.size(); ++i) {
         const auto& file = currentTable_.tableFiles[i];
         ImGui::Text("Table File %zu", i + 1);
@@ -316,9 +323,10 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
+            ImGui::PushID(j); // Scope ID for each URL
             char buttonId[32];
-            snprintf(buttonId, sizeof(buttonId), "url_%zu_%zu", i, j); // Unique ID
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            snprintf(buttonId, sizeof(buttonId), "table_url_%zu_%zu", i, j);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
                 LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
@@ -335,12 +343,15 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
+            ImGui::PopID(); // End scope for each URL
         }
         ImGui::NextColumn();
     }
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "B2S FILES");
     ImGui::Separator();
+    ImGui::PushID("B2SFiles");
     for (size_t i = 0; i < currentTable_.b2sFiles.size(); ++i) {
         const auto& file = currentTable_.b2sFiles[i];
         ImGui::Text("B2S File %zu", i + 1);
@@ -352,9 +363,10 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
+            ImGui::PushID(j); // Scope ID for each URL
             char buttonId[32];
-            snprintf(buttonId, sizeof(buttonId), "url_b2s_%zu_%zu", i, j); // Unique ID
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            snprintf(buttonId, sizeof(buttonId), "b2s_url_%zu_%zu", i, j);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
                 LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
@@ -371,12 +383,15 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
+            ImGui::PopID(); // End scope for each URL
         }
         ImGui::NextColumn();
     }
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "WHEEL ART FILES");
     ImGui::Separator();
+    ImGui::PushID("WheelFiles");
     for (size_t i = 0; i < currentTable_.wheelArtFiles.size(); ++i) {
         const auto& file = currentTable_.wheelArtFiles[i];
         ImGui::Text("Wheel Art File %zu", i + 1);
@@ -386,9 +401,10 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
+            ImGui::PushID(j); // Scope ID for each URL
             char buttonId[32];
-            snprintf(buttonId, sizeof(buttonId), "url_wheel_%zu_%zu", i, j); // Unique ID
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            snprintf(buttonId, sizeof(buttonId), "wheel_url_%zu_%zu", i, j);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
                 LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
@@ -405,12 +421,15 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
+            ImGui::PopID(); // End scope for each URL
         }
         ImGui::NextColumn();
     }
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TOPPER FILES");
     ImGui::Separator();
+    ImGui::PushID("TopperFiles");
     for (size_t i = 0; i < currentTable_.topperFiles.size(); ++i) {
         const auto& file = currentTable_.topperFiles[i];
         ImGui::Text("Topper File %zu", i + 1);
@@ -420,9 +439,10 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
+            ImGui::PushID(j); // Scope ID for each URL
             char buttonId[32];
-            snprintf(buttonId, sizeof(buttonId), "url_topper_%zu_%zu", i, j); // Unique ID
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Brighter blue
+            snprintf(buttonId, sizeof(buttonId), "topper_url_%zu_%zu", i, j);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
                 LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
@@ -439,10 +459,11 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
+            ImGui::PopID(); // End scope for each URL
         }
         ImGui::NextColumn();
     }
-
+    ImGui::PopID();
     ImGui::Columns(1);
     ImGui::EndChild();
 
