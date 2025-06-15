@@ -30,6 +30,7 @@ void KeybindManager::initializeDefaults() {
     keybinds_["ScreenshotKey"] = {SDLK_s};
     keybinds_["ScreenshotQuit"] = {SDLK_q};
     keybinds_["MetadataEdit"] = {SDLK_m};
+    keybinds_["MetadataCatalog"] = {SDLK_n};
 }
 
 // --- Keyboard Input Handling ---

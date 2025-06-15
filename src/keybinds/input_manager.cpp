@@ -9,7 +9,7 @@
 InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
       settingsManager_(nullptr), windowManager_(nullptr), currentIndex_(nullptr),
-      tables_(nullptr), showConfig_(nullptr), showEditor_(nullptr), exeDir_(""), screenshotManager_(nullptr),
+      tables_(nullptr), showConfig_(nullptr), showEditor_(nullptr), showVpsdb_(nullptr), exeDir_(""), screenshotManager_(nullptr),
       runtimeEditor_(nullptr), actionHandlers_(), letterIndex_(), quit_(false),
       screenshotModeActive_(false), lastClickTimes_(), inExternalAppMode_(false),
       lastExternalAppReturnTime_(0) {
@@ -18,7 +18,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
 
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableData>& tables,
-                                   bool& showConfig, bool& showEditor, const std::string& exeDir, IScreenshotManager* screenshotManager,
+                                   bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
                                    IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) {
     //LOG_INFO("InputManager: setDependencies started, quit_ = " << quit_);
     assets_ = assets;
@@ -29,6 +29,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     tables_ = &tables;
     showConfig_ = &showConfig;
     showEditor_ = &showEditor;
+    showVpsdb_ = &showVpsdb;
     exeDir_ = exeDir;
     screenshotManager_ = screenshotManager;
     isLoadingTables_ = &isLoadingTables;
@@ -357,7 +358,14 @@ void InputManager::registerActions() {
         LOG_DEBUG("InputManager: MetadataEdit action triggered");
         soundManager_->playUISound("config_toggle");
         *showEditor_ = !*showEditor_;
-        LOG_DEBUG("InputManager: Toggled showConfig to: " << (*showConfig_ ? 1 : 0));
+        LOG_DEBUG("InputManager: Toggled showEditor to: " << (*showConfig_ ? 1 : 0));
+    };
+
+    actionHandlers_["MetadataCatalog"] = [this]() {
+        LOG_DEBUG("InputManager: MetadataCatalog action triggered");
+        soundManager_->playUISound("config_toggle");
+        *showVpsdb_ = !*showVpsdb_;
+        LOG_DEBUG("InputManager: Toggled showVpsdb to: " << (*showConfig_ ? 1 : 0));
     };
 
     actionHandlers_["Quit"] = [this]() {

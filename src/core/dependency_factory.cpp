@@ -159,11 +159,12 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
                                                                    IScreenshotManager* screenshotManager) {
     auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
     size_t dummyIndex = 0; // Placeholder index for minimal functionality
-    bool dummyShowConfig = false; // Placeholder visibility flag
-    bool dummyShowEditor = false; // Placeholder visibility flag
+    bool dummyShowConfig = false; // Placeholder configUI visibility flag
+    bool dummyShowEditor = false; // Placeholder metadata editor visibility flag
+    bool dummyShowCatalog = false; // Placeholder metadata catalog visibility flag
     std::vector<TableData> dummyTables; // Empty table list as a placeholder
     input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
-                           dummyShowConfig, dummyShowEditor, "", screenshotManager, nullptr, dummyIsLoadingTables); // Sets dummy dependencies
+                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables); // Sets dummy dependencies
     input->registerActions(); // Registers default input actions
     return input;
 }

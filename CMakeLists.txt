@@ -294,6 +294,8 @@ set(SOURCES
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp
     src/tables/vpsdb/vps_database_updater.cpp
+    src/tables/vpsdb/vpsdb_catalog.cpp
+    src/tables/vpsdb/vpsdb_image.cpp
     src/utils/path_utils.cpp
     src/utils/string_utils.cpp
     src/utils/vpinballx_ini_reader.cpp

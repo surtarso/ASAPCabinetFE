@@ -28,6 +28,7 @@
 #include "tables/table_data.h"
 #include "tables/table_override_editor.h"
 #include "tables/table_override_manager.h"
+#include "tables/vpsdb/vpsdb_catalog.h"
 #include "sound/isound_manager.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
@@ -120,6 +121,8 @@ private:
     std::unique_ptr<TableOverrideEditor> overrideEditor_; ///< Editor for table overrides
     TableOverrideManager overrideManager_; ///< Manager for table overrides
     bool showEditor_ = false;
+    std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
+    bool showVpsdb_;
     size_t currentIndex_ = 0;                   ///< Index of the current table.
     size_t lastTableIndex_; ///< Track last table index for editor updates
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.

@@ -260,7 +260,7 @@ void App::initializeDependencies() {
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, showEditor_, exeDir_, screenshotManager_.get(),
+                                   currentIndex_, tables_, showConfig_, showEditor_,  showVpsdb_, exeDir_, screenshotManager_.get(),
                                    windowManager_.get(), isLoadingTables_); // Updated
 
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
@@ -382,6 +382,17 @@ void App::render() {
                 }
                 overrideEditor_.reset();
                 showEditor_ = false;
+            }
+        }
+        // Render vpsdb catalog
+        if (showVpsdb_) {
+            if (!vpsdbCatalog_) {
+                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>("data/vpsdb.json", windowManager_->getPlayfieldRenderer());
+            }
+            if (!vpsdbCatalog_->render()) {
+                vpsdbCatalog_.reset();
+                showVpsdb_ = false;
+                LOG_DEBUG("App: Closed VpsdbCatalog");
             }
         }
     }

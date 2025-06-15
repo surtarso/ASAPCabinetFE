@@ -81,7 +81,7 @@ public:
      */
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableData>& tables,
-                         bool& showConfig, bool& showEditor, const std::string& exeDir, IScreenshotManager* screenshotManager,
+                         bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
                          IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) override;
 
     /**
@@ -97,6 +97,13 @@ public:
      * @return True if the editor UI is visible, false otherwise.
      */
     bool isEditorActive() const override { return *showEditor_; }
+
+    /**
+     * @brief Checks if the metadata catalog UI is active.
+     *
+     * @return True if the catalog UI is visible, false otherwise.
+     */
+    bool isCatalogActive() const override { return *showVpsdb_; }
 
     /**
      * @brief Checks if the application should quit.
@@ -148,6 +155,7 @@ private:
     const std::vector<TableData>* tables_; ///< Pointer to the table data list.
     bool* showConfig_;                  ///< Pointer to the configuration UI visibility flag.
     bool* showEditor_;
+    bool* showVpsdb_;
     std::string exeDir_;                ///< Executable directory for path resolution.
     IScreenshotManager* screenshotManager_; ///< Screenshot manager for screenshot mode.
     ConfigUI* runtimeEditor_;           ///< Configuration UI editor for runtime settings.
