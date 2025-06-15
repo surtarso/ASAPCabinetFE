@@ -20,7 +20,6 @@ QOL:
 - pick fields to be shown on metadata panel
 
 On hold:
-- table settings overrides
 - multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
