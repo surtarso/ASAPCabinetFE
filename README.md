@@ -164,7 +164,6 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 We’re dreaming big! Help us bring these features to life:
 
 - Dynamic custom window creation.
-- Single table overrides for settings.
 - In-game video recording.
 - Integrate with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
