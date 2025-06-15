@@ -132,11 +132,11 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | Scroll by Letter   | z and /          | Scroll tables alphabetically (prev/next). |
 | Scroll Random      | r                | Move to a random table.                   |
 | Launch Table       | Enter            | Launch the selected table with VPinballX  |
-| Launch SShot mode  | s                | Open the table in screenshot mode.        |
+| Launch SShot mode  | s                | Launch the table in screenshot mode.      |
 | Config Panel       | c                | Toggle config panel.                      |
 | Save window pos.   | left doubleclick | Saves current window positions in config. |
-| Metadata Editor    | m                | Opens Metadata Editor in current table.   |
-| VPSdb Catalog      | n                | Opens VPSdb catalog for browsing tables.  |
+| Metadata Editor    | m                | Toggle Metadata Editor in current table.  |
+| VPSdb Catalog      | n                | Toggle VPSdb catalog for browsing tables. |
 | Quit               | q                | Exit the application.                     |
 
 ## Generator Tools
