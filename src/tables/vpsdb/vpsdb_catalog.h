@@ -20,8 +20,18 @@
 #include <vector>
 #include <memory>
 #include <thread>
+#include <atomic>
+#include <mutex>
+#include <queue>
 
 namespace vpsdb {
+
+struct LoadedTableData {
+    size_t index;
+    PinballTable table;
+    std::string backglassPath;
+    std::string playfieldPath;
+};
 
 class VpsdbCatalog {
 public:
@@ -38,6 +48,7 @@ private:
     bool loaded_;
     std::atomic<bool> isLoading_;
     std::atomic<int> progressStage_; // 0: Not started, 1: Fetching, 2: Loading JSON, 3: Done
+    std::atomic<bool> isTableLoading_;
     bool isOpen;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> backglassTexture_;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> playfieldTexture_;
@@ -46,7 +57,11 @@ private:
     std::unique_ptr<VpsDatabaseClient> vpsDbClient_;
     const Settings& settings_;
     std::thread initThread_;
+    std::thread tableLoadThread_;
     std::mutex mutex_;
+    std::queue<LoadedTableData> loadedTableQueue_; // Queue for main-thread processing
+    // std::chrono::steady_clock::time_point lastSearchTime_;
+    // std::string pendingSearchTerm_;
 
     void loadJson();
     void loadTable(size_t index);
@@ -58,6 +73,7 @@ private:
     SDL_Texture* loadTexture(const std::string& path);
     void applySearchFilter(const char* searchTerm);
     void initInBackground();
+    void loadTableInBackground(size_t index);
 };
 
 } // namespace vpsdb

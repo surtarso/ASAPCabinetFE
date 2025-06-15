@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
-#include <thread> // For std::this_thread
+#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -15,6 +15,8 @@ VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* rende
       currentIndex_(0),
       loaded_(false),
       isLoading_(false),
+      isTableLoading_(false),
+      isOpen(false),
       backglassTexture_(nullptr, SDL_DestroyTexture),
       playfieldTexture_(nullptr, SDL_DestroyTexture),
       vpsDbClient_(std::make_unique<VpsDatabaseClient>(vpsdbFilePath_)),
@@ -24,17 +26,19 @@ VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* rende
 
 VpsdbCatalog::~VpsdbCatalog() {
     if (initThread_.joinable()) {
-        initThread_.join(); // Wait for the thread to finish
+        initThread_.join();
+    }
+    if (tableLoadThread_.joinable()) {
+        tableLoadThread_.join();
     }
     clearThumbnails();
 }
 
 void VpsdbCatalog::initInBackground() {
     isLoading_ = true;
-    progressStage_ = 1; // Start with fetching stage
+    progressStage_ = 1;
     LOG_DEBUG("VpsdbCatalog: Starting initialization in background");
 
-    // Check and fetch vpsdb.json if needed
     if (!fs::exists(vpsdbFilePath_)) {
         LOG_DEBUG("VpsdbCatalog: vpsdb.json not found, initiating fetch");
         if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
@@ -49,13 +53,128 @@ void VpsdbCatalog::initInBackground() {
             LOG_DEBUG("VpsdbCatalog: vpsdb.json exists but update check failed, proceeding with current file");
         }
     }
-    progressStage_ = 2; // Move to loading JSON stage
-
-    // Load the JSON after fetch
+    progressStage_ = 2;
     loadJson();
-    progressStage_ = 3; // Done
+    progressStage_ = 3;
     isLoading_ = false;
     LOG_DEBUG("VpsdbCatalog: Initialization complete in background");
+}
+
+void VpsdbCatalog::loadTableInBackground(size_t index) {
+    LoadedTableData data;
+    data.index = index;
+
+    try {
+        std::ifstream file(vpsdbFilePath_);
+        nlohmann::json json;
+        file >> json;
+        auto entry = json[index];
+        PinballTable table;
+        table.id = entry.value("id", "");
+        table.updatedAt = entry.value("updatedAt", 0);
+        table.manufacturer = entry.value("manufacturer", "");
+        table.name = entry.value("name", "");
+        table.year = entry.value("year", 0);
+        table.theme = entry.value("theme", std::vector<std::string>{});
+        table.designers = entry.value("designers", std::vector<std::string>{});
+        table.type = entry.value("type", "");
+        table.players = entry.value("players", 0);
+        table.ipdbUrl = entry.value("ipdbUrl", "");
+        table.lastCreatedAt = entry.value("lastCreatedAt", 0);
+
+        for (const auto& file : entry.value("tableFiles", nlohmann::json::array())) {
+            TableFile tf;
+            tf.id = file.value("id", "");
+            tf.createdAt = file.value("createdAt", 0);
+            tf.updatedAt = file.value("updatedAt", 0);
+            tf.authors = file.value("authors", std::vector<std::string>{});
+            tf.features = file.value("features", std::vector<std::string>{});
+            tf.tableFormat = file.value("tableFormat", "");
+            tf.comment = file.value("comment", "");
+            tf.version = file.value("version", "");
+            tf.imgUrl = file.value("imgUrl", "");
+            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
+            }
+            table.tableFiles.push_back(tf);
+        }
+
+        for (const auto& file : entry.value("b2sFiles", nlohmann::json::array())) {
+            TableFile tf;
+            tf.id = file.value("id", "");
+            tf.createdAt = file.value("createdAt", 0);
+            tf.updatedAt = file.value("updatedAt", 0);
+            tf.authors = file.value("authors", std::vector<std::string>{});
+            tf.features = file.value("features", std::vector<std::string>{});
+            tf.comment = file.value("comment", "");
+            tf.version = file.value("version", "");
+            tf.imgUrl = file.value("imgUrl", "");
+            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
+            }
+            table.b2sFiles.push_back(tf);
+        }
+
+        for (const auto& file : entry.value("wheelArtFiles", nlohmann::json::array())) {
+            TableFile tf;
+            tf.id = file.value("id", "");
+            tf.createdAt = file.value("createdAt", 0);
+            tf.updatedAt = file.value("updatedAt", 0);
+            tf.authors = file.value("authors", std::vector<std::string>{});
+            tf.version = file.value("version", "");
+            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
+            }
+            table.wheelArtFiles.push_back(tf);
+        }
+
+        for (const auto& file : entry.value("topperFiles", nlohmann::json::array())) {
+            TopperFile tf;
+            tf.id = file.value("id", "");
+            tf.createdAt = file.value("createdAt", 0);
+            tf.updatedAt = file.value("updatedAt", 0);
+            tf.authors = file.value("authors", std::vector<std::string>{});
+            tf.version = file.value("version", "");
+            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
+            }
+            table.topperFiles.push_back(tf);
+        }
+        data.table = std::move(table);
+    } catch (const std::exception& e) {
+        LOG_ERROR("VpsdbCatalog: Failed to load table at index " << index << ": " << e.what());
+        std::lock_guard<std::mutex> lock(mutex_);
+        isTableLoading_ = false;
+        return;
+    }
+
+    std::string backglassUrl, playfieldUrl;
+    if (!data.table.b2sFiles.empty()) {
+        backglassUrl = data.table.b2sFiles[0].imgUrl;
+    }
+    if (!data.table.tableFiles.empty()) {
+        playfieldUrl = data.table.tableFiles[0].imgUrl;
+    }
+
+    if (!backglassUrl.empty()) {
+        data.backglassPath = "data/cache/" + data.table.id + "_backglass.webp";
+        if (!downloadImage(backglassUrl, data.backglassPath)) {
+            data.backglassPath.clear();
+        }
+    }
+    if (!playfieldUrl.empty()) {
+        data.playfieldPath = "data/cache/" + data.table.id + "_playfield.webp";
+        if (!downloadImage(playfieldUrl, data.playfieldPath)) {
+            data.playfieldPath.clear();
+        }
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        loadedTableQueue_.push(std::move(data));
+        isTableLoading_ = true;
+    }
+    LOG_DEBUG("VpsdbCatalog: Background table load complete, index: " << index);
 }
 
 bool VpsdbCatalog::render() {
@@ -65,7 +184,6 @@ bool VpsdbCatalog::render() {
         ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Always);
         ImGui::Begin("Loading VPSDB", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
-        // Calculate text size for centering
         const char* textToDisplay = "";
         switch (progressStage_) {
             case 1:
@@ -79,62 +197,85 @@ bool VpsdbCatalog::render() {
                 break;
         }
         ImVec2 textSize = ImGui::CalcTextSize(textToDisplay);
-
-        // Center text horizontally
         ImGui::SetCursorPosX((300 - textSize.x) / 2);
-        // Center text vertically
         ImGui::SetCursorPosY((100 - textSize.y) / 2);
-
-        ImGui::Text("%s", textToDisplay); // Use %s to display the dynamic text
-
+        ImGui::Text("%s", textToDisplay);
         ImGui::End();
         return true;
     }
     
     if (!loaded_) {
         ImGui::Text("Error: VPSDB JSON not loaded");
-        LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
+        if (!isLoading_) {
+            LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
+        }
         return true;
     }
 
-    // Center and fix window size (matching TableOverrideEditor style)
     ImGuiIO& io = ImGui::GetIO();
-    float panelWidth = io.DisplaySize.x * 0.7f;  // 70% of screen width
-    float panelHeight = io.DisplaySize.y * 0.52f; // 52% of screen height
+    float panelWidth = io.DisplaySize.x * 0.7f;
+    float panelHeight = io.DisplaySize.y * 0.52f;
     float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
     float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
 
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.8f); // Semi-transparent
+    ImGui::SetNextWindowBgAlpha(0.8f);
 
     ImGui::Begin("VPSDB Catalog", nullptr,
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
-    // Add search bar and apply filter
-    static char searchBuffer[256] = "";
-    ImGui::InputText("Search", searchBuffer, IM_ARRAYSIZE(searchBuffer));
-    ImGui::Separator();
-    applySearchFilter(searchBuffer);
+    // Process loaded table data
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!loadedTableQueue_.empty()) {
+            auto data = std::move(loadedTableQueue_.front());
+            loadedTableQueue_.pop();
 
-    // Load current table data if needed
-    if (currentTable_.id.empty() || currentTable_.id != index_[currentIndex_].id) {
-        loadTable(currentIndex_);
-        clearThumbnails();
-        loadThumbnails();
+            currentIndex_ = data.index;
+            currentTable_ = std::move(data.table);
+            clearThumbnails();
+
+            if (!data.backglassPath.empty()) {
+                backglassTexture_.reset(loadTexture(data.backglassPath));
+                currentBackglassPath_ = data.backglassPath;
+            }
+            if (!data.playfieldPath.empty()) {
+                playfieldTexture_.reset(loadTexture(data.playfieldPath));
+                currentPlayfieldPath_ = data.playfieldPath;
+            }
+
+            isTableLoading_ = false;
+            LOG_DEBUG("VpsdbCatalog: Processed loaded table, index: " << currentIndex_);
+        }
     }
 
-    // Split panel into left (metadata) and right (thumbnails)
+    // Search input and button
+    static char searchBuffer[256] = "";
+    ImGui::InputText("##Search", searchBuffer, IM_ARRAYSIZE(searchBuffer));
+    ImGui::SameLine();
+    if (ImGui::Button("Search")) {
+        applySearchFilter(searchBuffer);
+    }
+    ImGui::Separator();
+
+    // Initial table load
+    if (currentTable_.id.empty() || currentTable_.id != index_[currentIndex_].id) {
+        if (!isTableLoading_ && !tableLoadThread_.joinable()) {
+            isTableLoading_ = true;
+            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, currentIndex_);
+        }
+    }
+
+    // Render main content
     ImGui::Columns(2, "Layout", true);
-    ImGui::SetColumnWidth(0, panelWidth * 0.7f); // 70% for metadata
+    ImGui::SetColumnWidth(0, panelWidth * 0.7f);
     ImGui::BeginChild("Metadata", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false);
 
-    // Render metadata in two columns
     ImGui::Columns(2, "Fields", false);
     float keyWidth = ImGui::CalcTextSize("tableAuthorWebsite").x + ImGui::GetStyle().FramePadding.x * 2;
     ImGui::SetColumnWidth(0, keyWidth);
 
-    // Basic fields
     renderField("ID", currentTable_.id);
     renderField("Name", currentTable_.name);
     renderField("Manufacturer", currentTable_.manufacturer);
@@ -147,7 +288,6 @@ bool VpsdbCatalog::render() {
     renderField("Updated At", std::to_string(currentTable_.updatedAt));
     renderField("Last Created At", std::to_string(currentTable_.lastCreatedAt));
 
-    // Table Files
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
     ImGui::Separator();
     for (size_t i = 0; i < currentTable_.tableFiles.size(); ++i) {
@@ -168,7 +308,6 @@ bool VpsdbCatalog::render() {
         ImGui::NextColumn();
     }
 
-    // B2S Files
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "B2S FILES");
     ImGui::Separator();
     for (size_t i = 0; i < currentTable_.b2sFiles.size(); ++i) {
@@ -188,7 +327,6 @@ bool VpsdbCatalog::render() {
         ImGui::NextColumn();
     }
 
-    // Wheel Art Files
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "WHEEL ART FILES");
     ImGui::Separator();
     for (size_t i = 0; i < currentTable_.wheelArtFiles.size(); ++i) {
@@ -205,7 +343,6 @@ bool VpsdbCatalog::render() {
         ImGui::NextColumn();
     }
 
-    // Topper Files
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TOPPER FILES");
     ImGui::Separator();
     for (size_t i = 0; i < currentTable_.topperFiles.size(); ++i) {
@@ -225,7 +362,6 @@ bool VpsdbCatalog::render() {
     ImGui::Columns(1);
     ImGui::EndChild();
 
-    // Render thumbnails in right column
     ImGui::NextColumn();
     ImGui::BeginChild("Thumbnails", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false);
     if (backglassTexture_) {
@@ -252,7 +388,7 @@ bool VpsdbCatalog::render() {
 
     ImGui::Columns(1);
 
-    // Navigation buttons with filtered cycling
+    // Navigation buttons
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() - 15.0f);
     std::vector<size_t> filteredIndices;
     if (strlen(searchBuffer) > 0) {
@@ -268,45 +404,65 @@ bool VpsdbCatalog::render() {
     }
 
     if (ImGui::Button("< Prev", ImVec2(100, 0))) {
-        if (!filteredIndices.empty()) {
-            auto it = std::find(filteredIndices.begin(), filteredIndices.end(), currentIndex_);
-            if (it != filteredIndices.begin()) {
-                --it;
-                currentIndex_ = *it;
-            } else {
-                currentIndex_ = filteredIndices.back();
+        if (!isTableLoading_) {
+            if (tableLoadThread_.joinable()) {
+                tableLoadThread_.join();
             }
-        } else if (currentIndex_ > 0) {
-            currentIndex_--;
-        } else {
-            currentIndex_ = index_.size() - 1;
+            size_t newIndex;
+            if (!filteredIndices.empty()) {
+                auto it = std::find(filteredIndices.begin(), filteredIndices.end(), currentIndex_);
+                if (it != filteredIndices.begin()) {
+                    --it;
+                    newIndex = *it;
+                } else {
+                    newIndex = filteredIndices.back();
+                }
+            } else if (currentIndex_ > 0) {
+                newIndex = currentIndex_ - 1;
+            } else {
+                newIndex = index_.size() - 1;
+            }
+            isTableLoading_ = true;
+            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+            LOG_DEBUG("VpsdbCatalog: Navigated to previous table, index: " << newIndex);
         }
-        currentTable_ = {};
-        clearThumbnails();
-        loadTable(currentIndex_);
-        loadThumbnails();
-        LOG_DEBUG("VpsdbCatalog: Navigated to previous table, index: " << currentIndex_);
     }
     ImGui::SameLine();
     if (ImGui::Button("Next >", ImVec2(100, 0))) {
-        if (!filteredIndices.empty()) {
-            auto it = std::find(filteredIndices.begin(), filteredIndices.end(), currentIndex_);
-            if (it != filteredIndices.end() - 1) {
-                ++it;
-                currentIndex_ = *it;
-            } else {
-                currentIndex_ = filteredIndices.front();
+        if (!isTableLoading_) {
+            if (tableLoadThread_.joinable()) {
+                tableLoadThread_.join();
             }
-        } else if (currentIndex_ < index_.size() - 1) {
-            currentIndex_++;
-        } else {
-            currentIndex_ = 0;
+            size_t newIndex;
+            if (!filteredIndices.empty()) {
+                auto it = std::find(filteredIndices.begin(), filteredIndices.end(), currentIndex_);
+                if (it != filteredIndices.end() - 1) {
+                    ++it;
+                    newIndex = *it;
+                } else {
+                    newIndex = filteredIndices.front();
+                }
+            } else if (currentIndex_ < index_.size() - 1) {
+                newIndex = currentIndex_ + 1;
+            } else {
+                newIndex = 0;
+            }
+            isTableLoading_ = true;
+            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+            LOG_DEBUG("VpsdbCatalog: Navigated to next table, index: " << newIndex);
         }
-        currentTable_ = {};
-        clearThumbnails();
-        loadTable(currentIndex_);
-        loadThumbnails();
-        LOG_DEBUG("VpsdbCatalog: Navigated to next table, index: " << currentIndex_);
+    }
+
+    // Loading overlay
+    if (isTableLoading_) {
+        ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(0.8f);
+        ImGui::Begin("Loading Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
+        ImVec2 textSize = ImGui::CalcTextSize("Loading Table...");
+        ImGui::SetCursorPos(ImVec2(panelWidth * 0.5f - textSize.x * 0.5f, panelHeight * 0.5f - textSize.y * 0.5f));
+        ImGui::Text("Loading Table...");
+        ImGui::End();
     }
 
     ImGui::End();
@@ -443,32 +599,28 @@ std::string VpsdbCatalog::join(const std::vector<std::string>& vec, const std::s
 
 void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
     if (strlen(searchTerm) == 0) {
-        return; // No filtering if search is empty
+        return;
     }
 
-    static std::string lastSearchTerm = "";
     std::string searchStr = searchTerm;
     std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
 
-    if (searchStr != lastSearchTerm) {
-        size_t newIndex = currentIndex_;
-        for (size_t i = 0; i < index_.size(); ++i) {
-            std::string name = index_[i].name;
-            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-            if (name.find(searchStr) != std::string::npos) {
-                newIndex = i;
-                break; // Stop at first match
-            }
+    size_t newIndex = currentIndex_;
+    for (size_t i = 0; i < index_.size(); ++i) {
+        std::string name = index_[i].name;
+        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        if (name.find(searchStr) != std::string::npos) {
+            newIndex = i;
+            break;
         }
-        if (newIndex != currentIndex_) {
-            currentIndex_ = newIndex;
-            currentTable_ = {};
-            clearThumbnails();
-            loadTable(currentIndex_);
-            loadThumbnails();
-            LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << currentIndex_ << ", name: " << index_[currentIndex_].name);
+    }
+    if (newIndex != currentIndex_) {
+        if (tableLoadThread_.joinable()) {
+            tableLoadThread_.join();
         }
-        lastSearchTerm = searchStr;
+        isTableLoading_ = true;
+        tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+        LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << index_[newIndex].name);
     }
 }
 
