@@ -11,6 +11,7 @@ FIX:
 - regression in path handling for default media
 
 QOL:
+- use more than title on catalog search (author, manufacturer etc)
 - clean up new panels (vpsdb catalog and metadata editor)
 - single table vpsdb metadata lookup for current files (not catalog)
 - stop deleting asapcab and instead increment/edit it.
