@@ -1,3 +1,6 @@
+# Disclaimer:
+Since updates are rapid on this stage, the manual is a bit outdate as of today (6/14/2025). I will update it asap. It's still mostly valid, just missing a lot of new features etc. Sorry, I'm just one. =)
+
 # As Simple As Possible Cabinet Front-End _User's Manual_
 
 Welcome to ASAPCabinetFE! This is your go-to app for playing Visual Pinball X (VPX) tables with ease. This manual will walk you through how to use it—Browse tables, launching games, snapping screenshots, and tweaking settings—all without any techy stuff. Everything you need is right in the app’s config menu. Let’s dive in!
