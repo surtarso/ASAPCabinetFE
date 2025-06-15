@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- speed up vpsdb catalog
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
@@ -11,7 +12,9 @@ FIX:
 - regression in path handling for default media
 
 QOL:
-- single table vpsdb lookup.
+- create links to follow table downloads on vpsdb catalog
+- clean up new panels (vpsdb catalog and metadata editor)
+- single table vpsdb lookup for current files (not catalog)
 - stop deleting asapcab and instead increment/edit it.
 - save metadata back to .vpx with vpin/vpxtool
 - Add ui user notifications for critical failures like missing config files.
