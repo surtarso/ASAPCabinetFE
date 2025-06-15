@@ -56,7 +56,9 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
         if (lastUpdatedFile.is_open()) {
             nlohmann::json lastUpdatedJson;
             lastUpdatedFile >> lastUpdatedJson; // Parse local lastUpdated.json
-            if (lastUpdatedJson.contains("updatedAt")) {
+            if (lastUpdatedJson.is_number()) {
+                localTimestamp = lastUpdatedJson.get<long>();
+            } else if (lastUpdatedJson.contains("updatedAt")) {
                 if (lastUpdatedJson["updatedAt"].is_number()) {
                     localTimestamp = lastUpdatedJson["updatedAt"].get<long>();
                 } else if (lastUpdatedJson["updatedAt"].is_string()) {
@@ -68,6 +70,9 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 }
             }
             lastUpdatedFile.close();
+            LOG_DEBUG("VpsDatabaseUpdater: Loaded localTimestamp from " << lastUpdatedPath << ": " << localTimestamp);
+        } else {
+            LOG_DEBUG("VpsDatabaseUpdater: No local lastUpdated.json found at " << lastUpdatedPath);
         }
 
         std::string lastUpdatedContent, lastUpdatedHeaders;
@@ -78,12 +83,12 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Fetching lastUpdated.json...";
             }
-            curl_easy_setopt(curl, CURLOPT_URL, lastUpdatedUrl.c_str()); // Set URL for lastUpdated.json
+            curl_easy_setopt(curl, CURLOPT_URL, lastUpdatedUrl.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &lastUpdatedContent);
             curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
             curl_easy_setopt(curl, CURLOPT_HEADERDATA, &lastUpdatedHeaders);
-            CURLcode res = curl_easy_perform(curl); // Perform the HTTP request
+            CURLcode res = curl_easy_perform(curl);
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
             curl_easy_cleanup(curl);
             if (res != CURLE_OK) {
@@ -126,9 +131,10 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 }
             }
         } else {
-            LOG_ERROR("VpsDatabaseUpdater: Invalid lastUpdated.json format; expected number or object with 'updatedAt'");
+            LOG_ERROR("VpsDatabaseUpdater: Invalid lastUpdated.json format; expected a number or object with 'updatedAt'");
             return fs::exists(vpsDbPath_);
         }
+        LOG_DEBUG("VpsDatabaseUpdater: Remote timestamp: " << remoteTimestamp);
 
         if (remoteTimestamp > localTimestamp || !fs::exists(vpsDbPath_)) {
             bool downloadSuccess = false;
@@ -137,7 +143,6 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->currentTask = "Downloading vpsdb.json (" + std::to_string(i + 1) + "/" + std::to_string(vpsDbUrls.size()) + ")...";
                     progress->currentTablesLoaded = i;
-                    // Do not set totalTablesToLoad to preserve local table count
                 }
                 if (downloadVpsDb(vpsDbUrls[i], progress)) {
                     downloadSuccess = true;
@@ -152,7 +157,8 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                         LOG_ERROR("VpsDatabaseUpdater: Failed to open " << lastUpdatedPath << " for writing");
                         return true;
                     }
-                    lastUpdatedOut << remoteLastUpdated.dump(); // Save updated timestamp
+                    // Write as a plain number to match the remote format
+                    lastUpdatedOut << remoteTimestamp;
                     lastUpdatedOut.close();
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -172,7 +178,7 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "VPSDB is up-to-date";
             }
-            LOG_INFO("VpsDatabaseUpdater: vpsdb.json is up-to-date");
+            LOG_INFO("VpsDatabaseUpdater: vpsdb.json is up-to-date (local: " << localTimestamp << ", remote: " << remoteTimestamp << ")");
         }
     } catch (const std::exception& e) {
         LOG_ERROR("VpsDatabaseUpdater: Error checking vpsdb update: " << e.what());

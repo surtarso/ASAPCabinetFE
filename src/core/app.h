@@ -122,7 +122,7 @@ private:
     TableOverrideManager overrideManager_; ///< Manager for table overrides
     bool showEditor_ = false;
     std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
-    bool showVpsdb_;
+    bool showVpsdb_ = false;
     size_t currentIndex_ = 0;                   ///< Index of the current table.
     size_t lastTableIndex_; ///< Track last table index for editor updates
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.

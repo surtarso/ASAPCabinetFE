@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- catalog is not rebuilding cache, expects cache to exist.
 - speed up vpsdb catalog
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)

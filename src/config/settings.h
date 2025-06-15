@@ -199,7 +199,7 @@ struct Settings {
     std::string vpxSubCmd = "-Play";
     std::string vpsDbPath = "data/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
-    std::string vpsDbLastUpdated = "data/vpsdb_last_updated.txt";
+    std::string vpsDbLastUpdated = "data/lastUpdated.json";
     std::string vpxtoolBin = "";
     std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapcab_index.json";

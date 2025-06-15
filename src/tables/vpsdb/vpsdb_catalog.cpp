@@ -1,46 +1,96 @@
-/**
- * @file vpsdb_catalog.cpp
- * @brief Implementation of the VpsdbCatalog class for displaying VPSDB pinball table metadata.
- *
- * Renders a centered, unmovable, unresizable ImGui panel to display one table's metadata
- * and thumbnails (backglass and playfield) from the VPSDB JSON file, with navigation buttons.
- */
-
 #include "vpsdb_catalog.h"
 #include "log/logging.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
+#include <thread> // For std::this_thread
 
 namespace fs = std::filesystem;
 
 namespace vpsdb {
 
-VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer)
+VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings)
     : vpsdbFilePath_(vpsdbFilePath),
       renderer_(renderer),
       currentIndex_(0),
       loaded_(false),
+      isLoading_(false),
       backglassTexture_(nullptr, SDL_DestroyTexture),
-      playfieldTexture_(nullptr, SDL_DestroyTexture) {
-    loadJson();
-    // Create cache directory
-    fs::path cacheDir = "data/cache";
-    try {
-        if (!fs::exists(cacheDir)) {
-            fs::create_directories(cacheDir);
-            LOG_DEBUG("VpsdbCatalog: Created cache directory " << cacheDir.string());
-        }
-    } catch (const fs::filesystem_error& e) {
-        LOG_ERROR("VpsdbCatalog: Failed to create cache directory " << cacheDir.string() << ": " << e.what());
-    }
+      playfieldTexture_(nullptr, SDL_DestroyTexture),
+      vpsDbClient_(std::make_unique<VpsDatabaseClient>(vpsdbFilePath_)),
+      settings_(settings) {
+    initThread_ = std::thread(&VpsdbCatalog::initInBackground, this);
 }
 
 VpsdbCatalog::~VpsdbCatalog() {
+    if (initThread_.joinable()) {
+        initThread_.join(); // Wait for the thread to finish
+    }
     clearThumbnails();
 }
 
+void VpsdbCatalog::initInBackground() {
+    isLoading_ = true;
+    progressStage_ = 1; // Start with fetching stage
+    LOG_DEBUG("VpsdbCatalog: Starting initialization in background");
+
+    // Check and fetch vpsdb.json if needed
+    if (!fs::exists(vpsdbFilePath_)) {
+        LOG_DEBUG("VpsdbCatalog: vpsdb.json not found, initiating fetch");
+        if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
+            LOG_ERROR("VpsdbCatalog: Failed to fetch vpsdb.json");
+            isLoading_ = false;
+            progressStage_ = 0;
+            return;
+        }
+    } else {
+        LOG_DEBUG("VpsdbCatalog: vpsdb.json exists, checking for updates");
+        if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
+            LOG_DEBUG("VpsdbCatalog: vpsdb.json exists but update check failed, proceeding with current file");
+        }
+    }
+    progressStage_ = 2; // Move to loading JSON stage
+
+    // Load the JSON after fetch
+    loadJson();
+    progressStage_ = 3; // Done
+    isLoading_ = false;
+    LOG_DEBUG("VpsdbCatalog: Initialization complete in background");
+}
+
 bool VpsdbCatalog::render() {
+    if (isLoading_) {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 300) / 2, (io.DisplaySize.y - 100) / 2), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Always);
+        ImGui::Begin("Loading VPSDB", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+
+        // Calculate text size for centering
+        const char* textToDisplay = "";
+        switch (progressStage_) {
+            case 1:
+                textToDisplay = "Fetching VPSDB...";
+                break;
+            case 2:
+                textToDisplay = "Loading JSON...";
+                break;
+            default:
+                textToDisplay = "Loading VPSDB...";
+                break;
+        }
+        ImVec2 textSize = ImGui::CalcTextSize(textToDisplay);
+
+        // Center text horizontally
+        ImGui::SetCursorPosX((300 - textSize.x) / 2);
+        // Center text vertically
+        ImGui::SetCursorPosY((100 - textSize.y) / 2);
+
+        ImGui::Text("%s", textToDisplay); // Use %s to display the dynamic text
+
+        ImGui::End();
+        return true;
+    }
+    
     if (!loaded_) {
         ImGui::Text("Error: VPSDB JSON not loaded");
         LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
@@ -59,7 +109,7 @@ bool VpsdbCatalog::render() {
     ImGui::SetNextWindowBgAlpha(0.8f); // Semi-transparent
 
     ImGui::Begin("VPSDB Catalog", nullptr,
-                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse); // Remove window border
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
     // Add search bar and apply filter
     static char searchBuffer[256] = "";
@@ -77,7 +127,7 @@ bool VpsdbCatalog::render() {
     // Split panel into left (metadata) and right (thumbnails)
     ImGui::Columns(2, "Layout", true);
     ImGui::SetColumnWidth(0, panelWidth * 0.7f); // 70% for metadata
-    ImGui::BeginChild("Metadata", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false); // Remove child border
+    ImGui::BeginChild("Metadata", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false);
 
     // Render metadata in two columns
     ImGui::Columns(2, "Fields", false);
@@ -177,24 +227,13 @@ bool VpsdbCatalog::render() {
 
     // Render thumbnails in right column
     ImGui::NextColumn();
-    ImGui::BeginChild("Thumbnails", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false); // Remove child border
+    ImGui::BeginChild("Thumbnails", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 15.0f), false);
     if (backglassTexture_) {
         ImGui::Text("Backglass");
-        // Preserve aspect ratio, use 200px width, calculate height with black bars
         int backglassWidth, backglassHeight;
         SDL_QueryTexture(backglassTexture_.get(), nullptr, nullptr, &backglassWidth, &backglassHeight);
         float backglassAspectRatio = static_cast<float>(backglassHeight) / backglassWidth;
-        ImVec2 containerSize(200, 200 * backglassAspectRatio);
-        ImVec2 displaySize = containerSize;
-        if (backglassAspectRatio > 1.0f) {
-            displaySize.x = 200;
-            displaySize.y = 200 * backglassAspectRatio;
-            if (displaySize.y > 200 * backglassAspectRatio) displaySize.y = 200 * backglassAspectRatio;
-        } else {
-            displaySize.x = 200;
-            displaySize.y = 200 / backglassAspectRatio;
-            if (displaySize.y > 200 * backglassAspectRatio) displaySize.y = 200 * backglassAspectRatio;
-        }
+        ImVec2 displaySize(200, 200 * backglassAspectRatio);
         ImGui::Image(reinterpret_cast<ImTextureID>(backglassTexture_.get()), displaySize);
     } else {
         ImGui::Text("Backglass: Not Available");
@@ -202,7 +241,6 @@ bool VpsdbCatalog::render() {
     ImGui::Spacing();
     if (playfieldTexture_) {
         ImGui::Text("Playfield");
-        // Preserve aspect ratio, use 200px width, calculate height with black bars
         int playfieldWidth, playfieldHeight;
         SDL_QueryTexture(playfieldTexture_.get(), nullptr, nullptr, &playfieldWidth, &playfieldHeight);
         float aspectRatio = static_cast<float>(playfieldHeight) / playfieldWidth;
@@ -236,12 +274,12 @@ bool VpsdbCatalog::render() {
                 --it;
                 currentIndex_ = *it;
             } else {
-                currentIndex_ = filteredIndices.back(); // Wrap to last filtered
+                currentIndex_ = filteredIndices.back();
             }
         } else if (currentIndex_ > 0) {
             currentIndex_--;
         } else {
-            currentIndex_ = index_.size() - 1; // Wrap to last entry
+            currentIndex_ = index_.size() - 1;
         }
         currentTable_ = {};
         clearThumbnails();
@@ -257,12 +295,12 @@ bool VpsdbCatalog::render() {
                 ++it;
                 currentIndex_ = *it;
             } else {
-                currentIndex_ = filteredIndices.front(); // Wrap to first filtered
+                currentIndex_ = filteredIndices.front();
             }
         } else if (currentIndex_ < index_.size() - 1) {
             currentIndex_++;
         } else {
-            currentIndex_ = 0; // Wrap to first entry
+            currentIndex_ = 0;
         }
         currentTable_ = {};
         clearThumbnails();
