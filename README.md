@@ -53,6 +53,7 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - Use `VPinballX.ini` for size and position auto-configuration.
 - Use [VPin](https://github.com/francisdb/vpin) to retrieve table metadata.
 - Match metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
+- Create custom table overrides for media or metadata on the fly.
 - Sort tables by title, type, manufacturer, year or author.
 - Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
@@ -137,6 +138,7 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | Quit SShot mode    | q                | Quit SShot mode and return to launcher.   |
 | Quit               | q                | Exit the application.                     |
 | Save window pos.   | left doubleclick | Saves current window positions in config. |
+| Metadata Editor    | m                | Opens Metadata Editor in current table.   |
 
 ## Generator Tools
 > [!IMPORTANT]
