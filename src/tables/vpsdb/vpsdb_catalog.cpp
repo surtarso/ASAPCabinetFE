@@ -32,7 +32,7 @@ VpsdbCatalog::~VpsdbCatalog() {
     if (tableLoadThread_.joinable()) {
         tableLoadThread_.join();
     }
-    clearThumbnails();
+    VpsdbImage::clearThumbnails(*this);
 }
 
 void VpsdbCatalog::initInBackground() {
@@ -159,13 +159,13 @@ void VpsdbCatalog::loadTableInBackground(size_t index) {
 
     if (!backglassUrl.empty()) {
         data.backglassPath = "data/cache/" + data.table.id + "_backglass.webp";
-        if (!downloadImage(backglassUrl, data.backglassPath)) {
+        if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
             data.backglassPath.clear();
         }
     }
     if (!playfieldUrl.empty()) {
         data.playfieldPath = "data/cache/" + data.table.id + "_playfield.webp";
-        if (!downloadImage(playfieldUrl, data.playfieldPath)) {
+        if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
             data.playfieldPath.clear();
         }
     }
@@ -240,14 +240,14 @@ bool VpsdbCatalog::render() {
 
             currentIndex_ = data.index;
             currentTable_ = std::move(data.table);
-            clearThumbnails();
+            VpsdbImage::clearThumbnails(*this);
 
             if (!data.backglassPath.empty()) {
-                backglassTexture_.reset(loadTexture(data.backglassPath));
+                backglassTexture_.reset(VpsdbImage::loadTexture(*this, data.backglassPath));
                 currentBackglassPath_ = data.backglassPath;
             }
             if (!data.playfieldPath.empty()) {
-                playfieldTexture_.reset(loadTexture(data.playfieldPath));
+                playfieldTexture_.reset(VpsdbImage::loadTexture(*this, data.playfieldPath));
                 currentPlayfieldPath_ = data.playfieldPath;
             }
 

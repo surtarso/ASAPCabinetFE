@@ -14,6 +14,7 @@
 #include "vps_database_client.h"
 #include "vpsdb_metadata.h"
 #include "config/settings.h"
+#include "vpsdb_image.h"
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <string>
@@ -34,6 +35,8 @@ struct LoadedTableData {
 };
 
 class VpsdbCatalog {
+    friend class VpsdbImage; // Allow VpsdbImage to access private members
+
 public:
     VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings);
     ~VpsdbCatalog();
@@ -67,10 +70,6 @@ private:
     void loadTable(size_t index);
     void renderField(const char* key, const std::string& value);
     std::string join(const std::vector<std::string>& vec, const std::string& delim);
-    void loadThumbnails();
-    void clearThumbnails();
-    bool downloadImage(const std::string& url, const std::string& cachePath);
-    SDL_Texture* loadTexture(const std::string& path);
     void applySearchFilter(const char* searchTerm);
     void initInBackground();
     void loadTableInBackground(size_t index);
