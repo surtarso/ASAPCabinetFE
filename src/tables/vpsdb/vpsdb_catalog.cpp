@@ -308,17 +308,14 @@ bool VpsdbCatalog::render() {
     renderField("Last Created At", std::to_string(currentTable_.lastCreatedAt));
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
     ImGui::Separator();
 
-    // We will push unique IDs per table file within the loop itself.
-    // So, remove the ImGui::PushID("TableFiles"); from here.
-
+    // Push a unique ID for the entire "TABLE FILES" section.
+    ImGui::PushID("TableFilesSection");
     for (size_t i = 0; i < currentTable_.tableFiles.size(); ++i) {
         const auto& file = currentTable_.tableFiles[i];
 
-        // Push a unique ID for each table file entry.
-        // Using the index 'i' is a common and safe way to ensure uniqueness within a loop.
+        // Push a unique ID for each table file entry within this section.
         ImGui::PushID(static_cast<int>(i));
 
         ImGui::Text("Table File %zu", i + 1);
@@ -333,12 +330,10 @@ bool VpsdbCatalog::render() {
 
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            // You already have ImGui::PushID(j) here, which is correct for the inner loop.
-            // This ensures each "Download" button for a URL within the current table file is unique.
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this table file
+            // Push a unique ID for each URL within this table file entry.
+            ImGui::PushID(static_cast<int>(j));
 
-            // The snprintf for buttonId is technically redundant when PushID is used,
-            // as ImGui's ID stack handles the uniqueness. You can remove this line if desired.
+            // The snprintf for buttonId is redundant when PushID is used.
             // char buttonId[54];
             // snprintf(buttonId, sizeof(buttonId), "table_url_%zu_%zu", i, j);
 
@@ -359,18 +354,20 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // End scope for each URL
+            ImGui::PopID(); // Pop the URL ID
         }
         ImGui::NextColumn(); // Again, verify column usage
-        ImGui::PopID(); // Pop the ID for the current table file, before the next iteration.
+        ImGui::PopID(); // Pop the table file ID
     }
+    ImGui::PopID(); // Pop the "TableFilesSection" ID
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "B2S FILES");
     ImGui::Separator();
-    // Removed ImGui::PushID("B2SFiles"); - IDs will be pushed per-item in the loop
+    // Push a unique ID for the entire "B2S FILES" section.
+    ImGui::PushID("B2SFilesSection");
     for (size_t i = 0; i < currentTable_.b2sFiles.size(); ++i) {
         const auto& file = currentTable_.b2sFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each B2S file
+        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each B2S file within this section.
 
         ImGui::Text("B2S File %zu", i + 1);
         ImGui::NextColumn();
@@ -381,7 +378,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL
+            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this B2S file
             // char buttonId[54]; // Redundant with PushID
             // snprintf(buttonId, sizeof(buttonId), "b2s_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
@@ -401,19 +398,20 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // End scope for each URL
+            ImGui::PopID(); // Pop the URL ID
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the ID for the current B2S file
+        ImGui::PopID(); // Pop the B2S file ID
     }
-    // Removed ImGui::PopID();
+    ImGui::PopID(); // Pop the "B2SFilesSection" ID
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "WHEEL ART FILES");
     ImGui::Separator();
-    // Removed ImGui::PushID("WheelFiles"); - IDs will be pushed per-item in the loop
+    // Push a unique ID for the entire "WHEEL ART FILES" section.
+    ImGui::PushID("WheelArtFilesSection");
     for (size_t i = 0; i < currentTable_.wheelArtFiles.size(); ++i) {
         const auto& file = currentTable_.wheelArtFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Wheel Art file
+        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Wheel Art file within this section.
 
         ImGui::Text("Wheel Art File %zu", i + 1);
         ImGui::NextColumn();
@@ -422,7 +420,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL
+            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this Wheel Art file
             // char buttonId[54]; // Redundant with PushID
             // snprintf(buttonId, sizeof(buttonId), "wheel_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
@@ -442,19 +440,20 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // End scope for each URL
+            ImGui::PopID(); // Pop the URL ID
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the ID for the current Wheel Art file
+        ImGui::PopID(); // Pop the Wheel Art file ID
     }
-    // Removed ImGui::PopID();
+    ImGui::PopID(); // Pop the "WheelArtFilesSection" ID
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TOPPER FILES");
     ImGui::Separator();
-    // Removed ImGui::PushID("TopperFiles"); - IDs will be pushed per-item in the loop
+    // Push a unique ID for the entire "TOPPER FILES" section.
+    ImGui::PushID("TopperFilesSection");
     for (size_t i = 0; i < currentTable_.topperFiles.size(); ++i) {
         const auto& file = currentTable_.topperFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Topper file
+        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Topper file within this section.
 
         ImGui::Text("Topper File %zu", i + 1);
         ImGui::NextColumn();
@@ -463,7 +462,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL
+            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this Topper file
             // char buttonId[54]; // Redundant with PushID
             // snprintf(buttonId, sizeof(buttonId), "topper_url_%zu_%zu", i, j);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
@@ -483,12 +482,12 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // End scope for each URL
+            ImGui::PopID(); // Pop the URL ID
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the ID for the current Topper file
+        ImGui::PopID(); // Pop the Topper file ID
     }
-    // Removed ImGui::PopID();
+    ImGui::PopID(); // Pop the "TopperFilesSection" ID
 
     ImGui::Columns(1);
     ImGui::EndChild();
