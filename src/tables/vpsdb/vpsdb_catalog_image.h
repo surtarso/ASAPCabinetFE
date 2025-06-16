@@ -1,5 +1,5 @@
-#ifndef VPSDB_IMAGE_H
-#define VPSDB_IMAGE_H
+#ifndef VPSDB_CATALOG_IMAGE_H
+#define VPSDB_CATALOG_IMAGE_H
 
 #include <SDL2/SDL.h>
 #include <string>
@@ -19,4 +19,4 @@ public:
 
 } // namespace vpsdb
 
-#endif // VPSDB_IMAGE_H
+#endif // VPSDB_CATALOG_IMAGE_H

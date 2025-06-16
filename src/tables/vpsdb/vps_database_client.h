@@ -15,7 +15,7 @@
 #include <string> // For std::string to handle file paths
 #include "tables/table_data.h" // Structure for storing table data
 #include "vps_database_loader.h" // Class for loading the VPS database
-#include "vps_data_scanner.h" // Class for enriching table data with VPS data
+#include "vps_database_scanner.h" // Class for enriching table data with VPS data
 #include "vps_database_updater.h" // Class for updating the VPS database
 #include "core/loading_progress.h" // Structure for tracking progress
 

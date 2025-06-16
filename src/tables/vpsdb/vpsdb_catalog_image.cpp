@@ -1,5 +1,5 @@
-#include "vpsdb_image.h"
-#include "vpsdb_catalog.h"
+#include "vpsdb_catalog_image.h"
+#include "vpsdb_catalog_manager.h"
 #include "log/logging.h"
 #include <SDL2/SDL_image.h>
 #include <curl/curl.h>

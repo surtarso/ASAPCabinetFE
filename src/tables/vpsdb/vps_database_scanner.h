@@ -1,5 +1,5 @@
-#ifndef VPS_DATA_SCANNER_H
-#define VPS_DATA_SCANNER_H 
+#ifndef VPS_DATABASE_SCANNER_H
+#define VPS_DATABASE_SCANNER_H 
 
 #include "tables/table_data.h"
 #include "core/loading_progress.h"
@@ -45,4 +45,4 @@ private:
     Settings settings_; ///< For weight management
 };
 
-#endif // VPS_DATA_SCANNER_H
+#endif // VPS_DATABASE_SCANNER_H

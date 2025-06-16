@@ -1,5 +1,5 @@
-#ifndef VPSDB_JSON_LOADER_H
-#define VPSDB_JSON_LOADER_H
+#ifndef VPSDB_CATALOG_LOADER_H
+#define VPSDB_CATALOG_LOADER_H
 
 #include "vpsdb_metadata.h"
 #include "vps_database_client.h"
@@ -39,4 +39,4 @@ private:
 
 } // namespace vpsdb
 
-#endif // VPSDB_JSON_LOADER_H
+#endif // VPSDB_CATALOG_LOADER_H

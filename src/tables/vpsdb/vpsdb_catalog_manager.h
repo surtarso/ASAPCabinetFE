@@ -1,5 +1,5 @@
 /**
- * @file vpsdb_catalog.h
+ * @file vpsdb_catalog_manager.h
  * @brief Header for VpsdbCatalog class to display VPSDB pinball table metadata.
  *
  * Declares the VpsdbCatalog class, which renders a centered, unmovable, unresizable
@@ -8,13 +8,13 @@
  * in the main app render loop.
  */
 
-#ifndef VPSDB_CATALOG_H
-#define VPSDB_CATALOG_H
+#ifndef VPSDB_CATALOG_MANAGER_H
+#define VPSDB_CATALOG_MANAGER_H
 
 #include "vpsdb_metadata.h"
 #include "config/settings.h"
-#include "vpsdb_image.h"
-#include "vpsdb_json_loader.h"
+#include "vpsdb_catalog_image.h"
+#include "vpsdb_catalog_loader.h"
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <string>
@@ -47,6 +47,7 @@ private:
     SDL_Renderer* renderer_;
     PinballTable currentTable_;
     size_t currentIndex_;
+    std::atomic<bool> isTableLoading_;
     bool isOpen;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> backglassTexture_;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> playfieldTexture_;
@@ -57,7 +58,6 @@ private:
     std::thread tableLoadThread_;
     std::mutex mutex_;
     std::queue<LoadedTableData> loadedTableQueue_; // Queue for main-thread processing
-    std::atomic<bool> isTableLoading_;
 
     void loadTable(size_t index);
     void renderField(const char* key, const std::string& value);
@@ -69,4 +69,4 @@ private:
 
 } // namespace vpsdb
 
-#endif // VPSDB_CATALOG_H
+#endif // VPSDB_CATALOG_MANAGER_H

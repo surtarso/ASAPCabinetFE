@@ -290,13 +290,13 @@ set(SOURCES
     src/tables/table_override_editor.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
-    src/tables/vpsdb/vps_data_scanner.cpp
+    src/tables/vpsdb/vps_database_scanner.cpp
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp
     src/tables/vpsdb/vps_database_updater.cpp
-    src/tables/vpsdb/vpsdb_catalog.cpp
-    src/tables/vpsdb/vpsdb_image.cpp
-    src/tables/vpsdb/vpsdb_json_loader.cpp
+    src/tables/vpsdb/vpsdb_catalog_manager.cpp
+    src/tables/vpsdb/vpsdb_catalog_image.cpp
+    src/tables/vpsdb/vpsdb_catalog_loader.cpp
     src/utils/path_utils.cpp
     src/utils/string_utils.cpp
     src/utils/vpinballx_ini_reader.cpp
