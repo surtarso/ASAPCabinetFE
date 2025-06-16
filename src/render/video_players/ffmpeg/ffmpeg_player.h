@@ -29,6 +29,8 @@ class AudioDecoder;
  */
 class FFmpegPlayer : public IVideoPlayer {
 public:
+    void seek(double time_seconds, int stream_index);
+
     /**
      * @brief Constructs an FFmpegPlayer instance.
      *

@@ -2,6 +2,10 @@
 #define VIDEO_DECODER_H
 
 #include <SDL2/SDL.h>
+extern "C" {
+#include <libavutil/buffer.h>
+#include <libavutil/pixfmt.h>
+}
 #include <chrono>
 #include <string>
 
@@ -138,6 +142,8 @@ private:
     std::chrono::high_resolution_clock::time_point lastFrameTime_; ///< Timestamp of the last frame.
     std::chrono::high_resolution_clock::time_point playbackStartTime_; ///< Timestamp of playback start.
     bool needsReset_;                   ///< Flag indicating if playback needs to reset.
+    AVBufferRef* hwDeviceCtx_ = nullptr;
+    AVPixelFormat expectedSwFormat_ = AV_PIX_FMT_NONE;
 
     /**
      * @brief Cleans up all allocated resources.
@@ -145,6 +151,7 @@ private:
      * Frees FFmpeg and SDL resources, resetting member pointers.
      */
     void cleanup();
+
 };
 
 #endif // VIDEO_DECODER_H

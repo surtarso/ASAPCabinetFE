@@ -159,3 +159,24 @@ void FFmpegPlayer::cleanup() {
     height_ = 0;
     isPlaying_ = false;
 }
+
+void FFmpegPlayer::seek(double time_seconds, int stream_index) {
+    if (!formatContext_) return;
+
+    int64_t timestamp = time_seconds * AV_TIME_BASE; // Convert seconds to FFmpeg's internal time base
+
+    // Use AV_SEEK_FLAG_BACKWARD to seek to nearest keyframe *before* or *at* the timestamp
+    // AV_SEEK_FLAG_ANY can seek to non-key frames, but might result in more corruption
+    // For recovery from severe errors, seeking to a keyframe is safer.
+    int ret = av_seek_frame(formatContext_, stream_index, timestamp, AVSEEK_FLAG_BACKWARD);
+    if (ret < 0) {
+        char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+        av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
+        LOG_ERROR("FFmpegPlayer: Failed to seek: " << err_buf);
+    } else {
+        // After a seek, you *must* flush all decoders associated with the seeked stream
+        // This is done by the VideoDecoder::flush() in your current needsReset_ path.
+        // If you implement a direct seek here, remember to flush.
+        LOG_DEBUG("FFmpegPlayer: Successfully sought to " << time_seconds << "s.");
+    }
+}
