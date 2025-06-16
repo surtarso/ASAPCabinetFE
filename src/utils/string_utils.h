@@ -13,6 +13,7 @@
 #define STRING_UTILS_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to handle text data
+#include <map>
 #include <nlohmann/json.hpp> // For nlohmann::json to process JSON arrays
 
 /**

@@ -26,6 +26,7 @@
 #include "config/ui/config_ui.h" // Configuration UI for user settings
 #include "capture/iscreenshot_manager.h" // Interface for screenshot management
 #include "sound/isound_manager.h" // Interface for sound management
+#include "keybinds/ikeybind_provider.h"
 
 /**
  * @class App
@@ -50,6 +51,7 @@ class App;
  */
 class DependencyFactory {
 public:
+    static std::unique_ptr<IKeybindProvider> createKeybindProvider();
     /**
      * @brief Creates a window manager instance.
      *
@@ -133,7 +135,7 @@ public:
      * @param configPath The file path to the configuration file.
      * @return A unique pointer to a ConfigService instance.
      */
-    static std::unique_ptr<IConfigService> createConfigService(const std::string& configPath);
+    static std::unique_ptr<IConfigService> createConfigService(const std::string& configPath, IKeybindProvider* keybindProvider);
     /**
      * @brief Creates a screenshot manager instance.
      *
@@ -147,9 +149,8 @@ public:
      * @param soundManager The sound manager for screenshot-related sounds.
      * @return A unique pointer to an IScreenshotManager instance.
      */
-    static std::unique_ptr<IScreenshotManager> createScreenshotManager(const std::string& exeDir, 
-                                                                      IConfigService* configService, 
-                                                                      ISoundManager* soundManager);
+    static std::unique_ptr<IScreenshotManager> createScreenshotManager(const std::string& exeDir, IConfigService* configService, 
+                                                                      IKeybindProvider* keybindProvider, ISoundManager* soundManager);
 
     /**
      * @brief Creates an input manager instance.
@@ -163,8 +164,7 @@ public:
      * @param screenshotManager The screenshot manager for screenshot mode.
      * @return A unique pointer to an InputManager instance.
      */
-    static std::unique_ptr<InputManager> createInputManager(IConfigService* configService, 
-                                                           IScreenshotManager* screenshotManager);
+    static std::unique_ptr<InputManager> createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager);
 
     /**
      * @brief Creates a configuration UI instance.
@@ -182,8 +182,8 @@ public:
      * @param showConfig Reference to the configuration UI visibility flag.
      * @return A unique pointer to a ConfigUI instance.
      */
-    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IAssetManager* assets, 
-                                                    size_t* currentIndex, std::vector<TableData>* tables, 
+    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
+                                                    IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                                                     App* app, bool& showConfig);
 };
 

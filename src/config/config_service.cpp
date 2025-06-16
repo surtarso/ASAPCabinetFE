@@ -4,13 +4,29 @@
 #include <stdexcept>
 #include <filesystem>
 
-ConfigService::ConfigService(const std::string& configPath)
-    : configPath_(configPath), keybindManager_() {
+ConfigService::ConfigService(const std::string& configPath, IKeybindProvider* keybindProvider)
+    : configPath_(configPath), keybindProvider_(keybindProvider) {
+    if (!keybindProvider_) {
+        LOG_ERROR("ConfigService: Null keybindProvider provided");
+        throw std::invalid_argument("KeybindProvider cannot be null");
+    }
     loadConfig();
 }
 
 const Settings& ConfigService::getSettings() const {
     return settings_;
+}
+
+Settings& ConfigService::getMutableSettings() {
+    return settings_;
+}
+
+IKeybindProvider& ConfigService::getKeybindProvider() {
+    if (!keybindProvider_) {
+        LOG_ERROR("ConfigService: KeybindProvider is null");
+        throw std::runtime_error("KeybindProvider is null");
+    }
+    return *keybindProvider_;
 }
 
 bool ConfigService::isConfigValid() const {
@@ -51,13 +67,11 @@ bool ConfigService::isConfigValid() const {
         return false;
     }
     bool hasVpxFiles = false;
-    // Check root directory
     for (const auto& entry : std::filesystem::directory_iterator(settings_.VPXTablesPath)) {
         if (entry.path().extension() == ".vpx") {
             hasVpxFiles = true;
             break;
         }
-        // Check one level of subdirectories if no .vpx found yet
         if (!hasVpxFiles && entry.is_directory()) {
             for (const auto& subEntry : std::filesystem::directory_iterator(entry.path())) {
                 if (subEntry.path().extension() == ".vpx") {
@@ -79,46 +93,34 @@ bool ConfigService::isConfigValid() const {
 
 void ConfigService::loadConfig() {
     LOG_DEBUG("ConfigService: Loading config from " << configPath_);
-
     try {
         std::ifstream file(configPath_);
         if (!file.is_open()) {
             LOG_DEBUG("ConfigService: Config file not found, using defaults");
-            settings_ = Settings();  // Use default settings
+            settings_ = Settings();
             applyPostProcessing();
-            saveConfig();  // Save defaults to file
+            saveConfig();
             return;
         }
-
         jsonData_ = nlohmann::json::parse(file);
         file.close();
-
         settings_ = jsonData_.get<Settings>();
         applyPostProcessing();
-
-        // Load keybindings into KeybindManager
+        // Load keybindings
+        std::map<std::string, std::string> keybindData;
         if (jsonData_.contains("Keybinds") && jsonData_["Keybinds"].is_object()) {
             for (const auto& [action, key] : jsonData_["Keybinds"].items()) {
-                if (key.is_number_integer()) {
-                    keybindManager_.setKey(action, static_cast<SDL_Keycode>(key.get<int>()));
-                } else if (key.is_string()) {
-                    SDL_Keycode code = SDL_GetKeyFromName(key.get<std::string>().c_str());
-                    if (code != SDLK_UNKNOWN) {
-                        keybindManager_.setKey(action, code);
-                    }
+                if (key.is_string()) {
+                    keybindData[action] = key.get<std::string>(); // Overwrites duplicates
                 }
             }
         }
-
-        // Apply VPinballX.ini settings if enabled
+        keybindProvider_->loadKeybinds(keybindData);
+        settings_.keybinds_ = keybindData;
+        // Apply VPinballX.ini settings
         if (settings_.useVPinballXIni) {
-            std::string iniPath;
-            if (settings_.vpxIniPath.empty()) {
-                // Use vpx defaults if no custom path was given
-                iniPath = std::string(std::getenv("HOME")) + "/.vpinball/VPinballX.ini";
-            } else {
-                iniPath = settings_.vpxIniPath;
-            }
+            std::string iniPath = settings_.vpxIniPath.empty() ?
+                std::string(std::getenv("HOME")) + "/.vpinball/VPinballX.ini" : settings_.vpxIniPath;
             VPinballXIniReader iniReader(iniPath);
             auto iniSettings = iniReader.readIniSettings();
             if (iniSettings) {
@@ -131,36 +133,25 @@ void ConfigService::loadConfig() {
                 jsonData_["WindowSettings"]["useVPinballXIni"] = false;
             }
         }
-
         LOG_DEBUG("ConfigService: Config loaded successfully");
     } catch (const nlohmann::json::exception& e) {
         LOG_ERROR("ConfigService: JSON parsing error: " << e.what());
-        settings_ = Settings();  // Fallback to defaults
+        settings_ = Settings();
         applyPostProcessing();
+        saveConfig();
     }
 }
 
 void ConfigService::saveConfig() {
     LOG_DEBUG("ConfigService: Saving config to " << configPath_);
-
     try {
-        // Update jsonData_ from settings_
         jsonData_ = settings_;
-
-        // Add keybindings from settings_
-        if (jsonData_.contains("Keybinds")) {
-            jsonData_["Keybinds"] = jsonData_["Keybinds"]; // Preserve existing Keybinds
-        } else {
-            jsonData_["Keybinds"] = nlohmann::json::object();
-        }
-        for (const auto& [action, key] : settings_.keybinds_) {
-            std::string keyName = SDL_GetKeyName(key);
-            if (!keyName.empty()) {
-                jsonData_["Keybinds"][action] = keyName;
-            }
-        }
-
-        // Reapply VPinballX.ini settings if enabled
+        // Save keybindings
+        std::map<std::string, std::string> keybindData;
+        keybindProvider_->saveKeybinds(keybindData);
+        settings_.keybinds_ = keybindData; // Sync Settings::keybinds_
+        jsonData_["Keybinds"] = keybindData;
+        // Reapply VPinballX.ini settings
         if (settings_.useVPinballXIni) {
             std::string iniPath = settings_.vpxIniPath.empty() ?
                 std::string(std::getenv("HOME")) + "/.vpinball/VPinballX.ini" : settings_.vpxIniPath;
@@ -176,55 +167,56 @@ void ConfigService::saveConfig() {
                 jsonData_["WindowSettings"]["useVPinballXIni"] = false;
             }
         }
-
-        // Write to file
-        std::ofstream file(configPath_);
-        if (!file.is_open()) {
-            LOG_ERROR("ConfigService: Failed to open config file for writing: " << configPath_);
+        // Write JSON with atomic write
+        std::ofstream tempFile(configPath_ + ".tmp");
+        if (!tempFile.is_open()) {
+            LOG_ERROR("ConfigService: Failed to open temp file for writing: " << configPath_ + ".tmp");
             return;
         }
-
-        file << jsonData_.dump(4);  // Pretty print with 4-space indentation
-        file.close();
-
+        tempFile << jsonData_.dump(4);
+        tempFile.close();
+        std::filesystem::rename(configPath_ + ".tmp", configPath_);
         LOG_DEBUG("ConfigService: Config saved successfully");
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigService: Error saving config: " << e.what());
+        if (std::filesystem::exists(configPath_ + ".tmp")) {
+            std::filesystem::remove(configPath_ + ".tmp");
+        }
     }
 }
 
-KeybindManager& ConfigService::getKeybindManager() {
-    return keybindManager_;
-}
-
-/// @bug this should resolve the path of the executable, not current.
 void ConfigService::applyPostProcessing() {
-    std::string exeDir = std::filesystem::current_path().string() + "/";
+    // Resolve executable path properly
+    std::string exeDir;
+    char path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (count != -1) {
+        path[count] = '\0';
+        exeDir = std::filesystem::path(path).parent_path().string() + "/";
+    } else {
+        exeDir = std::filesystem::current_path().string() + "/";
+        LOG_DEBUG("ConfigService: Failed to resolve executable path, using current directory: " << exeDir);
+    }
     settings_.applyPostProcessing(exeDir);
 }
 
-// Helper function to apply VPinballX.ini settings to Settings
 void ConfigService::applyIniSettings(const std::optional<VPinballXIniSettings>& iniSettings) {
     if (iniSettings) {
-        // Playfield settings
         if (iniSettings->playfieldX) settings_.playfieldX = *iniSettings->playfieldX;
         if (iniSettings->playfieldY) settings_.playfieldY = *iniSettings->playfieldY;
         if (iniSettings->playfieldWidth) settings_.playfieldWindowWidth = *iniSettings->playfieldWidth;
         if (iniSettings->playfieldHeight) settings_.playfieldWindowHeight = *iniSettings->playfieldHeight;
 
-        // Backglass settings
         if (iniSettings->backglassX) settings_.backglassX = *iniSettings->backglassX;
         if (iniSettings->backglassY) settings_.backglassY = *iniSettings->backglassY;
         if (iniSettings->backglassWidth) settings_.backglassWindowWidth = *iniSettings->backglassWidth;
         if (iniSettings->backglassHeight) settings_.backglassWindowHeight = *iniSettings->backglassHeight;
 
-        // DMD settings
         if (iniSettings->dmdX) settings_.dmdX = *iniSettings->dmdX;
         if (iniSettings->dmdY) settings_.dmdY = *iniSettings->dmdY;
         if (iniSettings->dmdWidth) settings_.dmdWindowWidth = *iniSettings->dmdWidth;
         if (iniSettings->dmdHeight) settings_.dmdWindowHeight = *iniSettings->dmdHeight;
 
-        // Topper settings
         if (iniSettings->topperX) settings_.topperWindowX = *iniSettings->topperX;
         if (iniSettings->topperY) settings_.topperWindowY = *iniSettings->topperY;
         if (iniSettings->topperWidth) settings_.topperWindowWidth = *iniSettings->topperWidth;
@@ -232,7 +224,6 @@ void ConfigService::applyIniSettings(const std::optional<VPinballXIniSettings>& 
     }
 }
 
-// Helper function to update JSON with VPinballX.ini values
 void ConfigService::updateJsonWithIniValues(const std::optional<VPinballXIniSettings>& iniSettings) {
     auto& windowSettings = jsonData_["WindowSettings"];
     auto updateJsonValue = [&](const std::string& key, const std::optional<int>& value) {

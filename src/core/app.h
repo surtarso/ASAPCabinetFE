@@ -130,6 +130,7 @@ private:
     std::unique_ptr<IWindowManager> windowManager_;      ///< Manager for SDL windows and renderers.
     std::unique_ptr<GuiManager> guiManager_;             ///< Manager for ImGui UI rendering.
     std::unique_ptr<ISoundManager> soundManager_;        ///< Manager for sound playback.
+    std::unique_ptr<IKeybindProvider> keybindProvider_; ///< Keybind provider for input management
     std::unique_ptr<IConfigService> configManager_;      ///< Configuration service for settings.
     std::unique_ptr<ConfigUI> configEditor_;             ///< Configuration UI editor.
     std::unique_ptr<IRenderer> renderer_;                ///< Renderer for playfield, backglass, and DMD.

@@ -2,7 +2,7 @@
 #include "log/logging.h"
 #include <iostream>
 
-bool runInitialConfig(IConfigService* configService, const std::string& configPath) {
+bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindProvider, const std::string& configPath) {
     LOG_INFO("Config Path: " << configPath);
     SDL_Window* configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -25,9 +25,9 @@ bool runInitialConfig(IConfigService* configService, const std::string& configPa
     guiManager->initialize();
 
     bool showConfig = true;
-    ConfigUI configEditor(configService, &configService->getKeybindManager(), 
-                          nullptr, nullptr, nullptr, nullptr, showConfig, true);
-
+    ConfigUI configEditor(configService, keybindProvider, 
+                      nullptr, nullptr, nullptr, nullptr, showConfig, true);
+                      
     while (true) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {

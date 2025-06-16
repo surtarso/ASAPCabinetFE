@@ -28,6 +28,6 @@
  * @param configPath The file path to the configuration file.
  * @return True if the configuration was successfully applied, false otherwise.
  */
-bool runInitialConfig(IConfigService* configService, const std::string& configPath);
+bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindProvider, const std::string& configPath);
 
 #endif // FIRST_RUN_H

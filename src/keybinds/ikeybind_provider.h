@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <SDL_keycode.h>
 #include <SDL_joystick.h>
 #include <SDL_events.h>
@@ -24,7 +25,7 @@
  * This pure virtual class defines methods for retrieving, setting, and validating
  * input bindings for application actions, including keyboard keys, joystick buttons,
  * hats, and axes. It also provides utilities for converting events to strings and
- * retrieving action tooltips.
+ * managing keybind persistence.
  */
 class IKeybindProvider {
 public:
@@ -33,12 +34,15 @@ public:
      */
     virtual ~IKeybindProvider() = default;
 
+    // virtual std::string normalizeAction(const std::string& action) const = 0;
+
+    virtual std::string getActionForKey(const std::string& key) const = 0;
     /**
      * @brief Gets the keyboard keycode for an action.
      *
      * Retrieves the SDL keycode associated with the specified action.
      *
-     * @param action The action identifier (e.g., "launch_table").
+     * @param action The action identifier (e.g., "LaunchTable").
      * @return The SDL keycode for the action, or SDLK_UNKNOWN if not found.
      */
     virtual SDL_Keycode getKey(const std::string& action) const = 0;
@@ -61,16 +65,6 @@ public:
      * @return A vector of action identifier strings.
      */
     virtual std::vector<std::string> getActions() const = 0;
-
-    /**
-     * @brief Gets the tooltip for an action.
-     *
-     * Retrieves the tooltip description for the specified action, used in the UI.
-     *
-     * @param action The action identifier.
-     * @return The tooltip string, or empty if not found.
-     */
-    // virtual std::string getTooltip(const std::string& action) const = 0;
 
     /**
      * @brief Sets a joystick button binding for an action.
@@ -160,6 +154,24 @@ public:
      * @return True if the event matches the action's binding, false otherwise.
      */
     virtual bool isJoystickAxisAction(const SDL_JoyAxisEvent& event, const std::string& action) const = 0;
+
+    /**
+     * @brief Loads keybind configurations from a data map.
+     *
+     * Populates the keybind mappings from a provided map of action-to-input strings.
+     *
+     * @param keybindData A map of action identifiers to input configuration strings.
+     */
+    virtual void loadKeybinds(const std::map<std::string, std::string>& keybindData) = 0;
+
+    /**
+     * @brief Saves keybind configurations to a map.
+     *
+     * Populates a map with the current keybind mappings for JSON serialization.
+     *
+     * @param keybinds The map to populate with action-to-input string pairs.
+     */
+    virtual void saveKeybinds(std::map<std::string, std::string>& keybinds) const = 0;
 };
 
 #endif // IKEYBIND_PROVIDER_H

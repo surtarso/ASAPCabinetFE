@@ -233,10 +233,11 @@ void App::loadTablesThreaded(size_t oldIndex) {
 }
 
 void App::initializeDependencies() {
-    configManager_ = DependencyFactory::createConfigService(configPath_);
+    keybindProvider_ = DependencyFactory::createKeybindProvider();
+    configManager_ = DependencyFactory::createConfigService(configPath_, keybindProvider_.get());
     if (!isConfigValid()) {
         LOG_INFO("App: Config invalid, running initial config");
-        if (!runInitialConfig(configManager_.get(), configPath_)) {
+        if (!runInitialConfig(configManager_.get(), keybindProvider_.get(), configPath_)) {
             LOG_ERROR("App: Initial config failed or was aborted. Exiting...");
             exit(1);
         }
@@ -256,14 +257,14 @@ void App::initializeDependencies() {
     loadTables();
 
     assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_, soundManager_.get());
-    screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), soundManager_.get());
+    screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), keybindProvider_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
-    inputManager_ = DependencyFactory::createInputManager(configManager_.get(), screenshotManager_.get());
+    inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get(), screenshotManager_.get());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
-                                   currentIndex_, tables_, showConfig_, showEditor_,  showVpsdb_, exeDir_, screenshotManager_.get(),
-                                   windowManager_.get(), isLoadingTables_); // Updated
+                                   currentIndex_, tables_, showConfig_, showEditor_, showVpsdb_, exeDir_, screenshotManager_.get(),
+                                   windowManager_.get(), isLoadingTables_);
 
-    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
+    configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), keybindProvider_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 
     playfieldOverlay_ = std::make_unique<PlayfieldOverlay>(
         &tables_, &currentIndex_, configManager_.get(), windowManager_.get(), assets_.get(),

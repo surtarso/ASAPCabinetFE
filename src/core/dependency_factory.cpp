@@ -19,9 +19,14 @@
 #include "render/asset_manager.h"
 #include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"
+#include "keybinds/keybind_manager.h"
 #include "log/logging.h"
 
 static std::atomic<bool> dummyIsLoadingTables{false}; // Atomic flag used as a placeholder for loading state in InputManager
+
+std::unique_ptr<IKeybindProvider> DependencyFactory::createKeybindProvider() {
+    return std::make_unique<KeybindManager>();
+}
 
 /**
  * @brief Creates a window manager instance.
@@ -121,9 +126,9 @@ std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::
  * @param configPath The file path to the configuration file.
  * @return A unique pointer to a ConfigService instance.
  */
-std::unique_ptr<IConfigService> DependencyFactory::createConfigService(const std::string& configPath) {
-    auto config = std::make_unique<ConfigService>(configPath);
-    return config;
+std::unique_ptr<IConfigService> DependencyFactory::createConfigService(
+    const std::string& configPath, IKeybindProvider* keybindProvider) {
+    return std::make_unique<ConfigService>(configPath, keybindProvider);
 }
 
 /**
@@ -137,10 +142,9 @@ std::unique_ptr<IConfigService> DependencyFactory::createConfigService(const std
  * @param soundManager The sound manager for screenshot-related sounds.
  * @return A unique pointer to an IScreenshotManager instance.
  */
-std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, 
-                                                                              IConfigService* configService, 
-                                                                              ISoundManager* soundManager) {
-    return std::make_unique<ScreenshotManager>(exeDir, configService, &configService->getKeybindManager(), soundManager);
+std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, IConfigService* configService, 
+                                                                              IKeybindProvider* keybindProvider, ISoundManager* soundManager) {
+    return std::make_unique<ScreenshotManager>(exeDir, configService, keybindProvider, soundManager);
 }
 
 /**
@@ -155,17 +159,16 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
  * @param screenshotManager The screenshot manager for screenshot mode.
  * @return A unique pointer to an InputManager instance.
  */
-std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigService* configService, 
-                                                                   IScreenshotManager* screenshotManager) {
-    auto input = std::make_unique<InputManager>(&configService->getKeybindManager());
-    size_t dummyIndex = 0; // Placeholder index for minimal functionality
-    bool dummyShowConfig = false; // Placeholder configUI visibility flag
-    bool dummyShowEditor = false; // Placeholder metadata editor visibility flag
-    bool dummyShowCatalog = false; // Placeholder metadata catalog visibility flag
-    std::vector<TableData> dummyTables; // Empty table list as a placeholder
-    input->setDependencies(nullptr, nullptr, configService, dummyIndex, dummyTables,
-                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables); // Sets dummy dependencies
-    input->registerActions(); // Registers default input actions
+std::unique_ptr<InputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager) {
+    auto input = std::make_unique<InputManager>(keybindProvider);
+    size_t dummyIndex = 0;
+    bool dummyShowConfig = false;
+    bool dummyShowEditor = false;
+    bool dummyShowCatalog = false;
+    std::vector<TableData> dummyTables;
+    input->setDependencies(nullptr, nullptr, nullptr, dummyIndex, dummyTables,
+                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables);
+    input->registerActions();
     return input;
 }
 
@@ -184,9 +187,8 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IConfigServi
  * @param showConfig Reference to the configuration UI visibility flag.
  * @return A unique pointer to a ConfigUI instance.
  */
-std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IAssetManager* assets, 
-                                                            size_t* currentIndex, std::vector<TableData>* tables, 
+std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
+                                                            IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                                                             App* app, bool& showConfig) {
-    return std::make_unique<ConfigUI>(configService, &configService->getKeybindManager(), assets, 
-                                      currentIndex, tables, app, showConfig, false);
+    return std::make_unique<ConfigUI>(configService, keybindProvider, assets, currentIndex, tables, app, showConfig, false);
 }

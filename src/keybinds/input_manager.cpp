@@ -13,6 +13,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
       runtimeEditor_(nullptr), actionHandlers_(), letterIndex_(), quit_(false),
       screenshotModeActive_(false), lastClickTimes_(), inExternalAppMode_(false),
       lastExternalAppReturnTime_(0) {
+    registerActions();
     //LOG_INFO("InputManager: Constructor started, quit_ = " << quit_);
 }
 
@@ -46,7 +47,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
 }
 
 void InputManager::registerActions() {
-    actionHandlers_["PreviousTable"] = [this]() {
+    actionHandlers_["Previous Table"] = [this]() {
         LOG_DEBUG("InputManager: Previous table triggered");
         size_t newIndex = (*currentIndex_ + tables_->size() - 1) % tables_->size();
         if (newIndex != *currentIndex_) {
@@ -54,9 +55,10 @@ void InputManager::registerActions() {
             *currentIndex_ = newIndex;
             soundManager_->playUISound("scroll_prev");
         }
+        LOG_DEBUG("InputManager: Registered " << actionHandlers_.size() << " action handlers");
     };
 
-    actionHandlers_["NextTable"] = [this]() {
+    actionHandlers_["Next Table"] = [this]() {
         LOG_DEBUG("InputManager: Next table triggered");
         size_t newIndex = (*currentIndex_ + 1) % tables_->size();
         if (newIndex != *currentIndex_) {
@@ -66,7 +68,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["FastPrevTable"] = [this]() {
+    actionHandlers_["Fast Previous Table"] = [this]() {
         LOG_DEBUG("InputManager: Fast previous table triggered");
         size_t newIndex = (*currentIndex_ + tables_->size() - 10) % tables_->size();
         if (newIndex != *currentIndex_) {
@@ -76,7 +78,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["FastNextTable"] = [this]() {
+    actionHandlers_["Fast Next Table"] = [this]() {
         LOG_DEBUG("InputManager: Fast next table triggered");
         size_t newIndex = (*currentIndex_ + 10) % tables_->size();
         if (newIndex != *currentIndex_) {
@@ -86,7 +88,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["JumpPrevLetter"] = [this]() {
+    actionHandlers_["Jump Previous Letter"] = [this]() {
         LOG_DEBUG("InputManager: Jump previous letter triggered");
         if (!tables_ || tables_->empty() || !currentIndex_) {
             LOG_ERROR("InputManager: Invalid tables or currentIndex for JumpPrevLetter");
@@ -154,7 +156,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["JumpNextLetter"] = [this]() {
+    actionHandlers_["Jump Next Letter"] = [this]() {
         LOG_DEBUG("InputManager: Jump next letter triggered");
         if (!tables_ || tables_->empty() || !currentIndex_) {
             LOG_ERROR("InputManager: Invalid tables or currentIndex for JumpNextLetter");
@@ -220,7 +222,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["RandomTable"] = [this]() {
+    actionHandlers_["Random Table"] = [this]() {
         LOG_DEBUG("InputManager: Random table triggered");
         if (!tables_->empty()) {
             std::random_device rd;
@@ -235,7 +237,7 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["LaunchTable"] = [this]() {
+    actionHandlers_["Launch Table"] = [this]() {
         // Prevent launch if already in an external app mode (VPX is running)
         // or if within the debounce period after an external app returned.
         if (inExternalAppMode_) {
@@ -318,7 +320,7 @@ void InputManager::registerActions() {
     };
 
 
-    actionHandlers_["ScreenshotMode"] = [this]() {
+    actionHandlers_["Screenshot Mode"] = [this]() {
         // Prevent launching screenshot mode while in another external app
         // or if within the debounce period after an external app returned.
         if (inExternalAppMode_) {
@@ -347,25 +349,25 @@ void InputManager::registerActions() {
         }
     };
 
-    actionHandlers_["ToggleConfig"] = [this]() {
+    actionHandlers_["Toggle Config"] = [this]() {
         LOG_DEBUG("InputManager: ToggleConfig action triggered");
         soundManager_->playUISound("config_toggle");
         *showConfig_ = !*showConfig_;
         LOG_DEBUG("InputManager: Toggled showConfig to: " << (*showConfig_ ? 1 : 0));
     };
 
-    actionHandlers_["MetadataEdit"] = [this]() {
+    actionHandlers_["Metadata Edit"] = [this]() {
         LOG_DEBUG("InputManager: MetadataEdit action triggered");
         soundManager_->playUISound("config_toggle");
         *showEditor_ = !*showEditor_;
-        LOG_DEBUG("InputManager: Toggled showEditor to: " << (*showConfig_ ? 1 : 0));
+        LOG_DEBUG("InputManager: Toggled showEditor to: " << (*showEditor_ ? 1 : 0));
     };
 
-    actionHandlers_["MetadataCatalog"] = [this]() {
+    actionHandlers_["Metadata Catalog"] = [this]() {
         LOG_DEBUG("InputManager: MetadataCatalog action triggered");
         soundManager_->playUISound("config_toggle");
         *showVpsdb_ = !*showVpsdb_;
-        LOG_DEBUG("InputManager: Toggled showVpsdb to: " << (*showConfig_ ? 1 : 0));
+        LOG_DEBUG("InputManager: Toggled showVpsdb to: " << (*showVpsdb_ ? 1 : 0));
     };
 
     actionHandlers_["Quit"] = [this]() {
@@ -375,16 +377,17 @@ void InputManager::registerActions() {
             LOG_DEBUG("InputManager: Exited screenshot mode (quit skipped)");
         } else if (*showConfig_) {
             *showConfig_ = false;
-            LOG_DEBUG("InputManager: Closed config");
+            LOG_DEBUG("InputManager: Closed Config UI");
+        } else if (*showEditor_) {
+            *showEditor_ = false;
+            LOG_DEBUG("InputManager: Closed Editor");
+        } else if (*showVpsdb_) {
+            *showVpsdb_ = false;
+            LOG_DEBUG("InputManager: Closed Catalog");
         } else {
             quit_ = true;
             LOG_DEBUG("InputManager: Quitting app");
         }
-    };
-
-    actionHandlers_["ConfigClose"] = [this]() {
-        LOG_DEBUG("InputManager: ConfigClose triggered");
-        *showConfig_ = false;
     };
 }
 
@@ -423,27 +426,57 @@ void InputManager::handleEvent(const SDL_Event& event) {
     // Priority 2: Handle 'ToggleConfig' (e.g., 'C' key)
     // This action should always work to open or close the config UI,
     // UNLESS ImGui is actively capturing keyboard input (e.g., in a text field).
-    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "ToggleConfig")) {
+    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "Toggle Config")) {
         if (!io.WantCaptureKeyboard) { // If user is not typing in an ImGui text field
-            actionHandlers_["ToggleConfig"](); // This will toggle *showConfig_
+            actionHandlers_["Toggle Config"](); // This will toggle *showConfig_
             return; // Consume the event, no further processing needed
         }
     }
 
-    // Priority 3: Config UI is open (*showConfig_ == true)
+    // Priority 3: Panel open (ex: *showConfig_ == true)
     // If the config UI is currently open, we should only allow specific config-related actions.
     // All other game actions (like ScreenshotMode) should be blocked.
     if (*showConfig_) {
         if (event.type == SDL_KEYDOWN) {
             // Allow 'ConfigClose' or 'Quit' action (e.g., 'Q' key) to close the config or quit the app.
             if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a config text field
-                if (keybindProvider_->isAction(event.key, "ConfigClose") || keybindProvider_->isAction(event.key, "Quit")) {
+                if (keybindProvider_->isAction(event.key, "Toggle Config") || keybindProvider_->isAction(event.key, "Quit")) {
                     actionHandlers_["Quit"](); // The "Quit" handler manages closing the config or truly quitting
                     return; // Consume the event
                 }
             }
         }
-        // If config is open and the event wasn't handled by 'ToggleConfig' or 'ConfigClose/Quit',
+        // If config is open and the event wasn't handled by 'ToggleConfig' or 'Quit',
+        // then block all other custom actions (including ScreenshotMode).
+        return; 
+    }
+
+    if (*showEditor_) {
+        if (event.type == SDL_KEYDOWN) {
+            // Allow 'Metadata Edit' or 'Quit' action (e.g., 'Q' key) to close the Metadata Edit or quit the app.
+            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Metadata Edit text field
+                if (keybindProvider_->isAction(event.key, "Metadata Edit") || keybindProvider_->isAction(event.key, "Quit")) {
+                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Metadata Edit or truly quitting
+                    return; // Consume the event
+                }
+            }
+        }
+        // If Metadata Edit is open and the event wasn't handled by 'Metadata Edit' or 'Quit',
+        // then block all other custom actions (including ScreenshotMode).
+        return; 
+    }
+
+    if (*showVpsdb_) {
+        if (event.type == SDL_KEYDOWN) {
+            // Allow 'Metadata Catalog' or 'Quit' action (e.g., 'Q' key) to close the Metadata Catalog or quit the app.
+            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Metadata Catalog text field
+                if (keybindProvider_->isAction(event.key, "Metadata Catalog") || keybindProvider_->isAction(event.key, "Quit")) {
+                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Metadata Catalog or truly quitting
+                    return; // Consume the event
+                }
+            }
+        }
+        // If Metadata Catalog is open and the event wasn't handled by 'Metadata Catalog' or 'Quit',
         // then block all other custom actions (including ScreenshotMode).
         return; 
     }
@@ -463,38 +496,42 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
 void InputManager::handleRegularEvents(const SDL_Event& event) {
     for (const auto& action : keybindProvider_->getActions()) {
-        // Skip config and screenshot-specific actions as they are handled globally or specifically
-        if (action == "ConfigClose" || action == "ScreenshotKey" || action == "ScreenshotQuit" || action == "ToggleConfig") {
-            continue; 
+        if (action == "Screenshot Key" || action == "Screenshot Quit") {
+            continue;
         }
-
         if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) {
+                LOG_DEBUG("InputManager: Triggering action: " << action);
                 it->second();
-                // Ensure only one action per keydown event to prevent unwanted cascading
-                return; 
+                return;
+            } else {
+                LOG_DEBUG("InputManager: No handler for action: " << action);
             }
         } else if (event.type == SDL_JOYBUTTONDOWN && keybindProvider_->isJoystickAction(event.jbutton, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) {
+                LOG_DEBUG("InputManager: Triggering joystick action: " << action);
                 it->second();
                 return;
             }
         } else if (event.type == SDL_JOYHATMOTION && keybindProvider_->isJoystickHatAction(event.jhat, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) {
+                LOG_DEBUG("InputManager: Triggering joystick hat action: " << action);
                 it->second();
                 return;
             }
         } else if (event.type == SDL_JOYAXISMOTION && keybindProvider_->isJoystickAxisAction(event.jaxis, action)) {
             auto it = actionHandlers_.find(action);
             if (it != actionHandlers_.end()) {
+                LOG_DEBUG("InputManager: Triggering joystick axis action: " << action);
                 it->second();
                 return;
             }
         }
     }
+    //LOG_DEBUG("InputManager: No action triggered for event type: " << event.type);
 }
 
 void InputManager::handleDoubleClick(const SDL_Event& event) {

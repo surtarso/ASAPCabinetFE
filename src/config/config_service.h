@@ -4,7 +4,7 @@
  *
  * This header provides the ConfigService class, which implements the IConfigService
  * interface to handle JSON-based configuration files, validate settings, manage
- * keybindings via KeybindManager, and integrate with VPinballX.ini settings. It
+ * keybindings via IKeybindProvider, and integrate with VPinballX.ini settings. It
  * serves as the concrete implementation for configuration management in the application.
  */
 
@@ -14,6 +14,7 @@
 #include "utils/vpinballx_ini_reader.h"
 #include "iconfig_service.h"
 #include <nlohmann/json.hpp>
+#include <memory>
 #include <string>
 
 /**
@@ -31,25 +32,39 @@ public:
     /**
      * @brief Constructs a ConfigService instance.
      *
-     * Initializes the configuration service with the specified configuration file path.
+     * Initializes the configuration service with the specified configuration file path
+     * and keybind provider.
      *
      * @param configPath The file path to the configuration file.
+     * @param keybindProvider Unique pointer to the IKeybindProvider implementation.
      */
-    ConfigService(const std::string& configPath);
+    ConfigService(const std::string& configPath, IKeybindProvider* keybindProvider);
 
     /**
      * @brief Virtual destructor for proper cleanup.
-     *
-     * Ensures proper cleanup of resources, though no specific cleanup is required here.
      */
     ~ConfigService() override = default;
 
     /**
-     * @brief Gets the current application settings.
+     * @brief Gets the current application settings (read-only).
      *
      * @return A const reference to the Settings object containing current configuration.
      */
     const Settings& getSettings() const override;
+
+    /**
+     * @brief Gets the current application settings (mutable).
+     *
+     * @return A reference to the Settings object.
+     */
+    Settings& getMutableSettings() override;
+
+    /**
+     * @brief Gets the keybinding provider.
+     *
+     * @return A reference to the IKeybindProvider object.
+     */
+    IKeybindProvider& getKeybindProvider() override;
 
     /**
      * @brief Checks if the configuration is valid.
@@ -74,15 +89,6 @@ public:
      * Writes the current settings and keybindings to the configuration file.
      */
     void saveConfig() override;
-
-    /**
-     * @brief Gets the keybinding manager.
-     *
-     * Provides access to the KeybindManager for managing input mappings.
-     *
-     * @return A reference to the KeybindManager object.
-     */
-    KeybindManager& getKeybindManager() override;
 
     /**
      * @brief Updates window setup coordinates and dimensions.
@@ -140,8 +146,8 @@ private:
 
     std::string configPath_; ///< Path to the configuration file.
     Settings settings_;      ///< Current application settings.
-    KeybindManager keybindManager_; ///< Manager for keybinding configurations.
     nlohmann::json jsonData_; ///< JSON data structure for configuration storage.
+    IKeybindProvider* keybindProvider_; ///< Keybinding provider.
 };
 
 #endif // CONFIG_SERVICE_H

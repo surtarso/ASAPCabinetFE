@@ -40,12 +40,14 @@ public:
      */
     ~KeybindManager() override = default;
 
+    std::string getActionForKey(const std::string& key) const override;
+
     /**
      * @brief Gets the keyboard keycode for an action.
      *
      * Retrieves the SDL keycode associated with the specified action.
      *
-     * @param action The action identifier (e.g., "launch_table").
+     * @param action The action identifier (e.g., "LaunchTable").
      * @return The SDL keycode for the action, or SDLK_UNKNOWN if not found.
      */
     SDL_Keycode getKey(const std::string& action) const override;
@@ -68,16 +70,6 @@ public:
      * @return A vector of action identifier strings.
      */
     std::vector<std::string> getActions() const override;
-
-    /**
-     * @brief Gets the tooltip for an action.
-     *
-     * Retrieves the tooltip description for the specified action, used in the UI.
-     *
-     * @param action The action identifier.
-     * @return The tooltip string, or empty if not found.
-     */
-    // std::string getTooltip(const std::string& action) const override;
 
     /**
      * @brief Sets a joystick button binding for an action.
@@ -175,16 +167,16 @@ public:
      *
      * @param keybindData A map of action identifiers to input configuration strings.
      */
-    void loadKeybinds(const std::map<std::string, std::string>& keybindData);
+    void loadKeybinds(const std::map<std::string, std::string>& keybindData) override;
 
     /**
-     * @brief Saves keybind configurations to a file.
+     * @brief Saves keybind configurations to a map.
      *
-     * Writes the current keybind mappings to the specified output file stream.
+     * Populates a map with the current keybind mappings for JSON serialization.
      *
-     * @param file The output file stream to write keybinds to.
+     * @param keybinds The map to populate with action-to-input string pairs.
      */
-    void saveKeybinds(std::ofstream& file) const;
+    void saveKeybinds(std::map<std::string, std::string>& keybinds) const override;
 
 private:
     /**
@@ -234,6 +226,16 @@ private:
      * Sets up default keyboard and joystick bindings for application actions.
      */
     void initializeDefaults();
+
+    /**
+     * @brief Normalizes an action name for consistent storage.
+     *
+     * Removes spaces and applies camelCase (e.g., "Previous Table" -> "PreviousTable").
+     *
+     * @param action The action name to normalize.
+     * @return The normalized action name.
+     */
+    // std::string normalizeAction(const std::string& action) const override;
 };
 
 #endif // KEYBIND_MANAGER_H

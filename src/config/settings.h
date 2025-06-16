@@ -209,23 +209,22 @@ struct Settings {
     float configUIHeight = 0.5f;
 
     // [Keybinds]
-    std::unordered_map<std::string, SDL_Keycode> keybinds_ = {
-        {"PreviousTable", SDLK_LSHIFT},
-        {"NextTable", SDLK_RSHIFT},
-        {"FastPrevTable", SDLK_LCTRL},
-        {"FastNextTable", SDLK_RCTRL},
-        {"JumpNextLetter", SDLK_SLASH},
-        {"JumpPrevLetter", SDLK_z},
-        {"RandomTable", SDLK_r},
-        {"LaunchTable", SDLK_RETURN},
-        {"ToggleConfig", SDLK_c},
-        {"Quit", SDLK_q},
-        {"ConfigClose", SDLK_q},
-        {"ScreenshotMode", SDLK_s},
-        {"ScreenshotKey", SDLK_s},
-        {"ScreenshotQuit", SDLK_q},
-        {"MetadataEdit", SDLK_m},
-        {"MetadataCatalog", SDLK_n}
+    std::map<std::string, std::string> keybinds_ = {
+        {"Previous Table", "Left Shift"},
+        {"Next Table", "Right Shift"},
+        {"Fast Previous Table", "Left Ctrl"},
+        {"Fast Next Table", "Right Ctrl"},
+        {"Jump Next Letter", "/"},
+        {"Jump Previous Letter", "Z"},
+        {"Random Table", "R"},
+        {"Launch Table", "Return"},
+        {"Toggle Config", "C"},
+        {"Quit", "Q"},
+        {"Screenshot Mode", "S"},
+        {"Screenshot Key", "S"},
+        {"Screenshot Quit", "Q"},
+        {"Metadata Edit", "M"},
+        {"Metadata Catalog", "N"}
     };
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
@@ -665,14 +664,12 @@ private:
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
         
-        // Keybinds
+        // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
+            s.keybinds_.clear();
             for (auto& [key, value] : j["Keybinds"].items()) {
                 if (value.is_string()) {
-                    SDL_Keycode code = SDL_GetKeyFromName(value.get<std::string>().c_str());
-                    if (code != SDLK_UNKNOWN) {
-                        s.keybinds_[key] = code;
-                    }
+                    s.keybinds_[key] = value.get<std::string>();
                 }
             }
         }

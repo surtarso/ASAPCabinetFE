@@ -165,37 +165,27 @@ public:
         };
 
         keyOrders_["Keybinds"] = {
-            "PreviousTable",
-            "NextTable",
-            "FastPrevTable",
-            "FastNextTable",
-            "JumpNextLetter",
-            "JumpPrevLetter",
-            "RandomTable",
-            "LaunchTable",
-            "ToggleConfig",
-            "Quit",
-            "ConfigClose",
-            "ScreenshotMode",
-            "ScreenshotKey",
-            "ScreenshotQuit"
+            "Previous Table", "Next Table", "Fast Previous Table", "Fast Next Table",
+            "Jump Next Letter", "Jump Previous Letter", "Random Table", "Launch Table",
+            "Toggle Config", "Quit", "Screenshot Mode",
+            "Screenshot Key", "Screenshot Quit", "Metadata Edit", "Metadata Catalog"
         };
         keyDisplayNames_["Keybinds"] = {
-            // {"PreviousTable"},
-            // {"NextTable"},
-            // {"FastPrevTable"},
-            // {"FastNextTable"},
-            // {"JumpNextLetter"},
-            // {"JumpPrevLetter"},
-            // {"RandomTable"},
-            // {"LaunchTable"},
-            // {"ToggleConfig"},
-            // {"Quit"},
-            // {"ConfigClose"},
-            // {"ScreenshotMode"},
-            // {"ScreenshotKey"},
-            // {"ScreenshotQuit"},
-            // {"MetadataEdit"}
+            {"Previous Table", "Previous Table"},
+            {"Next Table", "Next Table"},
+            {"Fast Previous Table", "Fast Previous Table"},
+            {"Fast Next Table", "Fast Next Table"},
+            {"Jump Next Letter", "Jump Next Letter"},
+            {"Jump Previous Letter", "Jump Previous Letter"},
+            {"Random Table", "Random Table"},
+            {"Launch Table", "Launch Table"},
+            {"Toggle Config", "Toggle Config"},
+            {"Quit", "Quit"},
+            {"Screenshot Mode", "Screenshot Mode"},
+            {"Screenshot Key", "Screenshot Key"},
+            {"Screenshot Quit", "Screenshot Quit"},
+            {"Metadata Edit", "Metadata Edit"},
+            {"Metadata Catalog", "Metadata Catalog"}
         };
 
         keyOrders_["DPISettings"] = {

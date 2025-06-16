@@ -14,7 +14,7 @@
 
 #include <filesystem>
 #include "settings.h"
-#include "keybinds/keybind_manager.h"
+#include "keybinds/ikeybind_provider.h"
 #include <string>
 
 /**
@@ -23,7 +23,7 @@
  *
  * This pure virtual class defines methods for retrieving and modifying application
  * settings, validating configuration, loading and saving JSON-based configuration data,
- * managing keybindings via KeybindManager, and updating window positions for playfield,
+ * managing keybindings via IKeybindProvider, and updating window positions for playfield,
  * backglass, DMD, and topper displays. Implementers handle JSON configuration file operations
  * and provide a standardized interface for configuration management.
  */
@@ -31,26 +31,33 @@ class IConfigService {
 public:
     /**
      * @brief Virtual destructor for proper cleanup of derived classes.
-     *
-     * Ensures proper cleanup of any derived classes implementing this interface.
      */
     virtual ~IConfigService() = default;
 
     /**
-     * @brief Gets the current application settings.
+     * @brief Gets the current application settings (read-only).
      *
      * @return A const reference to the Settings object containing current configuration.
      */
     virtual const Settings& getSettings() const = 0;
 
     /**
-     * @brief Gets the keybinding manager.
+     * @brief Gets the current application settings (mutable).
      *
-     * Provides access to the KeybindManager for managing input mappings.
+     * Provides mutable access to settings for updating configuration (e.g., via ConfigUI).
      *
-     * @return A reference to the KeybindManager object.
+     * @return A reference to the Settings object.
      */
-    virtual KeybindManager& getKeybindManager() = 0;
+    virtual Settings& getMutableSettings() = 0;
+
+    /**
+     * @brief Gets the keybinding provider.
+     *
+     * Provides access to the IKeybindProvider for managing input mappings.
+     *
+     * @return A reference to the IKeybindProvider object.
+     */
+    virtual IKeybindProvider& getKeybindProvider() = 0;
 
     /**
      * @brief Checks if the configuration is valid.
