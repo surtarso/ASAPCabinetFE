@@ -14,7 +14,8 @@
 #include "vpsdb_metadata.h"
 #include "config/settings.h"
 #include "vpsdb_catalog_image.h"
-#include "vpsdb_catalog_loader.h"
+#include "vpsdb_catalog_json.h"
+#include "vpsdb_catalog_table.h"
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <string>
@@ -26,13 +27,6 @@
 #include <queue>
 
 namespace vpsdb {
-
-struct LoadedTableData {
-    size_t index;
-    PinballTable table;
-    std::string backglassPath;
-    std::string playfieldPath;
-};
 
 class VpsdbCatalog {
     friend class VpsdbImage; // Allow VpsdbImage to access private members
@@ -57,14 +51,13 @@ private:
     VpsdbJsonLoader& jsonLoader_;
     std::thread tableLoadThread_;
     std::mutex mutex_;
-    std::queue<LoadedTableData> loadedTableQueue_; // Queue for main-thread processing
+    std::queue<LoadedTableData> loadedTableQueue_;
 
-    void loadTable(size_t index);
     void renderField(const char* key, const std::string& value);
     std::string join(const std::vector<std::string>& vec, const std::string& delim);
     void applySearchFilter(const char* searchTerm);
-    void loadTableInBackground(size_t index);
     void openUrl(const std::string& url);
+    void startTableLoad(size_t index);
 };
 
 } // namespace vpsdb

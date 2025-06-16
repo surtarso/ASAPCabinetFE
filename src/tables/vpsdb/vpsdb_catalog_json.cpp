@@ -1,4 +1,4 @@
-#include "vpsdb_catalog_loader.h"
+#include "vpsdb_catalog_json.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>

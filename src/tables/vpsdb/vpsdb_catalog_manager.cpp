@@ -1,10 +1,11 @@
 #include "vpsdb_catalog_manager.h"
+#include "vpsdb_catalog_table.h"
 #include "log/logging.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
 #include <thread>
-#include <cstdlib> // For system()
+#include <cstdlib>
 
 namespace fs = std::filesystem;
 
@@ -29,121 +30,17 @@ VpsdbCatalog::~VpsdbCatalog() {
     VpsdbImage::clearThumbnails(*this);
 }
 
-void VpsdbCatalog::loadTableInBackground(size_t index) {
-    LoadedTableData data;
-    data.index = index;
-
-    try {
-        std::ifstream file(vpsdbFilePath_);
-        nlohmann::json json;
-        file >> json;
-        auto entry = json[index];
-        PinballTable table;
-        table.id = entry.value("id", "");
-        table.updatedAt = entry.value("updatedAt", 0);
-        table.manufacturer = entry.value("manufacturer", "");
-        table.name = entry.value("name", "");
-        table.year = entry.value("year", 0);
-        table.theme = entry.value("theme", std::vector<std::string>{});
-        table.designers = entry.value("designers", std::vector<std::string>{});
-        table.type = entry.value("type", "");
-        table.players = entry.value("players", 0);
-        table.ipdbUrl = entry.value("ipdbUrl", "");
-        table.lastCreatedAt = entry.value("lastCreatedAt", 0);
-
-        for (const auto& file : entry.value("tableFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.tableFormat = file.value("tableFormat", "");
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            table.tableFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("b2sFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            table.b2sFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("wheelArtFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            table.wheelArtFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("topperFiles", nlohmann::json::array())) {
-            TopperFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            table.topperFiles.push_back(tf);
-        }
-        data.table = std::move(table);
-    } catch (const std::exception& e) {
-        LOG_ERROR("VpsdbCatalog: Failed to load table at index " << index << ": " << e.what());
-        std::lock_guard<std::mutex> lock(mutex_);
-        isTableLoading_ = false;
-        return;
+void VpsdbCatalog::startTableLoad(size_t index) {
+    if (tableLoadThread_.joinable()) {
+        LOG_DEBUG("VpsdbCatalog: Joining existing thread before starting new load for index: " << index);
+        tableLoadThread_.join();
     }
-
-    std::string backglassUrl, playfieldUrl;
-    if (!data.table.b2sFiles.empty()) {
-        backglassUrl = data.table.b2sFiles[0].imgUrl;
-    }
-    if (!data.table.tableFiles.empty()) {
-        playfieldUrl = data.table.tableFiles[0].imgUrl;
-    }
-
-    if (!backglassUrl.empty()) {
-        data.backglassPath = "data/cache/" + data.table.id + "_backglass.webp";
-        if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
-            data.backglassPath.clear();
-        }
-    }
-    if (!playfieldUrl.empty()) {
-        data.playfieldPath = "data/cache/" + data.table.id + "_playfield.webp";
-        if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
-            data.playfieldPath.clear();
-        }
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        loadedTableQueue_.push(std::move(data));
-        isTableLoading_ = true;
-    }
-    LOG_DEBUG("VpsdbCatalog: Background table load complete, index: " << index);
+    LOG_DEBUG("VpsdbCatalog: Starting table load for index: " << index);
+    isTableLoading_ = true;
+    tableLoadThread_ = std::thread(&vpsdb::loadTableInBackground, vpsdbFilePath_, index,
+                                   std::ref(loadedTableQueue_), std::ref(mutex_),
+                                   std::ref(isTableLoading_));
+    LOG_DEBUG("VpsdbCatalog: Thread created for index: " << index);
 }
 
 bool VpsdbCatalog::render() {
@@ -155,15 +52,9 @@ bool VpsdbCatalog::render() {
 
         const char* textToDisplay = "";
         switch (jsonLoader_.getProgressStage()) {
-            case 1:
-                textToDisplay = "Fetching VPSDB...";
-                break;
-            case 2:
-                textToDisplay = "Loading JSON...";
-                break;
-            default:
-                textToDisplay = "Loading VPSDB...";
-                break;
+            case 1: textToDisplay = "Fetching VPSDB..."; break;
+            case 2: textToDisplay = "Loading JSON..."; break;
+            default: textToDisplay = "Loading VPSDB..."; break;
         }
         ImVec2 textSize = ImGui::CalcTextSize(textToDisplay);
         ImGui::SetCursorPosX((300 - textSize.x) / 2);
@@ -173,8 +64,9 @@ bool VpsdbCatalog::render() {
         return true;
     }
 
-    jsonLoader_.initialize(); // Ensure initialization is complete
-    
+    jsonLoader_.initialize();
+    LOG_DEBUG("VpsdbCatalog: JSON loader initialized, loaded: " << jsonLoader_.isLoaded() << ", index size: " << jsonLoader_.getIndex().size());
+
     if (!jsonLoader_.isLoaded()) {
         if (!jsonLoader_.isLoading() && jsonLoader_.getIndex().empty()) {
             ImGui::Text("Error: VPSDB JSON not loaded");
@@ -202,6 +94,7 @@ bool VpsdbCatalog::render() {
         if (!loadedTableQueue_.empty()) {
             auto data = std::move(loadedTableQueue_.front());
             loadedTableQueue_.pop();
+            LOG_DEBUG("VpsdbCatalog: Processing queued table, index: " << data.index);
 
             currentIndex_ = data.index;
             currentTable_ = std::move(data.table);
@@ -210,14 +103,18 @@ bool VpsdbCatalog::render() {
             if (!data.backglassPath.empty()) {
                 backglassTexture_.reset(VpsdbImage::loadTexture(*this, data.backglassPath));
                 currentBackglassPath_ = data.backglassPath;
+                LOG_DEBUG("VpsdbCatalog: Loaded backglass texture for index: " << data.index);
             }
             if (!data.playfieldPath.empty()) {
                 playfieldTexture_.reset(VpsdbImage::loadTexture(*this, data.playfieldPath));
                 currentPlayfieldPath_ = data.playfieldPath;
+                LOG_DEBUG("VpsdbCatalog: Loaded playfield texture for index: " << data.index);
             }
 
             isTableLoading_ = false;
             LOG_DEBUG("VpsdbCatalog: Processed loaded table, index: " << currentIndex_);
+        } else {
+            LOG_DEBUG("VpsdbCatalog: Loaded table queue is empty");
         }
     }
 
@@ -244,10 +141,13 @@ bool VpsdbCatalog::render() {
     ImGui::Separator();
 
     // Initial table load
-    if (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id) {
+    static bool initialLoadAttempted = false;
+    if (!initialLoadAttempted && jsonLoader_.isLoaded() && !jsonLoader_.getIndex().empty() &&
+        (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id)) {
+        LOG_DEBUG("VpsdbCatalog: Triggering initial load for index: " << currentIndex_);
         if (!isTableLoading_ && !tableLoadThread_.joinable()) {
-            isTableLoading_ = true;
-            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, currentIndex_);
+            startTableLoad(currentIndex_);
+            initialLoadAttempted = true;
         }
     }
 
@@ -500,8 +400,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = jsonLoader_.getIndex().size() - 1;
             }
-            isTableLoading_ = true;
-            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+            startTableLoad(newIndex);
             LOG_DEBUG("VpsdbCatalog: Navigated to previous table, index: " << newIndex);
         }
     }
@@ -525,8 +424,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = 0;
             }
-            isTableLoading_ = true;
-            tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+            startTableLoad(newIndex);
             LOG_DEBUG("VpsdbCatalog: Navigated to next table, index: " << newIndex);
         }
     }
@@ -545,91 +443,6 @@ bool VpsdbCatalog::render() {
 
     ImGui::End();
     return true;
-}
-
-void VpsdbCatalog::loadTable(size_t index) {
-    try {
-        std::ifstream file(vpsdbFilePath_);
-        nlohmann::json json;
-        file >> json;
-        auto entry = json[index];
-        currentTable_ = {};
-        currentTable_.id = entry.value("id", "");
-        currentTable_.updatedAt = entry.value("updatedAt", 0);
-        currentTable_.manufacturer = entry.value("manufacturer", "");
-        currentTable_.name = entry.value("name", "");
-        currentTable_.year = entry.value("year", 0);
-        currentTable_.theme = entry.value("theme", std::vector<std::string>{});
-        currentTable_.designers = entry.value("designers", std::vector<std::string>{});
-        currentTable_.type = entry.value("type", "");
-        currentTable_.players = entry.value("players", 0);
-        currentTable_.ipdbUrl = entry.value("ipdbUrl", "");
-        currentTable_.lastCreatedAt = entry.value("lastCreatedAt", 0);
-
-        for (const auto& file : entry.value("tableFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.tableFormat = file.value("tableFormat", "");
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            currentTable_.tableFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("b2sFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            currentTable_.b2sFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("wheelArtFiles", nlohmann::json::array())) {
-            TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            currentTable_.wheelArtFiles.push_back(tf);
-        }
-
-        for (const auto& file : entry.value("topperFiles", nlohmann::json::array())) {
-            TopperFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
-                tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
-            }
-            currentTable_.topperFiles.push_back(tf);
-        }
-
-        LOG_DEBUG("VpsdbCatalog: Loaded table at index: " << index << ", name: " << currentTable_.name);
-    } catch (const std::exception& e) {
-        LOG_ERROR("VpsdbCatalog: Failed to load table at index " << index << ": " << e.what());
-        currentTable_ = {};
-    }
 }
 
 void VpsdbCatalog::renderField(const char* key, const std::string& value) {
@@ -670,7 +483,7 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
             tableLoadThread_.join();
         }
         isTableLoading_ = true;
-        tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
+        startTableLoad(newIndex);
         LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << jsonLoader_.getIndex()[newIndex].name);
     }
 }

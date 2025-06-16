@@ -296,7 +296,8 @@ set(SOURCES
     src/tables/vpsdb/vps_database_updater.cpp
     src/tables/vpsdb/vpsdb_catalog_manager.cpp
     src/tables/vpsdb/vpsdb_catalog_image.cpp
-    src/tables/vpsdb/vpsdb_catalog_loader.cpp
+    src/tables/vpsdb/vpsdb_catalog_json.cpp
+    src/tables/vpsdb/vpsdb_catalog_table.cpp
     src/utils/path_utils.cpp
     src/utils/string_utils.cpp
     src/utils/vpinballx_ini_reader.cpp

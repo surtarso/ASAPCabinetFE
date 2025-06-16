@@ -29,7 +29,7 @@
 #include "tables/table_override_editor.h"
 #include "tables/table_override_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
-#include "tables/vpsdb/vpsdb_catalog_loader.h" // Added for VpsdbJsonLoader
+#include "tables/vpsdb/vpsdb_catalog_table.h" // Added for VpsdbJsonLoader
 #include "sound/isound_manager.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
