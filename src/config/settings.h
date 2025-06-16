@@ -223,8 +223,8 @@ struct Settings {
         {"Screenshot Mode", "S"},
         {"Screenshot Key", "S"},
         {"Screenshot Quit", "Q"},
-        {"Metadata Edit", "M"},
-        {"Metadata Catalog", "N"}
+        {"Toggle Editor", "M"},
+        {"Toggle Catalog", "N"}
     };
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
@@ -946,22 +946,21 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"configUIWidth", {Settings::ReloadType::None, "Config window width."}},
     {"configUIHeight", {Settings::ReloadType::None, "Config window height."}},
     // Keybinds
-    {"PreviousTable", {Settings::ReloadType::None, "Key to select the previous table in the list."}},
-    {"NextTable", {Settings::ReloadType::None, "Key to select the next table in the list."}},
-    {"FastPrevTable", {Settings::ReloadType::None, "Key to quickly jump back 10 tables."}},
-    {"FastNextTable", {Settings::ReloadType::None, "Key to quickly jump forward 10 tables."}},
-    {"JumpNextLetter", {Settings::ReloadType::None, "Key to jump to the next table starting with a different letter."}},
-    {"JumpPrevLetter", {Settings::ReloadType::None, "Key to jump to the previous table starting with a different letter."}},
-    {"RandomTable", {Settings::ReloadType::None, "Key to jump to a random table."}},
-    {"LaunchTable", {Settings::ReloadType::None, "Key to launch the selected table."}},
-    {"ToggleConfig", {Settings::ReloadType::None, "Key to open or close the configuration menu."}},
+    {"Previous Table", {Settings::ReloadType::None, "Key to select the previous table in the list."}},
+    {"Next Table", {Settings::ReloadType::None, "Key to select the next table in the list."}},
+    {"Fast Previous Table", {Settings::ReloadType::None, "Key to quickly jump back 10 tables."}},
+    {"Fast Next Table", {Settings::ReloadType::None, "Key to quickly jump forward 10 tables."}},
+    {"Jump Next Letter", {Settings::ReloadType::None, "Key to jump to the next table starting with a different letter."}},
+    {"Jump Previous Letter", {Settings::ReloadType::None, "Key to jump to the previous table starting with a different letter."}},
+    {"Random Table", {Settings::ReloadType::None, "Key to jump to a random table."}},
+    {"Launch Table", {Settings::ReloadType::None, "Key to launch the selected table."}},
+    {"Toggle Config", {Settings::ReloadType::None, "Key to open or close the configuration menu."}},
     {"Quit", {Settings::ReloadType::None, "Key to exit menus and application."}},
-    {"ConfigClose", {Settings::ReloadType::None, "Key to close the configuration menu without saving."}},
-    {"ScreenshotMode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
-    {"ScreenshotKey", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
-    {"ScreenshotQuit", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
-    {"MetadataEdit", {Settings::ReloadType::None, "Key to open metadata editor."}},
-    {"MetadataCatalog", {Settings::ReloadType::None, "Key to open metadata catalog."}}
+    {"Screenshot Mode", {Settings::ReloadType::None, "Key to launch a table in screenshot mode."}},
+    {"Screenshot Key", {Settings::ReloadType::None, "Key to take a screenshot while in screenshot mode."}},
+    {"Screenshot Quit", {Settings::ReloadType::None, "Key to quit screenshot mode."}},
+    {"Toggle Editor", {Settings::ReloadType::None, "Key to open metadata editor."}},
+    {"Toggle Catalog", {Settings::ReloadType::None, "Key to open metadata catalog."}}
 };
 
 #endif // SETTINGS_H

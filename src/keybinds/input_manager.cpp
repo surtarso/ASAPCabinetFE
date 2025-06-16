@@ -356,14 +356,14 @@ void InputManager::registerActions() {
         LOG_DEBUG("InputManager: Toggled showConfig to: " << (*showConfig_ ? 1 : 0));
     };
 
-    actionHandlers_["Metadata Edit"] = [this]() {
+    actionHandlers_["Toggle Editor"] = [this]() {
         LOG_DEBUG("InputManager: MetadataEdit action triggered");
         soundManager_->playUISound("config_toggle");
         *showEditor_ = !*showEditor_;
         LOG_DEBUG("InputManager: Toggled showEditor to: " << (*showEditor_ ? 1 : 0));
     };
 
-    actionHandlers_["Metadata Catalog"] = [this]() {
+    actionHandlers_["Toggle Catalog"] = [this]() {
         LOG_DEBUG("InputManager: MetadataCatalog action triggered");
         soundManager_->playUISound("config_toggle");
         *showVpsdb_ = !*showVpsdb_;
@@ -453,30 +453,30 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
     if (*showEditor_) {
         if (event.type == SDL_KEYDOWN) {
-            // Allow 'Metadata Edit' or 'Quit' action (e.g., 'Q' key) to close the Metadata Edit or quit the app.
-            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Metadata Edit text field
-                if (keybindProvider_->isAction(event.key, "Metadata Edit") || keybindProvider_->isAction(event.key, "Quit")) {
-                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Metadata Edit or truly quitting
+            // Allow 'Toggle Editor' or 'Quit' action (e.g., 'Q' key) to close the Toggle Editor or quit the app.
+            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Toggle Editor text field
+                if (keybindProvider_->isAction(event.key, "Toggle Editor") || keybindProvider_->isAction(event.key, "Quit")) {
+                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Toggle Editor or truly quitting
                     return; // Consume the event
                 }
             }
         }
-        // If Metadata Edit is open and the event wasn't handled by 'Metadata Edit' or 'Quit',
+        // If Toggle Editor is open and the event wasn't handled by 'Toggle Editor' or 'Quit',
         // then block all other custom actions (including ScreenshotMode).
         return; 
     }
 
     if (*showVpsdb_) {
         if (event.type == SDL_KEYDOWN) {
-            // Allow 'Metadata Catalog' or 'Quit' action (e.g., 'Q' key) to close the Metadata Catalog or quit the app.
-            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Metadata Catalog text field
-                if (keybindProvider_->isAction(event.key, "Metadata Catalog") || keybindProvider_->isAction(event.key, "Quit")) {
-                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Metadata Catalog or truly quitting
+            // Allow 'Toggle Catalog' or 'Quit' action (e.g., 'Q' key) to close the Toggle Catalog or quit the app.
+            if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Toggle Catalog text field
+                if (keybindProvider_->isAction(event.key, "Toggle Catalog") || keybindProvider_->isAction(event.key, "Quit")) {
+                    actionHandlers_["Quit"](); // The "Quit" handler manages closing the Toggle Catalog or truly quitting
                     return; // Consume the event
                 }
             }
         }
-        // If Metadata Catalog is open and the event wasn't handled by 'Metadata Catalog' or 'Quit',
+        // If Toggle Catalog is open and the event wasn't handled by 'Toggle Catalog' or 'Quit',
         // then block all other custom actions (including ScreenshotMode).
         return; 
     }

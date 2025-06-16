@@ -167,8 +167,8 @@ public:
         keyOrders_["Keybinds"] = {
             "Previous Table", "Next Table", "Fast Previous Table", "Fast Next Table",
             "Jump Next Letter", "Jump Previous Letter", "Random Table", "Launch Table",
-            "Toggle Config", "Quit", "Screenshot Mode",
-            "Screenshot Key", "Screenshot Quit", "Metadata Edit", "Metadata Catalog"
+            "Toggle Config", "Toggle Editor", "Toggle Catalog", "Screenshot Mode",
+            "Screenshot Key", "Screenshot Quit", "Quit"
         };
         keyDisplayNames_["Keybinds"] = {
             {"Previous Table", "Previous Table"},
@@ -179,13 +179,13 @@ public:
             {"Jump Previous Letter", "Jump Previous Letter"},
             {"Random Table", "Random Table"},
             {"Launch Table", "Launch Table"},
-            {"Toggle Config", "Toggle Config"},
-            {"Quit", "Quit"},
             {"Screenshot Mode", "Screenshot Mode"},
             {"Screenshot Key", "Screenshot Key"},
             {"Screenshot Quit", "Screenshot Quit"},
-            {"Metadata Edit", "Metadata Edit"},
-            {"Metadata Catalog", "Metadata Catalog"}
+            {"Toggle Config", "Toggle Config"},
+            {"Toggle Editor", "Toggle Editor"},
+            {"Toggle Catalog", "Toggle Catalog"},
+            {"Quit", "Quit"}
         };
 
         keyOrders_["DPISettings"] = {

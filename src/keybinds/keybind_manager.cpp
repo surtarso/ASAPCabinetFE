@@ -26,8 +26,8 @@ void KeybindManager::initializeDefaults() {
     keybinds_[("Screenshot Mode")] = {SDL_GetKeyFromName("S")};
     keybinds_[("Screenshot Key")] = {SDL_GetKeyFromName("S")};
     keybinds_[("Screenshot Quit")] = {SDL_GetKeyFromName("Q")};
-    keybinds_[("Metadata Edit")] = {SDL_GetKeyFromName("M")};
-    keybinds_[("Metadata Catalog")] = {SDL_GetKeyFromName("N")};
+    keybinds_[("Toggle Editor")] = {SDL_GetKeyFromName("M")};
+    keybinds_[("Toggle Catalog")] = {SDL_GetKeyFromName("N")};
 }
 
 std::string KeybindManager::getActionForKey(const std::string& key) const {
