@@ -29,6 +29,7 @@
 #include "tables/table_override_editor.h"
 #include "tables/table_override_manager.h"
 #include "tables/vpsdb/vpsdb_catalog.h"
+#include "tables/vpsdb/vpsdb_json_loader.h" // Added for VpsdbJsonLoader
 #include "sound/isound_manager.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/iwindow_manager.h"
@@ -122,6 +123,7 @@ private:
     TableOverrideManager overrideManager_; ///< Manager for table overrides
     bool showEditor_ = false;
     std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
+    std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_; // Added for JSON loading
     bool showVpsdb_ = false;
     size_t currentIndex_ = 0;                   ///< Index of the current table.
     size_t lastTableIndex_; ///< Track last table index for editor updates

@@ -388,15 +388,19 @@ void App::render() {
         // Render vpsdb catalog
         if (showVpsdb_) {
             if (!vpsdbCatalog_) {
-                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(configManager_->getSettings().vpsDbPath,
-                                                                        windowManager_->getPlayfieldRenderer(),
+                vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(configManager_->getSettings().vpsDbPath,
                                                                         configManager_->getSettings());
-                LOG_DEBUG("App: vpsdbCatalog initialized");
+                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(configManager_->getSettings().vpsDbPath,
+                                                                    windowManager_->getPlayfieldRenderer(),
+                                                                    configManager_->getSettings(),
+                                                                    *vpsdbJsonLoader_);
+                LOG_DEBUG("App: vpsdbCatalog and vpsdbJsonLoader initialized");
             }
             if (!vpsdbCatalog_->render()) {
                 vpsdbCatalog_.reset();
+                vpsdbJsonLoader_.reset();
                 showVpsdb_ = false;
-                LOG_DEBUG("App: Closed VpsdbCatalog");
+                LOG_DEBUG("App: Closed VpsdbCatalog and vpsdbJsonLoader");
             }
         }
     }

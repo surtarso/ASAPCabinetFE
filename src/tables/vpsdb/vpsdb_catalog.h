@@ -11,10 +11,10 @@
 #ifndef VPSDB_CATALOG_H
 #define VPSDB_CATALOG_H
 
-#include "vps_database_client.h"
 #include "vpsdb_metadata.h"
 #include "config/settings.h"
 #include "vpsdb_image.h"
+#include "vpsdb_json_loader.h"
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <string>
@@ -38,40 +38,31 @@ class VpsdbCatalog {
     friend class VpsdbImage; // Allow VpsdbImage to access private members
 
 public:
-    VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings);
+    VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader);
     ~VpsdbCatalog();
     bool render();
 
 private:
     std::string vpsdbFilePath_;
     SDL_Renderer* renderer_;
-    std::vector<TableIndex> index_;
     PinballTable currentTable_;
     size_t currentIndex_;
-    bool loaded_;
-    std::atomic<bool> isLoading_;
-    std::atomic<int> progressStage_; // 0: Not started, 1: Fetching, 2: Loading JSON, 3: Done
-    std::atomic<bool> isTableLoading_;
     bool isOpen;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> backglassTexture_;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> playfieldTexture_;
     std::string currentBackglassPath_;
     std::string currentPlayfieldPath_;
-    std::unique_ptr<VpsDatabaseClient> vpsDbClient_;
     const Settings& settings_;
-    std::thread initThread_;
+    VpsdbJsonLoader& jsonLoader_;
     std::thread tableLoadThread_;
     std::mutex mutex_;
     std::queue<LoadedTableData> loadedTableQueue_; // Queue for main-thread processing
-    // std::chrono::steady_clock::time_point lastSearchTime_;
-    // std::string pendingSearchTerm_;
+    std::atomic<bool> isTableLoading_;
 
-    void loadJson();
     void loadTable(size_t index);
     void renderField(const char* key, const std::string& value);
     std::string join(const std::vector<std::string>& vec, const std::string& delim);
     void applySearchFilter(const char* searchTerm);
-    void initInBackground();
     void loadTableInBackground(size_t index);
     void openUrl(const std::string& url);
 };

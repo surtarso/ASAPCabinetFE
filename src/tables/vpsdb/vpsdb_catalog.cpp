@@ -10,55 +10,23 @@ namespace fs = std::filesystem;
 
 namespace vpsdb {
 
-VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings)
+VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader)
     : vpsdbFilePath_(vpsdbFilePath),
       renderer_(renderer),
       currentIndex_(0),
-      loaded_(false),
-      isLoading_(true),
       isTableLoading_(false),
       isOpen(false),
       backglassTexture_(nullptr, SDL_DestroyTexture),
       playfieldTexture_(nullptr, SDL_DestroyTexture),
-      vpsDbClient_(std::make_unique<VpsDatabaseClient>(vpsdbFilePath_)),
-      settings_(settings) {
-    initThread_ = std::thread(&VpsdbCatalog::initInBackground, this);
+      settings_(settings),
+      jsonLoader_(jsonLoader) {
 }
 
 VpsdbCatalog::~VpsdbCatalog() {
-    if (initThread_.joinable()) {
-        initThread_.join();
-    }
     if (tableLoadThread_.joinable()) {
         tableLoadThread_.join();
     }
     VpsdbImage::clearThumbnails(*this);
-}
-
-void VpsdbCatalog::initInBackground() {
-    isLoading_ = true;
-    progressStage_ = 1;
-    LOG_DEBUG("VpsdbCatalog: Starting initialization in background");
-
-    if (!fs::exists(vpsdbFilePath_)) {
-        LOG_DEBUG("VpsdbCatalog: vpsdb.json not found, initiating fetch");
-        if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
-            LOG_ERROR("VpsdbCatalog: Failed to fetch vpsdb.json");
-            isLoading_ = false;
-            progressStage_ = 0;
-            return;
-        }
-    } else {
-        LOG_DEBUG("VpsdbCatalog: vpsdb.json exists, checking for updates");
-        if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
-            LOG_DEBUG("VpsdbCatalog: vpsdb.json exists but update check failed, proceeding with current file");
-        }
-    }
-    progressStage_ = 2;
-    loadJson(); // Ensure JSON is loaded before setting isLoading_ to false
-    progressStage_ = 3;
-    isLoading_ = false; // Set to false only after loadJson() completes
-    LOG_DEBUG("VpsdbCatalog: Initialization complete in background");
 }
 
 void VpsdbCatalog::loadTableInBackground(size_t index) {
@@ -179,14 +147,14 @@ void VpsdbCatalog::loadTableInBackground(size_t index) {
 }
 
 bool VpsdbCatalog::render() {
-    if (isLoading_) {
+    if (jsonLoader_.isLoading()) {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 300) / 2, (io.DisplaySize.y - 100) / 2), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Always);
         ImGui::Begin("Loading VPSDB", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
         const char* textToDisplay = "";
-        switch (progressStage_) {
+        switch (jsonLoader_.getProgressStage()) {
             case 1:
                 textToDisplay = "Fetching VPSDB...";
                 break;
@@ -205,13 +173,10 @@ bool VpsdbCatalog::render() {
         return true;
     }
 
-    // Wait for initialization if still running on first render
-    if (initThread_.joinable()) {
-        initThread_.join(); // Ensure initialization is complete
-    }
+    jsonLoader_.initialize(); // Ensure initialization is complete
     
-    if (!loaded_) {
-        if (!isLoading_ && index_.empty()) {
+    if (!jsonLoader_.isLoaded()) {
+        if (!jsonLoader_.isLoading() && jsonLoader_.getIndex().empty()) {
             ImGui::Text("Error: VPSDB JSON not loaded");
             LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
         }
@@ -258,7 +223,7 @@ bool VpsdbCatalog::render() {
 
     // Search input and button
     static char searchBuffer[256] = "";
-    ImGui::InputText("##Search", searchBuffer, IM_ARRAYSIZE(searchBuffer), ImGuiInputTextFlags_EnterReturnsTrue); // Fixed to avoid crash
+    ImGui::InputText("##Search", searchBuffer, IM_ARRAYSIZE(searchBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::SameLine();
     if (ImGui::Button("Fetch") || ImGui::IsKeyPressed(ImGuiKey_Enter, true)) {
         applySearchFilter(searchBuffer);
@@ -267,8 +232,8 @@ bool VpsdbCatalog::render() {
         std::string searchStr = searchBuffer;
         std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
         std::vector<size_t> tempIndices;
-        for (size_t i = 0; i < index_.size(); ++i) {
-            std::string name = index_[i].name;
+        for (size_t i = 0; i < jsonLoader_.getIndex().size(); ++i) {
+            std::string name = jsonLoader_.getIndex()[i].name;
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             if (name.find(searchStr) != std::string::npos) {
                 tempIndices.push_back(i);
@@ -279,7 +244,7 @@ bool VpsdbCatalog::render() {
     ImGui::Separator();
 
     // Initial table load
-    if (currentTable_.id.empty() || currentTable_.id != index_[currentIndex_].id) {
+    if (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id) {
         if (!isTableLoading_ && !tableLoadThread_.joinable()) {
             isTableLoading_ = true;
             tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, currentIndex_);
@@ -310,16 +275,13 @@ bool VpsdbCatalog::render() {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE FILES");
     ImGui::Separator();
 
-    // Push a unique ID for the entire "TABLE FILES" section.
     ImGui::PushID("TableFilesSection");
     for (size_t i = 0; i < currentTable_.tableFiles.size(); ++i) {
         const auto& file = currentTable_.tableFiles[i];
-
-        // Push a unique ID for each table file entry within this section.
         ImGui::PushID(static_cast<int>(i));
 
         ImGui::Text("Table File %zu", i + 1);
-        ImGui::NextColumn(); // This might need to be adjusted based on your column setup, ensure it's correct for your layout.
+        ImGui::NextColumn();
 
         ImGui::Text("ID: %s", file.id.c_str());
         ImGui::Text("Authors: %s", join(file.authors, ", ").c_str());
@@ -330,12 +292,7 @@ bool VpsdbCatalog::render() {
 
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            // Push a unique ID for each URL within this table file entry.
             ImGui::PushID(static_cast<int>(j));
-
-            // The snprintf for buttonId is redundant when PushID is used.
-            // char buttonId[54];
-            // snprintf(buttonId, sizeof(buttonId), "table_url_%zu_%zu", i, j);
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
@@ -354,20 +311,19 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // Pop the URL ID
+            ImGui::PopID();
         }
-        ImGui::NextColumn(); // Again, verify column usage
-        ImGui::PopID(); // Pop the table file ID
+        ImGui::NextColumn();
+        ImGui::PopID();
     }
-    ImGui::PopID(); // Pop the "TableFilesSection" ID
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "B2S FILES");
     ImGui::Separator();
-    // Push a unique ID for the entire "B2S FILES" section.
     ImGui::PushID("B2SFilesSection");
     for (size_t i = 0; i < currentTable_.b2sFiles.size(); ++i) {
         const auto& file = currentTable_.b2sFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each B2S file within this section.
+        ImGui::PushID(static_cast<int>(i));
 
         ImGui::Text("B2S File %zu", i + 1);
         ImGui::NextColumn();
@@ -378,9 +334,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Features: %s", join(file.features, ", ").c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this B2S file
-            // char buttonId[54]; // Redundant with PushID
-            // snprintf(buttonId, sizeof(buttonId), "b2s_url_%zu_%zu", i, j);
+            ImGui::PushID(static_cast<int>(j));
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
@@ -398,20 +352,19 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // Pop the URL ID
+            ImGui::PopID();
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the B2S file ID
+        ImGui::PopID();
     }
-    ImGui::PopID(); // Pop the "B2SFilesSection" ID
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "WHEEL ART FILES");
     ImGui::Separator();
-    // Push a unique ID for the entire "WHEEL ART FILES" section.
     ImGui::PushID("WheelArtFilesSection");
     for (size_t i = 0; i < currentTable_.wheelArtFiles.size(); ++i) {
         const auto& file = currentTable_.wheelArtFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Wheel Art file within this section.
+        ImGui::PushID(static_cast<int>(i));
 
         ImGui::Text("Wheel Art File %zu", i + 1);
         ImGui::NextColumn();
@@ -420,9 +373,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this Wheel Art file
-            // char buttonId[54]; // Redundant with PushID
-            // snprintf(buttonId, sizeof(buttonId), "wheel_url_%zu_%zu", i, j);
+            ImGui::PushID(static_cast<int>(j));
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
@@ -440,20 +391,19 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // Pop the URL ID
+            ImGui::PopID();
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the Wheel Art file ID
+        ImGui::PopID();
     }
-    ImGui::PopID(); // Pop the "WheelArtFilesSection" ID
+    ImGui::PopID();
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TOPPER FILES");
     ImGui::Separator();
-    // Push a unique ID for the entire "TOPPER FILES" section.
     ImGui::PushID("TopperFilesSection");
     for (size_t i = 0; i < currentTable_.topperFiles.size(); ++i) {
         const auto& file = currentTable_.topperFiles[i];
-        ImGui::PushID(static_cast<int>(i)); // Push unique ID for each Topper file within this section.
+        ImGui::PushID(static_cast<int>(i));
 
         ImGui::Text("Topper File %zu", i + 1);
         ImGui::NextColumn();
@@ -462,9 +412,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Version: %s", file.version.c_str());
         for (size_t j = 0; j < file.urls.size(); ++j) {
             const auto& url = file.urls[j].url;
-            ImGui::PushID(static_cast<int>(j)); // Scope ID for each URL within this Topper file
-            // char buttonId[54]; // Redundant with PushID
-            // snprintf(buttonId, sizeof(buttonId), "topper_url_%zu_%zu", i, j);
+            ImGui::PushID(static_cast<int>(j));
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
@@ -482,12 +430,12 @@ bool VpsdbCatalog::render() {
             ImGui::SameLine();
             ImGui::Text("Broken: %s", file.urls[j].broken ? "Yes" : "No");
             ImGui::PopStyleColor();
-            ImGui::PopID(); // Pop the URL ID
+            ImGui::PopID();
         }
         ImGui::NextColumn();
-        ImGui::PopID(); // Pop the Topper file ID
+        ImGui::PopID();
     }
-    ImGui::PopID(); // Pop the "TopperFilesSection" ID
+    ImGui::PopID();
 
     ImGui::Columns(1);
     ImGui::EndChild();
@@ -524,8 +472,8 @@ bool VpsdbCatalog::render() {
     if (strlen(searchBuffer) > 0) {
         std::string searchStr = searchBuffer;
         std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
-        for (size_t i = 0; i < index_.size(); ++i) {
-            std::string name = index_[i].name;
+        for (size_t i = 0; i < jsonLoader_.getIndex().size(); ++i) {
+            std::string name = jsonLoader_.getIndex()[i].name;
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             if (name.find(searchStr) != std::string::npos) {
                 filteredIndices.push_back(i);
@@ -550,7 +498,7 @@ bool VpsdbCatalog::render() {
             } else if (currentIndex_ > 0) {
                 newIndex = currentIndex_ - 1;
             } else {
-                newIndex = index_.size() - 1;
+                newIndex = jsonLoader_.getIndex().size() - 1;
             }
             isTableLoading_ = true;
             tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
@@ -572,7 +520,7 @@ bool VpsdbCatalog::render() {
                 } else {
                     newIndex = filteredIndices.front();
                 }
-            } else if (currentIndex_ < index_.size() - 1) {
+            } else if (currentIndex_ < jsonLoader_.getIndex().size() - 1) {
                 newIndex = currentIndex_ + 1;
             } else {
                 newIndex = 0;
@@ -587,43 +535,16 @@ bool VpsdbCatalog::render() {
     if (isTableLoading_) {
         ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-        ImGui::SetNextWindowBgAlpha(0.7f); // Added for transparency
+        ImGui::SetNextWindowBgAlpha(0.7f);
         ImGui::Begin("Loading Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
         ImVec2 textSize = ImGui::CalcTextSize("Loading Table...");
         ImGui::SetCursorPos(ImVec2(panelWidth * 0.5f - textSize.x * 0.5f, panelHeight * 0.5f - textSize.y * 0.5f));
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Loading Table..."); // Yellow text
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Loading Table...");
         ImGui::End();
     }
 
     ImGui::End();
     return true;
-}
-
-void VpsdbCatalog::loadJson() {
-    try {
-        std::ifstream file(vpsdbFilePath_);
-        if (!file.is_open()) {
-            LOG_ERROR("VpsdbCatalog: Failed to open JSON file: " << vpsdbFilePath_);
-            loaded_ = false;
-            return;
-        }
-        nlohmann::json json;
-        file >> json;
-        index_.clear();
-        for (const auto& entry : json) {
-            TableIndex idx;
-            idx.id = entry.value("id", "");
-            idx.name = entry.value("name", "");
-            idx.manufacturer = entry.value("manufacturer", "");
-            idx.year = entry.value("year", 0);
-            index_.push_back(idx);
-        }
-        loaded_ = true;
-        LOG_INFO("VpsdbCatalog: Loaded " << index_.size() << " tables from JSON");
-    } catch (const std::exception& e) {
-        LOG_ERROR("VpsdbCatalog: JSON parsing error: " << e.what());
-        loaded_ = false;
-    }
 }
 
 void VpsdbCatalog::loadTable(size_t index) {
@@ -736,8 +657,8 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
     std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
 
     size_t newIndex = currentIndex_;
-    for (size_t i = 0; i < index_.size(); ++i) {
-        std::string name = index_[i].name;
+    for (size_t i = 0; i < jsonLoader_.getIndex().size(); ++i) {
+        std::string name = jsonLoader_.getIndex()[i].name;
         std::transform(name.begin(), name.end(), name.begin(), ::tolower);
         if (name.find(searchStr) != std::string::npos) {
             newIndex = i;
@@ -750,7 +671,7 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
         }
         isTableLoading_ = true;
         tableLoadThread_ = std::thread(&VpsdbCatalog::loadTableInBackground, this, newIndex);
-        LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << index_[newIndex].name);
+        LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << jsonLoader_.getIndex()[newIndex].name);
     }
 }
 
@@ -759,7 +680,6 @@ void VpsdbCatalog::openUrl(const std::string& url) {
         LOG_ERROR("VpsdbCatalog: Attempted to open empty URL");
         return;
     }
-    // On Linux, use xdg-open to launch the default browser
     std::string command = "xdg-open \"" + url + "\" &";
     int result = system(command.c_str());
     if (result != 0) {
