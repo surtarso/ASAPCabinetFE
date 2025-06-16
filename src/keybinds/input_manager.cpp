@@ -434,7 +434,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
     }
 
     // Priority 3: Panel open (ex: *showConfig_ == true)
-    // If the config UI is currently open, we should only allow specific config-related actions.
+    // If a panel is currently open, we should only allow specific actions.
     // All other game actions (like ScreenshotMode) should be blocked.
     if (*showConfig_) {
         if (event.type == SDL_KEYDOWN) {
@@ -457,6 +457,14 @@ void InputManager::handleEvent(const SDL_Event& event) {
             if (!io.WantCaptureKeyboard) { // Ensure user isn't typing in a Toggle Editor text field
                 if (keybindProvider_->isAction(event.key, "Toggle Editor") || keybindProvider_->isAction(event.key, "Quit")) {
                     actionHandlers_["Quit"](); // The "Quit" handler manages closing the Toggle Editor or truly quitting
+                    return; // Consume the event
+                }
+                if (keybindProvider_->isAction(event.key, "Previous Table")) {
+                    actionHandlers_["Previous Table"](); // Handle navigation to previous table
+                    return; // Consume the event
+                }
+                if (keybindProvider_->isAction(event.key, "Next Table")) {
+                    actionHandlers_["Next Table"](); // Handle navigation to next table
                     return; // Consume the event
                 }
             }

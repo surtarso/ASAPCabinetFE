@@ -104,7 +104,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.romPath = "";
             }
             
-            table.jsonOwner = "File Scan";
+            table.jsonOwner = "System File Scan";
             tables.push_back(table);
 
             if (progress) {

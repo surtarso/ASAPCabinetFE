@@ -215,7 +215,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         tableData.vpsYear = bestMatch.contains("year") && bestMatch["year"].is_number_integer() ?
                             std::to_string(bestMatch["year"].get<int>()) : "";
         tableData.matchConfidence = bestScore;
-        tableData.jsonOwner = "vpsdb_scanner";
+        tableData.jsonOwner = "Virtual Pinball Spreadsheet Database";
         if (tableData.manufacturer.empty()) tableData.manufacturer = tableData.vpsManufacturer;
         if (tableData.year.empty()) tableData.year = tableData.vpsYear;
         if (bestMatch.contains("tableFiles") && bestMatch["tableFiles"].is_array() && !bestMatch["tableFiles"].empty()) {
