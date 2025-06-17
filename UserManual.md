@@ -45,10 +45,10 @@ No complicated setup—just fun pinball action!
   * [The Scanners](#the-scanners)
   * [If Something Goes Wrong](#if-something-goes-wrong)
       * [No Tables Show Up](#no-tables-show-up)
-      * [Screenshots/Videos Aren’t Saving](#screenshots-videos-arent-saving)
+      * [Screenshots And Videos Are Not Saving](#screenshots-and-videos-are-not-saving)
       * [No Sound](#no-sound)
       * [Videos Are Choppy Or Weird](#videos-are-choppy-or-weird)
-      * [Windows Don't Move!?](#windows-dont-move)
+      * [Windows Don't Move](#windows-dont-move)
       * [Tables Are Not Launching](#tables-are-not-launching)
 
 ## Getting Started
@@ -244,7 +244,7 @@ ASAPCabinetFE provides you with three distinct scanners:
 
 Ensure your VPX tables are located in the correct directory as configured in the app (check the “Table Path” setting in the config menu). The app requires `.vpx` files to display a table list. Change the title source to 'filename' and force a rebuild to make sure _ASAPCab_ can see your files.
 
-### Screenshots/Videos Aren’t Saving
+### Screenshots And Videos Are Not Saving
 
 Verify that the table's media folders (e.g., `images/`, `video/`) have the necessary write permissions to save new files. Try the external shell script tool.
 
@@ -256,7 +256,7 @@ Open the configuration menu (press **C**), go to “Audio Settings,” and check
 
 Try changing the video backend setting in the configuration menu to one that might be better suited for your system.
 
-### Windows Don't Move!?
+### Windows Don't Move
 
 If you are trying to set custom window positions and the App is not respecting you, uncheck "use VPinballX ini". This option will override your custom positions to use VPinballX positions instead.
 
