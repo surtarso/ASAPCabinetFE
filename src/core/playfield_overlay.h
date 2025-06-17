@@ -113,7 +113,7 @@ private:
      */
     void renderMetadataPanel();
 
-    void refreshUICallback();
+    // void refreshUICallback();
 };
 
 #endif // PLAYFIELD_OVERLAY_H

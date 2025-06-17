@@ -5,7 +5,7 @@
 #include "tables/vpsdb/vps_database_client.h"
 #include "log/logging.h"
 #include "vpin_wrapper.h" // For get_vpx_table_info_as_json and free_rust_string
-#include "utils/path_utils.h"    // For PathUtils::cleanString, PathUtils::safeGetString
+#include "utils/string_utils.h"
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -100,32 +100,32 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 json vpinJson = json::parse(json_str);
 
                 // --- Populate File Metadata fields (from vpin's TableInfo struct) ---
-                table.tableName = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_name", ""));
-                table.tableAuthor = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_name", ""));
-                table.tableDescription = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_description", ""));
-                table.tableSaveDate = PathUtils::safeGetString(vpinJson, "table_save_date", "");
-                table.tableReleaseDate = PathUtils::safeGetString(vpinJson, "release_date", "");
-                table.tableVersion = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_version", ""));
-                table.tableRevision = PathUtils::safeGetString(vpinJson, "table_save_rev", "");
-                table.tableBlurb = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_blurb", ""));
-                table.tableRules = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "table_rules", ""));
-                table.tableAuthorEmail = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_email", ""));
-                table.tableAuthorWebsite = PathUtils::cleanString(PathUtils::safeGetString(vpinJson, "author_website", ""));
+                table.tableName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_name", ""));
+                table.tableAuthor = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_name", ""));
+                table.tableDescription = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_description", ""));
+                table.tableSaveDate = StringUtils::safeGetMetadataString(vpinJson, "table_save_date", "");
+                table.tableReleaseDate = StringUtils::safeGetMetadataString(vpinJson, "release_date", "");
+                table.tableVersion = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_version", ""));
+                table.tableRevision = StringUtils::safeGetMetadataString(vpinJson, "table_save_rev", "");
+                table.tableBlurb = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_blurb", ""));
+                table.tableRules = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_rules", ""));
+                table.tableAuthorEmail = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_email", ""));
+                table.tableAuthorWebsite = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_website", ""));
 
                 // --- Populate fields from 'properties' HashMap ---
                 if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
                     const json& properties = vpinJson["properties"];
                     
                     // TableType (e.g., "VPinMame")
-                    table.tableType = PathUtils::cleanString(PathUtils::safeGetString(properties, "TableType", ""));
+                    table.tableType = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "TableType", ""));
                     
                     // Company Name (check for "CompanyName" first, then "Company")
-                    table.tableManufacturer = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyName", 
-                                                                 PathUtils::safeGetString(properties, "Company", "")));
+                    table.tableManufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyName", 
+                                                                 StringUtils::safeGetMetadataString(properties, "Company", "")));
                     
                     // Company Year (check for "CompanyYear" first, then "Year")
-                    table.tableYear = PathUtils::cleanString(PathUtils::safeGetString(properties, "CompanyYear", 
-                                                                 PathUtils::safeGetString(properties, "Year", "")));
+                    table.tableYear = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyYear", 
+                                                                 StringUtils::safeGetMetadataString(properties, "Year", "")));
                 }
 
                 // IMPORTANT: Do NOT overwrite `table.title`, `table.manufacturer`, `table.year`, `table.romName` here.

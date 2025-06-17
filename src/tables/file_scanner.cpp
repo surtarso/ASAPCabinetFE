@@ -12,6 +12,7 @@
 #include "tables/file_scanner.h"
 #include "utils/manufacturers.h"
 #include "utils/path_utils.h"
+#include "utils/string_utils.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <regex>     // For year extraction
@@ -66,7 +67,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
                 if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
                     // Store the capitalized manufacturer name directly in TableData
-                    table.manufacturer = PathUtils::capitalizeWords(manufacturerNameLower);
+                    table.manufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
                     // LOG_DEBUG("FileScanner: Found manufacturer '" << table.manufacturer << "' for table: " << table.title);
                     break;
                 }

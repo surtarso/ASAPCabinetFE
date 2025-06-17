@@ -83,10 +83,6 @@ public:
     static bool getUltraDmdPath(const std::string& tableRoot);
     static std::string getRomPath(const std::string& pinmamePath, std::string& outRomName);
     
-    // String helpers
-    static std::string cleanString(const std::string& input);
-    static std::string safeGetString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
-    static std::string capitalizeWords(const std::string& input);
     
 private:
     // Self helpers

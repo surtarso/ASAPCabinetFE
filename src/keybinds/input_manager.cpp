@@ -426,10 +426,18 @@ void InputManager::handleEvent(const SDL_Event& event) {
     // Priority 2: Handle 'ToggleConfig' (e.g., 'C' key)
     // This action should always work to open or close the config UI,
     // UNLESS ImGui is actively capturing keyboard input (e.g., in a text field).
-    if (event.type == SDL_KEYDOWN && keybindProvider_->isAction(event.key, "Toggle Config")) {
-        if (!io.WantCaptureKeyboard) { // If user is not typing in an ImGui text field
-            actionHandlers_["Toggle Config"](); // This will toggle *showConfig_
-            return; // Consume the event, no further processing needed
+    if (event.type == SDL_KEYDOWN && !io.WantCaptureKeyboard) {
+        if (keybindProvider_->isAction(event.key, "Toggle Config")) {
+            actionHandlers_["Toggle Config"](); // Toggle showConfig_ with sound
+            return; // Consume the event
+        }
+        if (keybindProvider_->isAction(event.key, "Toggle Editor")) {
+            actionHandlers_["Toggle Editor"](); // Toggle showEditor_ with sound
+            return; // Consume the event
+        }
+        if (keybindProvider_->isAction(event.key, "Toggle Catalog")) {
+            actionHandlers_["Toggle Catalog"](); // Toggle showVpsdb_ with sound
+            return; // Consume the event
         }
     }
 

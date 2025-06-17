@@ -398,3 +398,51 @@ std::string StringUtils::extractCleanTitle(const std::string& input) const {
     return cleaned;
 }
 
+// Function to capitalize the first letter of each word
+std::string StringUtils::capitalizeWords(const std::string& input) {
+    if (input.empty()) {
+        return "";
+    }
+
+    std::string result = input;
+    bool capitalizeNext = true; // Flag to indicate if the next char should be capitalized
+
+    for (char &c : result) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
+            capitalizeNext = true; // Spaces indicate start of a new word
+        } else if (capitalizeNext) {
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            capitalizeNext = false; // Only capitalize the first letter of the word
+        } else {
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c))); // Convert subsequent letters to lowercase
+        }
+    }
+    return result;
+}
+
+std::string StringUtils::cleanMetadataString(const std::string& input) {
+    std::string result = input;
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+    result.erase(std::remove_if(result.begin(), result.end(), [](char c) { return std::iscntrl(c); }), result.end());
+    size_t first = result.find_first_not_of(" \t");
+    size_t last = result.find_last_not_of(" \t");
+    if (first == std::string::npos) return "";
+    return result.substr(first, last - first + 1);
+}
+
+std::string StringUtils::safeGetMetadataString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue) {
+    if (j.contains(key)) {
+        if (j[key].is_string()) {
+            return j[key].get<std::string>();
+        } else if (j[key].is_number()) {
+            return std::to_string(j[key].get<double>());
+        } else if (j[key].is_null()) {
+            return defaultValue;
+        } else {
+            LOG_DEBUG("Field " << key << " is not a string, number, or null, type: " << j[key].type_name());
+            return defaultValue;
+        }
+    }
+    return defaultValue;
+}

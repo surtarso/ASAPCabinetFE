@@ -13,7 +13,7 @@
 #include "tables/vpxtool_scanner.h"
 #include "tables/vpsdb/vps_database_client.h"
 #include "log/logging.h"
-#include "utils/path_utils.h" // For PathUtils::cleanString, PathUtils::safeGetString
+#include "utils/string_utils.h"
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -337,7 +337,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                     }
                     return;
                 }
-                std::string path = PathUtils::safeGetString(tableJson, "path");
+                std::string path = StringUtils::safeGetMetadataString(tableJson, "path");
                 if (path.empty()) {
                     LOG_DEBUG("VPXToolScanner: Skipping table with empty path from JSON.");
                     if (progress) {
@@ -379,33 +379,33 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 // Populate TableData from vpxtool_index.json
                 if (tableJson.contains("table_info") && tableJson["table_info"].is_object()) {
                     const auto& tableInfo = tableJson["table_info"];
-                    currentTable->tableName = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "table_name", currentTable->title));
-                    currentTable->tableAuthor = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "author_name"));
-                    currentTable->tableDescription = PathUtils::cleanString(PathUtils::safeGetString(tableInfo, "table_description"));
-                    currentTable->tableSaveDate = PathUtils::safeGetString(tableInfo, "table_save_date");
-                    currentTable->tableReleaseDate = PathUtils::safeGetString(tableInfo, "release_date");
-                    currentTable->tableVersion = PathUtils::safeGetString(tableInfo, "table_version");
-                    currentTable->tableRevision = PathUtils::safeGetString(tableInfo, "table_save_rev");
+                    currentTable->tableName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "table_name", currentTable->title));
+                    currentTable->tableAuthor = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "author_name"));
+                    currentTable->tableDescription = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "table_description"));
+                    currentTable->tableSaveDate = StringUtils::safeGetMetadataString(tableInfo, "table_save_date");
+                    currentTable->tableReleaseDate = StringUtils::safeGetMetadataString(tableInfo, "release_date");
+                    currentTable->tableVersion = StringUtils::safeGetMetadataString(tableInfo, "table_version");
+                    currentTable->tableRevision = StringUtils::safeGetMetadataString(tableInfo, "table_save_rev");
                 }
-                currentTable->romName = PathUtils::cleanString(PathUtils::safeGetString(tableJson, "game_name"));
-                currentTable->romPath = PathUtils::safeGetString(tableJson, "rom_path");
-                currentTable->tableLastModified = PathUtils::safeGetString(tableJson, "last_modified");
+                currentTable->romName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson, "game_name"));
+                currentTable->romPath = StringUtils::safeGetMetadataString(tableJson, "rom_path");
+                currentTable->tableLastModified = StringUtils::safeGetMetadataString(tableJson, "last_modified");
                 currentTable->jsonOwner = "VPXTool Index";
 
                 fs::path filePath(path);
                 std::string filename = filePath.stem().string();
-                currentTable->title = currentTable->tableName.empty() ? PathUtils::cleanString(filename) : currentTable->tableName;
+                currentTable->title = currentTable->tableName.empty() ? StringUtils::cleanMetadataString(filename) : currentTable->tableName;
 
                 if (tableJson.contains("properties") && tableJson["properties"].is_object()) {
-                    currentTable->manufacturer = PathUtils::cleanString(PathUtils::safeGetString(tableJson["properties"], "manufacturer", ""));
-                    currentTable->year = PathUtils::cleanString(PathUtils::safeGetString(tableJson["properties"], "year", ""));
+                    currentTable->manufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "manufacturer", ""));
+                    currentTable->year = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "year", ""));
                 }
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->numMatched++;
                 }
             } catch (const json::exception& e) {
-                LOG_ERROR("VPXToolScanner: JSON parsing error for table from vpxtool_index.json with path " << PathUtils::safeGetString(tableJson, "path", "N/A") << ": " << e.what());
+                LOG_ERROR("VPXToolScanner: JSON parsing error for table from vpxtool_index.json with path " << StringUtils::safeGetMetadataString(tableJson, "path", "N/A") << ": " << e.what());
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->numNoMatch++;

@@ -127,11 +127,20 @@ public:
      * @param input The string to clean.
      * @return The cleaned string.
      */
+
+    static std::string safeGetMetadataString(const nlohmann::json& j, const std::string& key, const std::string& defaultValue = "");
+
     std::string cleanString(const std::string& input) const;
 
+    static std::string cleanMetadataString(const std::string& input);
+
     size_t levenshteinDistance(const std::string& s1, const std::string& s2) const;
+    
     std::string toLower(const std::string& str) const;
+
     std::string extractCleanTitle(const std::string& input) const;
+
+    static std::string capitalizeWords(const std::string& input);
     
 };
 
