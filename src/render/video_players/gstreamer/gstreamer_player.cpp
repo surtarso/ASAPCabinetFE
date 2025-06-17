@@ -88,7 +88,7 @@ static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
             break;
         }
         case GST_MESSAGE_EOS: {
-            LOG_DEBUG("GStreamerVideoPlayer: EOS reached. Attempting to seek to start.");
+            //LOG_DEBUG("GStreamerVideoPlayer: EOS reached. Attempting to seek to start.");
             if (pipeline) {
                 gboolean seek_success = gst_element_seek(
                     pipeline,
@@ -101,7 +101,7 @@ static gboolean bus_call(GstBus* bus, GstMessage* msg, gpointer data) {
                     -1
                 );
                 if (seek_success) {
-                    LOG_DEBUG("GStreamerVideoPlayer: Seek to start succeeded. Resuming playback.");
+                    //LOG_DEBUG("GStreamerVideoPlayer: Seek to start succeeded. Resuming playback.");
                     gst_element_set_state(pipeline, GST_STATE_PLAYING);
                 } else {
                     LOG_ERROR("GStreamerVideoPlayer: Seek to start FAILED!");

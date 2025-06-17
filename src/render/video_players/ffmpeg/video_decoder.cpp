@@ -283,7 +283,7 @@ bool VideoDecoder::decodeVideoFrame() {
                 needsReset_ = true;
                 invalidFrameSkipCount = 0;
                 badPacketCount = 0;
-                LOG_DEBUG("VideoDecoder: Reached EOF, setting needsReset_.");
+                //LOG_DEBUG("VideoDecoder: Reached EOF, setting needsReset_.");
                 return false;
             }
             char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};

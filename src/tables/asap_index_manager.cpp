@@ -132,7 +132,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
                 progress->currentTablesLoaded++;
             }
         }
-        LOG_INFO("AsapIndexManager: Loaded " << tables.size() << " tables from asapcab_index.json");
+        LOG_DEBUG("AsapIndexManager: Loaded " << tables.size() << " tables from asapcab_index.json");
         return !tables.empty();
     } catch (const json::exception& e) {
         LOG_ERROR("AsapIndexManager: JSON parsing error while loading asapcab_index.json: " << e.what() << ". File might be corrupt.");

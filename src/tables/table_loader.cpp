@@ -39,7 +39,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
 
     // Stage 1: Load from index or scan VPX files
     if (!settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
-        LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from ASAP index");
+        LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from asapcab_index.json");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTablesLoaded = tables.size();

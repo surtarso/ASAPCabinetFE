@@ -130,9 +130,9 @@ bool KeybindManager::isAction(const SDL_KeyboardEvent& event, const std::string&
         // Use SDL_GetKeyFromScancode to handle scancode-based events
         SDL_Keycode eventKey = SDL_GetKeyFromScancode(event.keysym.scancode);
         bool match = (eventKey == key && event.state == SDL_PRESSED);
-        LOG_DEBUG("KeybindManager: Checking action: " << normalizedAction << ", key: " << SDL_GetKeyName(eventKey) 
-                  << " (keycode: " << eventKey << ", scancode: " << event.keysym.scancode << ") against " 
-                  << SDL_GetKeyName(key) << " (keycode: " << key << "), Match=" << match);
+        // LOG_DEBUG("KeybindManager: Checking action: " << normalizedAction << ", key: " << SDL_GetKeyName(eventKey) 
+        //           << " (keycode: " << eventKey << ", scancode: " << event.keysym.scancode << ") against " 
+        //           << SDL_GetKeyName(key) << " (keycode: " << key << "), Match=" << match);
         return match;
     }
     LOG_DEBUG("KeybindManager: No keybind for action: " << normalizedAction);
@@ -254,7 +254,7 @@ void KeybindManager::loadKeybinds(const std::map<std::string, std::string>& keyb
             SDL_Keycode keyCode = SDL_GetKeyFromName(value.c_str());
             if (keyCode != SDLK_UNKNOWN) {
                 setKey(normalizedKey, keyCode);
-                LOG_DEBUG("KeybindManager: Set key for " << normalizedKey << " to " << value);
+                // LOG_DEBUG("KeybindManager: Set key for " << normalizedKey << " to " << value);
             } else {
                 LOG_ERROR("KeybindManager: Invalid key name for " << normalizedKey << ": " << value << ", keeping default");
             }
