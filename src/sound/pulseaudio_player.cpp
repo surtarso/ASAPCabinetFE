@@ -38,7 +38,7 @@ PulseAudioPlayer::PulseAudioPlayer(const std::string& exeDir, const Settings& se
     }
     // Initialize the UI sounds map with placeholders (will be loaded in loadSounds)
     // Using Mix_Chunk for UI sounds as they are short effects and can play concurrently
-    uiSounds_.emplace("config_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("panel_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("scroll_normal", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("scroll_normal", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("scroll_fast", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
@@ -100,7 +100,7 @@ void PulseAudioPlayer::loadSounds() {
     };
 
     // Load all UI sounds
-    loadUiSound("config_toggle", settings_.configToggleSound);
+    loadUiSound("panel_toggle", settings_.panelToggleSound);
     loadUiSound("scroll_normal", settings_.scrollNormalSound);
     loadUiSound("scroll_fast", settings_.scrollFastSound);
     loadUiSound("scroll_jump", settings_.scrollJumpSound);
@@ -349,7 +349,7 @@ void PulseAudioPlayer::updateSettings(const Settings& newSettings) {
     LOG_DEBUG("PulseAudioPlayer: Updating PulseAudioPlayer settings.");
 
     // Check if UI sound paths have changed to trigger a reload of Mix_Chunk assets
-    bool uiSoundPathsChanged = (settings_.configToggleSound != newSettings.configToggleSound) ||
+    bool uiSoundPathsChanged = (settings_.panelToggleSound != newSettings.panelToggleSound) ||
                                (settings_.scrollNormalSound != newSettings.scrollNormalSound) ||
                                (settings_.scrollFastSound != newSettings.scrollFastSound) ||
                                (settings_.scrollJumpSound != newSettings.scrollJumpSound) ||

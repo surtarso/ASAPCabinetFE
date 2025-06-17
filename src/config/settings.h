@@ -186,7 +186,7 @@ struct Settings {
     std::string scrollRandomSound = "snd/scroll_random.mp3";
     std::string launchTableSound = "snd/launch_table.mp3";
     std::string launchScreenshotSound = "snd/launch_screenshot.mp3";
-    std::string configToggleSound = "snd/config_toggle.mp3";
+    std::string panelToggleSound = "snd/panel_toggle.mp3";
     std::string screenshotTakeSound = "snd/screenshot_take.mp3";
     std::string ambienceSound = "snd/interface_ambience.mp3";
 
@@ -427,7 +427,7 @@ private:
                 {"scrollRandomSound", s.scrollRandomSound},
                 {"launchTableSound", s.launchTableSound},
                 {"launchScreenshotSound", s.launchScreenshotSound},
-                {"configToggleSound", s.configToggleSound},
+                {"panelToggleSound", s.panelToggleSound},
                 {"screenshotTakeSound", s.screenshotTakeSound},
                 {"ambienceSound", s.ambienceSound}
             }},
@@ -633,7 +633,7 @@ private:
         s.scrollRandomSound = j.value("UISounds", nlohmann::json{}).value("scrollRandomSound", s.scrollRandomSound);
         s.launchTableSound = j.value("UISounds", nlohmann::json{}).value("launchTableSound", s.launchTableSound);
         s.launchScreenshotSound = j.value("UISounds", nlohmann::json{}).value("launchScreenshotSound", s.launchScreenshotSound);
-        s.configToggleSound = j.value("UISounds", nlohmann::json{}).value("configToggleSound", s.configToggleSound);
+        s.panelToggleSound = j.value("UISounds", nlohmann::json{}).value("panelToggleSound", s.panelToggleSound);
         s.screenshotTakeSound = j.value("UISounds", nlohmann::json{}).value("screenshotTakeSound", s.screenshotTakeSound);
         s.ambienceSound = j.value("UISounds", nlohmann::json{}).value("ambienceSound", s.ambienceSound);
 
@@ -905,11 +905,11 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     // UISounds
     {"scrollNormalSound", {Settings::ReloadType::Tables, "Sound played when scrolling single tables."}},
     {"scrollFastSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling in 10's."}},
-    {"scrollJumpSound", {Settings::ReloadType::Tables, "Sound played when jumping to previous letter."}},
+    {"scrollJumpSound", {Settings::ReloadType::Tables, "Sound played when jumping by letter."}},
     {"scrollRandomSound", {Settings::ReloadType::Tables, "Sound played when selecting a random table."}},
     {"launchTableSound", {Settings::ReloadType::Tables, "Sound played when launching a table."}},
     {"launchScreenshotSound", {Settings::ReloadType::Tables, "Sound played when entering screenshot mode."}},
-    {"configToggleSound", {Settings::ReloadType::Tables, "Sound played when opening or closing configuration."}},
+    {"panelToggleSound", {Settings::ReloadType::Tables, "Sound played when opening or closing panels."}},
     {"screenshotTakeSound", {Settings::ReloadType::Tables, "Sound played when taking a screenshot."}},
     {"ambienceSound", {Settings::ReloadType::Tables, "Sound played on the background if there is no table music."}},
     // Internal

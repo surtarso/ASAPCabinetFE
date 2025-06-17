@@ -351,21 +351,21 @@ void InputManager::registerActions() {
 
     actionHandlers_["Toggle Config"] = [this]() {
         LOG_DEBUG("InputManager: ToggleConfig action triggered");
-        soundManager_->playUISound("config_toggle");
+        soundManager_->playUISound("panel_toggle");
         *showConfig_ = !*showConfig_;
         LOG_DEBUG("InputManager: Toggled showConfig to: " << (*showConfig_ ? 1 : 0));
     };
 
     actionHandlers_["Toggle Editor"] = [this]() {
         LOG_DEBUG("InputManager: MetadataEdit action triggered");
-        soundManager_->playUISound("config_toggle");
+        soundManager_->playUISound("panel_toggle");
         *showEditor_ = !*showEditor_;
         LOG_DEBUG("InputManager: Toggled showEditor to: " << (*showEditor_ ? 1 : 0));
     };
 
     actionHandlers_["Toggle Catalog"] = [this]() {
         LOG_DEBUG("InputManager: MetadataCatalog action triggered");
-        soundManager_->playUISound("config_toggle");
+        soundManager_->playUISound("panel_toggle");
         *showVpsdb_ = !*showVpsdb_;
         LOG_DEBUG("InputManager: Toggled showVpsdb to: " << (*showVpsdb_ ? 1 : 0));
     };

@@ -374,18 +374,18 @@ public:
             "scrollRandomSound",
             "launchTableSound",
             "launchScreenshotSound",
-            "configToggleSound",
+            "panelToggleSound",
             "screenshotTakeSound",
             "ambienceSound"
         };
         keyDisplayNames_["UISounds"] = {
-            {"scrollNormalSound", "Scroll Previous Sound"},
-            {"scrollFastSound", "Fast Scroll Previous Sound"},
-            {"scrollJumpSound", "Jump Previous Sound"},
+            {"scrollNormalSound", "Single Scroll Sound"},
+            {"scrollFastSound", "Fast Scroll Sound"},
+            {"scrollJumpSound", "Jump Scroll Sound"},
             {"scrollRandomSound", "Random Scroll Sound"},
             {"launchTableSound", "Launch Table Sound"},
             {"launchScreenshotSound", "Launch Screenshot Sound"},
-            {"configToggleSound", "Config Toggle Sound"},
+            {"panelToggleSound", "Panel Toggle Sound"},
             {"screenshotTakeSound", "Screenshot Taken Sound"},
             {"ambienceSound", "Ambience Sound"}
         };
