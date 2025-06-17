@@ -170,7 +170,7 @@ Here’s a glimpse of what you can tweak:
   - **Audio Settings**: Independently adjust the volume for preview videos, table music, app sounds, and background music.
   - **Keybinds**: Customize the keyboard keys for various actions, and configure joystick support.
   - **DPI Settings**: Increase DPI scaling if elements appear too small on your screen.
-  - **Window Settings**: Adjust the position and size of the playfield, backglass, or DMD windows.
+  - **Window Settings**: Adjust the position and size of the playfield, backglass, dmd or topper windows.
   - **Media Dimensions**: Control the position and size of media elements within their respective windows, force images only.
   - **VPX Settings**: Set paths and control how you start VPinballX
 
