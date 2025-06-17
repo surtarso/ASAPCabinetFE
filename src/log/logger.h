@@ -76,6 +76,15 @@ public:
     void info(const std::string& message);
 
     /**
+     * @brief Logs a warning message.
+     *
+     * Logs unconditionally with info level.
+     *
+     * @param message The warning message to log.
+     */
+    void warn(const std::string& message);
+
+    /**
      * @brief Checks if debug logging is enabled.
      *
      * @return True if debug mode is enabled, false otherwise.

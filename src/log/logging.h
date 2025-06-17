@@ -60,4 +60,19 @@
     Logger::getInstance().error(ss.str()); \
 } while (0)
 
+/**
+ * @def LOG_WARN(msg)
+ * @brief Logs an error message.
+ *
+ * Constructs a stringstream to format the message and logs it using Logger::error
+ * unconditionally. Uses a do-while(0) loop for proper scoping.
+ *
+ * @param msg The message to log, can include stream operators (e.g., <<).
+ */
+#define LOG_WARN(msg) do { \
+    std::stringstream ss; \
+    ss << msg; \
+    Logger::getInstance().warn(ss.str()); \
+} while (0)
+
 #endif // LOGGING_H

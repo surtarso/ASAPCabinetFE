@@ -8,7 +8,8 @@
 // ANSI color codes
 #define COLOR_RED     "\033[31m"  // For ERROR
 #define COLOR_GREEN   "\033[32m"  // For INFO
-#define COLOR_YELLOW  "\033[33m"  // For DEBUG
+#define COLOR_ORANGE  "\033[33m"  // For DEBUG
+#define COLOR_YELLOW  "\033[38;5;226m"  // For WARN
 #define COLOR_RESET   "\033[0m"
 
 Logger::Logger() = default;
@@ -61,13 +62,15 @@ void Logger::log(const std::string& level, const std::string& message) {
         loadingProgress_->addLogMessage(level + ": " + message);
     }
 
-    if (level == "INFO" || level == "ERROR" || debugBuild_) {
+    if (level == "INFO" || level == "ERROR" || level == "WARN" || debugBuild_) {
         std::string colorCode;
         if (level == "ERROR") {
             colorCode = COLOR_RED;
         } else if (level == "INFO") {
             colorCode = COLOR_GREEN;
         } else if (level == "DEBUG") {
+            colorCode = COLOR_ORANGE;
+        } else if (level == "WARN") {
             colorCode = COLOR_YELLOW;
         } else {
             colorCode = COLOR_RESET;
@@ -89,6 +92,10 @@ void Logger::error(const std::string& message) {
 
 void Logger::info(const std::string& message) {
     log("INFO", message);
+}
+
+void Logger::warn(const std::string& message) {
+    log("WARN", message);
 }
 
 bool Logger::isDebugEnabled() const {
