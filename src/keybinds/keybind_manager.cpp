@@ -48,20 +48,6 @@ std::string KeybindManager::getActionForKey(const std::string& key) const {
     return "";
 }
 
-// std::string KeybindManager::normalizeAction(const std::string& action) const {
-//     std::string normalized = action;
-//     normalized.erase(std::remove(normalized.begin(), normalized.end(), ' '), normalized.end());
-//     for (size_t i = 1; i < normalized.size(); ++i) {
-//         if (std::islower(normalized[i]) && (i == 1 || normalized[i-1] != ' ')) {
-//             normalized[i] = std::toupper(normalized[i]);
-//         }
-//     }
-//     if (!normalized.empty()) {
-//         normalized[0] = std::toupper(normalized[0]);
-//     }
-//     return normalized;
-// }
-
 SDL_Keycode KeybindManager::getKey(const std::string& action) const {
     auto it = keybinds_.find((action));
     if (it != keybinds_.end() && std::holds_alternative<SDL_Keycode>(it->second.input)) {

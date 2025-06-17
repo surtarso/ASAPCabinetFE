@@ -235,7 +235,6 @@ private:
      * @param action The action name to normalize.
      * @return The normalized action name.
      */
-    // std::string normalizeAction(const std::string& action) const override;
 };
 
 #endif // KEYBIND_MANAGER_H

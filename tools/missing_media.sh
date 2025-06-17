@@ -24,8 +24,7 @@ NC="\033[0m" # No Color
 
 CONFIG_FILE="data/settings.json"
 
-# Function to get values from INI filef
-# Function to get values from INI filef
+# Function to get values from JSON file
 get_json_value() {
     local section="$1"
     local key="$2"
@@ -38,7 +37,7 @@ get_json_value() {
     jq -r --arg section "$section" --arg key "$key" '.[$section][$key] // empty' "$CONFIG_FILE"
 }
 
-# Load values from config.ini
+# Load values from settings.json
 echo -e "${GREEN}Initializing variables...${NC}"
 echo -e "${RED}-------------------------------------------------------------${NC}"
 if [[ -f "$CONFIG_FILE" ]]; then
@@ -71,7 +70,7 @@ if [[ -f "$CONFIG_FILE" ]]; then
 
     echo -e "${RED}-------------------------------------------------------------${NC}"
 else
-    echo -e "${RED}ERROR: config.ini not found. Exiting...${NC}"
+    echo -e "${RED}ERROR: settings.json not found. Exiting...${NC}"
     echo -e "${RED}-------------------------------------------------------------${NC}"
     exit 1
 fi

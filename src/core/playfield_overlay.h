@@ -112,8 +112,6 @@ private:
      * transparency are controlled by MetadataPanelSettings, enabling configUI adjustments.
      */
     void renderMetadataPanel();
-
-    // void refreshUICallback();
 };
 
 #endif // PLAYFIELD_OVERLAY_H

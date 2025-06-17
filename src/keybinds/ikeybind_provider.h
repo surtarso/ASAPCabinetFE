@@ -34,8 +34,6 @@ public:
      */
     virtual ~IKeybindProvider() = default;
 
-    // virtual std::string normalizeAction(const std::string& action) const = 0;
-
     virtual std::string getActionForKey(const std::string& key) const = 0;
     /**
      * @brief Gets the keyboard keycode for an action.

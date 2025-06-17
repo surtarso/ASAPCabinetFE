@@ -29,7 +29,7 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
         }
     }
     if (audioStreamIndex_ == -1) {
-        LOG_INFO("AudioDecoder: No audio stream found.");
+        LOG_DEBUG("AudioDecoder: No audio stream found.");
         return false;
     }
 

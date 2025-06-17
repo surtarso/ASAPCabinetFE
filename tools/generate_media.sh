@@ -41,7 +41,7 @@ NODMDFOUND_FILE="noDMDfound.txt"
 # Default VPX version, can be overridden by command-line
 VPX_VERSION="10.8.0" # Default to 10.8.0 if not specified
 
-# Reads a value from the specified section and key in the INI file
+# Reads a value from the specified section and key in the JSON file
 get_json_value() {
     local section="$1"
     local key="$2"
