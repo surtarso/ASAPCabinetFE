@@ -11,6 +11,7 @@ FIX:
 
 QOL:
 - refactor the monoliths...
+- feedback for table launch failure
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - clean up new panels (vpsdb catalog and metadata editor)
