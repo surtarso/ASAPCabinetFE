@@ -212,7 +212,7 @@ Whether you love the tunes or prefer silence, you have full control over the aud
 
 You can find all these sound options within the “Audio Settings” section of the configuration menu.
 
-## Metadada Editor
+## Metadata Editor
 
 As you may have noticed, file metadata quality is really bad. But it doesn't have to be like that! Open the Metadata Editor (default: M) and save an override for you table info with correct information!
 
