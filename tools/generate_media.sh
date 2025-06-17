@@ -2,10 +2,10 @@
 # ----------------------------------------------------------
 # Creates images and videos (playfield + backglass + DMD) for ASAPCabinetFE
 # Opens all tables and screenshots playfield, backglass, and visible DMD windows
-# Saves them in table_name/images|video/ folder as specified in config.ini
+# Saves them in table_name/images|video/ folder as specified in settings.json
 # ----------------------------------------------------------
 # Dependencies: xdotool, ImageMagick, ffmpeg, xwininfo
-# Author: Tarso Galvão, Feb/2025
+# Author: Tarso Galvao, Feb/2025
 
 # Uncomment the line below for debugging
 # set -x
@@ -15,7 +15,7 @@ RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 BLUE="\033[0;34m"
-NC="\033[0m"  # No Color
+NC="\033[0m" # No Color
 
 # **File Paths**
 CONFIG_FILE="data/settings.json"
@@ -26,16 +26,20 @@ VPX_LOG_FILE="logs/VPinballX.log"
 CAPTURE_LOG="logs/capture.log"
 
 # **Configuration Variables**
-LOAD_DELAY=12             # Seconds to wait after launching VPX for tables to load
-SCREENSHOT_FPS=12         # Frames per second for video
-RECORDING_DURATION=4      # Seconds of video recording
+LOAD_DELAY=12 # Seconds to wait after launching VPX for tables to load
+SCREENSHOT_FPS=12 # Frames per second for video
+RECORDING_DURATION=4 # Seconds of video recording
 FRAME_COUNT=$((RECORDING_DURATION * SCREENSHOT_FPS))
-FRAME_INTERVAL=0.1        # Seconds between screenshots (approx 10 FPS, adjusted by ffmpeg)
+FRAME_INTERVAL=0.1 # Seconds between screenshots (approx 10 FPS, adjusted by ffmpeg)
 
 WINDOW_TITLE_VPX="Visual Pinball Player"
-WINDOW_TITLE_BACKGLASS="B2SBackglass"
-WINDOW_TITLE_DMD=("ScoreView" "FlexDMD" "PinMAME" "B2SDMD") #for now, in order of preference...
+# These will be set based on VPX_VERSION
+WINDOW_TITLE_BACKGLASS=""
+WINDOW_TITLE_DMD=()
 NODMDFOUND_FILE="noDMDfound.txt"
+
+# Default VPX version, can be overridden by command-line
+VPX_VERSION="10.8.0" # Default to 10.8.0 if not specified
 
 # Reads a value from the specified section and key in the INI file
 get_json_value() {
@@ -50,7 +54,7 @@ get_json_value() {
     jq -r --arg section "$section" --arg key "$key" '.[$section][$key] // empty' "$CONFIG_FILE"
 }
 
-# **Load Configuration from config.ini**
+# **Load Configuration from settings.json**
 if [[ -f "$CONFIG_FILE" ]]; then
     ROOT_FOLDER=$(get_json_value "VPX" "VPXTablesPath")
     VPX_EXECUTABLE=$(get_json_value "VPX" "VPinballXPath")
@@ -60,10 +64,10 @@ if [[ -f "$CONFIG_FILE" ]]; then
     BACKGLASS_IMAGE=$(get_json_value "CustomMedia" "customBackglassImage")
     DMD_VIDEO=$(get_json_value "CustomMedia" "customDmdVideo")
     DMD_IMAGE=$(get_json_value "CustomMedia" "customDmdImage")
-    echo -e "${GREEN}Loaded config.ini${NC}"
+    echo -e "${GREEN}Loaded settings.json${NC}"
 else
     echo -e "${RED}-------------------------------------------------------------${NC}"
-    echo -e "${RED}Error: config.ini not found. Exiting...${NC}"
+    echo -e "${RED}Error: settings.json not found. Exiting...${NC}"
     echo -e "${RED}-------------------------------------------------------------${NC}"
     exit 1
 fi
@@ -122,25 +126,26 @@ capture_vpx_window() {
 has_dmd_from_vbs() {
     local vbs_file="$1"
     if grep -q -i -E "FlexDMD|B2SDMD|PinMAME|UseDMD|Controller.DMD|UltraDMD|ShowDMDOnly=1" "$vbs_file"; then
-        return 0  # DMD present
+        return 0 # DMD present
     else
-        return 1  # No DMD
+        return 1 # No DMD
     fi
 }
 
 # Displays help message
 usage() {
     echo -e "\nCreates ${GREEN}MP4 videos and PNG images ${YELLOW}(playfield + backglass + DMD)${NC} for \033[4mASAPCabinetFE\033[0m"
-    echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} per ${YELLOW}config.ini${NC}"
-    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--missing${NC}|${BLUE}-m${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>] | ${YELLOW}--dmd-only${NC}|${YELLOW}-d${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}]"
+    echo -e "Saves them in ${YELLOW}tables/<table_folder>/${NC} per ${YELLOW}settings.json${NC}"
+    echo -e "\n${BLUE}Usage:${NC} $0 [${BLUE}--missing${NC}|${BLUE}-m${NC}] [${YELLOW}--tables-only${NC}|${YELLOW}-t${NC} [<table_path>] | ${YELLOW}--backglass-only${NC}|${YELLOW}-b${NC} [<table_path>] | ${YELLOW}--dmd-only${NC}|${YELLOW}-d${NC} [<table_path>]] [${GREEN}--image-only${NC}|${GREEN}-i${NC}] [${RED}--force${NC}|${RED}-f${NC}] [${BLUE}--vpx-version ${GREEN}<version>${NC}]"
     echo -e "\nOptions:"
-    echo -e "  ${BLUE}--missing, -m            Capture missing table, backglass, and DMD media"
-    echo -e "  ${YELLOW}--tables-only, -t        Capture only table media (optional path)"
-    echo -e "  ${YELLOW}--backglass-only, -b     Capture only backglass media (optional path)"
-    echo -e "  ${YELLOW}--dmd-only, -d           Capture only DMD media (optional path)"
-    echo -e "  ${GREEN}--image-only, -i         Capture images only (optional path)"
-    echo -e "  ${RED}--force, -f              Force rebuild even if files exist"
-    echo -e "  ${NC}-h, --help               Show this help"
+    echo -e "  ${BLUE}--missing, -m          Capture missing table, backglass, and DMD media"
+    echo -e "  ${YELLOW}--tables-only, -t      Capture only table media (optional path)"
+    echo -e "  ${YELLOW}--backglass-only, -b   Capture only backglass media (optional path)"
+    echo -e "  ${YELLOW}--dmd-only, -d         Capture only DMD media (optional path)"
+    echo -e "  ${GREEN}--image-only, -i       Capture images only (optional path)"
+    echo -e "  ${RED}--force, -f            Force rebuild even if files exist"
+    echo -e "  ${BLUE}--vpx-version <version>  Specify VPX version (e.g., 10.8.0, 10.8.1). Default: ${VPX_VERSION}"
+    echo -e "  ${NC}-h, --help             Show this help"
     echo -e "\n${YELLOW}Note:${NC} Combine options as needed"
     exit 1
 }
@@ -151,11 +156,49 @@ SPECIFIC_PATH=""
 FORCE="false"
 NO_VIDEO="false"
 
-[[ $# -eq 0 ]] && usage
+# Temporarily store original args to re-parse after setting VPX_VERSION
+ORIGINAL_ARGS=("$@")
 
+# First pass to get VPX_VERSION
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --help|-h) usage ;;
+        --vpx-version)
+            shift
+            if [[ -n "$1" && "$1" != -* ]]; then
+                VPX_VERSION="$1"
+                shift
+            else
+                echo -e "${RED}Error: --vpx-version requires a version number (e.g., 10.8.0).${NC}"
+                usage
+            fi
+            ;;
+        *) shift ;;
+    esac
+done
+
+# Set specific window titles based on VPX_VERSION
+case "$VPX_VERSION" in
+    "10.8.0")
+        WINDOW_TITLE_BACKGLASS="B2SBackglass"
+        WINDOW_TITLE_DMD=("Score" "FlexDMD" "PinMAME" "B2SDMD") # "Score" is at the top, as it seems to be working
+        echo -e "${BLUE}Configured for VPX 10.8.0${NC}"
+        ;;
+    "10.8.1")
+        WINDOW_TITLE_BACKGLASS="Backglass"
+        WINDOW_TITLE_DMD=("Score") # Only "Score" for 10.8.1
+        echo -e "${BLUE}Configured for VPX 10.8.1${NC}"
+        ;;
+    *)
+        echo -e "${RED}Error: Unsupported VPX version: ${VPX_VERSION}. Use 10.8.0 or 10.8.1.${NC}"
+        usage
+        ;;
+esac
+
+# Re-parse original arguments for mode, path, force, image-only
+set -- "${ORIGINAL_ARGS[@]}"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h) usage ;; # Already handled, but keep for consistency
         --missing|-m) MODE="now"; shift ;;
         --tables-only|-t)
             MODE="tables-only"
@@ -178,11 +221,13 @@ while [[ $# -gt 0 ]]; do
             [[ $# -gt 0 && "$1" != -* ]] && { SPECIFIC_PATH="$1"; shift; }
             ;;
         --force|-f) FORCE="true"; shift ;;
+        --vpx-version) shift 2 ;; # Consume both option and its value
         *) echo -e "\n${RED}Unknown option: $1${NC}"; usage ;;
     esac
 done
 
 [[ -z "$MODE" ]] && usage
+
 
 # **Check Dependencies**
 for cmd in xdotool import ffmpeg xwininfo; do
@@ -262,12 +307,16 @@ while IFS= read -r VPX_PATH <&3; do
     fi
 
     # Check VBScript if there's a DMD present
-    if [[ -f "$VBS_FILE" ]]; then
+    # For VPX 10.8.1, we assume DMD is always present due to "Score" window
+    if [[ "$VPX_VERSION" == "10.8.1" ]]; then
+        echo "Assuming DMD is always present for VPX 10.8.1, skipping .vbs check."
+        CAPTURE_DMD="true"
+    elif [[ -f "$VBS_FILE" ]]; then
         if has_dmd_from_vbs "$VBS_FILE"; then
             echo "DMD detected in $TABLE_NAME via .vbs"
             CAPTURE_DMD="true"
         else
-            #echo "No DMD detected in $TABLE_NAME via .vbs"
+            echo "No DMD detected in $TABLE_NAME via .vbs"
             CAPTURE_DMD="false"
         fi
     else
@@ -295,14 +344,15 @@ while IFS= read -r VPX_PATH <&3; do
     fi
 
     # In DMD-only mode, skip launching VPX if no DMD detected in VBScript
+    # This condition must still apply for 10.8.0 if DMD is explicitly 'false'
     if [[ "$MODE" != "dmd-only" || "$CAPTURE_DMD" != "false" ]]; then
         # Launch VPX
         echo -e "${YELLOW}Launching VPX for $(basename "$TABLE_DIR")${NC}"
         setsid "$VPX_EXECUTABLE" -play "$VPX_PATH" >"$VPX_LOG_FILE" 2>&1 &
         VPINBALLX_PID=$!
     else
-        echo -e "${YELLOW}Skipping $TABLE_NAME in dmd-only mode (no DMD in .vbs)${NC}"
-        continue  # Skip to next table
+        echo -e "${YELLOW}Skipping $TABLE_NAME in dmd-only mode (no DMD in .vbs or forced no DMD for 10.8.1)${NC}"
+        continue # Skip to next table
     fi
 
     sleep 5 # check for some start error on vpinballx side
@@ -365,12 +415,12 @@ while IFS= read -r VPX_PATH <&3; do
     if [[ "$MODE" == "now" || "$MODE" == "dmd-only" ]]; then
         if [[ "$CAPTURE_DMD" != "false" ]]; then
             if [[ "$NO_VIDEO" == "false" ]]; then
-                base_file="$DMD_VIDEO_FILE"  # e.g., video/dmd.mp4
+                base_file="$DMD_VIDEO_FILE" # e.g., video/dmd.mp4
             else
-                base_file="$DMD_IMAGE_FILE"  # e.g., images/dmd.png
+                base_file="$DMD_IMAGE_FILE" # e.g., images/dmd.png
             fi
             if [[ "$CAPTURE_DMD" == "true" || "$CAPTURE_DMD" == "check_later" ]]; then
-                dmd_count=0  # Counter for naming additional DMDs
+                dmd_count=0 # Counter for naming additional DMDs
                 for dmd_name in "${WINDOW_TITLE_DMD[@]}"; do
                     window_ids=$(xdotool search --name "$dmd_name")
                     if [[ -n "$window_ids" ]]; then
@@ -395,11 +445,11 @@ while IFS= read -r VPX_PATH <&3; do
                                     capture_vpx_window "$window_id" "$video_output" "$image_output" &
                                     capture_pids+=($!)
                                     echo -e "Capturing DMD ($dmd_name) to ${GREEN}$check_file${NC}"
-                                    CAPTURE_DMD="done"  # Mark that at least one DMD was captured
+                                    CAPTURE_DMD="done" # Mark that at least one DMD was captured
                                 else
                                     echo -e "${YELLOW}DMD media ($dmd_name) already exists at $check_file, skipping.${NC}"
                                 fi
-                                ((dmd_count++))  # Increment counter for next DMD
+                                ((dmd_count++)) # Increment counter for next DMD
                             fi
                         done
                     fi
@@ -413,7 +463,7 @@ while IFS= read -r VPX_PATH <&3; do
                     echo -e "Table: $TABLE_NAME\nPath: $VPX_PATH\nThis table was tagged as a NO-DMD table, dmd capture will be skipped unless this file is deleted." > "$NODMD_FILE_IMAGE_DIR"
                     echo -e "Table: $TABLE_NAME\nPath: $VPX_PATH\nThis table was tagged as a NO-DMD table, dmd capture will be skipped unless this file is deleted." > "$NODMD_FILE_VIDEO_DIR"
                     echo -e "${YELLOW}Created $NODMDFOUND_FILE for $TABLE_NAME in images/ and video/ directories${NC}"
-                    CAPTURE_DMD="false"  # No DMDs found after checking
+                    CAPTURE_DMD="false" # No DMDs found after checking
                 fi
             fi
         else

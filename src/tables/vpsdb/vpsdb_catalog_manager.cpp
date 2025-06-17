@@ -65,7 +65,7 @@ bool VpsdbCatalog::render() {
     }
 
     jsonLoader_.initialize();
-    LOG_DEBUG("VpsdbCatalog: JSON loader initialized, loaded: " << jsonLoader_.isLoaded() << ", index size: " << jsonLoader_.getIndex().size());
+    // LOG_DEBUG("VpsdbCatalog: JSON loader initialized, loaded: " << jsonLoader_.isLoaded() << ", index size: " << jsonLoader_.getIndex().size());
 
     if (!jsonLoader_.isLoaded()) {
         if (!jsonLoader_.isLoading() && jsonLoader_.getIndex().empty()) {
@@ -113,9 +113,10 @@ bool VpsdbCatalog::render() {
 
             isTableLoading_ = false;
             LOG_DEBUG("VpsdbCatalog: Processed loaded table, index: " << currentIndex_);
-        } else {
-            LOG_DEBUG("VpsdbCatalog: Loaded table queue is empty");
         }
+        // else {
+        //     LOG_DEBUG("VpsdbCatalog: Loaded table queue is empty");
+        // }
     }
 
     // Search input and button
