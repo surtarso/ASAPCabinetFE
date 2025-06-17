@@ -1,6 +1,3 @@
-# Disclaimer:
-Since updates are rapid on this stage, the manual is a bit outdate as of today (6/14/2025). I will update it asap. It's still mostly valid, just missing a lot of new features etc. Sorry, I'm just one. =)
-
 # As Simple As Possible Cabinet Front-End _User's Manual_
 
 Welcome to ASAPCabinetFE! This is your go-to app for playing Visual Pinball X (VPX) tables with ease. This manual will walk you through how to use it—Browse tables, launching games, snapping screenshots, and tweaking settings—all without any techy stuff. Everything you need is right in the app’s config menu. Let’s dive in!
@@ -10,6 +7,8 @@ Welcome to ASAPCabinetFE! This is your go-to app for playing Visual Pinball X (V
 ASAPCabinetFE is a flexible frontend that lets you:
 
   - Browse and pick VPX tables with cool previews.
+  - Fetch, edit and match metadata.
+  - Find new tables using the catalog.
   - Launch tables straight into Visual Pinball X.
   - Take screenshots or videos of your tables to use as previews.
   - Adjust all settings using an in-app menu.
@@ -41,6 +40,9 @@ No complicated setup—just fun pinball action!
       * [Basic Default Keys](#basic-default-keys)
       * [Changing Keys](#changing-keys)
   * [Sound Stuff](#sound-stuff)
+  * [Metadata Editor](#metadata-editor)
+  * [Virtual Spreadsheet Database](#virtual-pinball-spreadsheet-database-browser)
+  * [The Scanners](#the-scanners)
   * [If Something Goes Wrong](#if-something-goes-wrong)
       * [No Tables Show Up](#no-tables-show-up)
       * [Screenshots/Videos Aren’t Saving](#screenshots-videos-arent-saving)
@@ -70,13 +72,13 @@ You can set these paths using the in-app configuration menu. You can use your ow
 
 Simply double-click the ASAPCabinetFE icon (or start it as you would any other app). The first time you run it, a setup window will appear, asking you to point to your main VPX tables folder and the VPinballX program itself. Select these locations, save your choices, and close the menu. If everything is found correctly, the main app will then open.
 
-![image](https://github.com/user-attachments/assets/35b13475-c0a2-4e4c-b20c-5ae21f13051c)
->[!NOTE]
-> Optional args are for launching Visual Pinball X, not the front-end.
+
+![image](https://github.com/user-attachments/assets/a59cfb39-54f8-44fa-9730-aa2797b37303)
+
 
 ## Windows Positions
 The first time the app opens you might see all windows on top of each other on the corner of a single monitor.
-To ensure smooth transitions, you'll want the app's windows to align with your VPinballX setup.
+To ensure smooth transitions, you can set yout windows manually or let ASAPCab do it for you. You'll want the app's windows to align with your VPinballX setup.
 
 ### Manual Positioning
 
@@ -151,25 +153,23 @@ You don't need to manually edit any config files; everything you want to change 
 
 Press **C** at any time to bring up the configuration menu.
 
-![image](https://github.com/user-attachments/assets/09588788-3969-4138-a222-89e5427942fa)
+![image](https://github.com/user-attachments/assets/b1bb742b-7786-490e-bd50-a808bd4cdbc9)
 
-### What You Can Change? (Everything!)
+### What Can You Change? (Everything!)
 
 Here’s a glimpse of what you can tweak:
 
-  - **Window Layout**: Adjust the position and size of the playfield, backglass, or DMD windows.
-  - **Media Layout**: Control the position and size of media elements within their respective windows.
-  - **Title Layout**: Place the wheel image and table title anywhere you like, or hide them entirely.
-  - **Overlay Widgets**: Adjust or remove any on-screen overlay item.
-  - **Sound Levels**: Independently adjust the volume for preview videos, table music, app sounds, and background music.
-  - **Controls**: Customize the keyboard keys for various actions, and configure joystick support.
-  - **Display**: Increase DPI scaling if elements appear too small on your screen.
+  - **Table Metadata**: Control information about your table, scan files, match metadata, sort.
+  - **Title Display**: Customize table title, place stuff anywhere you like, or hide them entirely.
+  - **UI Widgets**: Adjust or remove any on-screen overlay item.
+  - **Audio Settings**: Independently adjust the volume for preview videos, table music, app sounds, and background music.
+  - **Keybinds**: Customize the keyboard keys for various actions, and configure joystick support.
+  - **DPI Settings**: Increase DPI scaling if elements appear too small on your screen.
+  - **Window Settings**: Adjust the position and size of the playfield, backglass, or DMD windows.
+  - **Media Dimensions**: Control the position and size of media elements within their respective windows, force images only.
+  - **VPX Settings**: Set paths and control how you start VPinballX
 
->[!IMPORTANT]
->To use **metadata** you need to download and run [`vpxtool`](https://github.com/francisdb/vpxtool) to create `vpxtool_index.json` in your tables folder.
-
->[!NOTE]
->For **complete metadata** from the _Visual Pinball Spreadsheet_ API, you need the initial metadata extracted from the files by `vpxtool`.
+Still not enough? Ok! You can also change ALL default media to create your own fallbacks. Use your own images or sounds for the UI to trully make this app yours.
 
 ### Saving Your Changes
 
@@ -192,7 +192,8 @@ Here’s how you control the app using your keyboard to set things up:
 
 Want to use your joystick? But of'course! We have **cabinet** in the name, right? ;)
 
-![image](https://github.com/user-attachments/assets/125f34f3-22c3-4f2e-9478-9f6cc6fc0f5e)
+
+![image](https://github.com/user-attachments/assets/48f353e6-7ea7-4bba-8ac5-cf160949b16c)
 
 1.  Press **C** to open the configuration menu.
 2.  Navigate to the “Keybinds” section.
@@ -202,7 +203,7 @@ Want to use your joystick? But of'course! We have **cabinet** in the name, right
 
 Whether you love the tunes or prefer silence, you have full control over the audio:
 
-![image](https://github.com/user-attachments/assets/da2484e9-17ab-4e89-94a8-3bb0f5dd0d36)
+![image](https://github.com/user-attachments/assets/7e8c27b2-7fec-41f8-8560-19a4d96902c8)
 
   - **Preview Videos**: Adjust the playback volume for video previews.
   - **Table Music**: Control the volume or mute individual table soundtracks.
@@ -210,6 +211,30 @@ Whether you love the tunes or prefer silence, you have full control over the aud
   - **Background Music**: Set the ambiance with adjustable background tunes.
 
 You can find all these sound options within the “Audio Settings” section of the configuration menu.
+
+## Metadada Editor
+
+As you may have noticed, file metadata quality is really bad. But it doesn't have to be like that! Open the Metadata Editor (default: M) and save an override for you table info with correct information!
+
+![image](https://github.com/user-attachments/assets/d2a0ec23-9324-4029-adbd-740a0a8333d5)
+
+## Virtual Pinball Spreadsheet Database Browser
+
+So, I heard you like pinball! That makes two of us! What if we could browse the VPS database from inside the app and get links straight to table downloads? Well, open the VPSDB Catalog (Default: N) and start browsing!
+
+![image](https://github.com/user-attachments/assets/a4a7c171-920d-46c4-8041-288770a2f577)
+
+## The Scanners
+
+ASAPCabinetFE provides you with three distinct scanners:
+- File Scanner: The first scanner that will run when you open the app. It will gather table information from the tree structure and file names. Detect table extras like altcolor, altmusic, altsound, ultraDMDs, pups...
+- VPin Scanner: This is the scanner that will run when you select to use _metadata_. It will extract the metadata from your VPX files to display on the panel and possible help on matchmaking with vpsdb.
+- VPSDb Scanner: Using all gathered information, toggling fetchVPSDB will attempt to match you metadata with the Virtual Pinball Spreadsheet metadata.
+
+![image](https://github.com/user-attachments/assets/c42db096-bba6-4481-bf7d-958eb46f280b)
+
+>[!NOTE]
+> If you already have `vpxtool` installed or `vpxtool_index.json` already built in your tables folder, we will try to use it instead of VPin. No need to double scan or keep multiple metadata files.
 
 ## If Something Goes Wrong
 
