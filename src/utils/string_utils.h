@@ -5,7 +5,7 @@
  * This header provides the StringUtils class, which contains utility methods for
  * string normalization, version comparison, date parsing, and JSON array joining.
  * These methods are designed to support VPS data processing in ASAPCabinetFE,
- * particularly for metadata matching and enrichment. The functionality can be
+ * particularly for metadata matching and matchmaking. The functionality can be
  * extended with configUI for custom normalization rules in the future.
  */
 
@@ -23,7 +23,7 @@
  * This class provides static methods to normalize strings, compare versions,
  * extract years from dates, and join JSON arrays into strings. These utilities
  * are used for processing VPS metadata, ensuring consistency in matching and
- * enrichment tasks. The methods are stateless (const) and can be extended via
+ * matchmaking tasks. The methods are stateless (const) and can be extended via
  * configUI for user-defined normalization or formatting rules.
  */
 class StringUtils {

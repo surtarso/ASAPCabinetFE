@@ -5,7 +5,7 @@
  * This file provides the implementation of the StringUtils class, which offers utility
  * methods for string normalization, version comparison, date parsing, and JSON array
  * joining. These methods support VPS metadata processing in ASAPCabinetFE, ensuring
- * consistency in matching and enrichment tasks. The functionality can be extended
+ * consistency in matching and matchmaking tasks. The functionality can be extended
  * with configUI for user-defined normalization or formatting rules in the future.
  */
 

@@ -24,7 +24,7 @@
  * @brief Tracks the loading progress state for ASAPCabinetFE.
  *
  * This struct stores the state of the loading process, including overall progress
- * (stages like fetching, scanning, enriching), per-table loading progress, metadata
+ * (stages like fetching, scanning, matchmaking), per-table loading progress, metadata
  * matching statistics, and a log message buffer for UI display. It is designed to be
  * shared between a loading thread and a rendering thread (e.g., LoadingScreen), with
  * thread safety ensured via a mutex. The struct supports a mini terminal display in
@@ -35,8 +35,8 @@ struct LoadingProgress {
 
     int currentTablesLoaded = 0; ///< Number of tables currently loaded (used for per-table progress bar).
     int totalTablesToLoad = 0;   ///< Total number of tables to load (denominator for per-table progress bar).
-    int currentStage = 0;        ///< Current overall progress stage (e.g., fetching VPSDB, scanning, enriching).
-    int totalStages = 5;         ///< Total number of stages (fetching VPSDB, scanning/loading, enriching, saving, sorting/indexing).
+    int currentStage = 0;        ///< Current overall progress stage (e.g., fetching VPSDB, scanning, matchmaking).
+    int totalStages = 5;         ///< Total number of stages (fetching VPSDB, scanning/loading, matchmaking, saving, sorting/indexing).
 
     std::string currentTask = "Initializing..."; ///< Description of the current task (e.g., "Scanning Tables (5)").
 

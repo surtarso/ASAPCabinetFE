@@ -4,7 +4,7 @@
  *
  * This header provides the TableLoader class, which implements the ITableLoader interface
  * to load and process table data (e.g., VPX files) for ASAPCabinetFE. The class handles
- * a multi-stage process including fetching VPSDB, scanning files, enriching metadata,
+ * a multi-stage process including fetching VPSDB, scanning files, matchmaking metadata,
  * saving indexes, and sorting tables. It supports progress tracking via LoadingProgress
  * and provides a letter-based index for navigation. The loading behavior is configurable
  * via Settings (e.g., titleSource, sortBy), with potential for further customization
@@ -29,9 +29,9 @@ namespace fs = std::filesystem; // Namespace alias for std::filesystem to simpli
  * @class TableLoader
  * @brief Implements table loading and indexing for ASAPCabinetFE.
  *
- * This class loads a list of TableData by scanning VPX files, enriching metadata from
+ * This class loads a list of TableData by scanning VPX files, matchmaking metadata from
  * VPSDB or ASAP indexes, and sorting based on user-defined criteria (e.g., title, author).
- * It supports a five-stage process (fetching VPSDB, scanning, enriching, saving, sorting)
+ * It supports a five-stage process (fetching VPSDB, scanning, matchmaking, saving, sorting)
  * with optional progress tracking via LoadingProgress. The class maintains a letter index
  * for quick navigation and is configurable via Settings parameters, with extensibility
  * for configUI adjustments (e.g., sort options, metadata sources).
@@ -49,7 +49,7 @@ public:
      * @brief Loads the list of table data based on application settings.
      *
      * Executes a multi-stage process to load tables: fetching VPSDB (if enabled),
-     * scanning VPX files or loading from an ASAP index, enriching metadata, saving
+     * scanning VPX files or loading from an ASAP index, matchmaking metadata, saving
      * the index, and sorting. Progress is tracked via LoadingProgress if provided.
      * The method is configurable via Settings (e.g., titleSource, fetchVPSdb, sortBy).
      *

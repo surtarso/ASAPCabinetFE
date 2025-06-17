@@ -207,7 +207,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         outFile << overrideJson.dump(4);
         outFile.close();
 
-        LOG_INFO("TableOverrideManager: Saved overrides for table: " << table.title << " to: " << overridePath);
+        LOG_DEBUG("TableOverrideManager: Saved overrides for table: " << table.title << " to: " << overridePath);
     } catch (const json::exception& e) {
         LOG_ERROR("TableOverrideManager: JSON error while saving override file: " << overridePath << ": " << e.what());
     } catch (const std::exception& e) {

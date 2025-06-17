@@ -33,7 +33,7 @@ public:
      * Updates progress and logs mismatches.
      *
      * @param vpxTable JSON data from a VPX table (e.g., from vpin_scanner).
-     * @param tableData Reference to the TableData object to enrich.
+     * @param tableData Reference to the TableData object to match.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      * @return True if a match is found and applied, false otherwise.
      */

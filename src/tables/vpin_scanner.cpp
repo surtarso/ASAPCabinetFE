@@ -41,9 +41,9 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         }
         if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
             vpsLoaded = true;
-            LOG_INFO("VPinFileScanner: VPSDB loaded successfully for enrichment.");
+            LOG_INFO("VPinFileScanner: VPSDB loaded successfully.");
         } else {
-            LOG_ERROR("VPinFileScanner: Failed to load vpsdb.json for enrichment, proceeding without it.");
+            LOG_ERROR("VPinFileScanner: Failed to load vpsdb.json, proceeding without it.");
             // Even if failed, reset progress for next sub-phase
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
@@ -180,7 +180,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         }
     }
 
-    // Phase 2: VPSDB enrichment (after initial VPin scan is complete for all tables)
+    // Phase 2: VPSDB matchmaking (after initial VPin scan is complete for all tables)
     if (vpsLoaded) {
         // Reset progress counters for the VPSDB matching phase
         if (progress) {
@@ -190,7 +190,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
             progress->totalTablesToLoad = tables.size();
             progress->numMatched = 0;
             progress->numNoMatch = 0;
-            progress->logMessages.push_back("DEBUG: Starting VPSDB enrichment for " + std::to_string(tables.size()) + " tables");
+            progress->logMessages.push_back("DEBUG: Starting VPSDB matchmaking for " + std::to_string(tables.size()) + " tables");
         }
 
         const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency());
@@ -266,5 +266,5 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         }
     }
 
-    LOG_INFO("VPinFileScanner: Completed vpin scanning and VPSDB enrichment.");
+    LOG_INFO("VPinFileScanner: Completed vpin scanning and VPSDB matchmaking.");
 }

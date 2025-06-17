@@ -4,7 +4,7 @@
  *
  * This file provides the implementation of the TableLoader class, which loads table data
  * through a five-stage process: fetching VPSDB (if enabled), scanning VPX files or loading
- * from an ASAP index, enriching metadata, saving the index, and sorting tables. It supports
+ * from an ASAP index, matching metadata, saving the index, and sorting tables. It supports
  * progress tracking via LoadingProgress and builds a letter index for navigation. The
  * process is configurable via Settings (e.g., titleSource, sortBy), with potential for
  * future customization via configUI.
@@ -72,7 +72,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             if (!VPXToolScanner::scanFiles(settings, tables, progress)) {
                 // If VPXToolScanner skipped (e.g., no vpxtool_index.json or invalid),
                 // then proceed with VPinFileScanner.
-                LOG_INFO("TableLoader: VPXToolScanner skipped or failed. Proceeding with VPinFileScanner.");
+                LOG_INFO("TableLoader: VPXTool skipped or failed. Proceeding with VPin File Scanner.");
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->currentTask = "Scanning metadata with VPin...";
@@ -81,7 +81,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 VPinScanner::scanFiles(settings, tables, progress);
             }
 
-            // Stage 3: Save asapcab_index.json after metadata enrichment (from either scanner)
+            // Stage 3: Save asapcab_index.json after metadata matchmaking (from either scanner)
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Saving metadata to index...";

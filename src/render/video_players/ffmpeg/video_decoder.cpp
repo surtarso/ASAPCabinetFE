@@ -78,7 +78,7 @@ bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer,
             } else if (hwType == AV_HWDEVICE_TYPE_DXVA2) {
                 expectedSwFormat_ = AV_PIX_FMT_NV12;
             }
-            LOG_INFO("Hardware acceleration device context created: " << av_hwdevice_get_type_name(hwType));
+            LOG_DEBUG("Hardware acceleration device context created: " << av_hwdevice_get_type_name(hwType));
             hw_accel_attempted = true; // Mark that we tried HW accel and it was successfully set
         } else {
             // Failed to reference the buffer, treat as if HW creation failed.

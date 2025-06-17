@@ -3,7 +3,7 @@
  * @brief Defines the VpsDatabaseClient class for managing the VPS database in ASAPCabinetFE.
  *
  * This header provides the VpsDatabaseClient class, which serves as a unified interface
- * for loading, updating, and enriching table data using the VPS database (vpsdb.json).
+ * for loading, updating, and matchmaking table data using the VPS database (vpsdb.json).
  * The class integrates VpsDatabaseLoader, VpsDataScanner, and VpsDatabaseUpdater, and
  * supports progress tracking via LoadingProgress. The process is configurable via the
  * vpsDbPath, with potential for configUI enhancements (e.g., custom update schedules).
@@ -15,7 +15,7 @@
 #include <string> // For std::string to handle file paths
 #include "tables/table_data.h" // Structure for storing table data
 #include "vps_database_loader.h" // Class for loading the VPS database
-#include "vps_database_scanner.h" // Class for enriching table data with VPS data
+#include "vps_database_scanner.h" // Class for matchmaking table data with VPS data
 #include "vps_database_updater.h" // Class for updating the VPS database
 #include "core/loading_progress.h" // Structure for tracking progress
 
@@ -23,11 +23,11 @@
  * @class VpsDatabaseClient
  * @brief Manages the VPS database and its integration with table data in ASAPCabinetFE.
  *
- * This class provides a high-level interface to load, update, and enrich TableData
+ * This class provides a high-level interface to load, update, and match TableData
  * objects using the VPS database (vpsdb.json). It delegates loading to VpsDatabaseLoader,
- * enrichment to VpsDataScanner, and updates to VpsDatabaseUpdater, all configured with
+ * matchmaking to VpsDataScanner, and updates to VpsDatabaseUpdater, all configured with
  * a single vpsDbPath. Progress is tracked via LoadingProgress, and the client can be
- * extended with configUI for custom settings (e.g., update frequency or enrichment rules).
+ * extended with configUI for custom settings (e.g., update frequency or matchmaking rules).
  */
 class VpsDatabaseClient {
 public:
@@ -35,7 +35,7 @@ public:
      * @brief Constructs a VpsDatabaseClient instance.
      *
      * Initializes the client with the path to the VPS database file, which is used
-     * by the loader, enricher, and updater components. The enricher is initialized
+     * by the loader, matchmaker, and updater components. The matchmaker is initialized
      * with the loaded database data.
      *
      * @param vpsDbPath The file path to the VPS database (vpsdb.json).
@@ -57,14 +57,14 @@ public:
     /**
      * @brief Enriches a TableData object with VPS database data.
      *
-     * Delegates the enrichment process to the internal VpsDataScanner, matching
+     * Delegates the matchmaking process to the internal VpsDataScanner, matching
      * the vpxTable JSON with the tableData object. Progress is tracked via
      * LoadingProgress if provided.
      *
-     * @param vpxTable The JSON data from a VPX table to use for enrichment.
-     * @param tableData Reference to the TableData object to enrich.
+     * @param vpxTable The JSON data from a VPX table to use for matchmaking.
+     * @param tableData Reference to the TableData object to match.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
-     * @return True if enrichment succeeds, false otherwise.
+     * @return True if matchmaking succeeds, false otherwise.
      */
     bool matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
@@ -85,7 +85,7 @@ public:
 private:
     std::string vpsDbPath_; ///< The file path to the VPS database (vpsdb.json).
     VpsDatabaseLoader loader_; ///< The loader component for parsing the VPS database.
-    VpsDataScanner enricher_; ///< The enricher component for updating table data.
+    VpsDataScanner matchmaker_; ///< The matchmaker component for updating table data.
     VpsDatabaseUpdater updater_; ///< The updater component for fetching database updates.
 };
 

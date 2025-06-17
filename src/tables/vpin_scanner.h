@@ -1,11 +1,11 @@
 /**
  * @file data_enricher.h
- * @brief Defines the VPinScanner class for enriching table data in ASAPCabinetFE.
+ * @brief Defines the VPinScanner class for matchmaking table data in ASAPCabinetFE.
  *
- * This header provides the VPinScanner class, which contains static methods to enrich
+ * This header provides the VPinScanner class, which contains static methods to match
  * TableData objects with metadata from vpxtool_index.json and VPSDB. The class supports
  * progress tracking via LoadingProgress, string cleaning for metadata fields, and safe
- * JSON value extraction. The enrichment process is configurable via Settings (e.g.,
+ * JSON value extraction. The matchmaking process is configurable via Settings (e.g.,
  * VPXTablesPath, fetchVPSdb), with potential for configUI integration to customize
  * metadata sources or cleaning rules in the future.
  */
@@ -16,7 +16,7 @@
 #include "tables/vpsdb/vps_database_client.h"
 #include "tables/table_data.h" // Structure for storing table data
 #include "config/settings.h" // Configuration settings for paths and VPSDB options
-#include "core/loading_progress.h" // Structure for tracking enrichment progress
+#include "core/loading_progress.h" // Structure for tracking matchmaking progress
 #include <nlohmann/json.hpp> // For nlohmann::json to handle JSON parsing
 #include <vector> // For passing vectors of TableData
 
@@ -24,9 +24,9 @@
  * @class VPinScanner
  * @brief Enriches table data with metadata in ASAPCabinetFE.
  *
- * This class provides static methods to enrich TableData objects by extracting metadata
+ * This class provides static methods to match TableData objects by extracting metadata
  * from a vpxtool_index.json file and optionally a VPSDB database. It includes utility
- * methods for cleaning strings and safely extracting JSON values. The enrichment process
+ * methods for cleaning strings and safely extracting JSON values. The matchmaking process
  * updates fields like tableName, tableAuthor, and romName, tracks progress with
  * LoadingProgress, and can be configured via Settings, with potential for configUI
  * enhancements (e.g., custom metadata sources).
@@ -38,13 +38,13 @@ public:
      *
      * Processes the provided tables vector by matching entries with metadata from
      * vpxtool_index.json (located at settings.VPXTablesPath + vpxtoolIndex) and
-     * optionally enriching further with VPSDB data if enabled. Updates fields like
+     * optionally matchmaking further with VPSDB data if enabled. Updates fields like
      * tableName, tableAuthor, and title, and tracks progress via LoadingProgress,
      * including numNoMatch for unmatched tables. The method is configurable via
      * Settings and supports future configUI customization.
      *
-     * @param settings The application settings controlling the enrichment process.
-     * @param tables Reference to the vector of TableData to enrich.
+     * @param settings The application settings controlling the matchmaking process.
+     * @param tables Reference to the vector of TableData to match.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      */
     static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress);

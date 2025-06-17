@@ -159,7 +159,7 @@ void App::loadTables() {
 
 void App::loadTablesThreaded(size_t oldIndex) {
     if (isLoadingTables_) {
-        LOG_INFO("App: Table loading already in progress, skipping");
+        LOG_DEBUG("App: Table loading already in progress, skipping");
         return;
     }
 
@@ -202,7 +202,7 @@ void App::loadTablesThreaded(size_t oldIndex) {
                     settings.forceRebuildMetadata = false;
                     configManager_->saveConfig();
                     flagsReset = true;
-                    LOG_INFO("App: Reset fetchVPSdb and forceRebuildMetadata to false after table loading");
+                    LOG_INFO("'Fetch VPSdb' and 'Force Rebuild Metadata' were set to false after table loading");
                 } else {
                     LOG_DEBUG("App: fetchVPSdb and forceRebuildMetadata were already false, no reset needed");
                 }

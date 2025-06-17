@@ -6,7 +6,7 @@
  * table metadata from a pre-generated vpxtool_index.json. If the index is not found or is
  * invalid, it attempts to run the 'vpxtool' command-line utility to generate a new index,
  * either from a user-specified path or by looking for 'vpxtool' in the system's PATH.
- * After loading/generating the index, it proceeds to enrich table data, optionally
+ * After loading/generating the index, it proceeds to match table data, optionally
  * matching against VPSDB.
  */
 
@@ -286,9 +286,9 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
         }
         if (vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress) && vpsClient.load(progress)) {
             vpsLoaded = true;
-            LOG_INFO("VPXToolScanner: VPSDB loaded successfully for enrichment.");
+            LOG_INFO("VPXToolScanner: VPSDB loaded successfully for matchmaking.");
         } else {
-            LOG_ERROR("VPXToolScanner: Failed to load vpsdb.json for enrichment, proceeding without it.");
+            LOG_ERROR("VPXToolScanner: Failed to load vpsdb.json for matchmaking, proceeding without it.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "VPXTool metadata processing (VPSDB load failed)...";
@@ -437,7 +437,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
     futures.clear();
 
 
-    // Phase 2: VPSDB enrichment (after initial VPXTool scan is complete for all tables)
+    // Phase 2: VPSDB matchmaking (after initial VPXTool scan is complete for all tables)
     if (vpsLoaded) {
         // Reset progress counters for the *new* VPSDB matching phase
         if (progress) {
@@ -447,7 +447,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
             progress->totalTablesToLoad = tables.size(); // Still the same total tables (from file scanner)
             progress->numMatched = 0;    // Reset VPSDB match count
             progress->numNoMatch = 0;    // Reset VPSDB no-match count
-            progress->logMessages.push_back("DEBUG: Starting VPSDB enrichment for " + std::to_string(tables.size()) + " tables");
+            progress->logMessages.push_back("DEBUG: Starting VPSDB matchmaking for " + std::to_string(tables.size()) + " tables");
         }
 
         const size_t maxThreadsVps = std::max(1u, std::thread::hardware_concurrency());
@@ -510,6 +510,6 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
         }
     }
 
-    LOG_INFO("VPXToolScanner: Completed processing vpxtool_index.json and VPSDB enrichment.");
+    LOG_INFO("VPXToolScanner: Completed processing vpxtool_index.json and VPSDB matchmaking.");
     return true; // Indicate that VPXToolScanner was successfully used (either by loading or generating index)
 }
