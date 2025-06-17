@@ -48,6 +48,8 @@ No complicated setup—just fun pinball action!
       * [Screenshots/Videos Aren’t Saving](#screenshots-videos-arent-saving)
       * [No Sound](#no-sound)
       * [Videos Are Choppy Or Weird](#videos-are-choppy-or-weird)
+      * [Windows Don't Move!?](#windows-dont-move)
+      * [Tables Are Not Launching](#tables-are-not-launching)
 
 ## Getting Started
 
@@ -254,7 +256,11 @@ Open the configuration menu (press **C**), go to “Audio Settings,” and check
 
 Try changing the video backend setting in the configuration menu to one that might be better suited for your system.
 
-### Tables are not launching
+### Windows Don't Move!?
+
+If you are trying to set custom window positions and the App is not respecting you, uncheck "use VPinballX ini". This option will override your custom positions to use VPinballX positions instead.
+
+### Tables Are Not Launching
 
 The VPinballX binary logs will be redirected to the log folder.
 
