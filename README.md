@@ -157,7 +157,7 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ./missing_media.sh --help
 ```
 >[!WARNING]
->Generator tools will only work with VPX up to version 10.8.0, as 10.8.1 made breaking changes to windows names that are not yet addressed.
+>Use __--vpx-version__ depending on your setup, ex: `./generate_media.sh --vpx-version 10.8.1 -d -f`
 
 ## Planned Features:
 We’re dreaming big! Help us bring these features to life:
