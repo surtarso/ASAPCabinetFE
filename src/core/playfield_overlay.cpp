@@ -366,18 +366,20 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (!currentTable.vpsFormat.empty()) {
             ImGui::Text("Table Format: %s", currentTable.vpsFormat.c_str());
         }
-        if (!currentTable.vpsTableImgUrl.empty()) {
-            ImGui::Text("Table Image: %s", currentTable.vpsTableImgUrl.c_str());
-        }
-        if (!currentTable.vpsTableUrl.empty()) {
-            ImGui::Text("Table Download: %s", currentTable.vpsTableUrl.c_str());
-        }
-        if (!currentTable.vpsB2SImgUrl.empty()) {
-            ImGui::Text("Backglass Image: %s", currentTable.vpsB2SImgUrl.c_str());
-        }
-        if (!currentTable.vpsB2SUrl.empty()) {
-            ImGui::Text("Backglass Download: %s", currentTable.vpsB2SUrl.c_str());
-        }
+        // these make no sense here, but maybe we can do something fun after we set
+        // config toggles for the fields for user customization.
+        // if (!currentTable.vpsTableImgUrl.empty()) {
+        //     ImGui::Text("Table Image: %s", currentTable.vpsTableImgUrl.c_str());
+        // }
+        // if (!currentTable.vpsTableUrl.empty()) {
+        //     ImGui::Text("Table Download: %s", currentTable.vpsTableUrl.c_str());
+        // }
+        // if (!currentTable.vpsB2SImgUrl.empty()) {
+        //     ImGui::Text("Backglass Image: %s", currentTable.vpsB2SImgUrl.c_str());
+        // }
+        // if (!currentTable.vpsB2SUrl.empty()) {
+        //     ImGui::Text("Backglass Download: %s", currentTable.vpsB2SUrl.c_str());
+        // }
 
         // --- File Metadata (from vpin/vpxtool) ---
         // Only add this section if any of these fields are available

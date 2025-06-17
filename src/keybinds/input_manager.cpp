@@ -53,7 +53,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_prev");
+            soundManager_->playUISound("scroll_normal");
         }
         LOG_DEBUG("InputManager: Registered " << actionHandlers_.size() << " action handlers");
     };
@@ -64,7 +64,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_next");
+            soundManager_->playUISound("scroll_normal");
         }
     };
 
@@ -74,7 +74,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_fast_prev");
+            soundManager_->playUISound("scroll_fast");
         }
     };
 
@@ -84,7 +84,7 @@ void InputManager::registerActions() {
         if (newIndex != *currentIndex_) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_fast_next");
+            soundManager_->playUISound("scroll_fast");
         }
     };
 
@@ -150,7 +150,7 @@ void InputManager::registerActions() {
         if (found && newIndex != currentIdx) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_jump_prev");
+            soundManager_->playUISound("scroll_jump");
         } else {
             LOG_DEBUG("InputManager: No previous letter found for key " << currentKey);
         }
@@ -216,7 +216,7 @@ void InputManager::registerActions() {
         if (found && newIndex != currentIdx) {
             assets_->loadTableAssets(newIndex, *tables_);
             *currentIndex_ = newIndex;
-            soundManager_->playUISound("scroll_jump_next");
+            soundManager_->playUISound("scroll_jump");
         } else {
             LOG_DEBUG("InputManager: No next letter found for key " << currentKey);
         }
@@ -574,7 +574,7 @@ void InputManager::handleDoubleClick(const SDL_Event& event) {
                                             dmdX, dmdY, dmdWidth, dmdHeight,
                                             topperX, topperY, topperWidth, topperHeight);
 
-            soundManager_->playUISound("config_save");
+            soundManager_->playUISound("screenshot_take");
             lastClickTimes_.erase(it); // Clear to reset double-click detection
         } else {
             lastClickTimes_[windowID] = currentTime;

@@ -39,18 +39,16 @@ PulseAudioPlayer::PulseAudioPlayer(const std::string& exeDir, const Settings& se
     // Initialize the UI sounds map with placeholders (will be loaded in loadSounds)
     // Using Mix_Chunk for UI sounds as they are short effects and can play concurrently
     uiSounds_.emplace("config_toggle", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_fast_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_fast_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_jump_prev", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("scroll_jump_next", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_normal", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_normal", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_fast", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_fast", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_jump", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
+    uiSounds_.emplace("scroll_jump", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("scroll_random", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("launch_table", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("launch_screenshot", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("config_save", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
     uiSounds_.emplace("screenshot_take", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
-    uiSounds_.emplace("screenshot_quit", std::unique_ptr<Mix_Chunk, void(*)(Mix_Chunk*)>(nullptr, Mix_FreeChunk));
 }
 
 PulseAudioPlayer::~PulseAudioPlayer() {
@@ -103,18 +101,13 @@ void PulseAudioPlayer::loadSounds() {
 
     // Load all UI sounds
     loadUiSound("config_toggle", settings_.configToggleSound);
-    loadUiSound("scroll_prev", settings_.scrollPrevSound);
-    loadUiSound("scroll_next", settings_.scrollNextSound);
-    loadUiSound("scroll_fast_prev", settings_.scrollFastPrevSound);
-    loadUiSound("scroll_fast_next", settings_.scrollFastNextSound);
-    loadUiSound("scroll_jump_prev", settings_.scrollJumpPrevSound);
-    loadUiSound("scroll_jump_next", settings_.scrollJumpNextSound);
+    loadUiSound("scroll_normal", settings_.scrollNormalSound);
+    loadUiSound("scroll_fast", settings_.scrollFastSound);
+    loadUiSound("scroll_jump", settings_.scrollJumpSound);
     loadUiSound("scroll_random", settings_.scrollRandomSound);
     loadUiSound("launch_table", settings_.launchTableSound);
     loadUiSound("launch_screenshot", settings_.launchScreenshotSound);
-    loadUiSound("config_save", settings_.configSaveSound);
     loadUiSound("screenshot_take", settings_.screenshotTakeSound);
-    loadUiSound("screenshot_quit", settings_.screenshotQuitSound);
 
     // Load ambience sound (only if path is valid and not empty)
     if (settings_.ambienceSound.empty()) {
@@ -357,18 +350,13 @@ void PulseAudioPlayer::updateSettings(const Settings& newSettings) {
 
     // Check if UI sound paths have changed to trigger a reload of Mix_Chunk assets
     bool uiSoundPathsChanged = (settings_.configToggleSound != newSettings.configToggleSound) ||
-                               (settings_.scrollPrevSound != newSettings.scrollPrevSound) ||
-                               (settings_.scrollNextSound != newSettings.scrollNextSound) ||
-                               (settings_.scrollFastPrevSound != newSettings.scrollFastPrevSound) ||
-                               (settings_.scrollFastNextSound != newSettings.scrollFastNextSound) ||
-                               (settings_.scrollJumpPrevSound != newSettings.scrollJumpPrevSound) ||
-                               (settings_.scrollJumpNextSound != newSettings.scrollJumpNextSound) ||
+                               (settings_.scrollNormalSound != newSettings.scrollNormalSound) ||
+                               (settings_.scrollFastSound != newSettings.scrollFastSound) ||
+                               (settings_.scrollJumpSound != newSettings.scrollJumpSound) ||
                                (settings_.scrollRandomSound != newSettings.scrollRandomSound) ||
                                (settings_.launchTableSound != newSettings.launchTableSound) ||
                                (settings_.launchScreenshotSound != newSettings.launchScreenshotSound) ||
-                               (settings_.configSaveSound != newSettings.configSaveSound) ||
-                               (settings_.screenshotTakeSound != newSettings.screenshotTakeSound) ||
-                               (settings_.screenshotQuitSound != newSettings.screenshotQuitSound);
+                               (settings_.screenshotTakeSound != newSettings.screenshotTakeSound);
 
     // Check if ambience music path has changed
     bool ambiencePathChanged = (settings_.ambienceSound != newSettings.ambienceSound);

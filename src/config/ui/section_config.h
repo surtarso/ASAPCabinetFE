@@ -368,35 +368,25 @@ public:
         };
 
         keyOrders_["UISounds"] = {
-            "scrollPrevSound",
-            "scrollNextSound",
-            "scrollFastPrevSound",
-            "scrollFastNextSound",
-            "scrollJumpPrevSound",
-            "scrollJumpNextSound",
+            "scrollNormalSound",
+            "scrollFastSound",
+            "scrollJumpSound",
             "scrollRandomSound",
             "launchTableSound",
             "launchScreenshotSound",
             "configToggleSound",
-            "configSaveSound",
             "screenshotTakeSound",
-            "screenshotQuitSound",
             "ambienceSound"
         };
         keyDisplayNames_["UISounds"] = {
-            {"scrollPrevSound", "Scroll Previous Sound"},
-            {"scrollNextSound", "Scroll Next Sound"},
-            {"scrollFastPrevSound", "Fast Scroll Previous Sound"},
-            {"scrollFastNextSound", "Fast Scroll Next Sound"},
-            {"scrollJumpPrevSound", "Jump Previous Sound"},
-            {"scrollJumpNextSound", "Jump Next Sound"},
+            {"scrollNormalSound", "Scroll Previous Sound"},
+            {"scrollFastSound", "Fast Scroll Previous Sound"},
+            {"scrollJumpSound", "Jump Previous Sound"},
             {"scrollRandomSound", "Random Scroll Sound"},
             {"launchTableSound", "Launch Table Sound"},
             {"launchScreenshotSound", "Launch Screenshot Sound"},
             {"configToggleSound", "Config Toggle Sound"},
-            {"configSaveSound", "Config Save Sound"},
             {"screenshotTakeSound", "Screenshot Taken Sound"},
-            {"screenshotQuitSound", "Screenshot Quit Sound"},
             {"ambienceSound", "Ambience Sound"}
         };
 

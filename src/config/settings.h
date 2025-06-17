@@ -180,19 +180,14 @@ struct Settings {
     float interfaceAmbienceVol = 60.0f; // 0-100
 
     // [UiSounds]
-    std::string scrollPrevSound = "snd/scroll_prev.mp3";
-    std::string scrollNextSound = "snd/scroll_next.mp3";
-    std::string scrollFastPrevSound = "snd/scroll_fast_prev.mp3";
-    std::string scrollFastNextSound = "snd/scroll_fast_next.mp3";
-    std::string scrollJumpPrevSound = "snd/scroll_jump_prev.mp3";
-    std::string scrollJumpNextSound = "snd/scroll_jump_next.mp3";
+    std::string scrollNormalSound = "snd/scroll_normal.mp3";
+    std::string scrollFastSound = "snd/scroll_fast.mp3";
+    std::string scrollJumpSound = "snd/scroll_jump.mp3";
     std::string scrollRandomSound = "snd/scroll_random.mp3";
     std::string launchTableSound = "snd/launch_table.mp3";
     std::string launchScreenshotSound = "snd/launch_screenshot.mp3";
     std::string configToggleSound = "snd/config_toggle.mp3";
-    std::string configSaveSound = "snd/config_save.mp3";
     std::string screenshotTakeSound = "snd/screenshot_take.mp3";
-    std::string screenshotQuitSound = "snd/screenshot_quit.mp3";
     std::string ambienceSound = "snd/interface_ambience.mp3";
 
     // [Internal]
@@ -426,19 +421,14 @@ private:
                 {"interfaceAmbienceVol", s.interfaceAmbienceVol}
             }},
             {"UISounds", {
-                {"scrollPrevSound", s.scrollPrevSound},
-                {"scrollNextSound", s.scrollNextSound},
-                {"scrollFastPrevSound", s.scrollFastPrevSound},
-                {"scrollFastNextSound", s.scrollFastNextSound},
-                {"scrollJumpPrevSound", s.scrollJumpPrevSound},
-                {"scrollJumpNextSound", s.scrollJumpNextSound},
+                {"scrollNormalSound", s.scrollNormalSound},
+                {"scrollFastSound", s.scrollFastSound},
+                {"scrollJumpSound", s.scrollJumpSound},
                 {"scrollRandomSound", s.scrollRandomSound},
                 {"launchTableSound", s.launchTableSound},
                 {"launchScreenshotSound", s.launchScreenshotSound},
                 {"configToggleSound", s.configToggleSound},
-                {"configSaveSound", s.configSaveSound},
                 {"screenshotTakeSound", s.screenshotTakeSound},
-                {"screenshotQuitSound", s.screenshotQuitSound},
                 {"ambienceSound", s.ambienceSound}
             }},
             {"Internal", {
@@ -637,19 +627,14 @@ private:
         s.interfaceAmbienceVol = j.value("AudioSettings", nlohmann::json{}).value("interfaceAmbienceVol", s.interfaceAmbienceVol);
 
         // UISounds
-        s.scrollPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollPrevSound", s.scrollPrevSound);
-        s.scrollNextSound = j.value("UISounds", nlohmann::json{}).value("scrollNextSound", s.scrollNextSound);
-        s.scrollFastPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollFastPrevSound", s.scrollFastPrevSound);
-        s.scrollFastNextSound = j.value("UISounds", nlohmann::json{}).value("scrollFastNextSound", s.scrollFastNextSound);
-        s.scrollJumpPrevSound = j.value("UISounds", nlohmann::json{}).value("scrollJumpPrevSound", s.scrollJumpPrevSound);
-        s.scrollJumpNextSound = j.value("UISounds", nlohmann::json{}).value("scrollJumpNextSound", s.scrollJumpNextSound);
+        s.scrollNormalSound = j.value("UISounds", nlohmann::json{}).value("scrollNormalSound", s.scrollNormalSound);
+        s.scrollFastSound = j.value("UISounds", nlohmann::json{}).value("scrollFastSound", s.scrollFastSound);
+        s.scrollJumpSound = j.value("UISounds", nlohmann::json{}).value("scrollJumpSound", s.scrollJumpSound);
         s.scrollRandomSound = j.value("UISounds", nlohmann::json{}).value("scrollRandomSound", s.scrollRandomSound);
         s.launchTableSound = j.value("UISounds", nlohmann::json{}).value("launchTableSound", s.launchTableSound);
         s.launchScreenshotSound = j.value("UISounds", nlohmann::json{}).value("launchScreenshotSound", s.launchScreenshotSound);
         s.configToggleSound = j.value("UISounds", nlohmann::json{}).value("configToggleSound", s.configToggleSound);
-        s.configSaveSound = j.value("UISounds", nlohmann::json{}).value("configSaveSound", s.configSaveSound);
         s.screenshotTakeSound = j.value("UISounds", nlohmann::json{}).value("screenshotTakeSound", s.screenshotTakeSound);
-        s.screenshotQuitSound = j.value("UISounds", nlohmann::json{}).value("screenshotQuitSound", s.screenshotQuitSound);
         s.ambienceSound = j.value("UISounds", nlohmann::json{}).value("ambienceSound", s.ambienceSound);
 
         // Internal
@@ -918,19 +903,14 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"interfaceAmbienceMute", {Settings::ReloadType::Audio, "Mute interface ambience."}},
     {"interfaceAmbienceVol", {Settings::ReloadType::Audio, "Adjust interface ambience volume."}},
     // UISounds
-    {"scrollPrevSound", {Settings::ReloadType::Tables, "Sound played when scrolling to previous table."}},
-    {"scrollNextSound", {Settings::ReloadType::Tables, "Sound played when scrolling to next table."}},
-    {"scrollFastPrevSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling backward."}},
-    {"scrollFastNextSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling forward."}},
-    {"scrollJumpPrevSound", {Settings::ReloadType::Tables, "Sound played when jumping to previous letter."}},
-    {"scrollJumpNextSound", {Settings::ReloadType::Tables, "Sound played when jumping to next letter."}},
+    {"scrollNormalSound", {Settings::ReloadType::Tables, "Sound played when scrolling single tables."}},
+    {"scrollFastSound", {Settings::ReloadType::Tables, "Sound played when fast scrolling in 10's."}},
+    {"scrollJumpSound", {Settings::ReloadType::Tables, "Sound played when jumping to previous letter."}},
     {"scrollRandomSound", {Settings::ReloadType::Tables, "Sound played when selecting a random table."}},
     {"launchTableSound", {Settings::ReloadType::Tables, "Sound played when launching a table."}},
     {"launchScreenshotSound", {Settings::ReloadType::Tables, "Sound played when entering screenshot mode."}},
     {"configToggleSound", {Settings::ReloadType::Tables, "Sound played when opening or closing configuration."}},
-    {"configSaveSound", {Settings::ReloadType::Tables, "Sound played when saving configuration."}},
     {"screenshotTakeSound", {Settings::ReloadType::Tables, "Sound played when taking a screenshot."}},
-    {"screenshotQuitSound", {Settings::ReloadType::Tables, "Sound played when exiting screenshot mode."}},
     {"ambienceSound", {Settings::ReloadType::Tables, "Sound played on the background if there is no table music."}},
     // Internal
     {"vpxSubCmd", {Settings::ReloadType::None, "VPinballX internal command to play .vpx tables.\n"

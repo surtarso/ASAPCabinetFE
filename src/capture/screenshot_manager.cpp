@@ -59,7 +59,6 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                     capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 } else if (keybindProvider_->isAction(keyEvent, "ScreenshotQuit")) {
                     LOG_INFO("ScreenshotManager: Quit key pressed");
-                    soundManager_->playUISound("screenshot_quit");
                     isRunning_ = false;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
