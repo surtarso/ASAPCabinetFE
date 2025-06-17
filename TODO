@@ -27,7 +27,6 @@ QOL:
 On hold:
 - update header docs and user manual
 - user-configurable options for video quality passed to videoplayer factory
-- hardware acceleration for ffmpeg (VAAPI)
 - asset caching to speed up table switching
 - multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
