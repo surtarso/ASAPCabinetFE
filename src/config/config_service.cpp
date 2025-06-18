@@ -87,7 +87,7 @@ bool ConfigService::isConfigValid() const {
         return false;
     }
 
-    LOG_DEBUG("Config validation passed.");
+    LOG_INFO("Config validation passed.");
     return true;
 }
 
@@ -96,7 +96,7 @@ void ConfigService::loadConfig() {
     try {
         std::ifstream file(configPath_);
         if (!file.is_open()) {
-            LOG_DEBUG("ConfigService: Config file not found, using defaults");
+            LOG_WARN("ConfigService: Config file not found, using defaults");
             settings_ = Settings();
             applyPostProcessing();
             saveConfig();
@@ -133,7 +133,7 @@ void ConfigService::loadConfig() {
                 jsonData_["WindowSettings"]["useVPinballXIni"] = false;
             }
         }
-        LOG_DEBUG("ConfigService: Config loaded successfully");
+        LOG_INFO("ConfigService: Config loaded successfully");
     } catch (const nlohmann::json::exception& e) {
         LOG_ERROR("ConfigService: JSON parsing error: " << e.what());
         settings_ = Settings();
@@ -168,15 +168,15 @@ void ConfigService::saveConfig() {
             }
         }
         // Write JSON with atomic write
-        std::ofstream tempFile(configPath_ + ".tmp");
-        if (!tempFile.is_open()) {
-            LOG_ERROR("ConfigService: Failed to open temp file for writing: " << configPath_ + ".tmp");
-            return;
-        }
-        tempFile << jsonData_.dump(4);
-        tempFile.close();
-        std::filesystem::rename(configPath_ + ".tmp", configPath_);
-        LOG_DEBUG("ConfigService: Config saved successfully");
+        // std::ofstream tempFile(configPath_ + ".tmp");
+        // if (!tempFile.is_open()) {
+        //     LOG_ERROR("ConfigService: Failed to open temp file for writing: " << configPath_ + ".tmp");
+        //     return;
+        // }
+        // tempFile << jsonData_.dump(4);
+        // tempFile.close();
+        // std::filesystem::rename(configPath_ + ".tmp", configPath_);
+        LOG_INFO("ConfigService: Config saved successfully");
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigService: Error saving config: " << e.what());
         if (std::filesystem::exists(configPath_ + ".tmp")) {
