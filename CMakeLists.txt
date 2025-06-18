@@ -264,6 +264,7 @@ set(SOURCES
     src/core/loading_screen.cpp
     src/core/playfield_overlay.cpp
     src/core/window_manager.cpp
+    src/launcher/table_launcher.cpp
     src/sound/pulseaudio_player.cpp
     src/capture/process_handler.cpp
     src/capture/screenshot_capture.cpp

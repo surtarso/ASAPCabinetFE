@@ -15,7 +15,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
       tables_(nullptr), showConfig_(nullptr), showEditor_(nullptr), showVpsdb_(nullptr), exeDir_(""), screenshotManager_(nullptr),
       runtimeEditor_(nullptr), actionHandlers_(), letterIndex_(), quit_(false),
       screenshotModeActive_(false), lastClickTimes_(), inExternalAppMode_(false),
-      lastExternalAppReturnTime_(0) {
+      lastExternalAppReturnTime_(0), tableLauncher_(nullptr) {
     registerActions();
     //LOG_INFO("InputManager: Constructor started, quit_ = " << quit_);
 }
@@ -23,7 +23,7 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                    size_t& currentIndex, const std::vector<TableData>& tables,
                                    bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                                   IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) {
+                                   IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher) {
     //LOG_INFO("InputManager: setDependencies started, quit_ = " << quit_);
     assets_ = assets;
     soundManager_ = sound;
@@ -37,6 +37,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     exeDir_ = exeDir;
     screenshotManager_ = screenshotManager;
     isLoadingTables_ = &isLoadingTables;
+    tableLauncher_ = tableLauncher;
 
     for (size_t i = 0; i < tables_->size(); ++i) {
         if (!tables_->at(i).title.empty()) {
@@ -254,15 +255,13 @@ void InputManager::registerActions() {
             return;
         }
 
+        if (!tableLauncher_) {
+            LOG_ERROR("InputManager: Cannot launch table, tableLauncher_ is null");
+            return;
+        }
+
         inExternalAppMode_ = true; // Set flag to indicate external app is launching
         LOG_DEBUG("InputManager: Launch table triggered");
-
-        const Settings& settings = settingsManager_->getSettings();
-        std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
-                            settings.vpxSubCmd + " \"" + tables_->at(*currentIndex_).vpxFile + "\" " +
-                            settings.vpxEndArgs;
-
-        LOG_DEBUG("InputManager: Launching: " << command);
 
         //stop ambience/table music
         soundManager_->stopMusic();
@@ -284,39 +283,16 @@ void InputManager::registerActions() {
             player->stop();
             LOG_DEBUG("InputManager: Stopped topper video player");
         }
-
+        // Play launch sound
         if (tables_->at(*currentIndex_).launchAudio == "") {
             soundManager_->playUISound("launch_table");
         } else {
             soundManager_->playCustomLaunch(tables_->at(*currentIndex_).launchAudio);
         }
 
-        //check local clock
-        auto start = std::chrono::system_clock::now();
-        LOG_INFO("Launching " << tables_->at(*currentIndex_).title);
-        
-        int result = std::system((command + " > /dev/null 2>&1").c_str());
-        
-        //check local clock, calculate timePlayed.
-        auto end = std::chrono::system_clock::now();
-        std::chrono::duration<float> duration = end - start;
-        float timePlayed = duration.count();
-        // Convert to H:M:S
-        int totalSeconds = static_cast<int>(timePlayed);
-        int hours = totalSeconds / 3600;
-        int minutes = (totalSeconds % 3600) / 60;
-        int seconds = totalSeconds % 60;
-        std::stringstream ss;
-        ss << std::setfill('0') << std::setw(2) << hours << ":"
-        << std::setfill('0') << std::setw(2) << minutes << ":"
-        << std::setfill('0') << std::setw(2) << seconds;
-        std::string timeFormatted = ss.str();
-        LOG_INFO("Welcome back to ASAPCabinetFE.");
-        LOG_INFO("You played " << tables_->at(*currentIndex_).title << " for " << timeFormatted);
-        
-        inExternalAppMode_ = false; // Reset flag after VPX exits
-        lastExternalAppReturnTime_ = SDL_GetTicks(); // Record the time VPX returned for debouncing
-        
+        // Launch table
+        auto [result, timeFormatted] = tableLauncher_->launchTable(tables_->at(*currentIndex_));
+
         //play table music on return, fallback to ambience
         soundManager_->playTableMusic(tables_->at(*currentIndex_).music);
         LOG_DEBUG("Music resumed.");
@@ -340,6 +316,10 @@ void InputManager::registerActions() {
         if (result != 0) {
             LOG_ERROR("InputManager: Warning: VPX launch failed with exit code " << result);
         }
+
+        inExternalAppMode_ = false; // Reset flag after VPX exits
+        lastExternalAppReturnTime_ = SDL_GetTicks(); // Record the time VPX returned for debouncing
+        
     };
 
 

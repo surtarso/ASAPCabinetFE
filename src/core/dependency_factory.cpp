@@ -20,6 +20,7 @@
 #include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"
 #include "keybinds/keybind_manager.h"
+#include "launcher/table_launcher.h"
 #include "log/logging.h"
 
 static std::atomic<bool> dummyIsLoadingTables{false}; // Atomic flag used as a placeholder for loading state in InputManager
@@ -159,7 +160,7 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
  * @param screenshotManager The screenshot manager for screenshot mode.
  * @return A unique pointer to an InputManager instance.
  */
-std::unique_ptr<InputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager) {
+std::unique_ptr<InputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager, ITableLauncher* tableLauncher) {
     auto input = std::make_unique<InputManager>(keybindProvider);
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;
@@ -167,8 +168,8 @@ std::unique_ptr<InputManager> DependencyFactory::createInputManager(IKeybindProv
     bool dummyShowCatalog = false;
     std::vector<TableData> dummyTables;
     input->setDependencies(nullptr, nullptr, nullptr, dummyIndex, dummyTables,
-                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables);
-    input->registerActions();
+                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables, tableLauncher);
+    // input->registerActions();
     return input;
 }
 
@@ -191,4 +192,8 @@ std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* conf
                                                             IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                                                             App* app, bool& showConfig) {
     return std::make_unique<ConfigUI>(configService, keybindProvider, assets, currentIndex, tables, app, showConfig, false);
+}
+
+std::unique_ptr<ITableLauncher> DependencyFactory::createTableLauncher(IConfigService* configService) {
+    return std::make_unique<TableLauncher>(configService);
 }

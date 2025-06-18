@@ -256,13 +256,15 @@ void App::initializeDependencies() {
     loadingScreen_ = std::make_unique<LoadingScreen>(loadingProgress_);
     loadTables();
 
+    tableLauncher_ = DependencyFactory::createTableLauncher(configManager_.get());
+
     assets_ = DependencyFactory::createAssetManager(windowManager_.get(), font_.get(), configManager_.get(), currentIndex_, tables_, soundManager_.get());
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), keybindProvider_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
-    inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get(), screenshotManager_.get());
+    inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get(), screenshotManager_.get(), tableLauncher_.get());
     inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
                                    currentIndex_, tables_, showConfig_, showEditor_, showVpsdb_, exeDir_, screenshotManager_.get(),
-                                   windowManager_.get(), isLoadingTables_);
+                                   windowManager_.get(), isLoadingTables_, tableLauncher_.get());
 
     configEditor_ = DependencyFactory::createConfigUI(configManager_.get(), keybindProvider_.get(), assets_.get(), &currentIndex_, &tables_, this, showConfig_);
 

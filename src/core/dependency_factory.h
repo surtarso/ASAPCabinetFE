@@ -27,6 +27,7 @@
 #include "capture/iscreenshot_manager.h" // Interface for screenshot management
 #include "sound/isound_manager.h" // Interface for sound management
 #include "keybinds/ikeybind_provider.h"
+#include "launcher/itable_launcher.h" // Interface for launching tables
 
 /**
  * @class App
@@ -164,7 +165,9 @@ public:
      * @param screenshotManager The screenshot manager for screenshot mode.
      * @return A unique pointer to an InputManager instance.
      */
-    static std::unique_ptr<InputManager> createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager);
+    static std::unique_ptr<InputManager> createInputManager(IKeybindProvider* keybindProvider,
+                                                            IScreenshotManager* screenshotManager,
+                                                            ITableLauncher* tableLauncher);
 
     /**
      * @brief Creates a configuration UI instance.
@@ -185,6 +188,8 @@ public:
     static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
                                                     IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                                                     App* app, bool& showConfig);
+                                                    
+    static std::unique_ptr<ITableLauncher> createTableLauncher(IConfigService* configService);                                                    
 };
 
 #endif // DEPENDENCY_FACTORY_H

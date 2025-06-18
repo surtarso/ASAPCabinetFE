@@ -12,11 +12,13 @@
 #define IINPUT_MANAGER_H
 
 #include "tables/table_data.h"
+#include "launcher/itable_launcher.h"
 #include <SDL_events.h>
 #include <string>
 #include <functional>
 #include <vector>
 #include <atomic>
+
 
 /**
  * @class IAssetManager
@@ -108,7 +110,7 @@ public:
     virtual void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                  size_t& currentIndex, const std::vector<TableData>& tables,
                                  bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                                 IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) = 0;
+                                 IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher) = 0;
 
     /**
      * @brief Sets the runtime configuration editor.

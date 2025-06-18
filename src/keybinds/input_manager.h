@@ -20,6 +20,7 @@
 #include "capture/iscreenshot_manager.h"
 #include "config/ui/config_ui.h"
 #include "core/iwindow_manager.h"
+#include "launcher/itable_launcher.h"
 #include <map>
 #include <vector>
 #include <unordered_map>
@@ -82,7 +83,7 @@ public:
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                          size_t& currentIndex, const std::vector<TableData>& tables,
                          bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                         IWindowManager* windowManager, std::atomic<bool>& isLoadingTables) override;
+                         IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher) override;
 
     /**
      * @brief Checks if the configuration UI is active.
@@ -168,6 +169,7 @@ private:
     Uint32 lastExternalAppReturnTime_;  ///< Timestamp of the last external application return.
     static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< Debounce time (ms) after external app return.
     std::atomic<bool>* isLoadingTables_; ///< Track loading state
+    ITableLauncher* tableLauncher_;
 };
 
 #endif // INPUT_MANAGER_H

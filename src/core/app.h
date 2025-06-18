@@ -24,6 +24,7 @@
 #include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
 #include "render/iasset_manager.h"
+#include "launcher/itable_launcher.h"
 #include "tables/itable_loader.h"
 #include "tables/table_data.h"
 #include "tables/table_override_editor.h"
@@ -138,6 +139,7 @@ private:
     std::unique_ptr<IRenderer> renderer_;                ///< Renderer for playfield, backglass, and DMD.
     std::unique_ptr<IAssetManager> assets_;              ///< Manager for textures and video players.
     std::unique_ptr<IScreenshotManager> screenshotManager_; ///< Manager for screenshot capture.
+    std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<IInputManager> inputManager_;        ///< Manager for input events.
     std::unique_ptr<ITableLoader> tableLoader_;          ///< Loader for table data.
     std::vector<TableData> tables_;                      ///< List of table data.
