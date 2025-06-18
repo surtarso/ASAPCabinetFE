@@ -1,9 +1,6 @@
 TODO
 
 FIX:
-- regression in path handling for default media...
-- data/asapcab_index.json is being created on execution dir instead of app dir
-
 - small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
