@@ -394,7 +394,7 @@ std::string StringUtils::extractCleanTitle(const std::string& input) const {
         cleaned = it->second;
     }
     cleaned = std::regex_replace(cleaned, std::regex(R"(\s+)"), " ");
-    LOG_DEBUG("extractCleanTitle: input='" << input << "', output='" << cleaned << "'");
+    //LOG_DEBUG("extractCleanTitle: input='" << input << "', output='" << cleaned << "'");
     return cleaned;
 }
 

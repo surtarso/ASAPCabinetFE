@@ -77,7 +77,7 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
 
         futures.push_back(std::async(std::launch::async, [&table, progress, &processedVpin]() {
             std::string vpxFile = table.vpxFile;
-            LOG_DEBUG("VPinFileScanner: Processing VPX file with vpin: " << vpxFile);
+            LOG_DEBUG("VPinFileScanner: Processing VPX file with VPin: " << vpxFile);
             char* json_result = get_vpx_table_info_as_json(vpxFile.c_str());
             if (!json_result) {
                 LOG_ERROR("VPinFileScanner: Failed to get metadata for " << vpxFile);
@@ -134,12 +134,12 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
                 // The `jsonOwner` is still correctly set here.
                 table.jsonOwner = "VPin Filescan";
 
-                LOG_DEBUG("VPinFileScanner: vpin table scanned: path=" << table.vpxFile 
-                          << ", filename_title=" << table.title 
-                          << ", vpin_table_name=" << table.tableName 
-                          << ", filename_man=" << table.manufacturer 
-                          << ", vpin_company_name=" << table.tableManufacturer 
-                          << ", rom=" << table.romName);
+                // LOG_DEBUG("VPinFileScanner: vpin table scanned: path=" << table.vpxFile 
+                //           << ", filename_title=" << table.title 
+                //           << ", vpin_table_name=" << table.tableName 
+                //           << ", filename_man=" << table.manufacturer 
+                //           << ", vpin_company_name=" << table.tableManufacturer 
+                //           << ", rom=" << table.romName);
 
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
@@ -266,5 +266,5 @@ void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& ta
         }
     }
 
-    LOG_INFO("VPinFileScanner: Completed vpin scanning and VPSDB matchmaking.");
+    LOG_INFO("VPinFileScanner: Scan Completed.");
 }

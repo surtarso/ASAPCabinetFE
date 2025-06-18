@@ -19,7 +19,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     }
     std::string filename = vpxTable.contains("path") && vpxTable["path"].is_string() ?
                            fs::path(vpxTable["path"].get<std::string>()).stem().string() : "N/A";
-    LOG_INFO("Matching table: path=" << filename << ", title=" << tableData.title << ", tableName=" << tableData.tableName);
+    //LOG_INFO("Matching table: path=" << filename << ", title=" << tableData.title << ", tableName=" << tableData.tableName);
     if (vpxTable.contains("table_info") && vpxTable["table_info"].is_object()) {
         const auto& tableInfo = vpxTable["table_info"];
         tableData.tableName = utils_.cleanString(utils_.safeGetString(tableInfo, "table_name", ""));
@@ -91,7 +91,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     }
     if (!filename.empty() && filename != "N/A") {
         titles.insert(cleanTitle(filename));
-        LOG_DEBUG("Added filename: input='" << filename << "', cleaned='" << cleanTitle(filename) << "'");
+        //LOG_DEBUG("Added filename: input='" << filename << "', cleaned='" << cleanTitle(filename) << "'");
     }
     if (!adjustedTitle.empty() && adjustedTitle != originalTitle) {
         titles.insert(cleanTitle(adjustedTitle));
@@ -103,7 +103,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     }
     if (!tableData.tableName.empty()) {
         titles.insert(cleanTitle(tableData.tableName));
-        LOG_DEBUG("Added tableName: input='" << tableData.tableName << "', cleaned='" << cleanTitle(tableData.tableName) << "'");
+        //LOG_DEBUG("Added tableName: input='" << tableData.tableName << "', cleaned='" << cleanTitle(tableData.tableName) << "'");
     }
     std::string manufacturer = utils_.safeGetString(vpxTable, "filename_manufacturer", "");
     if (manufacturer.empty()) manufacturer = tableData.manufacturer.empty() ? tableData.tableManufacturer : tableData.manufacturer;
@@ -125,7 +125,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Matching VPSDB " + std::to_string(vpsDb_.size()) + " entries...";
-        progress->currentTablesLoaded = 0;
+        // progress->currentTablesLoaded = 0; // This is relative to entries on vpsdb
     }
     for (const auto& entry : vpsDb_) {
         if (!entry.is_object() || !entry.contains("name") || entry["name"].is_null()) {
@@ -144,24 +144,24 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             if (normTitle.empty()) continue;
             if (utils_.toLower(normTitle) == utils_.toLower(normVpsName)) {
                 bestTitleScore = std::max(bestTitleScore, TITLE_WEIGHT);
-                LOG_DEBUG("Exact title match (case-insensitive): normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', score=" << TITLE_WEIGHT);
+                //LOG_DEBUG("Exact title match (case-insensitive): normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', score=" << TITLE_WEIGHT);
             } else {
                 size_t dist = utils_.levenshteinDistance(normTitle, normVpsName);
                 float sim = 1.0f - static_cast<float>(dist) / std::max(normTitle.size(), normVpsName.size());
                 if (sim >= LEVENSHTEIN_THRESHOLD) {
                     bestTitleScore = std::max(bestTitleScore, sim * TITLE_WEIGHT);
-                    LOG_DEBUG("Levenshtein match: normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', dist=" << dist << ", sim=" << sim << ", score=" << sim * TITLE_WEIGHT);
+                    //LOG_DEBUG("Levenshtein match: normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', dist=" << dist << ", sim=" << sim << ", score=" << sim * TITLE_WEIGHT);
                 }
             }
         }
         score += bestTitleScore;
         if (!year.empty() && year == vpsYear) {
             score += YEAR_WEIGHT;
-            LOG_DEBUG("Year match: year='" << year << "', vpsYear='" << vpsYear << "', score+=" << YEAR_WEIGHT);
+            //LOG_DEBUG("Year match: year='" << year << "', vpsYear='" << vpsYear << "', score+=" << YEAR_WEIGHT);
         }
         if (!manufacturer.empty() && normVpsManufacturer == utils_.normalizeStringLessAggressive(manufacturer)) {
             score += MANUFACTURER_WEIGHT;
-            LOG_DEBUG("Manufacturer match: manufacturer='" << manufacturer << "', normVpsManufacturer='" << normVpsManufacturer << "', score+=" << MANUFACTURER_WEIGHT);
+            //LOG_DEBUG("Manufacturer match: manufacturer='" << manufacturer << "', normVpsManufacturer='" << normVpsManufacturer << "', score+=" << MANUFACTURER_WEIGHT);
         }
         if (!normRomName.empty() && entry.contains("tableFiles") && entry["tableFiles"].is_array()) {
             for (const auto& file : entry["tableFiles"]) {
@@ -197,7 +197,8 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         processedEntries++;
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTablesLoaded = processedEntries;
+            // This will display each table going thru each entry on vpsdb
+            // progress->currentTablesLoaded = processedEntries;
         }
     }
     if (bestScore >= CONFIDENCE_THRESHOLD) {
@@ -262,7 +263,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             }
             mismatchLog << "\n";
         }
-        LOG_INFO("No VPSDB match for: " << filename << ", best score: " << bestScore);
+        LOG_WARN("No VPSDB match for: " << filename << ", best score: " << bestScore);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->numNoMatch++;

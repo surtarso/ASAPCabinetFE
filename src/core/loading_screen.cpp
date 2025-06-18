@@ -188,9 +188,9 @@ void LoadingScreen::render() {
             else displayMsg = "";
         }
         if (displayMsg.empty()) continue; // Skip empty messages after stripping prefix
-        if (displayMsg.find("Processed:") != std::string::npos) {
+        if (displayMsg.find("Matched table:") != std::string::npos) {
             ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f), "%s", displayMsg.c_str());
-        } else if (displayMsg.find("error:") != std::string::npos || displayMsg.find("Failed") != std::string::npos) {
+        } else if (displayMsg.find("No VPSDB match for:") != std::string::npos || displayMsg.find("Failed") != std::string::npos) {
             ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "%s", displayMsg.c_str());
         } else {
             ImGui::Text("%s", displayMsg.c_str());

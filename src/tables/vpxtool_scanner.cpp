@@ -88,8 +88,7 @@ namespace CommandUtils {
 
 
         if (exit_code != 0) {
-            LOG_ERROR("CommandUtils: Command '" << command << "' failed with exit code " << exit_code);
-            LOG_ERROR("VPXTool output: " << output_log);
+            LOG_DEBUG("CommandUtils: Command '" << command << "' failed with exit code " << exit_code);
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->logMessages.push_back("ERROR: VPXTool failed with exit code " + std::to_string(exit_code));
@@ -174,7 +173,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 }
             }
         } else {
-            LOG_INFO("VPXToolScanner: vpxtool_index.json not found at: " << jsonPath);
+            LOG_WARN("VPXToolScanner: vpxtool_index.json not found at: " << jsonPath);
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->logMessages.push_back("INFO: vpxtool_index.json not found. Attempting to generate.");
@@ -215,7 +214,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
             // On Unix, it's typically just "vpxtool".
             // We'll rely on `runCommand`'s `popen` to handle PATH lookup if a full path isn't given.
             vpxtoolBinaryFullPath = "vpxtool"; // Default name to try on PATH
-            LOG_INFO("VPXToolScanner: No specific VPXTool binary path found. Attempting to run 'vpxtool' from system PATH.");
+            LOG_WARN("VPXToolScanner: No specific VPXTool binary path found. Attempting to run 'vpxtool' from system PATH.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->logMessages.push_back("INFO: Attempting to run 'vpxtool' from system PATH.");
@@ -226,7 +225,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
         if (!vpxtoolBinaryFullPath.empty()) {
             // Construct the command: enclose paths in quotes to handle spaces
             std::string command_to_run = "\"" + vpxtoolBinaryFullPath + "\" index \"" + settings.VPXTablesPath + "\"";
-            LOG_INFO("VPXToolScanner: Executing VPXTool command: " << command_to_run);
+            LOG_DEBUG("VPXToolScanner: Executing VPXTool command: " << command_to_run);
             if (CommandUtils::runCommand(command_to_run, settings.VPXTablesPath, progress, command_output_log)) {
                 LOG_INFO("VPXToolScanner: VPXTool executed successfully. Attempting to load newly created index.");
                 if (progress) {
@@ -244,7 +243,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                     }
                 }
             } else {
-                LOG_ERROR("VPXToolScanner: VPXTool command failed to execute. Output: " << command_output_log);
+                LOG_DEBUG("VPXToolScanner: VPXTool command failed to execute.");
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->logMessages.push_back("ERROR: VPXTool command failed to run. Check log for details.");
@@ -261,7 +260,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
 
     // --- Step 4: If all attempts to get vpxtool_index.json fail, return false ---
     if (!vpxtoolLoaded) {
-        LOG_INFO("VPXToolScanner: All attempts to load or generate vpxtool_index.json failed. Skipping VPXTool.");
+        LOG_WARN("VPXToolScanner: All attempts to load or generate vpxtool_index.json failed. Skipping VPXTool.");
         return false; // Indicate failure, TableLoader will use VPinFileScanner
     }
 
