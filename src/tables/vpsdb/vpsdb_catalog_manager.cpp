@@ -30,16 +30,16 @@ VpsdbCatalog::~VpsdbCatalog() {
     VpsdbImage::clearThumbnails(*this);
 }
 
-void VpsdbCatalog::startTableLoad(size_t index) {
+void VpsdbCatalog::startTableLoad(size_t index, const std::string& exePath) {
     if (tableLoadThread_.joinable()) {
         LOG_DEBUG("VpsdbCatalog: Joining existing thread before starting new load for index: " << index);
         tableLoadThread_.join();
     }
     LOG_DEBUG("VpsdbCatalog: Starting table load for index: " << index);
     isTableLoading_ = true;
-    tableLoadThread_ = std::thread(&vpsdb::loadTableInBackground, vpsdbFilePath_, index,
+    tableLoadThread_ = std::thread(vpsdb::loadTableInBackground, vpsdbFilePath_, index,
                                    std::ref(loadedTableQueue_), std::ref(mutex_),
-                                   std::ref(isTableLoading_));
+                                   std::ref(isTableLoading_), exePath);
     LOG_DEBUG("VpsdbCatalog: Thread created for index: " << index);
 }
 
@@ -147,7 +147,7 @@ bool VpsdbCatalog::render() {
         (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id)) {
         LOG_DEBUG("VpsdbCatalog: Triggering initial load for index: " << currentIndex_);
         if (!isTableLoading_ && !tableLoadThread_.joinable()) {
-            startTableLoad(currentIndex_);
+            startTableLoad(currentIndex_, settings_.exeDir);
             initialLoadAttempted = true;
         }
     }
@@ -401,7 +401,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = jsonLoader_.getIndex().size() - 1;
             }
-            startTableLoad(newIndex);
+            startTableLoad(newIndex, settings_.exeDir);
             LOG_DEBUG("VpsdbCatalog: Navigated to previous table, index: " << newIndex);
         }
     }
@@ -425,7 +425,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = 0;
             }
-            startTableLoad(newIndex);
+            startTableLoad(newIndex, settings_.exeDir);
             LOG_DEBUG("VpsdbCatalog: Navigated to next table, index: " << newIndex);
         }
     }
@@ -484,7 +484,7 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
             tableLoadThread_.join();
         }
         isTableLoading_ = true;
-        startTableLoad(newIndex);
+        startTableLoad(newIndex, settings_.exeDir);
         LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << jsonLoader_.getIndex()[newIndex].name);
     }
 }

@@ -57,7 +57,7 @@ private:
     std::string join(const std::vector<std::string>& vec, const std::string& delim);
     void applySearchFilter(const char* searchTerm);
     void openUrl(const std::string& url);
-    void startTableLoad(size_t index);
+    void startTableLoad(size_t index, const std::string& exePath);
 };
 
 } // namespace vpsdb

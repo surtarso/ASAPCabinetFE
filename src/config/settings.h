@@ -191,6 +191,7 @@ struct Settings {
     std::string ambienceSound = "snd/interface_ambience.mp3";
 
     // [Internal]
+    std::string exeDir;
     std::string vpxSubCmd = "-Play";
     std::string vpsDbPath = "data/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
@@ -224,18 +225,30 @@ struct Settings {
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
     void applyPostProcessing(const std::string& exeDir) {
+        // Store exeDir
+        this->exeDir = exeDir;
 
-        // ✅ Resolve VPX paths
+        // Resolve VPX paths
         VPXTablesPath = resolvePath(VPXTablesPath, exeDir);
         VPinballXPath = resolvePath(VPinballXPath, exeDir);
-        // vpxIniPath    = resolvePath(vpxIniPath, exeDir);
 
-        // Resolve paths for fields marked with needsPathResolution in config_schema.h
+        // List all paths that need resolution
         std::vector<std::string> pathFields = {
+            // Default Media Paths (already in your original code, correctly resolved)
             "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
             "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
-            "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo"
+            "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo",
+
+            // UI Sounds Paths (NOT resolved in your original code, need to be added - these are your "default sounds")
+            "scrollNormalSound", "scrollFastSound", "scrollJumpSound",
+            "scrollRandomSound", "launchTableSound", "launchScreenshotSound",
+            "panelToggleSound", "screenshotTakeSound", "ambienceSound",
+
+            // Other internal/external paths (NOT resolved in your original code, need to be added)
+            "vpsDbPath", "vpsDbLastUpdated", "indexPath",//"vpxtoolBin", "vpxtoolIndex", "vpxIniPath" // From Internal section
         };
+
+        // Iterate through the list and resolve each path
         for (const auto& field : pathFields) {
             if (field == "defaultPlayfieldImage") defaultPlayfieldImage = resolvePath(defaultPlayfieldImage, exeDir);
             else if (field == "defaultBackglassImage") defaultBackglassImage = resolvePath(defaultBackglassImage, exeDir);
@@ -246,15 +259,29 @@ struct Settings {
             else if (field == "defaultBackglassVideo") defaultBackglassVideo = resolvePath(defaultBackglassVideo, exeDir);
             else if (field == "defaultDmdVideo") defaultDmdVideo = resolvePath(defaultDmdVideo, exeDir);
             else if (field == "defaultTopperVideo") defaultTopperVideo = resolvePath(defaultTopperVideo, exeDir);
+            // UI Sounds
+            else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, exeDir);
+            else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, exeDir);
+            else if (field == "scrollJumpSound") scrollJumpSound = resolvePath(scrollJumpSound, exeDir);
+            else if (field == "scrollRandomSound") scrollRandomSound = resolvePath(scrollRandomSound, exeDir);
+            else if (field == "launchTableSound") launchTableSound = resolvePath(launchTableSound, exeDir);
+            else if (field == "launchScreenshotSound") launchScreenshotSound = resolvePath(launchScreenshotSound, exeDir);
+            else if (field == "panelToggleSound") panelToggleSound = resolvePath(panelToggleSound, exeDir);
+            else if (field == "screenshotTakeSound") screenshotTakeSound = resolvePath(screenshotTakeSound, exeDir);
+            else if (field == "ambienceSound") ambienceSound = resolvePath(ambienceSound, exeDir);
+            // Other paths
+            else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, exeDir);
+            else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, exeDir);
+            else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
         }
 
-        // Apply DPI scaling to fontSize if enabled
+        // Apply DPI scaling to fontSize if enabled (already handled correctly)
         if (enableDpiScaling) {
             fontSize = static_cast<int>(fontSize * dpiScale);
         }
     }
 
-private:
+public:
     // Resolve relative paths and environment variables (e.g., $USER)
     std::string resolvePath(const std::string& value, const std::string& exeDir) const {
         std::string result = value;
@@ -275,6 +302,7 @@ private:
         return exeDir + result;
     }
 
+private:
     // JSON serialization
     friend void to_json(nlohmann::json& j, const Settings& s) {
         j = nlohmann::json{
@@ -432,6 +460,7 @@ private:
                 {"ambienceSound", s.ambienceSound}
             }},
             {"Internal", {
+                {"exeDir", s.exeDir},
                 {"vpxSubCmd", s.vpxSubCmd},
                 {"vpsDbPath", s.vpsDbPath},
                 {"vpsDbUpdateFrequency", s.vpsDbUpdateFrequency},
@@ -638,6 +667,7 @@ private:
         s.ambienceSound = j.value("UISounds", nlohmann::json{}).value("ambienceSound", s.ambienceSound);
 
         // Internal
+        s.exeDir = j.value("Internal", nlohmann::json{}).value("exeDir", s.exeDir);
         s.vpxSubCmd = j.value("Internal", nlohmann::json{}).value("vpxSubCmd", s.vpxSubCmd);
         s.vpsDbPath = j.value("Internal", nlohmann::json{}).value("vpsDbPath", s.vpsDbPath);
         s.vpsDbUpdateFrequency = j.value("Internal", nlohmann::json{}).value("vpsDbUpdateFrequency", s.vpsDbUpdateFrequency);
@@ -913,6 +943,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"screenshotTakeSound", {Settings::ReloadType::Tables, "Sound played when taking a screenshot."}},
     {"ambienceSound", {Settings::ReloadType::Tables, "Sound played on the background if there is no table music."}},
     // Internal
+    {"exeDir", {Settings::ReloadType::None, "Path to the executable directory."}},
     {"vpxSubCmd", {Settings::ReloadType::None, "VPinballX internal command to play .vpx tables.\n"
                                               "Use VPinballX --help command line menu to see more."}},
     {"vpsDbPath", {Settings::ReloadType::None, "Path to the VPS database file, relative to exec dir."}},

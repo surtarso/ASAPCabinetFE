@@ -22,7 +22,8 @@ struct LoadedTableData {
 // Loads table data in the background, including image downloads
 void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
-                           std::mutex& mutex, std::atomic<bool>& isTableLoading);
+                           std::mutex& mutex, std::atomic<bool>& isTableLoading,
+                        const std::string& exePath);
 
 } // namespace vpsdb
 

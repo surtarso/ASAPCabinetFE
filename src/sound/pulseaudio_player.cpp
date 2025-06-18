@@ -84,7 +84,7 @@ void PulseAudioPlayer::loadSounds() {
             uiSounds_.at(key).reset(); // Ensure it's null if path is empty
             return;
         }
-        std::string fullPath = exeDir_ + path; // trim will be applied inside config service
+        std::string fullPath = path; // trim will be applied inside config service
         if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
             uiSounds_.at(key).reset(Mix_LoadWAV(fullPath.c_str()));
             if (!uiSounds_.at(key)) {

@@ -4,6 +4,9 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <stdexcept>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace vpsdb {
 
@@ -99,8 +102,10 @@ PinballTable loadTableFromJson(const std::string& vpsdbFilePath, size_t index) {
 
 void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
-                           std::mutex& mutex, std::atomic<bool>& isTableLoading) {
+                           std::mutex& mutex, std::atomic<bool>& isTableLoading,
+                           const std::string& exePath) {
     LOG_DEBUG("VpsdbCatalog: Starting background load for index: " << index);
+    LOG_DEBUG("VpsdbCatalog: exePath = " << exePath);
     LoadedTableData data;
     data.index = index;
     data.table = loadTableFromJson(vpsdbFilePath, index);
@@ -122,8 +127,14 @@ void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
         LOG_DEBUG("VpsdbCatalog: Playfield URL for index " << index << ": " << playfieldUrl);
     }
 
+    fs::path exeDir = fs::path(exePath).parent_path(); // Get directory of executable
+    fs::path cachePath = exeDir / "data/cache";
+    fs::create_directories(cachePath);
+    LOG_DEBUG("VpsdbCatalog: Cache dir = " << cachePath.string());
+
     if (!backglassUrl.empty()) {
-        data.backglassPath = "data/cache/" + data.table.id + "_backglass.webp";
+        data.backglassPath = (cachePath / (data.table.id + "_backglass.webp")).string();
+        LOG_DEBUG("VpsdbCatalog: Resolved backglassPath = " << data.backglassPath);
         if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
             data.backglassPath.clear();
             LOG_ERROR("VpsdbCatalog: Failed to download backglass for index: " << index);
@@ -132,7 +143,8 @@ void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
         }
     }
     if (!playfieldUrl.empty()) {
-        data.playfieldPath = "data/cache/" + data.table.id + "_playfield.webp";
+        data.playfieldPath = (cachePath / (data.table.id + "_playfield.webp")).string();
+        LOG_DEBUG("VpsdbCatalog: Resolved playfieldPath = " << data.playfieldPath);
         if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
             data.playfieldPath.clear();
             LOG_ERROR("VpsdbCatalog: Failed to download playfield for index: " << index);
