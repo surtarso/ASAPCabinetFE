@@ -61,6 +61,7 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - Keybind friendly and joystick support.
 - Extremely lightweight and fully customizable.
 - No need to download artpacks, generate your own. (See [tools](#generator-tools))
+- Fully compatible with VPX Standalone v10.8.0 and v10.8.1
 - Just what it takes to make your cabinet look good!
 
 **_ASAPCab_ isn’t just a frontend**—it’s your gateway to a complete virtual pinball experience for Linux. Join us and make it yours!
