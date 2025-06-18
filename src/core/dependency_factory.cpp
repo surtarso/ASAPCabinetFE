@@ -17,9 +17,11 @@
 #include "config/config_service.h"
 #include "core/window_manager.h"
 #include "render/asset_manager.h"
+#include "render/renderer.h"
 #include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"
 #include "keybinds/keybind_manager.h"
+#include "keybinds/input_manager.h"
 #include "launcher/table_launcher.h"
 #include "log/logging.h"
 
@@ -96,7 +98,7 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
  * @param windowManager The window manager for accessing renderers.
  * @return A unique pointer to a Renderer instance.
  */
-std::unique_ptr<Renderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {
+std::unique_ptr<IRenderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {
     return std::make_unique<Renderer>(windowManager->getPlayfieldRenderer(), 
                                       windowManager->getBackglassRenderer(),
                                       windowManager->getDMDRenderer(),
@@ -160,7 +162,7 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
  * @param screenshotManager The screenshot manager for screenshot mode.
  * @return A unique pointer to an InputManager instance.
  */
-std::unique_ptr<InputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager, ITableLauncher* tableLauncher) {
+std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager, ITableLauncher* tableLauncher) {
     auto input = std::make_unique<InputManager>(keybindProvider);
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;

@@ -20,8 +20,8 @@
 #include "core/gui_manager.h" // GUI manager for ImGui rendering
 #include "render/iasset_manager.h" // Interface for asset management
 #include "tables/table_data.h" // Table data structure for asset loading
-#include "render/renderer.h" // Renderer for playfield, backglass, and DMD
-#include "keybinds/input_manager.h" // Input manager for keybind handling
+#include "render/irenderer.h" // Renderer for playfield, backglass, and DMD
+#include "keybinds/iinput_manager.h" // Input manager for keybind handling
 #include "config/iconfig_service.h" // Interface for configuration service
 #include "config/ui/config_ui.h" // Configuration UI for user settings
 #include "capture/iscreenshot_manager.h" // Interface for screenshot management
@@ -111,7 +111,7 @@ public:
      * @param windowManager The window manager for accessing renderers.
      * @return A unique pointer to a Renderer instance.
      */
-    static std::unique_ptr<Renderer> createRenderer(IWindowManager* windowManager);
+    static std::unique_ptr<IRenderer> createRenderer(IWindowManager* windowManager);
 
     /**
      * @brief Creates a sound manager instance.
@@ -165,7 +165,7 @@ public:
      * @param screenshotManager The screenshot manager for screenshot mode.
      * @return A unique pointer to an InputManager instance.
      */
-    static std::unique_ptr<InputManager> createInputManager(IKeybindProvider* keybindProvider,
+    static std::unique_ptr<IInputManager> createInputManager(IKeybindProvider* keybindProvider,
                                                             IScreenshotManager* screenshotManager,
                                                             ITableLauncher* tableLauncher);
 
@@ -188,7 +188,7 @@ public:
     static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
                                                     IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
                                                     App* app, bool& showConfig);
-                                                    
+
     static std::unique_ptr<ITableLauncher> createTableLauncher(IConfigService* configService);                                                    
 };
 
