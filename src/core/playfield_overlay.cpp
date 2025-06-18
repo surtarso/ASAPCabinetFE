@@ -444,15 +444,29 @@ void PlayfieldOverlay::renderMetadataPanel() {
         }
         
         // --- Operational Tags / Status ---
-        if (!currentTable.playCount.empty() || currentTable.hasPup || currentTable.altColor || currentTable.altSound ||
+        if (currentTable.playCount > 0 || currentTable.hasPup || currentTable.altColor || currentTable.altSound ||
             currentTable.hasAltMusic || currentTable.hasUltraDMD) { // Add other operational tags here
             
             if (file_meta_section_started || vpsdb_section_started) ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "STATUS & FEATURES");
         }
 
-        if (!currentTable.playCount.empty()) {
-            ImGui::Text("Play Count: %s", currentTable.playCount.c_str());
+        if (currentTable.playCount > 0) {
+            ImGui::Text("Play Count: %i", currentTable.playCount);
+        }
+
+        if (currentTable.lastPlayTime > 0) {
+            ImGui::Text("Play Count: %f", currentTable.lastPlayTime);
+        }
+
+        if (currentTable.totalPlayTime > 0) {
+            ImGui::Text("Play Count: %f", currentTable.totalPlayTime);
+        }
+
+        if (currentTable.isBroken) {
+            ImGui::Text("Last launch: ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "FAILED!");
         }
 
         // Conditionally display boolean features on a single line
@@ -478,7 +492,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
         
         // --- Descriptions and Comments ---
         // Always add a separator before descriptions/comments if any previous section was displayed
-        if (file_meta_section_started || vpsdb_section_started || !features_line.empty() || !currentTable.playCount.empty()) {
+        if (file_meta_section_started || vpsdb_section_started || !features_line.empty()) {
             ImGui::Separator();
         }
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DESCRIPTION & COMMENTS");

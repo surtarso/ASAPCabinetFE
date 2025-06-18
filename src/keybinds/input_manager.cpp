@@ -5,6 +5,9 @@
 #include <iostream>
 #include <random>
 #include <SDL.h> // For SDL_GetTicks() and SDL_Event
+#include <sstream>
+#include <chrono> // for playTime
+#include <string> // for time format
 
 InputManager::InputManager(IKeybindProvider* keybindProvider)
     : keybindProvider_(keybindProvider), assets_(nullptr), soundManager_(nullptr),
@@ -288,8 +291,28 @@ void InputManager::registerActions() {
             soundManager_->playCustomLaunch(tables_->at(*currentIndex_).launchAudio);
         }
 
-        //int result = std::system(command.c_str()); // This call blocks until VPX exits
+        //check local clock
+        auto start = std::chrono::system_clock::now();
+        LOG_INFO("Launching " << tables_->at(*currentIndex_).title);
+        
         int result = std::system((command + " > /dev/null 2>&1").c_str());
+        
+        //check local clock, calculate timePlayed.
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<float> duration = end - start;
+        float timePlayed = duration.count();
+        // Convert to H:M:S
+        int totalSeconds = static_cast<int>(timePlayed);
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+        std::stringstream ss;
+        ss << std::setfill('0') << std::setw(2) << hours << ":"
+        << std::setfill('0') << std::setw(2) << minutes << ":"
+        << std::setfill('0') << std::setw(2) << seconds;
+        std::string timeFormatted = ss.str();
+        LOG_INFO("Welcome back to ASAPCabinetFE.");
+        LOG_INFO("You played " << tables_->at(*currentIndex_).title << " for " << timeFormatted);
         
         inExternalAppMode_ = false; // Reset flag after VPX exits
         lastExternalAppReturnTime_ = SDL_GetTicks(); // Record the time VPX returned for debouncing

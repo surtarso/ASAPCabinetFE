@@ -99,11 +99,15 @@ struct TableData {
     std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
     
     // --------------- OPERATIONAL TAGS ------------------
-    // this later should be a "rating" for the metadata with 1-5 stars or w.e.
     float matchConfidence = 0.0f; ///< Confidence score of match with vpsdb
-    std::string jsonOwner; /// < file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
+    //TODO: use this to control which scanner to use/increment so we dont have to rebuild
+    std::string jsonOwner; ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
+    
     //TODO (not yet implemented)
-    std::string playCount;
+    int playCount = 0; ///< capture successful launches
+    bool isBroken = false;  ///< true if failed to load, dont increment playCount
+    float lastPlayTime = 0.0f;  ///< last session play time
+    float totalPlayTime = 0.0f; ///< sums lastPlayTime
 };
 
 #endif // TABLE_DATA_H

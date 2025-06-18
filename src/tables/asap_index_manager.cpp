@@ -124,7 +124,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             // Check for float type for confidence/score
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
-            if (table.contains("playCount") && table["playCount"].is_string()) tableData.playCount = table["playCount"].get<std::string>(); // Assuming playCount is a string for now
+            if (table.contains("playCount") && table["playCount"].is_number_integer()) tableData.playCount = table["playCount"].get<int>(); // Assuming playCount is a string for now
 
             tables.push_back(tableData);
             if (progress) {
