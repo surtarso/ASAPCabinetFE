@@ -175,9 +175,20 @@ struct SDLBootstrap {
  * @return 0 on successful execution or version display, non-zero on failure.
  */
 int main(int argc, char* argv[]) {
-    std::string configPath = "data/settings.json";
+    // Resolve exeDir
+    std::string exeDir;
+    char path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (count != -1) {
+        path[count] = '\0';
+        exeDir = std::filesystem::path(path).parent_path().string() + "/";
+    } else {
+        exeDir = std::filesystem::current_path().string() + "/";
+        LOG_DEBUG("main: Failed to resolve executable path, using current directory: " << exeDir);
+    }
 
-    // Ensure the config directory exists
+    // Set configPath using exeDir
+    std::string configPath = exeDir + "data/settings.json";
     std::filesystem::path configFilePath(configPath);
     std::filesystem::path configDir = configFilePath.parent_path();
     if (!configDir.empty()) {
