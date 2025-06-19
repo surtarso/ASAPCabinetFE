@@ -1,12 +1,14 @@
 #include "render/renderer.h"
 #include "log/logging.h"
-#include "imgui.h"
+#include "imgui.h" // Assuming ImGui is for UI rendering, not main game rendering
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
-#include "config/config_service.h"
+#include "config/config_service.h" // Included for Settings struct definition
 
-Renderer::Renderer(SDL_Renderer* playfieldRenderer, SDL_Renderer* backglassRenderer, 
-                   SDL_Renderer* dmdRenderer, SDL_Renderer* topperRenderer)
+Renderer::Renderer(SDL_Renderer* playfieldRenderer, 
+                   SDL_Renderer* backglassRenderer, 
+                   SDL_Renderer* dmdRenderer, 
+                   SDL_Renderer* topperRenderer)
     : playfieldRenderer_(playfieldRenderer),
       backglassRenderer_(backglassRenderer),
       dmdRenderer_(dmdRenderer),
@@ -23,49 +25,44 @@ void Renderer::setRenderers(IWindowManager* windowManager) {
 }
 
 void Renderer::render(IAssetManager& assets) {
+    // Retrieve settings once for the entire frame's rendering
     const Settings& settings = assets.getSettingsManager()->getSettings();
+
     renderWindow(assets, playfieldRenderer_, "playfield", true,
                  settings.playfieldMediaX, settings.playfieldMediaY,
                  settings.playfieldMediaWidth, settings.playfieldMediaHeight,
-                 settings.playfieldRotation);
+                 settings.playfieldRotation, settings); // Pass settings
     renderWindow(assets, backglassRenderer_, "backglass", settings.showBackglass,
                  settings.backglassMediaX, settings.backglassMediaY,
                  settings.backglassMediaWidth, settings.backglassMediaHeight,
-                 settings.backglassRotation);
+                 settings.backglassRotation, settings); // Pass settings
     renderWindow(assets, dmdRenderer_, "dmd", settings.showDMD,
                  settings.dmdMediaX, settings.dmdMediaY,
                  settings.dmdMediaWidth, settings.dmdMediaHeight,
-                 settings.dmdRotation);
+                 settings.dmdRotation, settings); // Pass settings
     renderWindow(assets, topperRenderer_, "topper", settings.showTopper,
                  settings.topperMediaX, settings.topperMediaY,
                  settings.topperMediaWidth, settings.topperMediaHeight,
-                 settings.topperRotation);
+                 settings.topperRotation, settings); // Pass settings
 }
 
 void Renderer::renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const std::string& windowName,
                             bool isVisible, int mediaX, int mediaY, int mediaWidth, int mediaHeight,
-                            double rotation) {
-    if (!renderer) {
-        //LOG_ERROR(windowName << " Renderer: Renderer is null");
+                            double rotation, const Settings& settings) { // Added const Settings& settings
+    if (!renderer || !isVisible) {
         return;
     }
-    if (!isVisible) {
-        // LOG_DEBUG(windowName << " Renderer: Window is not visible");
-        return;
-    }
-    int windowWidth, windowHeight;
-    SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
 
     SDL_Rect mediaRect = {mediaX, mediaY, mediaWidth, mediaHeight};
-    SDL_Rect wheelRect = {assets.getSettingsManager()->getSettings().wheelMediaX,
-                          assets.getSettingsManager()->getSettings().wheelMediaY,
-                          assets.getSettingsManager()->getSettings().wheelMediaWidth,
-                          assets.getSettingsManager()->getSettings().wheelMediaHeight};
-    SDL_Rect titleRect = assets.getTitleRect();
+    SDL_Rect wheelRect = {settings.wheelMediaX,
+                          settings.wheelMediaY,
+                          settings.wheelMediaWidth,
+                          settings.wheelMediaHeight};
+    SDL_Rect titleRect = assets.getTitleRect(); // TitleRect is managed by AssetManager
 
-    // Get video player or texture based on window name
     IVideoPlayer* videoPlayer = nullptr;
     SDL_Texture* texture = nullptr;
+
     if (windowName == "playfield") {
         videoPlayer = assets.getPlayfieldVideoPlayer();
         texture = assets.getPlayfieldTexture();
@@ -81,24 +78,31 @@ void Renderer::renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const
     }
 
     if (videoPlayer && videoPlayer->getTexture()) {
-        videoPlayer->update();
-        SDL_RenderCopyEx(renderer, videoPlayer->getTexture(), nullptr, &mediaRect,
-                         rotation, nullptr, SDL_FLIP_NONE);
+        videoPlayer->update(); // Update video frame
+        if (rotation == 0.0) {
+            SDL_RenderCopy(renderer, videoPlayer->getTexture(), nullptr, &mediaRect);
+        } else {
+            SDL_RenderCopyEx(renderer, videoPlayer->getTexture(), nullptr, &mediaRect,
+                             rotation, nullptr, SDL_FLIP_NONE);
+        }
     } else if (texture) {
-        SDL_RenderCopyEx(renderer, texture, nullptr, &mediaRect,
-                         rotation, nullptr, SDL_FLIP_NONE);
-    } else {
-        LOG_DEBUG(windowName << " Renderer: No video or texture available");
+        if (rotation == 0.0) {
+            SDL_RenderCopy(renderer, texture, nullptr, &mediaRect);
+        } else {
+            SDL_RenderCopyEx(renderer, texture, nullptr, &mediaRect,
+                             rotation, nullptr, SDL_FLIP_NONE);
+        }
     }
 
-    const Settings& settings = assets.getSettingsManager()->getSettings();
     // Show wheel
     if (settings.showWheel && settings.wheelWindow == windowName) {
         if (auto* wheelTexture = assets.getWheelTexture(renderer)) {
-            SDL_RenderCopyEx(renderer, wheelTexture, nullptr, &wheelRect,
-                             rotation, nullptr, SDL_FLIP_NONE);
-        } else {
-            LOG_DEBUG(windowName << " Renderer: No wheel texture available");
+            if (rotation == 0.0) {
+                SDL_RenderCopy(renderer, wheelTexture, nullptr, &wheelRect);
+            } else {
+                SDL_RenderCopyEx(renderer, wheelTexture, nullptr, &wheelRect,
+                                 rotation, nullptr, SDL_FLIP_NONE);
+            }
         }
     }
 
@@ -112,20 +116,23 @@ void Renderer::renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const
                                    settings.fontBgColor.a);
             SDL_Rect titleBgRect = {titleRect.x - 5, titleRect.y - 5, titleRect.w + 10, titleRect.h + 10};
             SDL_RenderFillRect(renderer, &titleBgRect);
-            SDL_RenderCopyEx(renderer, titleTexture, nullptr, &titleRect,
-                             rotation, nullptr, SDL_FLIP_NONE);
-        } else {
-            LOG_DEBUG(windowName << " Renderer: No title texture available");
+            if (rotation == 0.0) {
+                SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+            } else {
+                SDL_RenderCopyEx(renderer, titleTexture, nullptr, &titleRect,
+                                 rotation, nullptr, SDL_FLIP_NONE);
+            }
         }
     }
 }
 
+// Individual render methods now pass the settings object to the unified renderWindow
 void Renderer::renderPlayfieldWindow(IAssetManager& assets) {
     const Settings& settings = assets.getSettingsManager()->getSettings();
     renderWindow(assets, playfieldRenderer_, "playfield", true,
                  settings.playfieldMediaX, settings.playfieldMediaY,
                  settings.playfieldMediaWidth, settings.playfieldMediaHeight,
-                 settings.playfieldRotation);
+                 settings.playfieldRotation, settings);
 }
 
 void Renderer::renderBackglassWindow(IAssetManager& assets) {
@@ -133,7 +140,7 @@ void Renderer::renderBackglassWindow(IAssetManager& assets) {
     renderWindow(assets, backglassRenderer_, "backglass", settings.showBackglass,
                  settings.backglassMediaX, settings.backglassMediaY,
                  settings.backglassMediaWidth, settings.backglassMediaHeight,
-                 settings.backglassRotation);
+                 settings.backglassRotation, settings);
 }
 
 void Renderer::renderDMDWindow(IAssetManager& assets) {
@@ -141,7 +148,7 @@ void Renderer::renderDMDWindow(IAssetManager& assets) {
     renderWindow(assets, dmdRenderer_, "dmd", settings.showDMD,
                  settings.dmdMediaX, settings.dmdMediaY,
                  settings.dmdMediaWidth, settings.dmdMediaHeight,
-                 settings.dmdRotation);
+                 settings.dmdRotation, settings);
 }
 
 void Renderer::renderTopperWindow(IAssetManager& assets) {
@@ -149,5 +156,5 @@ void Renderer::renderTopperWindow(IAssetManager& assets) {
     renderWindow(assets, topperRenderer_, "topper", settings.showTopper,
                  settings.topperMediaX, settings.topperMediaY,
                  settings.topperMediaWidth, settings.topperMediaHeight,
-                 settings.topperRotation);
+                 settings.topperRotation, settings);
 }

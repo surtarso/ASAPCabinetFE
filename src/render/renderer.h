@@ -13,6 +13,7 @@
 
 #include "render/irenderer.h"
 #include "render/ivideo_player.h"
+#include "config/settings.h" // Include Settings for passing by const reference
 #include <SDL.h>
 
 /**
@@ -82,45 +83,17 @@ private:
      * @param mediaWidth Width of the media rectangle.
      * @param mediaHeight Height of the media rectangle.
      * @param rotation Rotation angle for rendering.
+     * @param settings Reference to current application settings for rendering options.
      */
     void renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const std::string& windowName,
                       bool isVisible, int mediaX, int mediaY, int mediaWidth, int mediaHeight,
-                      double rotation);
+                      double rotation, const Settings& settings);
 
-    /**
-     * @brief Renders assets to the playfield window.
-     *
-     * Calls renderWindow with playfield-specific parameters.
-     *
-     * @param assets The asset manager providing the playfield texture or video player.
-     */
+    // Individual render methods are kept for modularity
+    // They will now also pass the Settings object.
     void renderPlayfieldWindow(IAssetManager& assets);
-
-    /**
-     * @brief Renders assets to the backglass window.
-     *
-     * Calls renderWindow with backglass-specific parameters.
-     *
-     * @param assets The asset manager providing the backglass texture or video player.
-     */
     void renderBackglassWindow(IAssetManager& assets);
-
-    /**
-     * @brief Renders assets to the DMD window.
-     *
-     * Calls renderWindow with DMD-specific parameters.
-     *
-     * @param assets The asset manager providing the DMD texture or video player.
-     */
     void renderDMDWindow(IAssetManager& assets);
-
-    /**
-     * @brief Renders assets to the topper window.
-     *
-     * Calls renderWindow with topper-specific parameters.
-     *
-     * @param assets The asset manager providing the topper texture or video player.
-     */
     void renderTopperWindow(IAssetManager& assets);
 };
 
