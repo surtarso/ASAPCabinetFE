@@ -97,6 +97,9 @@ public:
     void updateSettings(const Settings& newSettings) override;
 
 private:
+    std::string cachedAmbiencePath_;
+    std::string cachedTableMusicPath_;
+    std::string cachedLaunchAudioPath_;
     Settings settings_;  ///< A local copy of the current application settings.
 
     // Enum to track which type of music is currently intended to be playing by our manager
