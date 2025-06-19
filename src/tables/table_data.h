@@ -12,6 +12,7 @@
 #define TABLE_DATA_H
 
 #include <string>
+#include <cstdint>
 
 /**
  * @struct TableData
