@@ -168,14 +168,14 @@ void ConfigService::saveConfig() {
             }
         }
         // Write JSON with atomic write
-        // std::ofstream tempFile(configPath_ + ".tmp");
-        // if (!tempFile.is_open()) {
-        //     LOG_ERROR("ConfigService: Failed to open temp file for writing: " << configPath_ + ".tmp");
-        //     return;
-        // }
-        // tempFile << jsonData_.dump(4);
-        // tempFile.close();
-        // std::filesystem::rename(configPath_ + ".tmp", configPath_);
+        std::ofstream tempFile(configPath_ + ".tmp");
+        if (!tempFile.is_open()) {
+            LOG_ERROR("ConfigService: Failed to open temp file for writing: " << configPath_ + ".tmp");
+            return;
+        }
+        tempFile << jsonData_.dump(4);
+        tempFile.close();
+        std::filesystem::rename(configPath_ + ".tmp", configPath_);
         LOG_INFO("ConfigService: Config saved successfully");
     } catch (const std::exception& e) {
         LOG_ERROR("ConfigService: Error saving config: " << e.what());

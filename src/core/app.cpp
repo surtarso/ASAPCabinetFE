@@ -22,7 +22,7 @@ App::App(const std::string& configPath)
       loadingProgress_(std::make_shared<LoadingProgress>()) {
     exeDir_ = getExecutableDir();
     //LOG_INFO("App: Executable directory set to " << exeDir_);
-    configPath_ = exeDir_ + configPath_;
+    // configPath_ = exeDir_ + configPath_;
     LOG_INFO("Config Path: " << configPath_);
     std::string logFile = exeDir_ + "logs/debug.txt";
     // LOG_INFO("App: Initializing logger with file " << logFile);
