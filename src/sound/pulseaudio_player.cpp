@@ -114,7 +114,7 @@ void PulseAudioPlayer::loadSounds() {
         LOG_INFO("PulseAudioPlayer: Ambience sound path is empty in settings. Ambience will not play.");
         ambienceMusic_.reset(); // Ensure it's null
     } else {
-        std::string ambienceFullPath = exeDir_ + settings_.ambienceSound;
+        std::string ambienceFullPath = settings_.ambienceSound;
         if (std::filesystem::exists(ambienceFullPath) && std::filesystem::is_regular_file(ambienceFullPath)) {
             ambienceMusic_.reset(Mix_LoadMUS(ambienceFullPath.c_str()));
             if (!ambienceMusic_) {
@@ -224,8 +224,8 @@ void PulseAudioPlayer::playTableMusic(const std::string& path) {
         tableMusic_.reset(); // Ensure it's null if path is invalid
         currentPlayingMusicType_ = MusicType::None; // Update state
         // If no table music, try to resume ambience
-        if (!settings_.ambienceSound.empty() && std::filesystem::exists(exeDir_ + settings_.ambienceSound) && std::filesystem::is_regular_file(exeDir_ + settings_.ambienceSound)) {
-             playAmbienceMusic(exeDir_ + settings_.ambienceSound);
+        if (!settings_.ambienceSound.empty() && std::filesystem::exists(settings_.ambienceSound) && std::filesystem::is_regular_file(settings_.ambienceSound)) {
+             playAmbienceMusic(settings_.ambienceSound);
         }
         return; // Nothing more to play for table music
     }
@@ -374,15 +374,15 @@ void PulseAudioPlayer::updateSettings(const Settings& newSettings) {
     // just re-apply settings. If it wasn't playing but now has a valid path, start it.
     if (ambiencePathChanged) {
         LOG_DEBUG("PulseAudioPlayer: Ambience music path changed, attempting to restart ambience.");
-        playAmbienceMusic(exeDir_ + settings_.ambienceSound);
+        playAmbienceMusic(settings_.ambienceSound);
     } else if (currentPlayingMusicType_ == MusicType::Ambience) {
         // Ambience was playing and path didn't change, just re-apply volume/mute
         applyAudioSettings();
     } else if (currentPlayingMusicType_ == MusicType::None && !settings_.ambienceSound.empty() &&
-               std::filesystem::exists(exeDir_ + settings_.ambienceSound) &&
-               std::filesystem::is_regular_file(exeDir_ + settings_.ambienceSound)) {
+               std::filesystem::exists(settings_.ambienceSound) &&
+               std::filesystem::is_regular_file(settings_.ambienceSound)) {
         LOG_DEBUG("PulseAudioPlayer: Ambience music was not playing but has a valid path, attempting to start.");
-        playAmbienceMusic(exeDir_ + settings_.ambienceSound);
+        playAmbienceMusic(settings_.ambienceSound);
     } else {
         // If ambience path is empty or invalid, and it was previously playing ambience, ensure it's stopped
         if (currentPlayingMusicType_ == MusicType::Ambience) {
