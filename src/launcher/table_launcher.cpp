@@ -14,7 +14,7 @@ TableLauncher::TableLauncher(IConfigService* configService)
     LOG_INFO("TableLauncher: Initialized");
 }
 
-std::pair<int, std::string> TableLauncher::launchTable(const TableData& table) {
+std::pair<int, float> TableLauncher::launchTable(const TableData& table) {
     LOG_DEBUG("TableLauncher: Launching table: " << table.title);
 
     // Get settings
@@ -49,7 +49,7 @@ std::pair<int, std::string> TableLauncher::launchTable(const TableData& table) {
        << std::setfill('0') << std::setw(2) << seconds;
     std::string timeFormatted = ss.str();
     LOG_INFO("Welcome back to ASAPCabinetFE.");
-    LOG_INFO("TableLauncher: Played " << table.title << " for " << timeFormatted);
+    LOG_INFO("You Played " << table.title << " for " << timeFormatted);
 
-    return {result, timeFormatted};
+    return {result, timePlayed};
 }

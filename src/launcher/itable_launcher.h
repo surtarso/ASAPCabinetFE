@@ -30,7 +30,7 @@ public:
      * @param table The table data containing the VPX file path and metadata.
      * @return A pair containing the exit code (0 for success) and formatted playtime (H:M:S).
      */
-    virtual std::pair<int, std::string> launchTable(const TableData& table) = 0;
+    virtual std::pair<int, float> launchTable(const TableData& table) = 0;
 };
 
 #endif // ITABLE_LAUNCHER_H

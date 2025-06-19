@@ -23,6 +23,7 @@
 // Note: letterIndex is now a non-static member of TableLoader, so it's not initialized here.
 // Each instance of TableLoader will have its own letterIndex.
 
+//TODO: use table_data.jsonOwner to decide on incremental updates
 std::vector<TableData> TableLoader::loadTableList(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
 
@@ -36,8 +37,8 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->numNoMatch = 0;    // Reset numNoMatch
         progress->logMessages.clear();// Clear log
     }
-
     // Stage 1: Load from index or scan VPX files
+    // -------- ASAP INDEX FOUND - WE'RE DONE HERE ---------
     if (!settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
         LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from asapcab_index.json");
         if (progress) {
@@ -47,7 +48,9 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentTask = "Loaded from index";
             progress->currentStage = 1;
         }
+    //---------------- NO ASAP INDEX FOUND ------------------
     } else {
+        // ------------- FILE SCANNER -------------
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Scanning VPX files...";
@@ -59,7 +62,15 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->totalTablesToLoad = tables.size();
             progress->currentTask = "Scanning complete";
         }
-
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Saving metadata to index...";
+            progress->currentStage = 1;
+        }
+        if (!tables.empty()) {
+            AsapIndexManager::save(settings, tables, progress);
+        }
+        // ------------- METADATA SCANNERS --------------
         if (settings.titleSource == "metadata") {
             // Stage 2: Attempt to scan with VPXToolScanner first
             if (progress) {
@@ -87,10 +98,12 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->currentTask = "Saving metadata to index...";
                 progress->currentStage = 3;
             }
-            AsapIndexManager::save(settings, tables, progress);
+            if (!tables.empty()) {
+                AsapIndexManager::save(settings, tables, progress);
+            }
         }
     }
-
+    // -------------- OVERRIDES AND SORTING  -------------
     // Stage 4: Apply per-table overrides
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -106,7 +119,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
-        progress->currentStage = 4;
+        progress->currentStage = 5;
     }
     
     sortTables(tables, settings.titleSortBy, progress);
@@ -116,7 +129,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->currentTask = "Loading complete";
         progress->currentTablesLoaded = tables.size();
         progress->totalTablesToLoad = tables.size();
-        progress->currentStage = 5;
+        progress->currentStage = 6;
     }
     return tables;
 }

@@ -291,7 +291,7 @@ void InputManager::registerActions() {
         }
 
         // Launch table
-        auto [result, timeFormatted] = tableLauncher_->launchTable(tables_->at(*currentIndex_));
+        auto [result, timePlayed] = tableLauncher_->launchTable(tables_->at(*currentIndex_));
 
         //play table music on return, fallback to ambience
         soundManager_->playTableMusic(tables_->at(*currentIndex_).music);

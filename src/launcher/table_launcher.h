@@ -33,7 +33,7 @@ public:
      * @param table The table data containing the VPX file path and metadata.
      * @return A pair containing the exit code (0 for success) and formatted playtime (H:M:S).
      */
-    std::pair<int, std::string> launchTable(const TableData& table) override;
+    std::pair<int, float> launchTable(const TableData& table) override;
 
 private:
     IConfigService* configService_; ///< Configuration service for settings.

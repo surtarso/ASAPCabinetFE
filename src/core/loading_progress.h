@@ -36,7 +36,7 @@ struct LoadingProgress {
     int currentTablesLoaded = 0; ///< Number of tables currently loaded (used for per-table progress bar).
     int totalTablesToLoad = 0;   ///< Total number of tables to load (denominator for per-table progress bar).
     int currentStage = 0;        ///< Current overall progress stage (e.g., fetching VPSDB, scanning, matchmaking).
-    int totalStages = 5;         ///< Total number of stages (fetching VPSDB, scanning/loading, matchmaking, saving, sorting/indexing).
+    int totalStages = 6;         ///< Total number of stages (fetching VPSDB, scanning/loading, matchmaking, saving, sorting/indexing).
 
     std::string currentTask = "Initializing..."; ///< Description of the current task (e.g., "Scanning Tables (5)").
 
