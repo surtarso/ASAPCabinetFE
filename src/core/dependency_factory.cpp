@@ -111,13 +111,12 @@ std::unique_ptr<IRenderer> DependencyFactory::createRenderer(IWindowManager* win
  * Initializes a PulseAudioPlayer with the executable directory and settings, then loads
  * sound resources.
  *
- * @param exeDir The executable directory for resolving sound file paths.
  * @param settings The application settings for sound configuration.
  * @return A unique pointer to an ISoundManager instance.
  */
-std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const std::string& exeDir, const Settings& settings) {
-    auto sound = std::make_unique<PulseAudioPlayer>(exeDir, settings);
-    sound->loadSounds(); // Loads sound files based on exeDir and settings
+std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const Settings& settings) {
+    auto sound = std::make_unique<PulseAudioPlayer>(settings);
+    sound->loadSounds(); 
     return sound;
 }
 

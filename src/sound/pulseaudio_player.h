@@ -33,10 +33,9 @@ public:
      *
      * Initializes the sound manager with the executable directory and initial settings.
      *
-     * @param exeDir The executable directory, used for resolving relative sound paths.
      * @param settings Initial application settings, including sound paths and volumes.
      */
-    PulseAudioPlayer(const std::string& exeDir, const Settings& settings);
+    PulseAudioPlayer(const Settings& settings);
 
     /**
      * @brief Destroys the PulseAudioPlayer instance and cleans up all SDL_mixer resources.
@@ -98,7 +97,6 @@ public:
     void updateSettings(const Settings& newSettings) override;
 
 private:
-    std::string exeDir_; ///< The executable directory for resolving sound file paths.
     Settings settings_;  ///< A local copy of the current application settings.
 
     // Enum to track which type of music is currently intended to be playing by our manager

@@ -120,11 +120,10 @@ public:
      * then loads sound resources. Settings may include volume or sound file paths,
      * which could be user-configurable via configUI.
      *
-     * @param exeDir The executable directory for resolving sound file paths.
      * @param settings The application settings for sound configuration.
      * @return A unique pointer to an ISoundManager instance.
      */
-    static std::unique_ptr<ISoundManager> createSoundManager(const std::string& exeDir, const Settings& settings);
+    static std::unique_ptr<ISoundManager> createSoundManager(const Settings& settings);
 
     /**
      * @brief Creates a configuration service instance.

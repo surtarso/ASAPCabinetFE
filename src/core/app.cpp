@@ -246,7 +246,7 @@ void App::initializeDependencies() {
 
     windowManager_ = DependencyFactory::createWindowManager(configManager_->getSettings());
     guiManager_ = DependencyFactory::createGuiManager(windowManager_.get(), configManager_.get());
-    soundManager_ = DependencyFactory::createSoundManager(exeDir_, configManager_->getSettings());
+    soundManager_ = DependencyFactory::createSoundManager(configManager_->getSettings());
 
     if (!configManager_->getSettings().ambienceSound.empty()) {
         soundManager_->playAmbienceMusic(configManager_->getSettings().ambienceSound);

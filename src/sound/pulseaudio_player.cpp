@@ -10,9 +10,8 @@
 // Flag to track audio initialization
 static bool audio_initialized = false;
 
-PulseAudioPlayer::PulseAudioPlayer(const std::string& exeDir, const Settings& settings)
-    : exeDir_(exeDir),
-      settings_(settings),
+PulseAudioPlayer::PulseAudioPlayer(const Settings& settings)
+    : settings_(settings),
       currentPlayingMusicType_(MusicType::None),
       ambienceMusic_(nullptr, Mix_FreeMusic),
       tableMusic_(nullptr, Mix_FreeMusic),
