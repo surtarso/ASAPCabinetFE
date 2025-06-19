@@ -108,6 +108,7 @@ struct TableData {
     bool isBroken = false;  ///< true if failed to load, dont increment playCount
     float lastPlayTime = 0.0f;  ///< last session play time
     float totalPlayTime = 0.0f; ///< sums lastPlayTime
+    uint64_t fileLastModified; ///< Timestamp of the last modification of the .vpx file
 };
 
 #endif // TABLE_DATA_H

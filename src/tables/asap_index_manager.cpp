@@ -127,6 +127,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("lastPlayTime") && table["lastPlayTime"].is_number_float()) tableData.lastPlayTime = table["lastPlayTime"].get<float>();
             if (table.contains("totalPlayTime") && table["totalPlayTime"].is_number_float()) tableData.totalPlayTime = table["totalPlayTime"].get<float>();
             if (table.contains("isBroken") && table["isBroken"].is_boolean()) tableData.isBroken = table["isBroken"].get<bool>();
+            if (table.contains("fileLastModified") && table["fileLastModified"].is_number_unsigned()) tableData.fileLastModified = table["fileLastModified"].get<uint64_t>();
+
 
             tables.push_back(tableData);
             if (progress) {
@@ -234,6 +236,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["lastplayTime"] = table.lastPlayTime;
         tableJson["totalplayTime"] = table.totalPlayTime;
         tableJson["isBroken"] = table.isBroken;
+        tableJson["fileLastModified"] = table.fileLastModified;
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {
