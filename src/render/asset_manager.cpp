@@ -154,6 +154,9 @@ void AssetManager::clearVideoCache() {
     currentDmdMediaHeight_ = 0;
     currentTopperMediaWidth_ = 0;
     currentTopperMediaHeight_ = 0;
+    // Only clear caches on settings change or memory pressure
+    // textureCache_.clear();
+    // videoPlayerCache_.clear();
 }
 
 void AssetManager::applyVideoAudioSettings() {
@@ -214,8 +217,20 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     static bool lastShowTopper = settings.showTopper;
     static size_t lastIndex = -1;
 
+    // Clear video paths for new table
     if (index != lastIndex) {
-        clearVideoCache();
+        currentPlayfieldVideoPath_.clear();
+        currentBackglassVideoPath_.clear();
+        currentDmdVideoPath_.clear();
+        currentTopperVideoPath_.clear();
+        currentPlayfieldMediaWidth_ = 0;
+        currentPlayfieldMediaHeight_ = 0;
+        currentBackglassMediaWidth_ = 0;
+        currentBackglassMediaHeight_ = 0;
+        currentDmdMediaWidth_ = 0;
+        currentDmdMediaHeight_ = 0;
+        currentTopperMediaWidth_ = 0;
+        currentTopperMediaHeight_ = 0;
         lastIndex = index;
     }
 
@@ -256,29 +271,79 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             w.titleTexture.reset();
             if (w.videoPlayer) {
                 w.videoPlayer->stop();
-                addOldVideoPlayer(std::move(w.videoPlayer));
+                if (!w.videoPath.empty()) {
+                    std::string cacheKey = w.videoPath + "_" + std::to_string(w.mediaWidth) + "x" + std::to_string(w.mediaHeight);
+                    if (videoPlayerCache_.find(cacheKey) == videoPlayerCache_.end()) {
+                        videoPlayerCache_.emplace(cacheKey, VideoPlayerCacheEntry(w.renderer, w.mediaWidth, w.mediaHeight, std::move(w.videoPlayer)));
+                        LOG_DEBUG("AssetManager: Cached video player for " << w.name << ": " << w.videoPath);
+                    } else {
+                        addOldVideoPlayer(std::move(w.videoPlayer));
+                    }
+                } else {
+                    addOldVideoPlayer(std::move(w.videoPlayer));
+                }
                 w.videoPlayer.reset();
-                w.videoPath.clear();
-                w.mediaWidth = 0;
-                w.mediaHeight = 0;
             }
             w.imagePath.clear();
             w.wheelImagePath.clear();
+            w.videoPath.clear();
+            w.mediaWidth = 0;
+            w.mediaHeight = 0;
             continue;
         }
 
+        // Cache existing video player before clearing paths
+        if (w.videoPlayer && !w.videoPath.empty()) {
+            w.videoPlayer->stop();
+            std::string cacheKey = w.videoPath + "_" + std::to_string(w.mediaWidth) + "x" + std::to_string(w.mediaHeight);
+            if (videoPlayerCache_.find(cacheKey) == videoPlayerCache_.end()) {
+                videoPlayerCache_.emplace(cacheKey, VideoPlayerCacheEntry(w.renderer, w.mediaWidth, w.mediaHeight, std::move(w.videoPlayer)));
+                LOG_DEBUG("AssetManager: Cached video player for " << w.name << ": " << w.videoPath);
+            } else {
+                addOldVideoPlayer(std::move(w.videoPlayer));
+            }
+            w.videoPlayer.reset();
+        }
+
+        // Reset paths after caching
+        w.imagePath.clear();
+        w.wheelImagePath.clear();
+        w.videoPath.clear();
+
         // Texture
-        if (w.tableImage != w.imagePath || !w.texture) {
-            w.texture.reset(loadTexture(w.renderer, w.tableImage));
-            w.imagePath = w.tableImage;
+        LOG_DEBUG("AssetManager: Checking texture for " << w.name << ": tableImage=" << w.tableImage << ", current=" << w.imagePath);
+        if (!w.tableImage.empty()) {
+            auto it = textureCache_.find(w.tableImage);
+            if (it != textureCache_.end() && it->second.renderer == w.renderer) {
+                w.texture = std::move(it->second.texture);
+                textureCache_.erase(it);
+                w.imagePath = w.tableImage;
+                LOG_DEBUG("AssetManager: Reused cached texture for " << w.name << ": " << w.tableImage);
+            } else {
+                w.texture.reset(loadTexture(w.renderer, w.tableImage));
+                w.imagePath = w.tableImage;
+                LOG_DEBUG("AssetManager: Loaded new texture for " << w.name << ": " << w.tableImage);
+            }
+        } else {
+            w.texture.reset();
+            w.imagePath.clear();
         }
 
         // Wheel
-        if (settings.showWheel && settings.wheelWindow == w.name &&
-            (table.wheelImage != w.wheelImagePath || !w.wheelTexture)) {
-            w.wheelTexture.reset(loadTexture(w.renderer, table.wheelImage));
-            w.wheelImagePath = table.wheelImage;
-        } else if (settings.wheelWindow != w.name) {
+        LOG_DEBUG("AssetManager: Checking wheel for " << w.name << ": wheelImage=" << table.wheelImage << ", current=" << w.wheelImagePath);
+        if (settings.showWheel && settings.wheelWindow == w.name && !table.wheelImage.empty()) {
+            auto it = textureCache_.find(table.wheelImage);
+            if (it != textureCache_.end() && it->second.renderer == w.renderer) {
+                w.wheelTexture = std::move(it->second.texture);
+                textureCache_.erase(it);
+                w.wheelImagePath = table.wheelImage;
+                LOG_DEBUG("AssetManager: Reused cached wheel texture for " << w.name << ": " << table.wheelImage);
+            } else {
+                w.wheelTexture.reset(loadTexture(w.renderer, table.wheelImage));
+                w.wheelImagePath = table.wheelImage;
+                LOG_DEBUG("AssetManager: Loaded new wheel texture for " << w.name << ": " << table.wheelImage);
+            }
+        } else {
             w.wheelTexture.reset();
             w.wheelImagePath.clear();
         }
@@ -305,33 +370,55 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                            (w.name == std::string("dmd") && settings.showDMD != lastShowDMD) ||
                            (w.name == std::string("topper") && settings.showTopper != lastShowTopper);
 
+        LOG_DEBUG("AssetManager: Checking video for " << w.name << ": tableVideo=" << w.tableVideo << ", current=" << w.videoPath
+                  << ", media=" << mediaWidth << "x" << mediaHeight << ", showChanged=" << showChanged);
         if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
-            if (w.tableVideo != w.videoPath || mediaWidth != w.mediaWidth || mediaHeight != w.mediaHeight || showChanged) {
+            std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+            auto it = videoPlayerCache_.find(cacheKey);
+            if (it != videoPlayerCache_.end() && it->second.renderer == w.renderer &&
+                it->second.width == mediaWidth && it->second.height == mediaHeight) {
+                w.videoPlayer = std::move(it->second.player);
+                videoPlayerCache_.erase(it);
+                w.videoPlayer->play();
+                w.videoPath = w.tableVideo;
+                w.mediaWidth = mediaWidth;
+                w.mediaHeight = mediaHeight;
+                LOG_DEBUG("AssetManager: Reused cached video player for " << w.name << ": " << w.tableVideo);
+            } else {
                 auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
                 if (newPlayer) {
-                    if (w.videoPlayer) {
-                        w.videoPlayer->stop();
-                        addOldVideoPlayer(std::move(w.videoPlayer));
-                        w.videoPlayer.reset();
-                    }
                     w.videoPlayer = std::move(newPlayer);
                     w.videoPlayer->play();
                     w.videoPath = w.tableVideo;
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
+                    LOG_DEBUG("AssetManager: Created new video player for " << w.name << ": " << w.tableVideo);
                 } else {
                     LOG_DEBUG("AssetManager: Failed to setup " << w.name << " video: " << w.tableVideo);
                 }
-            } else if (w.videoPlayer && !w.videoPlayer->isPlaying()) {
-                w.videoPlayer->play();
             }
         } else if (w.videoPlayer) {
             w.videoPlayer->stop();
-            addOldVideoPlayer(std::move(w.videoPlayer));
+            if (!w.videoPath.empty()) {
+                std::string cacheKey = w.videoPath + "_" + std::to_string(w.mediaWidth) + "x" + std::to_string(w.mediaHeight);
+                if (videoPlayerCache_.find(cacheKey) == videoPlayerCache_.end()) {
+                    videoPlayerCache_.emplace(cacheKey, VideoPlayerCacheEntry(w.renderer, w.mediaWidth, w.mediaHeight, std::move(w.videoPlayer)));
+                    LOG_DEBUG("AssetManager: Cached video player for " << w.name << ": " << w.videoPath);
+                } else {
+                    addOldVideoPlayer(std::move(w.videoPlayer));
+                }
+            } else {
+                addOldVideoPlayer(std::move(w.videoPlayer));
+            }
             w.videoPlayer.reset();
             w.videoPath.clear();
             w.mediaWidth = 0;
             w.mediaHeight = 0;
+        }
+
+        // Store video path for next iteration
+        if (w.videoPlayer) {
+            w.videoPath = w.tableVideo;
         }
     }
 
@@ -352,10 +439,8 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
 void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
     if (player) {
-        // Push the unique_ptr directly. The unique_ptr now owns the player.
         oldVideoPlayers_.push_back(std::move(player));
         if (oldVideoPlayers_.size() > 10) {
-            // When removing, unique_ptr will automatically call delete on the managed object
             oldVideoPlayers_.erase(oldVideoPlayers_.begin());
             LOG_DEBUG("AssetManager: Removed oldest video player from queue");
         }
@@ -374,6 +459,14 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
         return nullptr;
     }
 
+    auto it = textureCache_.find(path);
+    if (it != textureCache_.end() && it->second.renderer == renderer) {
+        auto texture = it->second.texture.release();
+        textureCache_.erase(it);
+        LOG_DEBUG("AssetManager: Reused cached texture: " << path);
+        return texture;
+    }
+
     std::FILE* originalStderr = stderr;
     std::FILE* nullFile = fopen("/dev/null", "w");
     if (!nullFile) {
@@ -388,6 +481,9 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 
     if (!tex) {
         LOG_ERROR("AssetManager: Failed to load texture " << path << ": " << IMG_GetError());
+    } else if (textureCache_.size() < 100) {
+        textureCache_.emplace(path, TextureCacheEntry(renderer, tex));
+        LOG_DEBUG("AssetManager: Cached texture: " << path);
     }
     return tex;
 }

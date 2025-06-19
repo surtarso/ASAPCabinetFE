@@ -1,11 +1,3 @@
-/**
- * @file asset_manager.h
- * @brief Defines the AssetManager class for managing VPX table assets in ASAPCabinetFE.
- *
- * This header provides the AssetManager class, which implements the IAssetManager interface
- * to manage textures, video players, audio, and table data for Visual Pinball X (VPX) tables.
- * It handles asset loading, caching, and rendering resources using SDL and TTF.
- */
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
@@ -18,28 +10,11 @@
 #include <SDL_ttf.h>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
-/**
- * @class IConfigService
- * @brief Interface for configuration services (forward declaration).
- */
 class IConfigService;
-
-/**
- * @class IWindowManager
- * @brief Interface for window management (forward declaration).
- */
 class IWindowManager;
 
-/**
- * @class AssetManager
- * @brief Manages textures, video players, audio, and table assets for VPX rendering.
- *
- * This class implements the IAssetManager interface to load, cache, and provide access
- * to textures, video players, music, and table data for playfield, backglass, DMD, and topper displays.
- * It interfaces with IConfigService for settings, ITableLoader for table data, ISoundManager
- * for audio, and SDL/TTF for rendering resources.
- */
 class AssetManager : public IAssetManager {
 public:
     AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager);
@@ -93,9 +68,6 @@ public:
     void setTopperRenderer(SDL_Renderer* renderer) { topperRenderer = renderer; }
 
 private:
-    /**
-     * @brief Struct to group window-specific asset data.
-     */
     struct WindowAssetInfo {
         SDL_Renderer* renderer;
         std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& texture;
@@ -112,6 +84,25 @@ private:
         const std::string& tableImage;
         const std::string& tableVideo;
     };
+
+    // Texture cache: path -> {renderer, texture}
+    struct TextureCacheEntry {
+        SDL_Renderer* renderer;
+        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> texture;
+        TextureCacheEntry(SDL_Renderer* r, SDL_Texture* t) : renderer(r), texture(t, SDL_DestroyTexture) {}
+    };
+    std::unordered_map<std::string, TextureCacheEntry> textureCache_;
+
+    // Video player cache: path_width_height -> {renderer, width, height, player}
+    struct VideoPlayerCacheEntry {
+        SDL_Renderer* renderer;
+        int width;
+        int height;
+        std::unique_ptr<IVideoPlayer> player;
+        VideoPlayerCacheEntry(SDL_Renderer* r, int w, int h, std::unique_ptr<IVideoPlayer> p)
+            : renderer(r), width(w), height(h), player(std::move(p)) {}
+    };
+    std::unordered_map<std::string, VideoPlayerCacheEntry> videoPlayerCache_;
 
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldWheelTexture;
