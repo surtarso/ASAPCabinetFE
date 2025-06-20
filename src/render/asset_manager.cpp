@@ -4,21 +4,26 @@
 #include "log/logging.h"
 #include <SDL_image.h>
 #include <chrono>
+#include <algorithm> // For std::remove
+
+// Define maximum sizes for the caches
+const size_t MAX_VIDEO_PLAYER_CACHE_SIZE = 48; // Increased to allow more players to stay in cache
+const size_t MAX_TEXTURE_CACHE_SIZE = 100; // Increased for textures (e.g., wheels, backgrounds)
 
 // Constructor: Initializes renderers, font, and nulls out pointers
 AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager)
-    : playfieldTexture(nullptr, SDL_DestroyTexture),
-      playfieldWheelTexture(nullptr, SDL_DestroyTexture),
-      playfieldTitleTexture(nullptr, SDL_DestroyTexture),
-      backglassTexture(nullptr, SDL_DestroyTexture),
-      backglassWheelTexture(nullptr, SDL_DestroyTexture),
-      backglassTitleTexture(nullptr, SDL_DestroyTexture),
-      dmdTexture(nullptr, SDL_DestroyTexture),
-      dmdWheelTexture(nullptr, SDL_DestroyTexture),
-      dmdTitleTexture(nullptr, SDL_DestroyTexture),
-      topperTexture(nullptr, SDL_DestroyTexture),
-      topperWheelTexture(nullptr, SDL_DestroyTexture),
-      topperTitleTexture(nullptr, SDL_DestroyTexture),
+    : playfieldTexture(nullptr), // Now raw pointer
+      playfieldWheelTexture(nullptr), // Now raw pointer
+      playfieldTitleTexture(nullptr), // Now raw pointer
+      backglassTexture(nullptr), // Now raw pointer
+      backglassWheelTexture(nullptr), // Now raw pointer
+      backglassTitleTexture(nullptr), // Now raw pointer
+      dmdTexture(nullptr), // Now raw pointer
+      dmdWheelTexture(nullptr), // Now raw pointer
+      dmdTitleTexture(nullptr), // Now raw pointer
+      topperTexture(nullptr), // Now raw pointer
+      topperWheelTexture(nullptr), // Now raw pointer
+      topperTitleTexture(nullptr), // Now raw pointer
       titleRect{0, 0, 0, 0},
       playfieldVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
@@ -91,7 +96,7 @@ void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color,
 
     struct WindowTitleInfo {
         SDL_Renderer* renderer;
-        std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>& texture;
+        SDL_Texture*& texture; // Now raw pointer
         const std::string& windowName;
     };
 
@@ -103,7 +108,7 @@ void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color,
     };
 
     for (auto& w : windows) {
-        w.texture.reset(); // Always clear old title texture
+        w.texture = nullptr; // Clear old title texture (raw pointer)
         if (w.renderer && font && settings.showTitle && settings.titleWindow == w.windowName) {
             // Use the AssetManager's member titleRect for rendering.
             // The `titleRect` parameter is used to communicate the final rendered size back.
@@ -112,10 +117,10 @@ void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color,
             this->titleRect.w = 0; // Reset width/height for renderText to calculate
             this->titleRect.h = 0;
 
-            w.texture.reset(renderText(w.renderer, font, title, color, this->titleRect));
+            w.texture = renderText(w.renderer, font, title, color, this->titleRect); // Assign raw pointer
             int texWidth = 0, texHeight = 0;
             if (w.texture) {
-                SDL_QueryTexture(w.texture.get(), nullptr, nullptr, &texWidth, &texHeight);
+                SDL_QueryTexture(w.texture, nullptr, nullptr, &texWidth, &texHeight);
                 titleRect.w = this->titleRect.w; // Update the passed-in titleRect with actual dimensions
                 titleRect.h = this->titleRect.h;
             }
@@ -140,32 +145,27 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     topperRenderer = windowManager->getTopperRenderer();
     this->font = font;
 
-    // This is the primary function responsible for loading/reloading all table-specific assets
-    // The previous cleanupVideoPlayers() call here is no longer needed as loadTableAssets handles it.
     loadTableAssets(index, tables);
     LOG_DEBUG("AssetManager: Completed asset reload for index " << index);
 }
 
 void AssetManager::clearVideoCache() {
     LOG_DEBUG("AssetManager: Clearing video player cache (including active ones)");
-    // This method should clear the entire cache and active players,
-    // potentially used for a full reset.
-    // Ensure all players are stopped and moved to oldVideoPlayers_ or destroyed directly.
-
     // Move all cached players to oldVideoPlayers_ to be safely destructed later.
     for (auto& pair : videoPlayerCache_) {
         if (pair.second.player) {
             pair.second.player->stop();
-            oldVideoPlayers_.push_back(std::move(pair.second.player));
+            addOldVideoPlayer(std::move(pair.second.player)); // Use addOldVideoPlayer for consistent cleanup
         }
     }
     videoPlayerCache_.clear();
+    lru_video_keys_.clear(); // Clear LRU keys list
 
     // Reset current active players as well, adding them to oldVideoPlayers_
-    if (playfieldVideoPlayer) { playfieldVideoPlayer->stop(); oldVideoPlayers_.push_back(std::move(playfieldVideoPlayer)); }
-    if (backglassVideoPlayer) { backglassVideoPlayer->stop(); oldVideoPlayers_.push_back(std::move(backglassVideoPlayer)); }
-    if (dmdVideoPlayer) { dmdVideoPlayer->stop(); oldVideoPlayers_.push_back(std::move(dmdVideoPlayer)); }
-    if (topperVideoPlayer) { topperVideoPlayer->stop(); oldVideoPlayers_.push_back(std::move(topperVideoPlayer)); }
+    if (playfieldVideoPlayer) { playfieldVideoPlayer->stop(); addOldVideoPlayer(std::move(playfieldVideoPlayer)); }
+    if (backglassVideoPlayer) { backglassVideoPlayer->stop(); addOldVideoPlayer(std::move(backglassVideoPlayer)); }
+    if (dmdVideoPlayer) { dmdVideoPlayer->stop(); addOldVideoPlayer(std::move(dmdVideoPlayer)); }
+    if (topperVideoPlayer) { topperVideoPlayer->stop(); addOldVideoPlayer(std::move(topperVideoPlayer)); }
 
     // Clear current paths and dimensions
     currentPlayfieldVideoPath_.clear();
@@ -184,6 +184,15 @@ void AssetManager::clearVideoCache() {
     clearOldVideoPlayers(); // Ensure the discard list is also managed
     LOG_DEBUG("AssetManager: Video player cache and active players cleared.");
 }
+
+void AssetManager::clearTextureCache() {
+    LOG_DEBUG("AssetManager: Clearing texture cache.");
+    // unique_ptr's in the map will be destructed, calling SDL_DestroyTexture
+    textureCache_.clear();
+    lru_texture_keys_.clear();
+    LOG_DEBUG("AssetManager: Texture cache cleared.");
+}
+
 void AssetManager::applyVideoAudioSettings() {
     if (!configManager_) {
         LOG_ERROR("AssetManager: Cannot apply video audio settings: configManager is null");
@@ -282,67 +291,66 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     // --- Phase 1: Cleanup and Cache Assets from the PREVIOUS Table ---
     // This loop processes the *currently held* assets (from the table loaded by lastIndex).
-    // The 'current...' paths (w.videoPath, w.imagePath etc.) MUST be valid here,
-    // as they hold the state from the previous load and are used to form cache keys.
     WindowAssetInfo windowsForCleanup[] = {
-        // Note: For 'show' parameter, use the *current* settings, not necessarily 'true'
-        // This ensures if a window was hidden previously, its player is still considered for caching if it existed.
         {playfieldRenderer, playfieldTexture, playfieldWheelTexture, playfieldTitleTexture, playfieldVideoPlayer,
          currentPlayfieldImagePath_, currentPlayfieldWheelImagePath_, currentPlayfieldVideoPath_,
          currentPlayfieldMediaWidth_, currentPlayfieldMediaHeight_, true, "playfield", "", ""},
         {backglassRenderer, backglassTexture, backglassWheelTexture, backglassTitleTexture, backglassVideoPlayer,
          currentBackglassImagePath_, currentBackglassWheelImagePath_, currentBackglassVideoPath_,
-         currentBackglassMediaWidth_, currentBackglassMediaHeight_, lastShowBackglass, "backglass", "", ""}, // Use lastShow...
+         currentBackglassMediaWidth_, currentBackglassMediaHeight_, lastShowBackglass, "backglass", "", ""},
         {dmdRenderer, dmdTexture, dmdWheelTexture, dmdTitleTexture, dmdVideoPlayer,
          currentDmdImagePath_, currentDmdWheelImagePath_, currentDmdVideoPath_,
-         currentDmdMediaWidth_, currentDmdMediaHeight_, lastShowDMD, "dmd", "", ""}, // Use lastShow...
+         currentDmdMediaWidth_, currentDmdMediaHeight_, lastShowDMD, "dmd", "", ""},
         {topperRenderer, topperTexture, topperWheelTexture, topperTitleTexture, topperVideoPlayer,
          currentTopperImagePath_, currentTopperWheelImagePath_, currentTopperVideoPath_,
-         currentTopperMediaWidth_, currentTopperMediaHeight_, lastShowTopper, "topper", "", ""} // Use lastShow...
+         currentTopperMediaWidth_, currentTopperMediaHeight_, lastShowTopper, "topper", "", ""}
     };
 
     for (auto& w : windowsForCleanup) {
         // --- Video Player Caching/Cleanup ---
         if (w.videoPlayer) {
-            w.videoPlayer->stop(); // Always stop the video first
+            w.videoPlayer->stop();
 
-            // Only attempt to cache if it's a valid video that was playing
             if (!w.videoPath.empty() && w.mediaWidth > 0 && w.mediaHeight > 0 && w.renderer) {
                 std::string cacheKey = w.videoPath + "_" + std::to_string(w.mediaWidth) + "x" + std::to_string(w.mediaHeight);
 
-                // Attempt to insert. If successful, it's a new cache entry.
                 auto [it, inserted] = videoPlayerCache_.emplace(cacheKey, VideoPlayerCacheEntry(w.renderer, w.mediaWidth, w.mediaHeight, std::move(w.videoPlayer)));
                 if (inserted) {
+                    lru_video_keys_.push_front(cacheKey); // Add new cached key to the front of LRU list
                     LOG_DEBUG("AssetManager: Cached video player for " << w.name << ": " << w.videoPath << " (" << cacheKey << ")");
+
+                    // LRU eviction logic
+                    if (lru_video_keys_.size() > MAX_VIDEO_PLAYER_CACHE_SIZE) {
+                        std::string keyToEvict = lru_video_keys_.back();
+                        lru_video_keys_.pop_back(); // Remove from LRU list
+                        auto evictedEntryIt = videoPlayerCache_.find(keyToEvict);
+                        if (evictedEntryIt != videoPlayerCache_.end()) {
+                            addOldVideoPlayer(std::move(evictedEntryIt->second.player)); // Move player to discard queue
+                            videoPlayerCache_.erase(evictedEntryIt); // Remove from cache map
+                            LOG_DEBUG("AssetManager: Evicted oldest cached video player for key: " << keyToEvict);
+                        }
+                    }
                 } else {
-                    // This means a player for the same path/dimensions is already in cache.
-                    // This scenario is less common if unique_ptr is properly moved.
-                    // Add the current player to the `oldVideoPlayers_` queue for eventual destruction.
                     addOldVideoPlayer(std::move(w.videoPlayer));
                     LOG_WARN("AssetManager: Duplicate video player key found for " << w.name << ": " << w.videoPath << ". Discarding current player.");
                 }
             } else {
-                // If the videoPath was empty or dimensions invalid, just add to old players queue
-                // to ensure proper destruction.
                 addOldVideoPlayer(std::move(w.videoPlayer));
                 LOG_DEBUG("AssetManager: Discarded inactive/invalid video player for " << w.name << " (no valid path/dimensions).");
             }
             w.videoPlayer.reset(); // The unique_ptr has been moved, so reset the member
         }
 
-        // --- Texture Cleanup ---
-        // Textures (std::unique_ptr<SDL_Texture, ...>) will automatically call SDL_DestroyTexture
-        // when `reset()` is called or when the unique_ptr goes out of scope (e.g., at end of function if not re-assigned).
-        // No explicit caching of textures here; `loadTexture` is responsible for adding to `textureCache_`.
-        if (w.texture) w.texture.reset();
-        if (w.wheelTexture) w.wheelTexture.reset();
-        if (w.titleTexture) w.titleTexture.reset();
+        // --- Texture Cleanup (for raw pointers from previous table) ---
+        // The textures themselves are owned by textureCache_. We just set the raw pointers to null.
+        w.texture = nullptr;
+        w.wheelTexture = nullptr;
+        w.titleTexture = nullptr;
 
-        // --- Clear AssetManager's Member Paths/Dimensions for the NEW Table ---
-        // These are the *actual member variables* of AssetManager, cleared for the new table data.
+        // Clear AssetManager's Member Paths/Dimensions for the NEW Table
         w.imagePath.clear();
         w.wheelImagePath.clear();
-        w.videoPath.clear(); // This was the crucial one that was cleared too early previously
+        w.videoPath.clear();
         w.mediaWidth = 0;
         w.mediaHeight = 0;
     }
@@ -358,8 +366,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     LOG_DEBUG("AssetManager: Loading assets for table: " << table.title);
 
     // --- Phase 2: Load Assets for the NEW Table ---
-    // These WindowAssetInfo structs now refer to the cleared AssetManager members
-    // and use the new `table` data.
     WindowAssetInfo windowsToLoad[] = {
         {playfieldRenderer, playfieldTexture, playfieldWheelTexture, playfieldTitleTexture, playfieldVideoPlayer,
          currentPlayfieldImagePath_, currentPlayfieldWheelImagePath_, currentPlayfieldVideoPath_,
@@ -380,17 +386,16 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     };
 
     for (auto& w : windowsToLoad) {
-        // If the renderer is null or the window is configured not to show, skip loading assets for it
         if (!w.renderer || !w.show) {
             LOG_DEBUG("AssetManager: Skipping asset load for " << w.name << " (renderer missing or window not shown).");
-            continue; // No need to load any assets for this window
+            continue;
         }
 
         // --- Texture Loading ---
-        if (!w.imagePath.empty()) {
-            w.texture.reset(loadTexture(w.renderer, w.imagePath)); // loadTexture adds to cache if new
+        if (!w.tableImage.empty()) {
+            w.texture = loadTexture(w.renderer, w.tableImage); // loadTexture now handles caching and returns raw ptr
             if (w.texture) {
-                w.imagePath = w.imagePath; // Update the AssetManager's member path
+                w.imagePath = w.tableImage;
             } else {
                 w.imagePath.clear();
             }
@@ -401,24 +406,22 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         // --- Wheel Loading ---
         LOG_DEBUG("AssetManager: Loading wheel texture for " << w.name << ": " << table.wheelImage);
         if (settings.showWheel && settings.wheelWindow == w.name && !table.wheelImage.empty()) {
-            w.wheelTexture.reset(loadTexture(w.renderer, table.wheelImage)); // loadTexture adds to cache if new
+            w.wheelTexture = loadTexture(w.renderer, table.wheelImage); // loadTexture now handles caching and returns raw ptr
             if (w.wheelTexture) {
-                w.wheelImagePath = table.wheelImage; // Update the AssetManager's member path
+                w.wheelImagePath = table.wheelImage;
             } else {
                 LOG_WARN("AssetManager: Failed to load wheel texture for " << w.name << ": " << table.wheelImage);
                 w.wheelImagePath.clear();
             }
         } else {
-            w.wheelTexture.reset(); // Ensure it's null if not loading
+            w.wheelTexture = nullptr;
         }
 
         // --- Title Loading ---
         if (font && settings.showTitle && settings.titleWindow == w.name) {
-            // Note: `this->titleRect` is the AssetManager's member, used to manage renderText's output dimensions
-            SDL_Rect currentTitleRenderRect = {settings.titleX, settings.titleY, 0, 0}; // Use local for function call
+            SDL_Rect currentTitleRenderRect = {settings.titleX, settings.titleY, 0, 0};
             std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            w.titleTexture.reset(renderText(w.renderer, font, title, settings.fontColor, currentTitleRenderRect));
-            // Update AssetManager's member titleRect with the dimensions calculated by renderText
+            w.titleTexture = renderText(w.renderer, font, title, settings.fontColor, currentTitleRenderRect); // Returns new texture, not cached
             if (w.titleTexture) {
                 this->titleRect.x = currentTitleRenderRect.x;
                 this->titleRect.y = currentTitleRenderRect.y;
@@ -426,13 +429,12 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 this->titleRect.h = currentTitleRenderRect.h;
             }
         } else {
-            w.titleTexture.reset(); // Ensure it's null if not loading
+            w.titleTexture = nullptr;
         }
 
         // --- Video Loading ---
         int mediaWidth = 0;
         int mediaHeight = 0;
-        // Determine media dimensions based on window name and settings
         if (w.name == std::string("playfield")) {
             mediaWidth = settings.playfieldMediaWidth;
             mediaHeight = settings.playfieldMediaHeight;
@@ -450,44 +452,41 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         LOG_DEBUG("AssetManager: Checking video for " << w.name << ": tableVideo=" << w.tableVideo
                   << ", desired media=" << mediaWidth << "x" << mediaHeight);
 
-        // Only try to load video if not forced to images only, path is valid, and dimensions are positive
         if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
             std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
             auto it = videoPlayerCache_.find(cacheKey);
 
             if (it != videoPlayerCache_.end() && it->second.renderer == w.renderer &&
                 it->second.width == mediaWidth && it->second.height == mediaHeight) {
-                // Found a matching player in cache, reuse it
-                w.videoPlayer = std::move(it->second.player); // Transfer ownership from cache to AssetManager member
-                videoPlayerCache_.erase(it); // Remove from cache as it's now active
+                w.videoPlayer = std::move(it->second.player);
+                videoPlayerCache_.erase(it);
+
+                lru_video_keys_.remove(cacheKey);
+                lru_video_keys_.push_front(cacheKey);
+
                 w.videoPlayer->play();
-                // Update AssetManager's member paths/dimensions with the *new* table's info
                 w.videoPath = w.tableVideo;
                 w.mediaWidth = mediaWidth;
                 w.mediaHeight = mediaHeight;
                 LOG_DEBUG("AssetManager: Reused cached video player for " << w.name << ": " << w.tableVideo);
             } else {
-                // Not found in cache or cache entry is invalid/mismatch, create a new one
                 auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
                 if (newPlayer) {
-                    w.videoPlayer = std::move(newPlayer); // Transfer ownership to AssetManager member
+                    w.videoPlayer = std::move(newPlayer);
                     w.videoPlayer->play();
-                    // Update AssetManager's member paths/dimensions
                     w.videoPath = w.tableVideo;
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
                     LOG_DEBUG("AssetManager: Created new video player for " << w.name << ": " << w.tableVideo);
                 } else {
                     LOG_WARN("AssetManager: Failed to create video player for " << w.name << ": " << w.tableVideo);
-                    w.videoPlayer.reset(); // Ensure no partial player is held
+                    w.videoPlayer.reset();
                     w.videoPath.clear();
                     w.mediaWidth = 0;
                     w.mediaHeight = 0;
                 }
             }
         } else {
-            // No video is desired for this window based on settings or invalid parameters
-            // Ensure player is reset and paths cleared (already handled in Phase 1, but as safeguard)
             w.videoPlayer.reset();
             w.videoPath.clear();
             w.mediaWidth = 0;
@@ -496,10 +495,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         }
     }
 
-    // Apply audio settings to all currently active video players (which are now the new ones)
     applyVideoAudioSettings();
-
-    // Play table music (assuming this method is implemented and works)
     playTableMusic(index, tables);
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -509,18 +505,16 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
 void AssetManager::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
     if (player) {
-        player->stop(); // Ensure it's stopped before adding to discard list
+        player->stop();
         oldVideoPlayers_.push_back(std::move(player));
-        // Limit the size to avoid excessive memory use, remove the oldest if full
-        if (oldVideoPlayers_.size() > 10) { // Example limit: keep last 10
-            oldVideoPlayers_.erase(oldVideoPlayers_.begin());
-            LOG_DEBUG("AssetManager: Removed oldest video player from queue (oldVideoPlayers_ size: " << oldVideoPlayers_.size() << ")");
+        if (oldVideoPlayers_.size() > MAX_VIDEO_PLAYER_CACHE_SIZE * 2) {
+            oldVideoPlayers_.pop_front();
+            LOG_DEBUG("AssetManager: Removed oldest video player from oldVideoPlayers_ queue (size: " << oldVideoPlayers_.size() << ")");
         }
     }
 }
 
 void AssetManager::clearOldVideoPlayers() {
-    // No manual deletion loop needed! unique_ptr handles it when the vector clears or elements are removed.
     oldVideoPlayers_.clear();
     //LOG_DEBUG("AssetManager: Cleared all old video players from queue");
 }
@@ -531,17 +525,16 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
         return nullptr;
     }
 
-    auto it = textureCache_.find(path); // Using path as key
+    auto it = textureCache_.find(path);
     if (it != textureCache_.end() && it->second.renderer == renderer) {
-        // Found in cache, move it out and return the raw pointer.
-        // The unique_ptr in cache entry will be empty after this move.
-        // The caller (e.g., w.texture.reset()) will then take ownership.
+        // Found in cache, move to front of LRU list and return raw pointer
+        lru_texture_keys_.remove(path); // Remove from current position
+        lru_texture_keys_.push_front(path); // Add to front (most recently used)
         LOG_DEBUG("AssetManager: Reusing cached texture: " << path);
-        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> cachedTexture = std::move(it->second.texture);
-        textureCache_.erase(it); // Remove the entry from cache after moving
-        return cachedTexture.release(); // Return raw pointer, ownership now transferred to caller
+        return it->second.texture.get();
     }
 
+    // Not found in cache, load new texture
     std::FILE* originalStderr = stderr;
     std::FILE* nullFile = nullptr;
     nullFile = fopen("/dev/null", "w");
@@ -562,7 +555,26 @@ SDL_Texture* AssetManager::loadTexture(SDL_Renderer* renderer, const std::string
 
     if (!tex) {
         LOG_ERROR("AssetManager: Failed to load texture " << path << ": " << IMG_GetError());
+        return nullptr;
     }
+
+    // Add new texture to cache and apply LRU eviction
+    textureCache_.emplace(path, TextureCacheEntry(renderer, tex));
+    lru_texture_keys_.push_front(path);
+    LOG_DEBUG("AssetManager: Loaded new texture and added to cache: " << path);
+
+    // LRU eviction logic for textures
+    if (lru_texture_keys_.size() > MAX_TEXTURE_CACHE_SIZE) {
+        std::string keyToEvict = lru_texture_keys_.back();
+        lru_texture_keys_.pop_back();
+        auto evictedEntryIt = textureCache_.find(keyToEvict);
+        if (evictedEntryIt != textureCache_.end()) {
+            // unique_ptr will handle SDL_DestroyTexture on erase
+            textureCache_.erase(evictedEntryIt);
+            LOG_DEBUG("AssetManager: Evicted oldest cached texture for key: " << keyToEvict);
+        }
+    }
+
     return tex;
 }
 
@@ -589,6 +601,9 @@ SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, co
     }
 
     SDL_FreeSurface(surf);
+    // Note: Rendered text textures are not currently cached by `loadTexture`
+    // because their content depends on font, color, and message, not just path.
+    // They are created fresh each time `reloadTitleTexture` is called.
     return texture;
 }
 
@@ -613,9 +628,8 @@ void AssetManager::cleanupVideoPlayers() {
     for (auto& p : players) {
         if (p.player) {
             p.player->stop();
-            // Move to oldVideoPlayers_ instead of direct reset for safer deletion management
             addOldVideoPlayer(std::move(p.player));
-            p.player.reset(); // Clear the member unique_ptr
+            p.player.reset();
             p.videoPath.clear();
             p.mediaWidth = 0;
             p.mediaHeight = 0;
@@ -623,17 +637,15 @@ void AssetManager::cleanupVideoPlayers() {
         }
     }
 
-    // Also clear the explicit video player cache, moving all to old players.
-    // This part is crucial if cleanupVideoPlayers is called outside of `loadTableAssets`
-    // (e.g., on application shutdown or major state change).
     for (auto& pair : videoPlayerCache_) {
         if (pair.second.player) {
             pair.second.player->stop();
             addOldVideoPlayer(std::move(pair.second.player));
         }
     }
-    videoPlayerCache_.clear(); // Clear the map
+    videoPlayerCache_.clear();
+    lru_video_keys_.clear();
 
-    clearOldVideoPlayers(); // Ensure the old players queue is pruned
+    clearOldVideoPlayers();
     LOG_DEBUG("AssetManager: All video players and cache entries processed for cleanup.");
 }

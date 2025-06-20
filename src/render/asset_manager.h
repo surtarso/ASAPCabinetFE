@@ -11,6 +11,9 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <deque>
+#include <list> // For LRU cache management
+#include <mutex> // For potential multi-threading
 
 class IConfigService;
 class IWindowManager;
@@ -18,22 +21,22 @@ class IWindowManager;
 class AssetManager : public IAssetManager {
 public:
     AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager);
-    SDL_Texture* getPlayfieldTexture() override { return playfieldTexture.get(); }
+    SDL_Texture* getPlayfieldTexture() override { return playfieldTexture; }
     SDL_Texture* getWheelTexture(SDL_Renderer* renderer) override {
-        if (renderer == playfieldRenderer) return playfieldWheelTexture.get();
-        if (renderer == backglassRenderer) return backglassWheelTexture.get();
-        if (renderer == dmdRenderer) return dmdWheelTexture.get();
-        if (renderer == topperRenderer) return topperWheelTexture.get();
+        if (renderer == playfieldRenderer) return playfieldWheelTexture;
+        if (renderer == backglassRenderer) return backglassWheelTexture;
+        if (renderer == dmdRenderer) return dmdWheelTexture;
+        if (renderer == topperRenderer) return topperWheelTexture;
         return nullptr;
     }
-    SDL_Texture* getBackglassTexture() override { return backglassTexture.get(); }
-    SDL_Texture* getDmdTexture() override { return dmdTexture.get(); }
-    SDL_Texture* getTopperTexture() override { return topperTexture.get(); }
+    SDL_Texture* getBackglassTexture() override { return backglassTexture; }
+    SDL_Texture* getDmdTexture() override { return dmdTexture; }
+    SDL_Texture* getTopperTexture() override { return topperTexture; }
     SDL_Texture* getTitleTexture(SDL_Renderer* renderer) override {
-        if (renderer == playfieldRenderer) return playfieldTitleTexture.get();
-        if (renderer == backglassRenderer) return backglassTitleTexture.get();
-        if (renderer == dmdRenderer) return dmdTitleTexture.get();
-        if (renderer == topperRenderer) return topperTitleTexture.get();
+        if (renderer == playfieldRenderer) return playfieldTitleTexture;
+        if (renderer == backglassRenderer) return backglassTitleTexture;
+        if (renderer == dmdRenderer) return dmdTitleTexture;
+        if (renderer == topperRenderer) return topperTitleTexture;
         return nullptr;
     }
     IVideoPlayer* getPlayfieldVideoPlayer() override { return playfieldVideoPlayer.get(); }
@@ -55,6 +58,7 @@ public:
     void applyVideoAudioSettings() override;
     void addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player);
     void clearVideoCache();
+    void clearTextureCache(); // New function to clear texture cache
     SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& path);
     SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
 
@@ -70,9 +74,9 @@ public:
 private:
     struct WindowAssetInfo {
         SDL_Renderer* renderer;
-        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& texture;
-        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& wheelTexture;
-        std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>& titleTexture;
+        SDL_Texture*& texture; // Now raw pointer, AssetManager member will point to cached texture
+        SDL_Texture*& wheelTexture; // Now raw pointer
+        SDL_Texture*& titleTexture; // Now raw pointer
         std::unique_ptr<IVideoPlayer>& videoPlayer;
         std::string& imagePath;
         std::string& wheelImagePath;
@@ -85,13 +89,14 @@ private:
         const std::string& tableVideo;
     };
 
-    // Texture cache: path -> {renderer, texture}
+    // Texture cache: path -> {renderer, unique_ptr<texture>}
     struct TextureCacheEntry {
         SDL_Renderer* renderer;
         std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> texture;
         TextureCacheEntry(SDL_Renderer* r, SDL_Texture* t) : renderer(r), texture(t, SDL_DestroyTexture) {}
     };
     std::unordered_map<std::string, TextureCacheEntry> textureCache_;
+    std::list<std::string> lru_texture_keys_; // List to maintain LRU order of textureCache_ keys
 
     // Video player cache: path_width_height -> {renderer, width, height, player}
     struct VideoPlayerCacheEntry {
@@ -103,19 +108,20 @@ private:
             : renderer(r), width(w), height(h), player(std::move(p)) {}
     };
     std::unordered_map<std::string, VideoPlayerCacheEntry> videoPlayerCache_;
+    std::list<std::string> lru_video_keys_; // List to maintain LRU order of videoPlayerCache_ keys
 
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldWheelTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> playfieldTitleTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassWheelTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> backglassTitleTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdWheelTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> dmdTitleTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperWheelTexture;
-    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> topperTitleTexture;
+    SDL_Texture* playfieldTexture; // Now raw pointer
+    SDL_Texture* playfieldWheelTexture; // Now raw pointer
+    SDL_Texture* playfieldTitleTexture; // Now raw pointer
+    SDL_Texture* backglassTexture; // Now raw pointer
+    SDL_Texture* backglassWheelTexture; // Now raw pointer
+    SDL_Texture* backglassTitleTexture; // Now raw pointer
+    SDL_Texture* dmdTexture; // Now raw pointer
+    SDL_Texture* dmdWheelTexture; // Now raw pointer
+    SDL_Texture* dmdTitleTexture; // Now raw pointer
+    SDL_Texture* topperTexture; // Now raw pointer
+    SDL_Texture* topperWheelTexture; // Now raw pointer
+    SDL_Texture* topperTitleTexture; // Now raw pointer
     SDL_Rect titleRect;
     std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
     std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
@@ -133,7 +139,7 @@ private:
     TTF_Font* font;
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
-    std::vector<std::unique_ptr<IVideoPlayer>> oldVideoPlayers_;
+    std::deque<std::unique_ptr<IVideoPlayer>> oldVideoPlayers_;
     std::string currentPlayfieldImagePath_;
     std::string currentPlayfieldWheelImagePath_;
     std::string currentBackglassImagePath_;
