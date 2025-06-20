@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- small static gstreamer and pulseaudio leak
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 - Validation method logs errors but doesnt indicate which specific check failed to the caller. (1st config)
@@ -30,13 +29,11 @@ QOL:
 On hold:
 - update header docs and user manual
 - user-configurable options for video quality passed to videoplayer factory
-- asset caching to speed up table switching
 - multi launchers (other emulators, other versions of vpx w.e.)
 - auto-manufacturer logo on topper(or dmd?) thru metadata
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - attract mode (random table on a timer if idle) (optional)
 - support animated png for wheel/marquee
-- dynamic window creation
 - some way to download tables straight from the app?
 - incorporate generate_media.sh?
 
