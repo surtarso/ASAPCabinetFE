@@ -89,6 +89,7 @@ private:
         int height;
         SDL_mutex* mutex;
         bool isPlaying;
+        bool frameReady; // New: Flag to indicate if a new frame is ready for texture update
     };
 
     VideoContext* ctx_; ///< Pointer to the internal video context.
