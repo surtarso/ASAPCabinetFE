@@ -254,6 +254,23 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     static bool lastShowDMD = settings.showDMD;
     static bool lastShowTopper = settings.showTopper;
 
+    // Stop all active video players to release textures
+    if (playfieldVideoPlayer) {
+        playfieldVideoPlayer->stop();
+        LOG_DEBUG("AssetManager: Stopped playfield video player");
+    }
+    if (backglassVideoPlayer) {
+        backglassVideoPlayer->stop();
+        LOG_DEBUG("AssetManager: Stopped backglass video player");
+    }
+    if (dmdVideoPlayer) {
+        dmdVideoPlayer->stop();
+        LOG_DEBUG("AssetManager: Stopped DMD video player");
+    }
+    if (topperVideoPlayer) {
+        topperVideoPlayer->stop();
+        LOG_DEBUG("AssetManager: Stopped topper video player");
+    }
 
     // --- Optimization: Early Exit if Same Table and Settings ---
     // If the index is the same and relevant display settings haven't changed,
