@@ -163,9 +163,11 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ## Planned Features:
 We’re dreaming big! Help us bring these features to life:
 
-- Dynamic custom window creation.
+- Automatic table downloads.
+- Multi-launchers.
 - In-game video recording.
-- Integrate with [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
+- Attract Mode.
+- Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
 
 ## Contribute
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
