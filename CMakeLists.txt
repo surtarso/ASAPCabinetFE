@@ -282,7 +282,6 @@ set(SOURCES
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/ffmpeg/audio_decoder.cpp
     src/render/video_players/ffmpeg/video_decoder.cpp
-    src/render/video_players/gstreamer/gstreamer_player.cpp
     src/render/video_players/vlc/vlc_player.cpp
     src/tables/asap_index_manager.cpp
     src/tables/file_scanner.cpp
@@ -362,7 +361,6 @@ pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
 find_package(CURL REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -372,7 +370,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
-    ${GSTREAMER_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
 )
 
@@ -384,7 +381,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_LIBRARIES}
     ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
-    ${GSTREAMER_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
 )

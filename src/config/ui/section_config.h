@@ -244,7 +244,7 @@ public:
             {"topperWindowY", "Topper Y"}
         };
         keyDropdownOptions_["WindowSettings"] = {
-            {"videoBackend", {"vlc", "ffmpeg", "gstreamer", "novideo"}}
+            {"videoBackend", {"vlc", "ffmpeg", "novideo"}}
         };
 
         keyOrders_["MediaDimensions"] = {

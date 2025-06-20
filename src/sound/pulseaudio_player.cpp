@@ -50,19 +50,23 @@ PulseAudioPlayer::PulseAudioPlayer(const Settings& settings)
 }
 
 PulseAudioPlayer::~PulseAudioPlayer() {
-    stopMusic();
-    Mix_HaltChannel(-1);
+    stopMusic(); // Halts any playing music (Mix_Music)
+    Mix_HaltChannel(-1); // Halts all playing sound effects (Mix_Chunk)
+
+    // These unique_ptr's will automatically call their custom deleters (Mix_FreeChunk/Mix_FreeMusic)
+    // when they go out of scope or are explicitly reset, correctly freeing sound resources.
     uiSounds_.clear();
     ambienceMusic_.reset();
     tableMusic_.reset();
     launchAudio_.reset();
+
+    // Small delay to allow any pending audio operations to complete.
+    // This is often a good practice when dealing with audio APIs during shutdown.
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
     if (audio_initialized) {
-        while (Mix_Init(0)) {
-            Mix_Quit();
-        }
-        Mix_CloseAudio();
-        Mix_Quit();
+        Mix_CloseAudio(); // Close the audio device
+        Mix_Quit();       // Deinitialize all SDL_mixer subsystems
         audio_initialized = false;
         LOG_DEBUG("PulseAudioPlayer: PulseAudioPlayer destroyed and SDL_mixer quit");
     }

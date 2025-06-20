@@ -2,7 +2,6 @@
 #include "dummy_player.h"
 #include "render/video_players/vlc/vlc_player.h"
 #include "render/video_players/ffmpeg/ffmpeg_player.h"
-#include "render/video_players/gstreamer/gstreamer_player.h"
 #include "config/iconfig_service.h"
 #include "config/settings.h"
 #include "log/logging.h"
@@ -11,7 +10,6 @@
 enum class VideoBackendType {
     VLC,
     FFMPEG,
-    GSTREAMER,
     NOVIDEO,
     UNKNOWN
 };
@@ -20,7 +18,6 @@ VideoBackendType getVideoBackendType(const std::string& backendName) {
     static const std::map<std::string, VideoBackendType> backendMap = {
         {"vlc", VideoBackendType::VLC},
         {"ffmpeg", VideoBackendType::FFMPEG},
-        {"gstreamer", VideoBackendType::GSTREAMER},
         {"novideo", VideoBackendType::NOVIDEO}
     };
 
@@ -71,9 +68,6 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             break;
         case VideoBackendType::FFMPEG:
             player = std::make_unique<FFmpegPlayer>();
-            break;
-        case VideoBackendType::GSTREAMER:
-            player = std::make_unique<GStreamerVideoPlayer>();
             break;
         case VideoBackendType::UNKNOWN:
         default:
