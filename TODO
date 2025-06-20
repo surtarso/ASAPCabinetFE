@@ -10,7 +10,8 @@ FIX:
 
 QOL:
 - refactor the monoliths...
-- link vpsdb tables with standalone scripts repo somehow?
+- link tables with standalone scripts repo somehow? ( https://github.com/jsm174/vpx-standalone-scripts/blob/master/hashes.json ) table manager?
+- grab images from vpinmdb? ( https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json ) table manager? vpsdb?
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
 - implement playCount and launchStatus to indentify bad tables
@@ -18,7 +19,7 @@ QOL:
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - clean up new panels (vpsdb catalog and metadata editor)
-- single table vpsdb metadata lookup for current files (not catalog)
+- single table vpsdb metadata lookup for current files (not catalog) table manager?
 - stop deleting asapcab and instead increment/edit it.
 - save metadata back to .vpx with vpin/vpxtool
 - Add ui user notifications for critical failures like missing config files.
@@ -37,5 +38,3 @@ On hold:
 - support animated png for wheel/marquee
 - some way to download tables straight from the app?
 - incorporate generate_media.sh?
-
-  
