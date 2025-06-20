@@ -58,7 +58,6 @@ jobs:
         SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
         FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
         VLC_VER=$(pkg-config --modversion libvlc || echo "N/A")
-        GSTREAMER_VER=$(pkg-config --modversion gstreamer-1.0 || echo "N/A")
         CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
         # Get GLIBC version
         GLIBC_VER=$(ldd --version 2>&1 | head -n 1 | awk '{print $NF}' || echo "N/A")
@@ -72,7 +71,6 @@ jobs:
         echo "Detected SDL2 Version: $SDL2_VER"
         echo "Detected FFmpeg Version: $FFMPEG_VER"
         echo "Detected VLC Version: $VLC_VER"
-        echo "Detected GStreamer Version: $GSTREAMER_VER"
         echo "Detected cURL Version: $CURL_VER"
         echo "Detected GLIBC Version: $GLIBC_VER"
 
@@ -177,7 +175,6 @@ jobs:
           - SDL2: ${{ env.SDL2_VERSION }}
           - FFmpeg (libavcodec): ${{ env.FFMPEG_VERSION }}
           - VLC (libvlc): ${{ env.VLC_VERSION }}
-          - GStreamer: ${{ env.GSTREAMER_VERSION }}
           - cURL: ${{ env.CURL_VERSION }}
 
           Unpack and run `./ASAPCabinetFE` 
