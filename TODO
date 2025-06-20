@@ -10,6 +10,7 @@ FIX:
 
 QOL:
 - refactor the monoliths...
+- link vpsdb tables with standalone scripts repo somehow?
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
 - implement playCount and launchStatus to indentify bad tables
