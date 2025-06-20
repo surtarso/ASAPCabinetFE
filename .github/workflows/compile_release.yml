@@ -190,7 +190,7 @@ jobs:
             - This is an automated release, this will be filled soon.
 
           **Full Changelog**: https://github.com/surtarso/ASAPCabinetFE/commits/${{ github.ref_name }}
-        draft: false # Set to true to create a draft release
+        draft: true # Set to true to create a draft release
         prerelease: false # Set to true for pre-release versions
         files: ${{ steps.create-archive.outputs.tarball_full_path }} # Path to the compiled archive
       env:
