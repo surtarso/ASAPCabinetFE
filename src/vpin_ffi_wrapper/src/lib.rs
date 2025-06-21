@@ -2,8 +2,8 @@ use std::os::raw::c_char;
 use std::ffi::{CString, CStr};
 use std::path::PathBuf;
 use std::panic::catch_unwind;
-
 use serde_json::{json, Value};
+use vpin::vpx::open;
 
 #[no_mangle]
 pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *mut c_char {
@@ -97,6 +97,80 @@ pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *m
         }
         Err(_e) => {
             eprintln!("get_vpx_table_info_as_json Panic occurred for '{}'", path_str);
+            std::ptr::null_mut()
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_char {
+    // Safety check for null pointer
+    if vpx_file_path.is_null() {
+        eprintln!("get_vpx_gamedata_code_optimized: Input file path is null.");
+        return std::ptr::null_mut();
+    }
+
+    // Convert C string to Rust string
+    let path_str = unsafe {
+        match CStr::from_ptr(vpx_file_path).to_str() {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("get_vpx_gamedata_code_optimized: Invalid UTF-8 in path: {}", e);
+                return std::ptr::null_mut();
+            }
+        }
+    };
+
+    let path = PathBuf::from(path_str);
+
+    // Use catch_unwind to handle potential panics
+    let result = catch_unwind(|| {
+        // Open the VPX file
+        match open(&path) {
+            Ok(mut vpx_file) => {
+                // Read only the GameData stream
+                match vpx_file.read_gamedata() {
+                    Ok(gamedata) => {
+                        let code = gamedata.code.string;
+                        match CString::new(code) {
+                            Ok(c_string) => Some(c_string.into_raw()),
+                            Err(e) => {
+                                eprintln!(
+                                    "get_vpx_gamedata_code_optimized: CString conversion failed for '{}': {}",
+                                    path_str, e
+                                );
+                                None
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "get_vpx_gamedata_code_optimized: Failed to read gamedata for '{}': {}",
+                            path_str, e
+                        );
+                        None
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!(
+                    "get_vpx_gamedata_code_optimized: Failed to open '{}': {}",
+                    path_str, e
+                );
+                None
+            }
+        }
+    });
+
+    // Handle the result
+    match result {
+        Ok(Some(ptr)) => ptr,
+        Ok(None) => {
+            eprintln!("get_vpx_gamedata_code_optimized: Returning null for '{}'", path_str);
+            std::ptr::null_mut()
+        }
+        Err(_) => {
+            eprintln!("get_vpx_gamedata_code_optimized: Panic occurred for '{}'", path_str);
             std::ptr::null_mut()
         }
     }

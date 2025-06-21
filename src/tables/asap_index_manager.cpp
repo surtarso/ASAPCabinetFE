@@ -128,6 +128,9 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("totalPlayTime") && table["totalPlayTime"].is_number_float()) tableData.totalPlayTime = table["totalPlayTime"].get<float>();
             if (table.contains("isBroken") && table["isBroken"].is_boolean()) tableData.isBroken = table["isBroken"].get<bool>();
             if (table.contains("fileLastModified") && table["fileLastModified"].is_number_unsigned()) tableData.fileLastModified = table["fileLastModified"].get<uint64_t>();
+            if (table.contains("codeHash") && table["codeHash"].is_string()) tableData.codeHash = table["codeHash"].get<std::string>();
+            if (table.contains("patchHash") && table["patchHash"].is_string()) tableData.patchHash = table["patchHash"].get<std::string>();
+            if (table.contains("vbsHasDiff") && table["vbsHasDiff"].is_boolean()) tableData.vbsHasDiff = table["vbsHasDiff"].get<bool>();
 
 
             tables.push_back(tableData);
@@ -237,6 +240,9 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["totalplayTime"] = table.totalPlayTime;
         tableJson["isBroken"] = table.isBroken;
         tableJson["fileLastModified"] = table.fileLastModified;
+        tableJson["codeHash"] = table.codeHash;
+        tableJson["patchHash"] = table.patchHash;
+        tableJson["vbsHasDiff"] = table.vbsHasDiff;
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {

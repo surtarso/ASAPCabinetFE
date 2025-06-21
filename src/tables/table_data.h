@@ -110,6 +110,9 @@ struct TableData {
     float lastPlayTime = 0.0f;  ///< last session play time
     float totalPlayTime = 0.0f; ///< sums lastPlayTime
     uint64_t fileLastModified; ///< Timestamp of the last modification of the .vpx file
+    std::string codeHash;      ///< SHA256 hash of internal .vpx VB script
+    std::string patchHash;     ///< SHA256 hash of (patched) sidecar vb script
+    bool vbsHasDiff = false;      ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
 };
 
 #endif // TABLE_DATA_H

@@ -353,6 +353,7 @@ set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" 
 
 
 # --- Dependencies Start ---
+find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
 pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
@@ -374,6 +375,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    OpenSSL::Crypto
     nlohmann_json::nlohmann_json
     ${SDL2_MAIN_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
