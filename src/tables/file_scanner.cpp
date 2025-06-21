@@ -161,11 +161,11 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             if (code_ptr != nullptr) {
                 vpx_script = std::string(code_ptr);
                 free_rust_string(code_ptr);
-                table.codeHash = calculate_string_sha256(vpx_script);
-                LOG_INFO("FileScanner: codeHash for " << table.title << ": " << table.codeHash);
+                table.hashFromVpx = calculate_string_sha256(vpx_script);
+                LOG_INFO("FileScanner: hashFromVpx for " << table.title << ": " << table.hashFromVpx);
             } else {
                 LOG_ERROR("FileScanner: Failed to extract GameData.code for: " << table.vpxFile);
-                table.codeHash = "";
+                table.hashFromVpx = "";
             }
 
             // Check for corresponding .vbs file
@@ -175,26 +175,26 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 if (vbs_file.is_open()) {
                     std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
                     vbs_file.close();
-                    table.patchHash = calculate_string_sha256(vbs_content);
-                    LOG_INFO("FileScanner: patchHash for " << vbs_path.string() << ": " << table.patchHash);
+                    table.hashFromVbs = calculate_string_sha256(vbs_content);
+                    LOG_INFO("FileScanner: hashFromVbs for " << vbs_path.string() << ": " << table.hashFromVbs);
 
                     // Compare with VPX script if it exists
                     if (!vpx_script.empty()) {
-                        table.vbsHasDiff = (vpx_script != vbs_content);
-                        if (table.vbsHasDiff) {
+                        table.hasDiffVbs = (vpx_script != vbs_content);
+                        if (table.hasDiffVbs) {
                             LOG_INFO("FileScanner: .vbs differs from VPX script for " << table.title);
                         }
                     } else {
-                        table.vbsHasDiff = false;  // No VPX script to compare, keep false
+                        table.hasDiffVbs = false;  // No VPX script to compare, keep false
                     }
                 } else {
                     LOG_ERROR("FileScanner: Failed to open .vbs file: " << vbs_path.string());
-                    table.patchHash = "";
-                    table.vbsHasDiff = false;
+                    table.hashFromVbs = "";
+                    table.hasDiffVbs = false;
                 }
             } else {
-                table.patchHash = "";
-                table.vbsHasDiff = false;
+                table.hashFromVbs = "";
+                table.hasDiffVbs = false;
             }
 
             // Media paths (audios, images, videos)
@@ -215,12 +215,12 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
             if (!pinmamePath.empty()) {
-                table.altColor = PathUtils::getAltcolorPath(pinmamePath);
-                table.altSound = PathUtils::getAltsoundPath(pinmamePath);
+                table.hasAltColor = PathUtils::getAltcolorPath(pinmamePath);
+                table.hasAltSound = PathUtils::getAltsoundPath(pinmamePath);
                 table.romPath = PathUtils::getRomPath(pinmamePath, table.romName);
             } else {
-                table.altColor = false;
-                table.altSound = false;
+                table.hasAltColor = false;
+                table.hasAltSound = false;
                 table.romPath = "";
             }
 

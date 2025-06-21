@@ -74,8 +74,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
             
             // Boolean flags (ensure they are boolean type in JSON)
-            if (table.contains("altSound") && table["altSound"].is_boolean()) tableData.altSound = table["altSound"].get<bool>();
-            if (table.contains("altColor") && table["altColor"].is_boolean()) tableData.altColor = table["altColor"].get<bool>();
+            if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
+            if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
             if (table.contains("hasPup") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
             if (table.contains("hasAltMusic") && table["hasAltMusic"].is_boolean()) tableData.hasAltMusic = table["hasAltMusic"].get<bool>();
             if (table.contains("hasUltraDMD") && table["hasUltraDMD"].is_boolean()) tableData.hasUltraDMD = table["hasUltraDMD"].get<bool>();
@@ -124,13 +124,13 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
             if (table.contains("playCount") && table["playCount"].is_number_integer()) tableData.playCount = table["playCount"].get<int>();
-            if (table.contains("lastPlayTime") && table["lastPlayTime"].is_number_float()) tableData.lastPlayTime = table["lastPlayTime"].get<float>();
-            if (table.contains("totalPlayTime") && table["totalPlayTime"].is_number_float()) tableData.totalPlayTime = table["totalPlayTime"].get<float>();
+            if (table.contains("playTimeLast") && table["playTimeLast"].is_number_float()) tableData.playTimeLast = table["playTimeLast"].get<float>();
+            if (table.contains("playTimeTotal") && table["playTimeTotal"].is_number_float()) tableData.playTimeTotal = table["playTimeTotal"].get<float>();
             if (table.contains("isBroken") && table["isBroken"].is_boolean()) tableData.isBroken = table["isBroken"].get<bool>();
             if (table.contains("fileLastModified") && table["fileLastModified"].is_number_unsigned()) tableData.fileLastModified = table["fileLastModified"].get<uint64_t>();
-            if (table.contains("codeHash") && table["codeHash"].is_string()) tableData.codeHash = table["codeHash"].get<std::string>();
-            if (table.contains("patchHash") && table["patchHash"].is_string()) tableData.patchHash = table["patchHash"].get<std::string>();
-            if (table.contains("vbsHasDiff") && table["vbsHasDiff"].is_boolean()) tableData.vbsHasDiff = table["vbsHasDiff"].get<bool>();
+            if (table.contains("hashFromVpx") && table["hashFromVpx"].is_string()) tableData.hashFromVpx = table["hashFromVpx"].get<std::string>();
+            if (table.contains("hashFromVbs") && table["hashFromVbs"].is_string()) tableData.hashFromVbs = table["hashFromVbs"].get<std::string>();
+            if (table.contains("hasDiffVbs") && table["hasDiffVbs"].is_boolean()) tableData.hasDiffVbs = table["hasDiffVbs"].get<bool>();
 
 
             tables.push_back(tableData);
@@ -187,8 +187,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["launchAudio"] = table.launchAudio;
         
         // Boolean flags
-        tableJson["altSound"] = table.altSound;
-        tableJson["altColor"] = table.altColor;
+        tableJson["hasAltSound"] = table.hasAltSound;
+        tableJson["hasAltColor"] = table.hasAltColor;
         tableJson["hasPup"] = table.hasPup;
         tableJson["hasAltMusic"] = table.hasAltMusic; 
         tableJson["hasUltraDMD"] = table.hasUltraDMD; 
@@ -236,13 +236,13 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["jsonOwner"] = table.jsonOwner;
         tableJson["playCount"] = table.playCount;
-        tableJson["lastplayTime"] = table.lastPlayTime;
-        tableJson["totalplayTime"] = table.totalPlayTime;
+        tableJson["lastplayTime"] = table.playTimeLast;
+        tableJson["totalplayTime"] = table.playTimeTotal;
         tableJson["isBroken"] = table.isBroken;
         tableJson["fileLastModified"] = table.fileLastModified;
-        tableJson["codeHash"] = table.codeHash;
-        tableJson["patchHash"] = table.patchHash;
-        tableJson["vbsHasDiff"] = table.vbsHasDiff;
+        tableJson["hashFromVpx"] = table.hashFromVpx;
+        tableJson["hashFromVbs"] = table.hashFromVbs;
+        tableJson["hasDiffVbs"] = table.hasDiffVbs;
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {

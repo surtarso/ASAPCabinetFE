@@ -22,6 +22,10 @@
  * to media assets (images, videos, music) and metadata from vpxtool or vpsdb.json.
  * It supports rendering and sorting of tables in the ASAPCabinetFE application.
  */
+
+ // vpx = visual pinball X file
+ // vbs = visual basic script file
+ // vps = virtual pinball spreadsheet (database)
 struct TableData {
     // ------------------ FILE PATHS ------------------
     // We need to get the most out of the files before trying to
@@ -53,8 +57,8 @@ struct TableData {
     std::string launchAudio;     ///< Path to the custom launch audio, if available.
     std::string romPath;         ///< Path to the pinmame/roms/'romname'.zip
     std::string romName;         ///< file found in romPath without extension.
-    bool altSound = false;       ///< True if found the pinmame/altsound folder (non-empty)
-    bool altColor = false;       ///< True if found the pinmame/AltColor folder (non-empty)
+    bool hasAltSound = false;       ///< True if found the pinmame/altsound folder (non-empty)
+    bool hasAltColor = false;       ///< True if found the pinmame/AltColor folder (non-empty)
     bool hasPup = false;         ///< True if found the pupvideos/ folder (non-empty)
     bool hasAltMusic = false;    ///< True if found the music/ folder (non-empty)
     bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
@@ -104,15 +108,17 @@ struct TableData {
     //TODO: use this to control which scanner to use/increment so we dont have to rebuild
     std::string jsonOwner; ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
     
-    //TODO (not yet implemented)
+    //TODO: set those thru launcher (nyi)
     int playCount = 0; ///< capture successful launches
     bool isBroken = false;  ///< true if failed to load, dont increment playCount
-    float lastPlayTime = 0.0f;  ///< last session play time
-    float totalPlayTime = 0.0f; ///< sums lastPlayTime
+    float playTimeLast = 0.0f;  ///< last session play time
+    float playTimeTotal = 0.0f; ///< sums playTimeLast
+
+    //TODO: already collect,just need to use now.
     uint64_t fileLastModified; ///< Timestamp of the last modification of the .vpx file
-    std::string codeHash;      ///< SHA256 hash of internal .vpx VB script
-    std::string patchHash;     ///< SHA256 hash of (patched) sidecar vb script
-    bool vbsHasDiff = false;      ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
+    std::string hashFromVpx;      ///< SHA256 hash of internal .vpx VB script
+    std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
+    bool hasDiffVbs = false;      ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
 };
 
 #endif // TABLE_DATA_H

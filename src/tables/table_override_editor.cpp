@@ -43,8 +43,8 @@ TableOverrideEditor::TableOverrideEditor(TableData& table, TableOverrideManager&
         {"launchAudio", table_.launchAudio},
         {"romPath", table_.romPath},
         {"romName", table_.romName},
-        {"altSound", table_.altSound ? "true" : "false"},
-        {"altColor", table_.altColor ? "true" : "false"},
+        {"hasAltSound", table_.hasAltSound ? "true" : "false"},
+        {"hasAltColor", table_.hasAltColor ? "true" : "false"},
         {"hasPup", table_.hasPup ? "true" : "false"},
         {"hasAltMusic", table_.hasAltMusic ? "true" : "false"},
         {"hasUltraDMD", table_.hasUltraDMD ? "true" : "false"},
@@ -110,8 +110,8 @@ bool TableOverrideEditor::render() {
     ImGui::Separator();
     for (const auto& key : {"title", "manufacturer", "year", "vpxFile", "folder", "playfieldImage", "wheelImage",
                            "backglassImage", "dmdImage", "topperImage", "playfieldVideo", "backglassVideo",
-                           "dmdVideo", "topperVideo", "music", "launchAudio", "romPath", "romName", "altSound",
-                           "altColor", "hasPup", "hasAltMusic", "hasUltraDMD"}) {
+                           "dmdVideo", "topperVideo", "music", "launchAudio", "romPath", "romName", "hasAltSound",
+                           "hasAltColor", "hasPup", "hasAltMusic", "hasUltraDMD"}) {
         ImGui::Text("%s", key);
         ImGui::NextColumn();
 

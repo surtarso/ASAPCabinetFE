@@ -444,7 +444,7 @@ void PlayfieldOverlay::renderMetadataPanel() {
         }
         
         // --- Operational Tags / Status ---
-        if (currentTable.playCount > 0 || currentTable.hasPup || currentTable.altColor || currentTable.altSound ||
+        if (currentTable.playCount > 0 || currentTable.hasPup || currentTable.hasAltColor || currentTable.hasAltSound ||
             currentTable.hasAltMusic || currentTable.hasUltraDMD) { // Add other operational tags here
             
             if (file_meta_section_started || vpsdb_section_started) ImGui::Separator();
@@ -455,12 +455,12 @@ void PlayfieldOverlay::renderMetadataPanel() {
             ImGui::Text("Play Count: %i", currentTable.playCount);
         }
 
-        if (currentTable.lastPlayTime > 0) {
-            ImGui::Text("Play Count: %f", currentTable.lastPlayTime);
+        if (currentTable.playTimeLast > 0) {
+            ImGui::Text("Play Count: %f", currentTable.playTimeLast);
         }
 
-        if (currentTable.totalPlayTime > 0) {
-            ImGui::Text("Play Count: %f", currentTable.totalPlayTime);
+        if (currentTable.playTimeTotal > 0) {
+            ImGui::Text("Play Count: %f", currentTable.playTimeTotal);
         }
 
         if (currentTable.isBroken) {
@@ -474,10 +474,10 @@ void PlayfieldOverlay::renderMetadataPanel() {
         if (currentTable.hasPup) {
             features_line += "PUP ";
         }
-        if (currentTable.altColor) {
+        if (currentTable.hasAltColor) {
             features_line += "AltColor ";
         }
-        if (currentTable.altSound) {
+        if (currentTable.hasAltSound) {
             features_line += "AltSound ";
         }
         if (currentTable.hasAltMusic) {
