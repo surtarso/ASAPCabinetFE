@@ -178,14 +178,11 @@ You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/)
 - VPin/VPXTool team.
 - Virtual Pinball Database team.
 - VPForums/VPUniverse team.
-- A BIG THANK YOU for @jason @francisdb @superhac @Toxieainc.
+- A BIG THANK YOU for @jsm174 @francisdb @superhac @Toxieainc.
 - And a special thanks to @Snortt for bearing with me thru all of this.
-- Thanks everyone who helped making Visual Pinball X for Linux a reality.
-- Really, you guys rock.
+- Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock.
 
-## FOOTNOTE
+## Footnote
 If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
 
 Join the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions) page for questions and ideas!
-
-_PS: There is a [discontinued version](https://github.com/surtarso/asap-cabinet-fe) of this frontend in Python._
