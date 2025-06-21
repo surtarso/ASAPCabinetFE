@@ -57,8 +57,8 @@ struct TableData {
     std::string launchAudio;     ///< Path to the custom launch audio, if available.
     std::string romPath;         ///< Path to the pinmame/roms/'romname'.zip
     std::string romName;         ///< file found in romPath without extension.
-    bool hasAltSound = false;       ///< True if found the pinmame/altsound folder (non-empty)
-    bool hasAltColor = false;       ///< True if found the pinmame/AltColor folder (non-empty)
+    bool hasAltSound = false;    ///< True if found the pinmame/altsound folder (non-empty)
+    bool hasAltColor = false;    ///< True if found the pinmame/AltColor folder (non-empty)
     bool hasPup = false;         ///< True if found the pupvideos/ folder (non-empty)
     bool hasAltMusic = false;    ///< True if found the music/ folder (non-empty)
     bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
@@ -66,21 +66,21 @@ struct TableData {
     // ------------ FILE METADATA (vpin/vpxtool) -----------
     // we must keep repeated fields if found for better vpsdb matching 
     std::string tableName;       ///< Table name from file metadata (e.g., from vpin's `table_name`).
-    std::string tableAuthor;      ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
+    std::string tableAuthor;     ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
     std::string tableDescription;///< Description from file metadata (e.g., from vpin's `table_description`).
     std::string tableSaveDate;   ///< Save date from file metadata (e.g., from vpin's `table_save_date`).
-    std::string tableLastModified;    ///< Last modified date from file metadata (this is usually from file system, not internal metadata).
-    std::string tableReleaseDate;     ///< Release date from file metadata (e.g., from vpin's `release_date`).
+    std::string tableLastModified;///< Last modified date from file metadata (this is usually from file system, not internal metadata).
+    std::string tableReleaseDate;///< Release date from file metadata (e.g., from vpin's `release_date`).
     std::string tableVersion;    ///< Table version from file metadata (e.g., from vpin's `table_version`).
     std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).   
     std::string tableBlurb;      ///< Short blurb/summary from file metadata (from vpin's `table_blurb`).
     std::string tableRules;      ///< Rules from file metadata (from vpin's `table_rules`).
-    std::string tableAuthorEmail;     ///< Author's email from file metadata (from vpin's `author_email`).
-    std::string tableAuthorWebsite;   ///< Author's website from file metadata (from vpin's `author_website`).
+    std::string tableAuthorEmail;///< Author's email from file metadata (from vpin's `author_email`).
+    std::string tableAuthorWebsite;///< Author's website from file metadata (from vpin's `author_website`).
     // These are inside 'properties' dictionary in 'table_info'
-    std::string tableType;       ///< Table type from file metadata properties (e.g., from vpin's `properties.TableType`). (NEW)
-    std::string tableManufacturer;     ///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`). (NEW)
-    std::string tableYear;     ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`). (NEW)
+    std::string tableType;       ///< Table type from file metadata properties (e.g., from vpin's `properties.TableType`).
+    std::string tableManufacturer;///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`).
+    std::string tableYear;       ///< Year from file metadata properties (e.g., from vpin's `properties.CompanyYear` or `Year`).
 
     // --------------- VPSDB METADATA -------------
     // These fields will be populated ONLY IF a match is found in the VPS database.
@@ -104,21 +104,21 @@ struct TableData {
     std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
     
     // --------------- OPERATIONAL TAGS ------------------
-    float matchConfidence = 0.0f; ///< Confidence score of match with vpsdb
+    float matchConfidence = 0.0f;///< Confidence score of match with vpsdb
     //TODO: use this to control which scanner to use/increment so we dont have to rebuild
-    std::string jsonOwner; ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
+    std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
     
     //TODO: set those thru launcher (nyi)
-    int playCount = 0; ///< capture successful launches
-    bool isBroken = false;  ///< true if failed to load, dont increment playCount
-    float playTimeLast = 0.0f;  ///< last session play time
-    float playTimeTotal = 0.0f; ///< sums playTimeLast
+    int playCount = 0;           ///< capture successful launches
+    bool isBroken = false;       ///< true if failed to load, dont increment playCount
+    float playTimeLast = 0.0f;   ///< last session play time
+    float playTimeTotal = 0.0f;  ///< sums playTimeLast
 
     //TODO: already collect,just need to use now.
-    uint64_t fileLastModified; ///< Timestamp of the last modification of the .vpx file
-    std::string hashFromVpx;      ///< SHA256 hash of internal .vpx VB script
+    uint64_t fileLastModified;   ///< Timestamp of the last modification of the .vpx file
+    std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
     std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
-    bool hasDiffVbs = false;      ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
+    bool hasDiffVbs = false;     ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
 };
 
 #endif // TABLE_DATA_H
