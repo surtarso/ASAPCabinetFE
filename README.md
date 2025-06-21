@@ -173,7 +173,17 @@ We’re dreaming big! Help us bring these features to life:
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
 You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
-### FOOTNOTE
+## Acknowledgments
+- Visual Pinball X team.
+- VPin/VPXTool team.
+- Virtual Pinball Database team.
+- VPForums/VPUniverse team.
+- A BIG THANK YOU for @jason @francisdb @superhac @Toxieainc.
+- And a special thanks to @Snortt for bearing with me thru all of this.
+- Thanks everyone who helped making Visual Pinball X for Linux a reality.
+- Really, you guys rock.
+
+## FOOTNOTE
 If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
 
 Join the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions) page for questions and ideas!
