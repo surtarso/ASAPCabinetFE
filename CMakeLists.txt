@@ -300,6 +300,7 @@ set(SOURCES
     src/tables/vpsdb/vpsdb_catalog_json.cpp
     src/tables/vpsdb/vpsdb_catalog_table.cpp
     src/utils/path_utils.cpp
+    src/utils/sha_utils.cpp
     src/utils/string_utils.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources added directly from FetchContent path
