@@ -54,6 +54,7 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
 - Browse [VPSDb](https://virtual-pinball-spreadsheet.web.app/) to **find and download** new tables.
 - **Create** custom table overrides for media or metadata.
+- Automatically apply or update table patches from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
 - Sort tables by title, type, manufacturer, year or author.
 - Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
@@ -163,7 +164,6 @@ Start the table in "Screenshot Mode" (default: s) and follow the on-screen instr
 ## Planned Features:
 We’re dreaming big! Help us bring these features to life:
 
-- Automatic table downloads.
 - Multi-launchers.
 - In-game video recording.
 - Attract Mode.
