@@ -236,8 +236,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["jsonOwner"] = table.jsonOwner;
         tableJson["playCount"] = table.playCount;
-        tableJson["lastplayTime"] = table.playTimeLast;
-        tableJson["totalplayTime"] = table.playTimeTotal;
+        tableJson["playTimeLast"] = table.playTimeLast;
+        tableJson["playTimeTotal"] = table.playTimeTotal;
         tableJson["isBroken"] = table.isBroken;
         tableJson["fileLastModified"] = table.fileLastModified;
         tableJson["hashFromVpx"] = table.hashFromVpx;

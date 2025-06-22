@@ -13,9 +13,10 @@
 #include "table_loader.h"
 #include "asap_index_manager.h"
 #include "file_scanner.h"
-#include "vpin_scanner.h" // Renamed from vpin_scanner.h
-#include "vpxtool_scanner.h"   // New scanner
-#include "vpsdb/vps_database_client.h" // Still needed for VPSDB client within scanners
+#include "vpin_scanner.h"
+#include "vpxtool_scanner.h"
+#include "vpsdb/vps_database_client.h"
+#include "table_patcher.h"
 #include "log/logging.h"
 #include <algorithm>
 #include <cctype>
@@ -103,12 +104,24 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             }
         }
     }
+
+    // ----------------- AUTO PATCHER -----------------
+    if (settings.autoPatchTables) {
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Patching tables...";
+            progress->currentStage = 4;
+        }
+        TablePatcher patcher;
+        patcher.patchTables(settings, tables, progress);
+    }
+
     // -------------- OVERRIDES AND SORTING  -------------
     // Stage 4: Apply per-table overrides
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Applying table overrides...";
-        progress->currentStage = 4;
+        progress->currentStage = 5;
     }
     TableOverrideManager overrideManager;
     for (auto& table : tables) {
@@ -119,7 +132,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
-        progress->currentStage = 5;
+        progress->currentStage = 6;
     }
     
     sortTables(tables, settings.titleSortBy, progress);
@@ -129,7 +142,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->currentTask = "Loading complete";
         progress->currentTablesLoaded = tables.size();
         progress->totalTablesToLoad = tables.size();
-        progress->currentStage = 6;
+        progress->currentStage = 7;
     }
     return tables;
 }

@@ -32,6 +32,7 @@ struct Settings {
     std::string vpxIniPath = ""; // imguifiledialog
     std::string vpxStartArgs = "";
     std::string vpxEndArgs = "";
+    bool autoPatchTables = false; //TODO: nyi
 
     // [DPISettings]
     float dpiScale = 1.0f; // 0.1-1.0
@@ -62,7 +63,7 @@ struct Settings {
     std::string customLaunchSound = "audio/launch.mp3";
 
     // [WindowSettings]
-    std::string videoBackend = "vlc"; // + 'ffmpeg', 'gstreamer', 'novideo'
+    std::string videoBackend = "vlc"; // + 'ffmpeg', 'novideo'
     bool useVPinballXIni = true; // use vpx_ini_reader
     int playfieldWindowWidth = 1080;
     int playfieldWindowHeight = 1920;
@@ -311,7 +312,8 @@ private:
                 {"VPinballXPath", s.VPinballXPath},
                 {"vpxIniPath", s.vpxIniPath},
                 {"vpxStartArgs", s.vpxStartArgs},
-                {"vpxEndArgs", s.vpxEndArgs}
+                {"vpxEndArgs", s.vpxEndArgs},
+                {"autoPatchTables", s.autoPatchTables}
             }},
             {"DPISettings", {
                 {"dpiScale", s.dpiScale},
@@ -483,6 +485,7 @@ private:
         s.vpxIniPath = j.value("VPX", nlohmann::json{}).value("vpxIniPath", s.vpxIniPath);
         s.vpxStartArgs = j.value("VPX", nlohmann::json{}).value("vpxStartArgs", s.vpxStartArgs);
         s.vpxEndArgs = j.value("VPX", nlohmann::json{}).value("vpxEndArgs", s.vpxEndArgs);
+        s.autoPatchTables = j.value("VPX", nlohmann::json{}).value("autoPatchTables", s.autoPatchTables);
 
         // DPISettings
         s.dpiScale = j.value("DPISettings", nlohmann::json{}).value("dpiScale", s.dpiScale);
@@ -716,6 +719,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                "\n"
                                                "Final command:\n"
                                                "StartArgs VPinballXPath -play VPXTablesPath/<selectedtable>.vpx EndArgs"}},
+    {"autoPatchTables",{Settings::ReloadType::None, "Automatically apply latest VBScript patches during table scans.\n"}},
     // DPISettings (TODO: Should also reload fonts!)
     {"dpiScale", {Settings::ReloadType::Windows, "Manual DPI scale override.\n"
                                                 "Only used when EnableDpiScaling is false.\n"

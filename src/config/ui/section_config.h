@@ -334,14 +334,16 @@ public:
             "VPinballXPath",
             "vpxIniPath",
             "vpxStartArgs",
-            "vpxEndArgs"
+            "vpxEndArgs",
+            "autoPatchTables"
         };
         keyDisplayNames_["VPX"] = {
             {"VPXTablesPath", "VPX Tables Path"},
             {"VPinballXPath", "VPinballX Path"},
             {"vpxIniPath", "VPX INI Path"},
             {"vpxStartArgs", "VPX Start Arguments"},
-            {"vpxEndArgs", "VPX End Arguments"}
+            {"vpxEndArgs", "VPX End Arguments"},
+            {"autoPatchTables", "Automatically Patch Tables"}
         };
 
         keyOrders_["DefaultMedia"] = {

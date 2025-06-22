@@ -29,22 +29,80 @@
 namespace fs = std::filesystem;
 
 std::string normalize_line_endings(const std::string& input) {
-    std::string result = input;
-    size_t pos = 0;
-    while ((pos = result.find("\r\n", pos)) != std::string::npos) {
-        result.replace(pos, 2, "\n");
+    std::string result;
+    result.reserve(input.size());
+    bool last_was_cr = false;
+    for (char c : input) {
+        if (c == '\r') {
+            last_was_cr = true;
+            continue;
+        }
+        if (c == '\n') {
+            result += "\r\n";
+            last_was_cr = false;
+            continue;
+        }
+        if (last_was_cr) {
+            result += "\r\n";
+            last_was_cr = false;
+        }
+        result += c;
     }
-    pos = 0;
-    while ((pos = result.find("\n", pos)) != std::string::npos) {
-        result.replace(pos, 1, "\r\n");
-        pos += 2;
+    if (last_was_cr) {
+        result += "\r\n";
     }
     return result;
 }
 
 std::string calculate_string_sha256(const std::string& input) {
     std::string normalized = normalize_line_endings(input);
-    
+
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if (!mdctx) {
+        LOG_ERROR("FileScanner: Failed to create EVP_MD_CTX");
+        return "";
+    }
+
+    if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        LOG_ERROR("FileScanner: Failed to initialize SHA256 digest");
+        return "";
+    }
+
+    if (EVP_DigestUpdate(mdctx, normalized.c_str(), normalized.size()) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        LOG_ERROR("FileScanner: Failed to update SHA256 digest");
+        return "";
+    }
+
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len;
+    if (EVP_DigestFinal_ex(mdctx, hash, &hash_len) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        LOG_ERROR("FileScanner: Failed to finalize SHA256 digest");
+        return "";
+    }
+
+    EVP_MD_CTX_free(mdctx);
+
+    std::stringstream ss;
+    for (unsigned int i = 0; i < hash_len; ++i) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+    }
+    return ss.str();
+}
+
+std::string compute_file_sha256(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
+        LOG_ERROR("FileScanner: Failed to open file for hashing: " << filename);
+        return "";
+    }
+
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    std::string normalized = normalize_line_endings(content);
+
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     if (!mdctx) {
         LOG_ERROR("FileScanner: Failed to create EVP_MD_CTX");
@@ -82,21 +140,19 @@ std::string calculate_string_sha256(const std::string& input) {
 
 std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
-    std::mutex tables_mutex;  // To protect the tables vector
+    std::mutex tables_mutex;
 
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
         LOG_ERROR("FileScanner: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
         return tables;
     }
 
-    // Initialize progress
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->totalTablesToLoad = 0;
         progress->currentTablesLoaded = 0;
     }
 
-    // Step 1: Collect all VPX file paths
     std::vector<fs::path> vpx_files;
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
@@ -108,7 +164,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         }
     }
 
-    // Step 2: Process files in parallel
     std::vector<std::future<void>> futures;
     std::regex year_regex(R"(\b(19|20)\d{2}\b)");
 
@@ -119,9 +174,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.folder = path.parent_path().string();
             table.title = path.stem().string();
 
-            // Get file last modified time
             try {
-                auto ftime = fs::last_write_time(path); // Get last modification time
+                auto ftime = fs::last_write_time(path);
                 auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
                 );
@@ -130,10 +184,9 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 ).count();
             } catch (const fs::filesystem_error& e) {
                 LOG_ERROR("FileScanner: Failed to get last modified time for " << path << ": " << e.what());
-                table.fileLastModified = 0; // Fallback to 0 on error
+                table.fileLastModified = 0;
             }
 
-            // Extract Year from filename
             std::smatch match;
             if (std::regex_search(table.title, match, year_regex)) {
                 table.year = match.str(0);
@@ -141,7 +194,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.year = "";
             }
 
-            // Extract Manufacturer from filename and CAPITALIZE IT
             std::string lowerTitle = table.title;
             std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(),
                            [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
@@ -155,9 +207,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 LOG_DEBUG("FileScanner: No known manufacturer found in filename: " << table.title);
             }
 
-            // Extract and hash VB script from VPX
             char* code_ptr = get_vpx_gamedata_code(table.vpxFile.c_str());
-            std::string vpx_script;  // Define locally to avoid referencing issues
+            std::string vpx_script;
             if (code_ptr != nullptr) {
                 vpx_script = std::string(code_ptr);
                 free_rust_string(code_ptr);
@@ -168,36 +219,37 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.hashFromVpx = "";
             }
 
-            // Check for corresponding .vbs file
             fs::path vbs_path = path.parent_path() / (path.stem().string() + ".vbs");
             if (fs::exists(vbs_path)) {
-                std::ifstream vbs_file(vbs_path, std::ios::binary);
-                if (vbs_file.is_open()) {
-                    std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
-                    vbs_file.close();
-                    table.hashFromVbs = calculate_string_sha256(vbs_content);
+                table.hashFromVbs = compute_file_sha256(vbs_path.string());
+                if (table.hashFromVbs.empty()) {
+                    LOG_ERROR("FileScanner: Failed to compute hash for .vbs file: " << vbs_path.string());
+                    table.hasDiffVbs = false;
+                } else {
                     LOG_INFO("FileScanner: hashFromVbs for " << vbs_path.string() << ": " << table.hashFromVbs);
-
-                    // Compare with VPX script if it exists
                     if (!vpx_script.empty()) {
-                        table.hasDiffVbs = (vpx_script != vbs_content);
-                        if (table.hasDiffVbs) {
-                            LOG_INFO("FileScanner: .vbs differs from VPX script for " << table.title);
+                        std::ifstream vbs_file(vbs_path, std::ios::binary);
+                        if (vbs_file.is_open()) {
+                            std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
+                            table.hasDiffVbs = (vpx_script != vbs_content);
+                            if (table.hasDiffVbs) {
+                                LOG_INFO("FileScanner: .vbs differs from VPX script for " << table.title);
+                            }
+                            vbs_file.close();
+                        } else {
+                            LOG_ERROR("FileScanner: Failed to open .vbs file for comparison: " << vbs_path.string());
+                            table.hasDiffVbs = false;
                         }
                     } else {
-                        table.hasDiffVbs = false;  // No VPX script to compare, keep false
+                        table.hasDiffVbs = false;
                     }
-                } else {
-                    LOG_ERROR("FileScanner: Failed to open .vbs file: " << vbs_path.string());
-                    table.hashFromVbs = "";
-                    table.hasDiffVbs = false;
                 }
             } else {
                 table.hashFromVbs = "";
                 table.hasDiffVbs = false;
+                LOG_DEBUG("FileScanner: No .vbs file found for " << table.title);
             }
 
-            // Media paths (audios, images, videos)
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
             table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
@@ -226,13 +278,11 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             table.jsonOwner = "System File Scan";
 
-            // Thread-safe addition to tables
             {
                 std::lock_guard<std::mutex> lock(tables_mutex);
                 tables.push_back(table);
             }
 
-            // Thread-safe progress update
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTablesLoaded++;
@@ -240,7 +290,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         }, vpx_path));
     }
 
-    // Step 3: Wait for all tasks to complete
     for (auto& future : futures) {
         future.wait();
     }

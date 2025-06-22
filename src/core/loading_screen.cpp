@@ -123,6 +123,7 @@ void LoadingScreen::render() {
         "Loading Tables Index",
         "Scanning VPX Files",
         "Parsing Metadata",
+        "Applying Patches",
         "Saving Index",
         "Sorting",
         "Loading Complete"
