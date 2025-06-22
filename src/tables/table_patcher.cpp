@@ -45,7 +45,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                 CURL* curl;
                 CURLcode res;
                 std::string tempBuffer;
-                curl_global_init(CURL_GLOBAL_DEFAULT);
+                // curl_global_init(CURL_GLOBAL_DEFAULT);
                 curl = curl_easy_init();
                 if (curl) {
                     curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json");
@@ -61,7 +61,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                         if (responseCode == 304) { // Not Modified
                             LOG_DEBUG("TablePatcher: Cached hashes.json is up-to-date");
                             curl_easy_cleanup(curl);
-                            curl_global_cleanup();
+                            // curl_global_cleanup();
                             return readBuffer;
                         }
                     } else {
@@ -71,7 +71,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                 } else {
                     LOG_ERROR("TablePatcher: Failed to initialize curl for modification check");
                 }
-                curl_global_cleanup();
+                // curl_global_cleanup();
             } catch (const fs::filesystem_error& e) {
                 LOG_WARN("TablePatcher: Failed to get last modified time for " << cachePath << ": " << e.what());
             }
@@ -84,7 +84,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
     CURL* curl;
     CURLcode res;
     readBuffer.clear();
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    // curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json");
@@ -110,7 +110,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
     } else {
         LOG_ERROR("TablePatcher: Failed to initialize curl");
     }
-    curl_global_cleanup();
+    // curl_global_cleanup();
     return readBuffer;
 }
 
@@ -173,7 +173,7 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
     int retryCount = 0;
 
     while (retryCount < maxRetries) {
-        curl_global_init(CURL_GLOBAL_DEFAULT);
+        // curl_global_init(CURL_GLOBAL_DEFAULT);
         curl = curl_easy_init();
         if (curl) {
             curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
@@ -195,7 +195,7 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
                     outFile.close();
                     LOG_INFO("TablePatcher: Successfully saved .vbs to " << savePath);
                     curl_easy_cleanup(curl);
-                    curl_global_cleanup();
+                    // curl_global_cleanup();
                     return;
                 } else {
                     LOG_ERROR("TablePatcher: Failed to open file for writing at " << savePath);
@@ -207,7 +207,7 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
         } else {
             LOG_ERROR("TablePatcher: Failed to initialize curl for .vbs download");
         }
-        curl_global_cleanup();
+        // curl_global_cleanup();
         retryCount++;
         if (retryCount < maxRetries) {
             LOG_INFO("TablePatcher: Retrying download for " << encodedUrl << ", attempt " << retryCount + 1);

@@ -11,6 +11,7 @@
 #include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
+#include <curl/curl.h>
 #include "log/logging.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -70,6 +71,9 @@ struct SDLBootstrap {
             throw std::runtime_error("Main: IMG initialization failed");
         }
         LOG_DEBUG("Main: SDL subsystems initialized");
+        // Initialize libcurl
+        curl_global_init(CURL_GLOBAL_DEFAULT);
+        LOG_DEBUG("Main: Initialized libcurl");
     }
 
     /**
@@ -84,6 +88,8 @@ struct SDLBootstrap {
         SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
         SDL_Quit();
         LOG_DEBUG("Main: Subsystems cleaned up");
+        // Cleanup libcurl
+        curl_global_cleanup();
     }
 };
 
@@ -99,8 +105,7 @@ struct SDLBootstrap {
  * @return 0 on successful execution or version display, non-zero on failure.
  */
 int main(int argc, char* argv[]) {
-    // std::string configPath = "data/settings.json";
-    // // Resolve exeDir
+    // Resolve exeDir
     std::string exeDir;
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);

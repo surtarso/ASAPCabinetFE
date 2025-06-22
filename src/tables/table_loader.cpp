@@ -94,13 +94,15 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             }
 
             // Stage 3: Save asapcab_index.json after metadata matchmaking (from either scanner)
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Saving metadata to index...";
-                progress->currentStage = 3;
-            }
-            if (!tables.empty()) {
-                AsapIndexManager::save(settings, tables, progress);
+            if (!settings.autoPatchTables) { // Only save if not patching, as patching will save later
+                if (progress) {
+                    std::lock_guard<std::mutex> lock(progress->mutex);
+                    progress->currentTask = "Saving metadata to index...";
+                    progress->currentStage = 3;
+                }
+                if (!tables.empty()) {
+                    AsapIndexManager::save(settings, tables, progress);
+                }
             }
         }
     }
@@ -114,6 +116,15 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
         TablePatcher patcher;
         patcher.patchTables(settings, tables, progress);
+        // Save updated metadata after patching
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Saving updated metadata after patching...";
+            progress->currentStage = 4;
+        }
+        if (!tables.empty()) {
+            AsapIndexManager::save(settings, tables, progress);
+        }
     }
 
     // -------------- OVERRIDES AND SORTING  -------------
