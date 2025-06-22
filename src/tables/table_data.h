@@ -105,6 +105,12 @@ struct TableData {
     
     // --------------- OPERATIONAL TAGS ------------------
     float matchConfidence = 0.0f;///< Confidence score of match with vpsdb
+    uint64_t fileLastModified;   ///< Timestamp of the last modification of the .vpx file
+    // vbs script patcher related
+    std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
+    std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
+    bool hasDiffVbs = false;     ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
+    
     //TODO: use this to control which scanner to use/increment so we dont have to rebuild
     std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
     
@@ -114,11 +120,7 @@ struct TableData {
     float playTimeLast = 0.0f;   ///< last session play time
     float playTimeTotal = 0.0f;  ///< sums playTimeLast
 
-    //TODO: already collect,just need to use now.
-    uint64_t fileLastModified;   ///< Timestamp of the last modification of the .vpx file
-    std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
-    std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
-    bool hasDiffVbs = false;     ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
+    
 };
 
 #endif // TABLE_DATA_H
