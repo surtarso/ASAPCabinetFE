@@ -51,6 +51,7 @@ public:
             "metadataPanelWidth",
             "metadataPanelHeight",
             "metadataPanelAlpha",
+            "useVpxtool",
             "fetchVPSdb",
             "forceRebuildMetadata",
             "titleWeight",
@@ -63,11 +64,12 @@ public:
         keyDisplayNames_["TableMetadata"] = {
             {"titleSource", "Table Info"},
             {"titleSortBy", "Sort By"},
+            {"useVpxtool", "Use VPXTool"},
+            {"fetchVPSdb", "Use VPS Database"},
             {"showMetadata", "Show Metadata"},
             {"metadataPanelWidth", "Panel Width"},
             {"metadataPanelHeight", "Panel Height"},
             {"metadataPanelAlpha", "Panel Opacity"},
-            {"fetchVPSdb", "Fetch VPS Database"},
             {"forceRebuildMetadata", "Rebuild Metadata"}
         };
         keyDropdownOptions_["TableMetadata"] = {

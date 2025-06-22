@@ -73,23 +73,31 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
         // ------------- METADATA SCANNERS --------------
         if (settings.titleSource == "metadata") {
-            // Stage 2: Attempt to scan with VPXToolScanner first
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Scanning metadata with VPXTool...";
-                progress->currentStage = 2;
-            }
-            // If VPXToolScanner successfully loaded and processed vpxtool_index.json,
-            // it will have updated the tables. We don't need to call VPinFileScanner.
-            if (!VPXToolScanner::scanFiles(settings, tables, progress)) {
-                // If VPXToolScanner skipped (e.g., no vpxtool_index.json or invalid),
-                // then proceed with VPinFileScanner.
-                LOG_INFO("TableLoader: VPXTool skipped or failed. Proceeding with VPin File Scanner.");
+            if (settings.useVpxtool) {
+                // Stage 2: Attempt to scan with VPXToolScanner if useVpxtool is true
+                if (progress) {
+                    std::lock_guard<std::mutex> lock(progress->mutex);
+                    progress->currentTask = "Scanning metadata with VPXTool...";
+                    progress->currentStage = 2;
+                }
+                if (!VPXToolScanner::scanFiles(settings, tables, progress)) {
+                    // If VPXToolScanner fails (e.g., no vpxtool_index.json or invalid), fall back to VPinScanner
+                    LOG_INFO("TableLoader: VPXTool skipped or failed. Proceeding with VPin File Scanner.");
+                    if (progress) {
+                        std::lock_guard<std::mutex> lock(progress->mutex);
+                        progress->currentTask = "Scanning metadata with VPin...";
+                        progress->currentStage = 2; // Still stage 2 for metadata scanning
+                    }
+                    VPinScanner::scanFiles(settings, tables, progress);
+                }
+            } else {
+                // Stage 2: Skip VPXToolScanner and use VPinScanner directly if useVpxtool is false
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->currentTask = "Scanning metadata with VPin...";
-                    progress->currentStage = 2; // Still stage 2 for metadata scanning
+                    progress->currentStage = 2;
                 }
+                LOG_INFO("TableLoader: useVpxtool is false, using VPin File Scanner.");
                 VPinScanner::scanFiles(settings, tables, progress);
             }
 

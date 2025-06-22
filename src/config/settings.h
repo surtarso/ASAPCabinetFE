@@ -91,6 +91,7 @@ struct Settings {
     // [TableMetadata]
     std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
+    bool useVpxtool = false;
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
     bool showMetadata = false;
@@ -369,6 +370,7 @@ private:
             {"TableMetadata", {
                 {"titleSource", s.titleSource},
                 {"fetchVPSdb", s.fetchVPSdb},
+                {"useVpxtool", s.useVpxtool},
                 {"forceRebuildMetadata", s.forceRebuildMetadata},
                 {"titleSortBy", s.titleSortBy},
                 {"showMetadata", s.showMetadata},
@@ -541,6 +543,7 @@ private:
         // TableMetadata
         s.titleSource = j.value("TableMetadata", nlohmann::json{}).value("titleSource", s.titleSource);
         s.fetchVPSdb = j.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", s.fetchVPSdb);
+        s.useVpxtool = j.value("TableMetadata", nlohmann::json{}).value("useVpxtool", s.useVpxtool);
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
         s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
         s.showMetadata = j.value("TableMetadata", nlohmann::json{}).value("showMetadata", s.showMetadata);
@@ -830,6 +833,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Fetches Virtual Pinball Spreadsheet database and\n"
                                                "attempts to match with file metadata to improve information.\n"
                                                "TIP: Leave this OFF after you're happy with the metadata.\n"}},
+    {"useVpxtool",{Settings::ReloadType::Tables, "Use an existing vpxtool_index.json or run vpxtool instead of internal VPin."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
                                                            "You need to rebuild if changing metadata options.\n"
                                                            "TIP: Leave this OFF after rebuilding metadata."}},
