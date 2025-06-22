@@ -14,8 +14,8 @@ public:
     void patchTables(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
 
 private:
-    /** Downloads the hashes.json file from the specified GitHub URL. */
-    std::string downloadHashesJson();
+    /** Downloads the hashes.json file from the specified GitHub URL, using cache if available. */
+    std::string downloadHashesJson(const Settings& settings);
 
     /** Parses the downloaded JSON content into a nlohmann::json object. */
     nlohmann::json parseHashesJson(const std::string& jsonContent);

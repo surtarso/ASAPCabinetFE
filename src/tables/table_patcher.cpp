@@ -2,6 +2,7 @@
 #include "utils/sha_utils.h"
 #include "log/logging.h"
 #include <curl/curl.h>
+#include <filesystem>
 #include <fstream>
 #include <thread>
 #include <chrono>
@@ -12,11 +13,77 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
     return totalSize;
 }
 
-std::string TablePatcher::downloadHashesJson() {
-    CURL* curl;
-    CURLcode res;
+std::string TablePatcher::downloadHashesJson(const Settings& settings) {
+    namespace fs = std::filesystem;
+    std::string cachePath = settings.exeDir + "data/hashes.json";
     std::string readBuffer;
 
+    // Ensure data directory exists
+    try {
+        fs::create_directories(settings.exeDir + "data/");
+    } catch (const fs::filesystem_error& e) {
+        LOG_ERROR("TablePatcher: Failed to create data directory: " << e.what());
+        return "";
+    }
+
+    // Check if forceRebuildMetadata is false and cached file exists
+    if (!settings.forceRebuildMetadata && fs::exists(cachePath)) {
+        std::ifstream cacheFile(cachePath, std::ios::binary);
+        if (cacheFile.is_open()) {
+            readBuffer.assign((std::istreambuf_iterator<char>(cacheFile)), std::istreambuf_iterator<char>());
+            cacheFile.close();
+            LOG_INFO("TablePatcher: Loaded hashes.json from cache: " << cachePath);
+
+            // Get file's last-modified time for If-Modified-Since
+            try {
+                auto ftime = fs::last_write_time(cachePath);
+                auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+                );
+                auto lastModified = std::chrono::system_clock::to_time_t(sctp);
+
+                CURL* curl;
+                CURLcode res;
+                std::string tempBuffer;
+                curl_global_init(CURL_GLOBAL_DEFAULT);
+                curl = curl_easy_init();
+                if (curl) {
+                    curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json");
+                    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+                    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempBuffer);
+                    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L); // HEAD request
+                    curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+                    curl_easy_setopt(curl, CURLOPT_TIMEVALUE, lastModified);
+                    res = curl_easy_perform(curl);
+                    if (res == CURLE_OK) {
+                        long responseCode;
+                        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+                        if (responseCode == 304) { // Not Modified
+                            LOG_DEBUG("TablePatcher: Cached hashes.json is up-to-date");
+                            curl_easy_cleanup(curl);
+                            curl_global_cleanup();
+                            return readBuffer;
+                        }
+                    } else {
+                        LOG_WARN("TablePatcher: Failed to check hashes.json modification: " << curl_easy_strerror(res));
+                    }
+                    curl_easy_cleanup(curl);
+                } else {
+                    LOG_ERROR("TablePatcher: Failed to initialize curl for modification check");
+                }
+                curl_global_cleanup();
+            } catch (const fs::filesystem_error& e) {
+                LOG_WARN("TablePatcher: Failed to get last modified time for " << cachePath << ": " << e.what());
+            }
+        } else {
+            LOG_WARN("TablePatcher: Failed to open cached hashes.json: " << cachePath);
+        }
+    }
+
+    // Download fresh copy
+    CURL* curl;
+    CURLcode res;
+    readBuffer.clear();
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
@@ -24,11 +91,20 @@ std::string TablePatcher::downloadHashesJson() {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
+        if (res == CURLE_OK) {
+            LOG_INFO("TablePatcher: Successfully downloaded hashes.json");
+            // Save to cache
+            std::ofstream outFile(cachePath, std::ios::binary);
+            if (outFile.is_open()) {
+                outFile.write(readBuffer.data(), readBuffer.size());
+                outFile.close();
+                LOG_INFO("TablePatcher: Saved hashes.json to cache: " << cachePath);
+            } else {
+                LOG_ERROR("TablePatcher: Failed to save hashes.json to " << cachePath);
+            }
+        } else {
             LOG_ERROR("TablePatcher: Failed to download hashes.json: " << curl_easy_strerror(res));
             readBuffer.clear();
-        } else {
-            LOG_INFO("TablePatcher: Successfully downloaded hashes.json");
         }
         curl_easy_cleanup(curl);
     } else {
@@ -142,9 +218,7 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
 }
 
 void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
-    (void)settings;
-
-    std::string jsonContent = downloadHashesJson();
+    std::string jsonContent = downloadHashesJson(settings);
     if (jsonContent.empty()) {
         LOG_ERROR("TablePatcher: Aborting patch process due to empty hashes.json content");
         return;
