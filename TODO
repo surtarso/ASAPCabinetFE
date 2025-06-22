@@ -10,7 +10,6 @@ FIX:
 
 QOL:
 - refactor the monoliths...
-- grab hashes.json (or update) to get links for patches from hashes. ( https://github.com/jsm174/vpx-standalone-scripts/blob/master/hashes.json ) table manager?
 - grab images from vpinmdb? ( https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json ) table manager? vpsdb(id)
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
