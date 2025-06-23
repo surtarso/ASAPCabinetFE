@@ -166,7 +166,8 @@ public:
      */
     static std::unique_ptr<IInputManager> createInputManager(IKeybindProvider* keybindProvider,
                                                             IScreenshotManager* screenshotManager,
-                                                            ITableLauncher* tableLauncher);
+                                                            ITableLauncher* tableLauncher,
+                                                            ITableCallbacks* tableCallbacks);
 
     /**
      * @brief Creates a configuration UI instance.
@@ -189,6 +190,16 @@ public:
                                                     App* app, bool& showConfig);
 
     static std::unique_ptr<ITableLauncher> createTableLauncher(IConfigService* configService);                                                    
+
+    /**
+     * @brief Creates a table callbacks instance.
+     *
+     * Initializes an AsapIndexManager with the configuration service to handle table data persistence.
+     *
+     * @param configService The configuration service for settings.
+     * @return A unique pointer to an ITableCallbacks instance.
+     */
+    static std::unique_ptr<ITableCallbacks> createTableCallbacks(IConfigService* configService);
 };
 
 #endif // DEPENDENCY_FACTORY_H

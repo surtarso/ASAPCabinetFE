@@ -26,6 +26,7 @@
 #include "render/iasset_manager.h"
 #include "launcher/itable_launcher.h"
 #include "tables/itable_loader.h"
+#include "tables/itable_callbacks.h"
 #include "tables/table_data.h"
 #include "tables/table_override_editor.h"
 #include "tables/table_override_manager.h"
@@ -142,6 +143,7 @@ private:
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<IInputManager> inputManager_;        ///< Manager for input events.
     std::unique_ptr<ITableLoader> tableLoader_;          ///< Loader for table data.
+    std::unique_ptr<ITableCallbacks> tableCallbacks_;
     std::vector<TableData> tables_;                      ///< List of table data.
     std::unique_ptr<PlayfieldOverlay> playfieldOverlay_; ///< Overlay for ImGui UI elements.
     bool prevShowConfig_ = false;                        ///< Previous state of showConfig_ flag.

@@ -456,11 +456,23 @@ void PlayfieldOverlay::renderMetadataPanel() {
         }
 
         if (currentTable.playTimeLast > 0) {
-            ImGui::Text("Play Count: %f", currentTable.playTimeLast);
+            int totalSeconds = static_cast<int>(currentTable.playTimeLast);
+            int hours = totalSeconds / 3600;
+            int minutes = (totalSeconds % 3600) / 60;
+            int seconds = totalSeconds % 60;
+            char timeStr[16];
+            sprintf(timeStr, "%02d:%02d:%02d", hours, minutes, seconds);
+            ImGui::Text("Last Session Playtime: %s", timeStr);
         }
 
         if (currentTable.playTimeTotal > 0) {
-            ImGui::Text("Play Count: %f", currentTable.playTimeTotal);
+            int totalSeconds = static_cast<int>(currentTable.playTimeTotal);
+            int hours = totalSeconds / 3600;
+            int minutes = (totalSeconds % 3600) / 60;
+            int seconds = totalSeconds % 60;
+            char timeStr[16];
+            sprintf(timeStr, "%02d:%02d:%02d", hours, minutes, seconds);
+            ImGui::Text("Total Time Played: %s", timeStr);
         }
 
         if (currentTable.isBroken) {

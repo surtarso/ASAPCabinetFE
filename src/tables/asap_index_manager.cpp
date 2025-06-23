@@ -18,6 +18,8 @@
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
 
+AsapIndexManager::AsapIndexManager(const Settings& settings) : settings_(settings) {}
+
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
         LOG_INFO("AsapIndexManager: asapcab_index.json not found at: " << settings.indexPath << ". Will create a new one on save.");

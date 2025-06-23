@@ -27,6 +27,7 @@
 //TODO: use table_data.jsonOwner to decide on incremental updates
 std::vector<TableData> TableLoader::loadTableList(const Settings& settings, LoadingProgress* progress) {
     std::vector<TableData> tables;
+    AsapIndexManager indexManager(settings);
 
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -40,7 +41,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     }
     // Stage 1: Load from index or scan VPX files
     // -------- ASAP INDEX FOUND - WE'RE DONE HERE ---------
-    if (!settings.forceRebuildMetadata && AsapIndexManager::load(settings, tables, progress)) {
+    if (!settings.forceRebuildMetadata && indexManager.load(settings, tables, progress)) {
         LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from asapcab_index.json");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
@@ -69,7 +70,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentStage = 1;
         }
         if (!tables.empty()) {
-            AsapIndexManager::save(settings, tables, progress);
+            indexManager.save(settings, tables, progress);
         }
         // ------------- METADATA SCANNERS --------------
         if (settings.titleSource == "metadata") {
@@ -109,7 +110,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     progress->currentStage = 3;
                 }
                 if (!tables.empty()) {
-                    AsapIndexManager::save(settings, tables, progress);
+                    indexManager.save(settings, tables, progress);
                 }
             }
         }
@@ -131,7 +132,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->currentStage = 4;
         }
         if (!tables.empty()) {
-            AsapIndexManager::save(settings, tables, progress);
+            indexManager.save(settings, tables, progress);
         }
     }
 

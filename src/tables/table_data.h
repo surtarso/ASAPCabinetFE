@@ -110,17 +110,14 @@ struct TableData {
     std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
     std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
     bool hasDiffVbs = false;     ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
-    
-    //TODO: use this to control which scanner to use/increment so we dont have to rebuild
-    std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
-    
-    //TODO: set those thru launcher (nyi)
+    // table launch related
     int playCount = 0;           ///< capture successful launches
     bool isBroken = false;       ///< true if failed to load, dont increment playCount
     float playTimeLast = 0.0f;   ///< last session play time
     float playTimeTotal = 0.0f;  ///< sums playTimeLast
 
-    
+    //TODO: use this to control which scanner to use/increment so we dont have to rebuild
+    std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
 };
 
 #endif // TABLE_DATA_H

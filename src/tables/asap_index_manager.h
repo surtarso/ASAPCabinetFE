@@ -13,7 +13,8 @@
 #ifndef ASAP_INDEX_MANAGER_H
 #define ASAP_INDEX_MANAGER_H // Header guard to prevent multiple inclusions
 
-#include "tables/table_data.h" // Structure for storing table data
+#include "table_data.h" // Structure for storing table data
+#include "itable_callbacks.h"
 #include "config/settings.h" // Configuration settings for index path
 #include "core/loading_progress.h" // Structure for tracking loading/saving progress
 #include <vector> // For returning and passing vectors of TableData
@@ -29,8 +30,15 @@
  * and can be configured via Settings, with potential for configUI enhancements
  * (e.g., custom index locations).
  */
-class AsapIndexManager {
+class AsapIndexManager : public ITableCallbacks {
 public:
+    /**
+     * @brief Constructs an AsapIndexManager with the given settings.
+     *
+     * @param settings The application settings containing the index file path.
+     */
+    AsapIndexManager(const Settings& settings);
+
     /**
      * @brief Loads table data from the ASAP index file.
      *
@@ -46,7 +54,7 @@ public:
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      * @return True if loading succeeds, false otherwise.
      */
-    static bool load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
+    bool load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
 
     /**
      * @brief Saves table data to the ASAP index file.
@@ -63,7 +71,10 @@ public:
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      * @return True if saving succeeds, false otherwise.
      */
-    static bool save(const Settings& settings, const std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
+    bool save(const Settings& settings, const std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
+
+private:
+    Settings settings_; ///< Stored settings for index file path.
 };
 
 #endif // ASAP_INDEX_MANAGER_H

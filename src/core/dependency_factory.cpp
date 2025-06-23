@@ -22,6 +22,7 @@
 #include "capture/screenshot_manager.h"
 #include "keybinds/keybind_manager.h"
 #include "keybinds/input_manager.h"
+#include "tables/asap_index_manager.h"
 #include "launcher/table_launcher.h"
 #include "log/logging.h"
 
@@ -144,8 +145,10 @@ std::unique_ptr<IConfigService> DependencyFactory::createConfigService(
  * @param soundManager The sound manager for screenshot-related sounds.
  * @return A unique pointer to an IScreenshotManager instance.
  */
-std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir, IConfigService* configService, 
-                                                                              IKeybindProvider* keybindProvider, ISoundManager* soundManager) {
+std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir,
+                                                                                IConfigService* configService, 
+                                                                                IKeybindProvider* keybindProvider,
+                                                                                ISoundManager* soundManager) {
     return std::make_unique<ScreenshotManager>(exeDir, configService, keybindProvider, soundManager);
 }
 
@@ -161,7 +164,10 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
  * @param screenshotManager The screenshot manager for screenshot mode.
  * @return A unique pointer to an InputManager instance.
  */
-std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider, IScreenshotManager* screenshotManager, ITableLauncher* tableLauncher) {
+std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider,
+                                                                     IScreenshotManager* screenshotManager,
+                                                                     ITableLauncher* tableLauncher,
+                                                                     ITableCallbacks* tableCallbacks) {
     auto input = std::make_unique<InputManager>(keybindProvider);
     size_t dummyIndex = 0;
     bool dummyShowConfig = false;
@@ -169,7 +175,7 @@ std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindPro
     bool dummyShowCatalog = false;
     std::vector<TableData> dummyTables;
     input->setDependencies(nullptr, nullptr, nullptr, dummyIndex, dummyTables,
-                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables, tableLauncher);
+                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables, tableLauncher, tableCallbacks);
     // input->registerActions();
     return input;
 }
@@ -197,4 +203,8 @@ std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* conf
 
 std::unique_ptr<ITableLauncher> DependencyFactory::createTableLauncher(IConfigService* configService) {
     return std::make_unique<TableLauncher>(configService);
+}
+
+std::unique_ptr<ITableCallbacks> DependencyFactory::createTableCallbacks(IConfigService* configService) {
+    return std::make_unique<AsapIndexManager>(configService->getSettings());
 }

@@ -21,9 +21,10 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
 }
 
 void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
-                                   size_t& currentIndex, const std::vector<TableData>& tables,
+                                   size_t& currentIndex, std::vector<TableData>& tables,
                                    bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                                   IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher) {
+                                   IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher,
+                                   ITableCallbacks* tableCallbacks) {
     //LOG_INFO("InputManager: setDependencies started, quit_ = " << quit_);
     assets_ = assets;
     soundManager_ = sound;
@@ -38,6 +39,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     screenshotManager_ = screenshotManager;
     isLoadingTables_ = &isLoadingTables;
     tableLauncher_ = tableLauncher;
+    tableCallbacks_ = tableCallbacks;
 
     for (size_t i = 0; i < tables_->size(); ++i) {
         if (!tables_->at(i).title.empty()) {
@@ -292,6 +294,28 @@ void InputManager::registerActions() {
 
         // Launch table
         auto [result, timePlayed] = tableLauncher_->launchTable(tables_->at(*currentIndex_));
+        
+        if (result == 0 && !tables_->at(*currentIndex_).isBroken) {
+            tables_->at(*currentIndex_).playCount++;
+            tables_->at(*currentIndex_).playTimeLast = timePlayed;
+            tables_->at(*currentIndex_).playTimeTotal += timePlayed;
+            LOG_DEBUG("InputManager: Updated TableData for " << tables_->at(*currentIndex_).title << ": playCount=" << tables_->at(*currentIndex_).playCount
+                      << ", playTimeLast=" << tables_->at(*currentIndex_).playTimeLast << ", playTimeTotal=" << tables_->at(*currentIndex_).playTimeTotal);
+        } else {
+            tables_->at(*currentIndex_).isBroken = true;
+            LOG_DEBUG("InputManager: Marked table " << tables_->at(*currentIndex_).title << " as broken due to exit code " << result);
+        }
+
+        // Trigger callback to persist table data
+        if (tableCallbacks_) {
+            if (tableCallbacks_->save(settingsManager_->getSettings(), *tables_, nullptr)) {
+                LOG_DEBUG("InputManager: Table data updated via callback");
+            } else {
+                LOG_ERROR("InputManager: Failed to update table data via callback");
+            }
+        } else {
+            LOG_ERROR("InputManager: Cannot update table data, tableCallbacks_ is null");
+        }
 
         //play table music on return, fallback to ambience
         soundManager_->playTableMusic(tables_->at(*currentIndex_).music);

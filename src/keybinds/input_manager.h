@@ -81,9 +81,10 @@ public:
      * @param windowManager The window manager for renderer access.
      */
     void setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
-                         size_t& currentIndex, const std::vector<TableData>& tables,
+                         size_t& currentIndex, std::vector<TableData>& tables,
                          bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir, IScreenshotManager* screenshotManager,
-                         IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher) override;
+                         IWindowManager* windowManager, std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher,
+                        ITableCallbacks* tableCallbacks) override;
 
     /**
      * @brief Checks if the configuration UI is active.
@@ -153,7 +154,7 @@ private:
     IConfigService* settingsManager_;   ///< Configuration service for settings.
     IWindowManager* windowManager_;     ///< Window manager for renderer access.
     size_t* currentIndex_;              ///< Pointer to the current table index.
-    const std::vector<TableData>* tables_; ///< Pointer to the table data list.
+    std::vector<TableData>* tables_; ///< Pointer to the table data list.
     bool* showConfig_;                  ///< Pointer to the configuration UI visibility flag.
     bool* showEditor_;
     bool* showVpsdb_;
@@ -170,6 +171,7 @@ private:
     static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< Debounce time (ms) after external app return.
     std::atomic<bool>* isLoadingTables_; ///< Track loading state
     ITableLauncher* tableLauncher_;
+    ITableCallbacks* tableCallbacks_ = nullptr;
 };
 
 #endif // INPUT_MANAGER_H
