@@ -203,7 +203,7 @@ void App::loadTablesThreaded(size_t oldIndex) {
                     settings.forceRebuildMetadata = false;
                     configManager_->saveConfig();
                     flagsReset = true;
-                    LOG_INFO("App: 'Force Rebuild Metadata' was forced to false after table loading");
+                    LOG_INFO("App: 'Force Rebuild Metadata' was set to false after table loading");
                 } else {
                     LOG_DEBUG("App: forceRebuildMetadata was already false, no reset needed");
                 }

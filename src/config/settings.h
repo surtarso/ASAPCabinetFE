@@ -92,6 +92,10 @@ struct Settings {
     std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
     bool useVpxtool = false;
+
+    bool fetchVpinMediaDb = false; // download images from vpinmedia
+    bool resizeToWindows = false; // resize images to windows sizes
+
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
     bool showMetadata = false;
@@ -371,6 +375,8 @@ private:
                 {"titleSource", s.titleSource},
                 {"fetchVPSdb", s.fetchVPSdb},
                 {"useVpxtool", s.useVpxtool},
+                {"fetchVpinMediaDb", s.fetchVpinMediaDb},
+                {"resizeToWindows", s.resizeToWindows},
                 {"forceRebuildMetadata", s.forceRebuildMetadata},
                 {"titleSortBy", s.titleSortBy},
                 {"showMetadata", s.showMetadata},
@@ -544,6 +550,8 @@ private:
         s.titleSource = j.value("TableMetadata", nlohmann::json{}).value("titleSource", s.titleSource);
         s.fetchVPSdb = j.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", s.fetchVPSdb);
         s.useVpxtool = j.value("TableMetadata", nlohmann::json{}).value("useVpxtool", s.useVpxtool);
+        s.fetchVpinMediaDb = j.value("TableMetadata", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
+        s.resizeToWindows = j.value("TableMetadata", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
         s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
         s.showMetadata = j.value("TableMetadata", nlohmann::json{}).value("showMetadata", s.showMetadata);
@@ -831,12 +839,14 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                   "- metadata: Extract metadata from files to display as they come.\n"
                                                   "TIP: If you already have vpxtool_index.json, it will read it instead of re-scanning your files."}},
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Fetches Virtual Pinball Spreadsheet database and\n"
-                                               "attempts to match with file metadata to improve information.\n"
-                                               "TIP: Leave this OFF after you're happy with the metadata.\n"}},
+                                               "attempts to match with file metadata to improve information."}},
     {"useVpxtool",{Settings::ReloadType::Tables, "Use an existing vpxtool_index.json or run vpxtool instead of internal VPin."}},
+    
+    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the Vpin Media Database."}},
+    {"resizeToWindows", {Settings::ReloadType::Tables, "Resize downloaded images to current windows configuration."}},
+    
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
-                                                           "You need to rebuild if changing metadata options.\n"
-                                                           "TIP: Leave this OFF after rebuilding metadata."}},
+                                                           "You need to rebuild if changing metadata options."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Select the sorting of tables.\n"
                                                   "- Requires VPSdb metadata."}},
     {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window.\n"

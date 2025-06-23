@@ -10,15 +10,14 @@ FIX:
 
 QOL:
 - refactor the monoliths...
-- grab images from vpinmdb? ( https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json ) table manager? vpsdb(id)
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
 - feedback for table launch failure
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - clean up new panels (vpsdb catalog and metadata editor)
-- single table vpsdb metadata lookup for current files (not catalog) table manager?
 - save metadata back to .vpx with vpin/vpxtool
+- single table scan (all, selectable) override manager?
 - Add ui user notifications for critical failures like missing config files.
 - collapse/expand all widget for config ui
 - make windows naturally draggable with mouse hold

@@ -110,6 +110,7 @@ void LoadingScreen::render() {
         "Scanning Metadata",
         "Matching VPSDB",
         "Saving Index",
+        "Downloading Media",
         "Patching Tables",
         "Applying Overrides",
         "Sorting Tables",

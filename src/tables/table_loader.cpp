@@ -15,6 +15,7 @@
 #include "file_scanner.h"
 #include "vpin_scanner.h"
 #include "vpxtool_scanner.h"
+#include "vpinmdb/vpinmdb_downloader.h"
 #include "vpsdb/vps_database_client.h"
 #include "table_patcher.h"
 #include "log/logging.h"
@@ -155,11 +156,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->currentTask = "Scanning metadata with VPin...";
                     }
-                    VPinScanner::scanFiles(settings, tablesToScan, progress);
+                    VPinScanner::scanFiles(tablesToScan, progress);
                 }
             } else {
                 LOG_INFO("TableLoader: useVpxtool is false, using VPin File Scanner.");
-                VPinScanner::scanFiles(settings, tablesToScan, progress);
+                VPinScanner::scanFiles(tablesToScan, progress);
             }
 
             // Update tables with scanned metadata
@@ -373,12 +374,32 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 6: Save updated index after metadata and VPSDB scanning
+    // Stage 6: Download media
+    if (settings.fetchVpinMediaDb) {
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Downloading table media...";
+            progress->currentStage = 6;
+            progress->currentTablesLoaded = 0;
+            progress->totalTablesToLoad = tables.size();
+            progress->numMatched = 0;
+            progress->numNoMatch = 0;
+        }
+        VpinMdbImagesDownloader downloader(settings, progress);
+        bool downloaded = downloader.downloadMedia(tables);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = downloaded ? "Media downloading complete" : "No media downloaded";
+            progress->currentTablesLoaded = tables.size(); // All tables processed
+        }
+    }
+
+    // Stage 7: Save updated index after metadata and VPSDB scanning
     if (!settings.autoPatchTables) {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Saving metadata to index...";
-            progress->currentStage = 6;
+            progress->currentStage = 7;
             progress->currentTablesLoaded = 0;
             progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
             progress->numMatched = 0;
@@ -403,12 +424,12 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 7: Auto patching
+    // Stage 8: Auto patching
     if (settings.autoPatchTables) {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Patching tables...";
-            progress->currentStage = 7;
+            progress->currentStage = 8;
             progress->currentTablesLoaded = 0;
             progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
             progress->numMatched = 0;
@@ -440,11 +461,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 8: Apply per-table overrides
+    // Stage 9: Apply per-table overrides
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Applying table overrides...";
-        progress->currentStage = 8;
+        progress->currentStage = 9;
         progress->currentTablesLoaded = 0;
         progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
         progress->numMatched = 0;
@@ -464,11 +485,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         // Do not advance currentStage here; wait until Stage 9 starts
     }
 
-    // Stage 9: Sorting and Indexing
+    // Stage 10: Sorting and Indexing
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting and indexing tables...";
-        progress->currentStage = 9;
+        progress->currentStage = 10;
         progress->currentTablesLoaded = 0;
         progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
         progress->numMatched = 0;
@@ -487,7 +508,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->currentTask = "Loading complete";
         progress->currentTablesLoaded = tables.size();
         progress->totalTablesToLoad = tables.size();
-        progress->currentStage = 10;
+        progress->currentStage = 11;
         progress->numMatched = 0;
         progress->numNoMatch = 0;
     }

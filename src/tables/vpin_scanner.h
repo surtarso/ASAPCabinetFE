@@ -47,7 +47,8 @@ public:
      * @param tables Reference to the vector of TableData to match.
      * @param progress Optional pointer to LoadingProgress for real-time updates.
      */
-    static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress);
+    // static void scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress);
+    static void scanFiles(std::vector<TableData>& tables, LoadingProgress* progress);
 };
 
 #endif // VPIN_SCANNER_H

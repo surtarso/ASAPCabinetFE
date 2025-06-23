@@ -291,6 +291,7 @@ set(SOURCES
     src/tables/table_patcher.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
+    src/tables/vpinmdb/vpinmdb_downloader.cpp
     src/tables/vpsdb/vps_database_scanner.cpp
     src/tables/vpsdb/vps_database_client.cpp
     src/tables/vpsdb/vps_database_loader.cpp

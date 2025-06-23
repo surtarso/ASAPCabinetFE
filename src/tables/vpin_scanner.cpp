@@ -12,7 +12,8 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
+// void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
+void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* progress) {
     LOG_DEBUG("VPinFileScanner: Starting scan with vpin for " << tables.size() << " tables.");
 
     if (progress) {
