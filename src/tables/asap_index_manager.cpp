@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <unordered_map>
 
 namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
 using json = nlohmann::json; // Alias for nlohmann::json to simplify JSON usage
@@ -283,4 +284,118 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         }
         return false;
     }
+}
+
+std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, const std::vector<TableData>& newTables, LoadingProgress* progress) {
+    std::vector<TableData> existingTables;
+    std::unordered_map<std::string, TableData> existingTableMap;
+    
+    // Load existing index
+    if (load(settings, existingTables, progress)) {
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Building existing table map...";
+        }
+        for (const auto& table : existingTables) {
+            if (!table.vpxFile.empty()) {
+                existingTableMap[table.vpxFile] = table;
+            }
+        }
+    } else {
+        LOG_INFO("AsapIndexManager: No existing index found or failed to load. Treating all tables as new.");
+    }
+
+    // Define jsonOwner priority
+    auto getJsonOwnerPriority = [](const std::string& owner) -> int {
+        if (owner == "Virtual Pinball Spreadsheet Database") return 3;
+        if (owner == "VPin Filescan" || owner == "VPXTool Index") return 2;
+        if (owner == "System File Scan") return 1;
+        return 0; // Unknown owner
+    };
+
+    std::vector<TableData> mergedTables;
+    std::unordered_map<std::string, bool> processedNewTables;
+
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Merging tables...";
+        progress->totalTablesToLoad = newTables.size();
+        progress->currentTablesLoaded = 0;
+    }
+
+    // Process new tables
+    for (const auto& newTable : newTables) {
+        if (newTable.vpxFile.empty()) {
+            LOG_WARN("AsapIndexManager: Skipping new table with empty vpxFile.");
+            continue;
+        }
+
+        processedNewTables[newTable.vpxFile] = true;
+        auto existingIt = existingTableMap.find(newTable.vpxFile);
+        TableData mergedTable = newTable;
+
+        if (existingIt != existingTableMap.end()) {
+            const auto& existingTable = existingIt->second;
+            int existingPriority = getJsonOwnerPriority(existingTable.jsonOwner);
+            int newPriority = getJsonOwnerPriority(newTable.jsonOwner);
+
+            bool shouldUpdate = false;
+            std::string updateReason;
+
+            // Check for file modifications
+            if (newTable.fileLastModified > existingTable.fileLastModified) {
+                shouldUpdate = true;
+                updateReason = "file modified (newer timestamp)";
+            } else if (newTable.hashFromVpx != existingTable.hashFromVpx || newTable.hashFromVbs != existingTable.hashFromVbs) {
+                shouldUpdate = true;
+                updateReason = "file modified (different hashes)";
+            }
+            // Check for higher-quality metadata
+            else if (newPriority > existingPriority) {
+                shouldUpdate = true;
+                updateReason = "higher-quality metadata (new owner: " + newTable.jsonOwner + ")";
+            }
+
+            if (shouldUpdate) {
+                LOG_INFO("AsapIndexManager: Updating table " << newTable.vpxFile << " due to " << updateReason);
+                // Preserve user fields
+                mergedTable.playCount = existingTable.playCount;
+                mergedTable.playTimeLast = existingTable.playTimeLast;
+                mergedTable.playTimeTotal = existingTable.playTimeTotal;
+                mergedTable.isBroken = existingTable.isBroken;
+            } else {
+                LOG_DEBUG("AsapIndexManager: Keeping existing table " << newTable.vpxFile << " (no update needed)");
+                mergedTable = existingTable;
+                mergedTable.fileLastModified = newTable.fileLastModified; // Update timestamp to match scan
+            }
+        } else {
+            LOG_INFO("AsapIndexManager: Adding new table " << newTable.vpxFile);
+        }
+
+        mergedTables.push_back(mergedTable);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTablesLoaded++;
+            progress->logMessages.push_back("Merged table: " + newTable.vpxFile);
+        }
+    }
+
+    // Check for deleted tables
+    for (const auto& [vpxFile, existingTable] : existingTableMap) {
+        if (processedNewTables.find(vpxFile) == processedNewTables.end()) {
+            if (!fs::exists(vpxFile)) {
+                LOG_INFO("AsapIndexManager: Removing deleted table " << vpxFile);
+                if (progress) {
+                    std::lock_guard<std::mutex> lock(progress->mutex);
+                    progress->logMessages.push_back("Removed deleted table: " + vpxFile);
+                }
+            } else {
+                LOG_DEBUG("AsapIndexManager: Keeping existing table " << vpxFile << " (not in new scan but file exists)");
+                mergedTables.push_back(existingTable);
+            }
+        }
+    }
+
+    LOG_INFO("AsapIndexManager: Merged " << mergedTables.size() << " tables");
+    return mergedTables;
 }

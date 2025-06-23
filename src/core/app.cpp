@@ -106,7 +106,7 @@ void App::reloadTablesAndTitle() {
     if (settings.forceRebuildMetadata) {
         LOG_DEBUG("App: execDir: " << exeDir_ << "index: " << currentTableIndex);
         std::error_code ec;
-        bool removed = std::filesystem::remove(exeDir_ + currentTableIndex, ec);
+        bool removed = std::filesystem::remove(currentTableIndex, ec);
         if (!removed && ec) {
             LOG_ERROR("Failed to delete " << exeDir_ + currentTableIndex << ": " << ec.message());
         } else if (removed) {
@@ -195,16 +195,17 @@ void App::loadTablesThreaded(size_t oldIndex) {
             bool flagsReset = false;
             {
                 Settings& settings = const_cast<Settings&>(configManager_->getSettings());
-                bool wasFetchVPSdb = settings.fetchVPSdb;
+                // bool wasFetchVPSdb = settings.fetchVPSdb;
                 bool wasForceRebuild = settings.forceRebuildMetadata;
-                if (wasFetchVPSdb || wasForceRebuild) {
-                    settings.fetchVPSdb = false;
+                // if (wasFetchVPSdb || wasForceRebuild) {
+                if (wasForceRebuild) {
+                    // settings.fetchVPSdb = false;
                     settings.forceRebuildMetadata = false;
                     configManager_->saveConfig();
                     flagsReset = true;
-                    LOG_INFO("'Fetch VPSdb' and 'Force Rebuild Metadata' were forced to false after table loading");
+                    LOG_INFO("App: 'Force Rebuild Metadata' was forced to false after table loading");
                 } else {
-                    LOG_DEBUG("App: fetchVPSdb and forceRebuildMetadata were already false, no reset needed");
+                    LOG_DEBUG("App: forceRebuildMetadata was already false, no reset needed");
                 }
             }
 

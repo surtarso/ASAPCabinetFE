@@ -1,24 +1,24 @@
 /**
- * @file vpx_scanner.h
+ * @file file_scanner.h
  * @brief Defines the FileScanner class for scanning VPX table files in ASAPCabinetFE.
  *
  * This header provides the FileScanner class, which implements a static method to scan
  * VPX files from a specified directory and construct TableData objects. The scanner
  * supports recursive directory traversal, progress tracking via LoadingProgress, and
  * configurable path resolution for media assets (e.g., images, videos) based on
- * Settings. The process can be customized via settings like VPXTablesPath and
- * forceImagesOnly, with potential for further configUI integration in the future.
+ * Settings. It can optionally use an existing index to optimize scanning for incremental
+ * updates.
  */
 
 #ifndef FILE_SCANNER_H
-#define FILE_SCANNER_H // Header guard to prevent multiple inclusions
+#define FILE_SCANNER_H
 
-#include "tables/table_data.h" // Structure for storing table data
-#include "config/settings.h" // Configuration settings for path and media options
-#include "core/loading_progress.h" // Structure for tracking scanning progress
-#include <vector> // For returning a vector of TableData
+#include "tables/table_data.h"
+#include "config/settings.h"
+#include "core/loading_progress.h"
+#include <vector>
 
-namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
+namespace fs = std::filesystem;
 
 /**
  * @class FileScanner
@@ -26,9 +26,8 @@ namespace fs = std::filesystem; // Namespace alias for std::filesystem to simpli
  *
  * This class provides a static method to recursively scan a directory for VPX files,
  * populate TableData objects with file paths and media asset paths, and track progress
- * if a LoadingProgress object is provided. The scanner uses Settings to determine the
- * base path and media preferences (e.g., images vs. videos), making it configurable
- * with potential for user adjustments via configUI.
+ * if a LoadingProgress object is provided. The scanner can optimize for incremental
+ * updates by comparing against an existing index, skipping unchanged files.
  */
 class FileScanner {
 public:
@@ -36,17 +35,18 @@ public:
      * @brief Scans the VPX tables directory and returns a list of tables.
      *
      * Recursively scans the directory specified in settings.VPXTablesPath for .vpx files,
-     * constructs TableData objects with file paths, and resolves media asset paths (e.g.,
-     * music, images, videos) based on Settings. If progress is provided, it updates
-     * currentTablesLoaded and totalTablesToLoad. The method supports a forceImagesOnly
-     * option to disable video paths and can be extended via configUI for custom path
-     * configurations.
+     * constructs TableData objects with file paths, and resolves media asset paths. If
+     * existingTables is provided and settings.forceRebuildMetadata is false, skips files
+     * that are unchanged based on fileLastModified and hashes. Updates progress tracking
+     * if provided.
      *
-     * @param settings The application settings controlling the scan (e.g., VPXTablesPath, media paths).
-     * @param progress Optional pointer to LoadingProgress for real-time progress updates.
+     * @param settings The application settings controlling the scan.
+     * @param progress Optional pointer to LoadingProgress for real-time updates.
+     * @param existingTables Optional vector of existing TableData for incremental scanning.
      * @return A vector of TableData objects representing the scanned tables.
      */
-    static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr);
+    static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr, 
+                                       const std::vector<TableData>* existingTables = nullptr);
 private:
     static const std::vector<std::string> MANUFACTURERS_LOWERCASE;
 };

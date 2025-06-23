@@ -17,6 +17,12 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         LOG_DEBUG("VpsDataScanner: vpxTable is not an object, type: " << vpxTable.type_name());
         return false;
     }
+
+    if (tableData.jsonOwner == "Virtual Pinball Spreadsheet Database") {
+        LOG_DEBUG("VpsDataScanner: " << tableData.title << " already scanned.");
+        return false;
+    }
+
     std::string filename = vpxTable.contains("path") && vpxTable["path"].is_string() ?
                            fs::path(vpxTable["path"].get<std::string>()).stem().string() : "N/A";
     //LOG_INFO("Matching table: path=" << filename << ", title=" << tableData.title << ", tableName=" << tableData.tableName);

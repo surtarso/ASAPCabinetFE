@@ -4,8 +4,8 @@
  *
  * This file provides the implementation of the FileScanner class, which recursively scans
  * a directory for VPX files and constructs TableData objects with file paths, media
- * asset paths, and VB script hashes. The scanner uses Settings to determine the base path
- * and media preferences (e.g., images vs. videos with forceImagesOnly), and supports
+ * asset paths, and VB script hashes. The scanner supports incremental updates by skipping
+ * unchanged files based on an existing index, using Settings for configuration and
  * progress tracking via LoadingProgress.
  */
 
@@ -22,10 +22,12 @@
 #include <cctype>
 #include <future>
 #include <chrono>
+#include <unordered_map>
 
 namespace fs = std::filesystem;
 
-std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress) {
+std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress, 
+                                         const std::vector<TableData>* existingTables) {
     std::vector<TableData> tables;
     std::mutex tables_mutex;
 
@@ -34,28 +36,85 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         return tables;
     }
 
-    if (progress) {
-        std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->totalTablesToLoad = 0;
-        progress->currentTablesLoaded = 0;
+    // Build map of existing tables for quick lookup
+    std::unordered_map<std::string, TableData> existingTableMap;
+    if (!settings.forceRebuildMetadata && existingTables && !existingTables->empty()) {
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Building existing table map...";
+        }
+        for (const auto& table : *existingTables) {
+            if (!table.vpxFile.empty()) {
+                existingTableMap[table.vpxFile] = table;
+            }
+        }
     }
 
     std::vector<fs::path> vpx_files;
     for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
             vpx_files.push_back(entry.path());
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->totalTablesToLoad++;
-            }
         }
+    }
+
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->totalTablesToLoad = vpx_files.size();
+        progress->currentTablesLoaded = 0;
+        progress->currentTask = "Scanning VPX files...";
     }
 
     std::vector<std::future<void>> futures;
     std::regex year_regex(R"(\b(19|20)\d{2}\b)");
 
     for (const auto& vpx_path : vpx_files) {
-        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex, progress](const fs::path& path) {
+        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex, 
+                                                         progress, &existingTableMap](const fs::path& path) {
+            // Check if file is unchanged based on index
+            if (!settings.forceRebuildMetadata && !existingTableMap.empty()) {
+                auto it = existingTableMap.find(path.string());
+                if (it != existingTableMap.end()) {
+                    const auto& existingTable = it->second;
+                    uint64_t fileLastModified = 0;
+                    try {
+                        auto ftime = fs::last_write_time(path);
+                        auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                            ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+                        );
+                        fileLastModified = std::chrono::duration_cast<std::chrono::seconds>(
+                            sctp.time_since_epoch()
+                        ).count();
+                    } catch (const fs::filesystem_error& e) {
+                        LOG_ERROR("FileScanner: Failed to get last modified time for " << path << ": " << e.what());
+                    }
+
+                    // Compute hashes to compare
+                    std::string vpxHash, vbsHash;
+                    char* code_ptr = get_vpx_gamedata_code(path.string().c_str());
+                    if (code_ptr != nullptr) {
+                        vpxHash = calculate_string_sha256(std::string(code_ptr));
+                        free_rust_string(code_ptr);
+                    }
+                    fs::path vbs_path = path.parent_path() / (path.stem().string() + ".vbs");
+                    if (fs::exists(vbs_path)) {
+                        vbsHash = compute_file_sha256(vbs_path.string());
+                    }
+
+                    // Skip if unchanged
+                    if (fileLastModified == existingTable.fileLastModified && 
+                        vpxHash == existingTable.hashFromVpx && 
+                        vbsHash == existingTable.hashFromVbs) {
+                        LOG_DEBUG("FileScanner: Skipping unchanged file: " << path.string());
+                        if (progress) {
+                            std::lock_guard<std::mutex> lock(progress->mutex);
+                            progress->currentTablesLoaded++;
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Process new or modified file
             TableData table;
             table.vpxFile = path.string();
             table.folder = path.parent_path().string();
@@ -173,6 +232,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTablesLoaded++;
+                progress->logMessages.push_back("Processed table: " + table.vpxFile);
             }
         }, vpx_path));
     }
@@ -181,6 +241,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         future.wait();
     }
 
-    LOG_INFO("FileScanner: Found " << tables.size() << " VPX tables");
+    LOG_INFO("FileScanner: Processed " << tables.size() << " VPX tables (out of " << vpx_files.size() << " found)");
     return tables;
 }

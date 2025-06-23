@@ -3,7 +3,7 @@
  * @brief Defines the ITableCallbacks interface for managing ASAP index files in ASAPCabinetFE.
  *
  * This header provides the ITableCallbacks interface, which specifies methods for
- * loading and saving table data to/from an ASAP index file (asapcab_index.json).
+ * loading, saving, and merging table data to/from an ASAP index file (asapcab_index.json).
  * It is designed to be implemented by classes like AsapIndexManager for handling
  * JSON-based serialization and deserialization of TableData.
  */
@@ -20,7 +20,7 @@
  * @class ITableCallbacks
  * @brief Interface for managing ASAP index file operations.
  *
- * Defines methods for loading and saving table data, supporting progress tracking
+ * Defines methods for loading, saving, and merging table data, supporting progress tracking
  * and configuration via Settings. Implementers handle JSON serialization and file I/O.
  */
 class ITableCallbacks {
@@ -52,6 +52,20 @@ public:
      * @return True if saving succeeds, false otherwise.
      */
     virtual bool save(const Settings& settings, const std::vector<TableData>& tables, LoadingProgress* progress = nullptr) = 0;
+
+    /**
+     * @brief Merges new table data with existing index data.
+     *
+     * Compares new table data with existing index entries, updating tables with higher-quality
+     * metadata (based on jsonOwner priority), adding new tables, and removing deleted ones.
+     * Preserves user fields like playCount. Returns the merged table data.
+     *
+     * @param settings The application settings containing the index file path.
+     * @param newTables The new table data to merge.
+     * @param progress Optional pointer to LoadingProgress for real-time updates.
+     * @return The merged vector of TableData.
+     */
+    virtual std::vector<TableData> mergeTables(const Settings& settings, const std::vector<TableData>& newTables, LoadingProgress* progress = nullptr) = 0;
 };
 
 #endif // ITABLE_CALLBACKS_H
