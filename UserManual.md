@@ -20,6 +20,7 @@ No complicated setup—just fun pinball action!
   * [Getting Started](#getting-started)
       * [First Things First: Table Structure](#first-things-first-table-structure)
       * [Starting the App for the First Time](#starting-the-app-for-the-first-time)
+      * [Patching tables with latest standalone VBScripts](#patching-tables-with-latest-standalone-vbscripts)
   * [Windows Positions](#windows-positions)
       * [Manual Positioning](#manual-positioning)
       * [Automatic Positioning](#automatic-positioning)
@@ -74,9 +75,12 @@ You can set these paths using the in-app configuration menu. You can use your ow
 
 Simply double-click the ASAPCabinetFE icon (or start it as you would any other app). The first time you run it, a setup window will appear, asking you to point to your main VPX tables folder and the VPinballX program itself. Select these locations, save your choices, and close the menu. If everything is found correctly, the main app will then open.
 
+![image](https://github.com/user-attachments/assets/c0d39990-9cef-4d14-be4b-c34238fd4031)
 
-![image](https://github.com/user-attachments/assets/a59cfb39-54f8-44fa-9730-aa2797b37303)
 
+### Patching Tables With Latest Standalone VBScripts
+Enabling the auto-patcher will automatically download the latest patches from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts) for the tables needing it.
+You may keep this enabled to make sure your tables always have the latest patch.
 
 ## Windows Positions
 The first time the app opens you might see all windows on top of each other on the corner of a single monitor.
