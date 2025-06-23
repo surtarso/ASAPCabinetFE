@@ -18,7 +18,6 @@ QOL:
 - use more than title on catalog search (author, manufacturer etc)
 - clean up new panels (vpsdb catalog and metadata editor)
 - single table vpsdb metadata lookup for current files (not catalog) table manager?
-- stop deleting asapcab and instead increment/edit it.
 - save metadata back to .vpx with vpin/vpxtool
 - Add ui user notifications for critical failures like missing config files.
 - collapse/expand all widget for config ui
