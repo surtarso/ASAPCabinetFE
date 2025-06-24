@@ -54,14 +54,15 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
 - Browse [VPSDb](https://virtual-pinball-spreadsheet.web.app/) to **find and download** new tables.
 - **Create** custom table overrides for media or metadata.
-- Automatically apply or update table patches from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
+- Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
+- Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb).
 - Sort tables by title, type, manufacturer, year or author.
 - Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
 - Extremely lightweight and fully customizable.
-- No need to download artpacks, generate your own. (See [tools](#generator-tools))
+- No need to download artpacks, **generate** your own. (See [tools](#generator-tools))
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
 - Just what it takes to make your cabinet look good!
 
@@ -174,13 +175,14 @@ Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull
 You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ## Acknowledgments
-- Visual Pinball X team.
-- VPin/VPXTool team.
-- Virtual Pinball Database team.
-- VPForums/VPUniverse team.
-- A BIG THANK YOU for @jsm174 @francisdb @superhac @Toxieainc.
-- And a special thanks to @Snortt for bearing with me thru all of this.
-- Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock.
+- [Visual Pinball X](https://github.com/vpinball/vpinball) team.
+- [VPin](https://github.com/francisdb/vpin)/[VPXTool](https://github.com/francisdb/vpxtool) team.
+- [Virtual Pinball Database](https://github.com/vpdb) team.
+- [Vpin Media Database](https://github.com/superhac/vpinmediadb) team.
+- [VPForums](https://www.vpforums.org/)/[VPUniverse](https://vpuniverse.com/) team.
+- A BIG THANK YOU for [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc).
+- And a special thanks to _Snortt_ for bearing with me thru all of this.
+- Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock!
 
 ## Footnote
 If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
