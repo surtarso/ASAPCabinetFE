@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include "core/loading_progress.h"
 
 /**
@@ -100,6 +101,7 @@ private:
     std::ofstream logFile_;         ///< File stream for log output.
     bool debugBuild_ = false;       ///< Flag indicating debug mode.
     std::shared_ptr<LoadingProgress> loadingProgress_; ///< Shared pointer to loading progress.
+    std::mutex logMutex_;
 
     void log(const std::string& level, const std::string& message);
 };
