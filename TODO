@@ -10,7 +10,6 @@ FIX:
 
 QOL:
 - refactor the monoliths...
-- option to ignore scanners and read straight from asap_index json
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
 - feedback for table launch failure
