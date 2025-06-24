@@ -55,6 +55,7 @@ public:
             "fetchVPSdb",
             "fetchVpinMediaDb",
             "resizeToWindows",
+            "ignoreScanners",
             "forceRebuildMetadata",
             "titleWeight",
             "yearWeight",
@@ -74,6 +75,7 @@ public:
             {"metadataPanelWidth", "Panel Width"},
             {"metadataPanelHeight", "Panel Height"},
             {"metadataPanelAlpha", "Panel Opacity"},
+            {"ignoreScanners", "Fast Load"},
             {"forceRebuildMetadata", "Rebuild Metadata"}
         };
         keyDropdownOptions_["TableMetadata"] = {

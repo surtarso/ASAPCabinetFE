@@ -92,10 +92,9 @@ struct Settings {
     std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
     bool useVpxtool = false;
-
     bool fetchVpinMediaDb = false; // download images from vpinmedia
     bool resizeToWindows = false; // resize images to windows sizes
-
+    bool ignoreScanners = false;
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
     bool showMetadata = false;
@@ -377,6 +376,7 @@ private:
                 {"useVpxtool", s.useVpxtool},
                 {"fetchVpinMediaDb", s.fetchVpinMediaDb},
                 {"resizeToWindows", s.resizeToWindows},
+                {"ignoreScanners", s.ignoreScanners},
                 {"forceRebuildMetadata", s.forceRebuildMetadata},
                 {"titleSortBy", s.titleSortBy},
                 {"showMetadata", s.showMetadata},
@@ -553,6 +553,7 @@ private:
         s.fetchVpinMediaDb = j.value("TableMetadata", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
         s.resizeToWindows = j.value("TableMetadata", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
+        s.ignoreScanners = j.value("TableMetadata", nlohmann::json{}).value("ignoreScanners", s.ignoreScanners);
         s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
         s.showMetadata = j.value("TableMetadata", nlohmann::json{}).value("showMetadata", s.showMetadata);
         s.metadataPanelWidth = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelWidth", s.metadataPanelWidth);
@@ -803,68 +804,69 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"playfieldWindowHeight", {Settings::ReloadType::Assets, "Height of the Playfield window in pixels.\n"
                                                             "This should be relative to your Playfield media height."}},
     {"playfieldX", {Settings::ReloadType::Assets, "X position of the Playfield window.\n"
-                                                 "You can drag and double-click a window to save its position"}},
+                                                 "- You can drag and double-click a window to save its position"}},
     {"playfieldY", {Settings::ReloadType::Assets, "Y position of the Playfield window.\n"
-                                                 "You can drag and double-click a window to save its position"}},
+                                                 "- You can drag and double-click a window to save its position"}},
     {"showBackglass", {Settings::ReloadType::Assets, "Show/hide the backglass window."}},
     {"backglassWindowWidth", {Settings::ReloadType::Assets, "Width of the Backglass window in pixels.\n"
                                                            "This should be relative to your Backglass media width."}},
     {"backglassWindowHeight", {Settings::ReloadType::Assets, "Height of the Backglass window in pixels.\n"
                                                             "This should be relative to your Backglass media height."}},
     {"backglassX", {Settings::ReloadType::Assets, "X position of the Backglass window.\n"
-                                                 "You can drag and double-click a window to save its position"}},
+                                                 "- You can drag and double-click a window to save its position"}},
     {"backglassY", {Settings::ReloadType::Assets, "Y position of the Backglass window.\n"
-                                                 "You can drag and double-click a window to save its position"}},
+                                                 "- You can drag and double-click a window to save its position"}},
     {"showDMD", {Settings::ReloadType::Assets, "Show/hide the DMD window."}},
     {"dmdWindowWidth", {Settings::ReloadType::Assets, "Width of the DMD window in pixels.\n"
                                                      "This should be relative to your DMD media width."}},
     {"dmdWindowHeight", {Settings::ReloadType::Assets, "Height of the DMD window in pixels.\n"
                                                       "This should be relative to your DMD media height."}},
     {"dmdX", {Settings::ReloadType::Assets, "X position of the DMD window.\n"
-                                           "You can drag and double-click a window to save its position"}},
+                                           "- You can drag and double-click a window to save its position"}},
     {"dmdY", {Settings::ReloadType::Assets, "Y position of the DMD window.\n"
-                                           "You can drag and double-click a window to save its position"}},
+                                           "- You can drag and double-click a window to save its position"}},
     {"showTopper", {Settings::ReloadType::Assets, "Show/hide the Topper window."}},
     {"topperWindowWidth", {Settings::ReloadType::Assets, "Width of the Topper window in pixels.\n"
                                                         "This should be relative to your Topper media width."}},
     {"topperWindowHeight", {Settings::ReloadType::Assets, "Height of the Topper window in pixels.\n"
                                                          "This should be relative to your Topper media height."}},
     {"topperWindowX", {Settings::ReloadType::Assets, "X position of the Topper window.\n"
-                                                    "You can drag and double-click a window to save its position"}},
+                                                    "- You can drag and double-click a window to save its position"}},
     {"topperWindowY", {Settings::ReloadType::Assets, "Y position of the Topper window.\n"
-                                                    "You can drag and double-click a window to save its position"}},
+                                                    "- You can drag and double-click a window to save its position"}},
     // TableMetadata
     {"titleSource", {Settings::ReloadType::Tables, "Select how table info will be displayed.\n"
-                                                  "- filename: The only source of info is the filename for the table title, metadata panel will be empty.\n"
-                                                  "- metadata: Extract metadata from files to display as they come.\n"
-                                                  "TIP: If you already have vpxtool_index.json, it will read it instead of re-scanning your files."}},
+                                                  "- filename: Scans the system for basic information.\n"
+                                                  "- metadata: Extract metadata from files using several scanners."}},
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Fetches Virtual Pinball Spreadsheet database and\n"
                                                "attempts to match with file metadata to improve information."}},
     {"useVpxtool",{Settings::ReloadType::Tables, "Use an existing vpxtool_index.json or run vpxtool instead of internal VPin."}},
     
-    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the Vpin Media Database."}},
+    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the Vpin Media Database.\n"
+                                                        "- Requires VPSdb metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Resize downloaded images to current windows configuration."}},
     
+    {"ignoreScanners", {Settings::ReloadType::Tables, "Ignore scanners and read straight from index.\n"
+                                                        "- Rebuilding tables requires this to be uncheckd."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
-                                                           "You need to rebuild if changing metadata options."}},
+                                                           "- Unchecking 'Fast Load' is required."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Select the sorting of tables.\n"
                                                   "- Requires VPSdb metadata."}},
-    {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window.\n"
-                                                    "TitleSource must be set to 'metadata' for the panel to display something."}},
+    {"showMetadata", {Settings::ReloadType::Overlay, "Show/hide the metadata panel overlay on the playfield window."}},
     {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Width of the metadata panel as a fraction of the screen (0.1-1.0)"}},
     {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Height of the metadata panel as a fraction of the screen (0.1-1.0)"}},
     {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.1-1.0)"}},
     {"titleWeight", {Settings::ReloadType::None, "Weight applied to title matching in the scoring process.\n"
-                                                    "Higher values prioritize title similarity when determining a match."}},
+                                                    "- Higher values prioritize title similarity when determining a match."}},
     {"yearWeight", {Settings::ReloadType::None, "Weight applied to year matching in the scoring process.\n"
-                                                    "Higher values emphasize year consistency for better accuracy."}},
+                                                    "- Higher values emphasize year consistency for better accuracy."}},
     {"manufacturerWeight", {Settings::ReloadType::None, "Weight applied to manufacturer matching in the scoring process.\n"
-                                                    "Higher values increase the importance of manufacturer data."}},
+                                                    "- Higher values increase the importance of manufacturer data."}},
     {"romWeight", {Settings::ReloadType::None, "Weight applied to ROM matching in the scoring process.\n"
-                                                    "Higher values boost the score when ROM names align."}},
+                                                    "- Higher values boost the score when ROM names align."}},
     {"titleThreshold", {Settings::ReloadType::None, "Minimum similarity score (based on Levenshtein distance) required for a title to be considered a potential match."}},
     {"confidenceThreshold", {Settings::ReloadType::None, "Minimum total score required to confirm a table as a match in the database.\n"
-                                                    "Higher values ensure stricter matching."}},
+                                                    "- Higher values ensure stricter matching."}},
  
     // UIWidgets
     {"showArrowHint", {Settings::ReloadType::None, "Toggle visibility of the arrow hint widget."}},
@@ -884,10 +886,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"scrollbarThumbColor", {Settings::ReloadType::None, "Color of the scrollbar thumb."}},
     // TitleDisplay
     {"showWheel", {Settings::ReloadType::None, "Toggle visibility of the wheel image in the main window.\n"
-                                              "Set to true to show the wheel, false to hide it."}},
+                                              "- Set to true to show the wheel, false to hide it."}},
     {"wheelWindow", {Settings::ReloadType::Tables, "Select the window to display the wheel art."}},
     {"showTitle", {Settings::ReloadType::None, "Toggle visibility of table titles in the main window.\n"
-                                              "Set to true to show titles, false to hide them."}},
+                                              "- Set to true to show titles, false to hide them."}},
     {"titleWindow", {Settings::ReloadType::Tables, "Select the window to display the table title."}},
     {"fontPath", {Settings::ReloadType::Font, "Select a font for the table title display."}},
     {"fontColor", {Settings::ReloadType::Font, "Color of the table title display text."}},
@@ -904,38 +906,38 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"playfieldMediaWidth", {Settings::ReloadType::None, "Width of the playfield media in pixels."}},
     {"playfieldMediaHeight", {Settings::ReloadType::None, "Height of the playfield media in pixels."}},
     {"playfieldMediaX", {Settings::ReloadType::None, "X position of the playfield media.\n"
-                                                    "This position is relative to the playfield window."}},
+                                                    "- This position is relative to the playfield window."}},
     {"playfieldMediaY", {Settings::ReloadType::None, "Y position of the playfield media.\n"
-                                                    "This position is relative to the playfield window."}},
+                                                    "- This position is relative to the playfield window."}},
     {"playfieldRotation", {Settings::ReloadType::None, "Rotation of the Playfield media.\n"
                                                       "0 = no rotation\n"
                                                       "90, 180, 270, -90, etc"}},
     {"backglassMediaWidth", {Settings::ReloadType::None, "Width of the backglass media in pixels."}},
     {"backglassMediaHeight", {Settings::ReloadType::None, "Height of the backglass media in pixels."}},
     {"backglassMediaX", {Settings::ReloadType::None, "X position of the backglass media.\n"
-                                                    "This position is relative to the backglass window."}},
+                                                    "- This position is relative to the backglass window."}},
     {"backglassMediaY", {Settings::ReloadType::None, "Y position of the backglass media.\n"
-                                                    "This position is relative to the backglass window."}},
+                                                    "- This position is relative to the backglass window."}},
     {"backglassRotation", {Settings::ReloadType::None, "Rotation of the Backglass media.\n"
                                                       "0 = no rotation\n"
                                                       "90, 180, 270, -90, etc"}},
     {"dmdMediaWidth", {Settings::ReloadType::None, "Width of the DMD media in pixels."}},
     {"dmdMediaHeight", {Settings::ReloadType::None, "Height of the DMD media in pixels.\n"
-                                                   "This should match your DMD window height."}},
+                                                   "- This should match your DMD window height."}},
     {"dmdMediaX", {Settings::ReloadType::None, "X position of the DMD media.\n"
-                                              "This position is relative to the DMD window."}},
+                                              "- This position is relative to the DMD window."}},
     {"dmdMediaY", {Settings::ReloadType::None, "Y position of the DMD media.\n"
-                                              "This position is relative to the DMD window."}},
+                                              "- This position is relative to the DMD window."}},
     {"dmdRotation", {Settings::ReloadType::None, "Rotation of the DMD media.\n"
                                                 "0 = no rotation\n"
                                                 "90, 180, 270, -90, etc"}},
     {"topperMediaWidth", {Settings::ReloadType::None, "Width of the Topper media in pixels."}},
     {"topperMediaHeight", {Settings::ReloadType::None, "Height of the Topper media in pixels.\n"
-                                                      "This should match your Topper window height."}},
+                                                      "- This should match your Topper window height."}},
     {"topperMediaX", {Settings::ReloadType::None, "X position of the Topper media.\n"
-                                                 "This position is relative to the Topper window."}},
+                                                 "- This position is relative to the Topper window."}},
     {"topperMediaY", {Settings::ReloadType::None, "Y position of the Topper media.\n"
-                                                 "This position is relative to the Topper window."}},
+                                                 "- This position is relative to the Topper window."}},
     {"topperRotation", {Settings::ReloadType::None, "Rotation of the Topper media.\n"
                                                    "0 = no rotation\n"
                                                    "90, 180, 270, -90, etc"}},
@@ -966,7 +968,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                               "Use VPinballX --help command line menu to see more."}},
     {"vpsDbPath", {Settings::ReloadType::None, "Path to the VPS database file, relative to exec dir."}},
     {"vpsDbUpdateFrequency", {Settings::ReloadType::None, "Choose when to fetch for updates in VPS database.\n"
-                                                         "The only option for now is 'startup'."}},
+                                                         "- The only option for now is 'startup'."}},
     {"vpsDbLastUpdated", {Settings::ReloadType::None, "Path to the VPS database update file, relative to exec dir."}},
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file, relative to tables folder by default."}},
     {"vpxtoolBin", {Settings::ReloadType::None, "Path to the vpxtool binary file if not in $PATH."}},

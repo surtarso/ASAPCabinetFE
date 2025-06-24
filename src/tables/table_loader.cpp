@@ -7,7 +7,8 @@
  * metadata (if enabled), fetching VPSDB (if enabled), saving the index, patching tables,
  * applying overrides, and sorting. It supports incremental updates using
  * AsapIndexManager::mergeTables and progress tracking via LoadingProgress. The process is
- * configurable via Settings (e.g., titleSource, sortBy).
+ * configurable via Settings (e.g., titleSource, sortBy). If settings.ignoreScanners is true,
+ * it skips all scanning and processing, loading only from asapcab_index.json for faster startup.
  */
 
 #include "table_loader.h"
@@ -43,6 +44,54 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->logMessages.clear();
     }
 
+    // Fast path: Load only from index if ignoreScanners is true
+    if (settings.ignoreScanners) {
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Loading from index only...";
+            progress->currentStage = 1;
+            progress->currentTablesLoaded = 0;
+            progress->totalTablesToLoad = 0;
+        }
+        if (indexManager.load(settings, tables, progress)) {
+            LOG_INFO("TableLoader: Fast path loaded " << tables.size() << " tables from asapcab_index.json");
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTask = "Loaded from index";
+                progress->currentTablesLoaded = tables.size();
+                progress->totalTablesToLoad = tables.size();
+            }
+        } else {
+            LOG_ERROR("TableLoader: Failed to load asapcab_index.json in fast path");
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTask = "Index loading failed";
+                progress->currentTablesLoaded = 0;
+                progress->totalTablesToLoad = 0;
+            }
+            return tables; // Return empty list on failure
+        }
+
+        // Stage 10: Sorting and Indexing
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Sorting and indexing tables...";
+            progress->currentStage = 10;
+            progress->currentTablesLoaded = 0;
+            progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
+        }
+        sortTables(tables, settings.titleSortBy, progress);
+        if (progress) {
+            std::lock_guard<std::mutex> lock(progress->mutex);
+            progress->currentTask = "Loading complete";
+            progress->currentTablesLoaded = tables.size();
+            progress->totalTablesToLoad = tables.size();
+            progress->currentStage = 11;
+        }
+        return tables;
+    }
+
+    // Full path: Proceed with all stages
     // Stage 1: Load existing index (unless forceRebuildMetadata)
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -91,13 +140,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             table.isBroken = false;
         }
     }
-    if (!progress) {
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->totalTablesToLoad = scannedTables.size();
-            progress->currentTablesLoaded = scannedTables.size();
-            progress->currentTask = "Scanning complete";
-        }
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->totalTablesToLoad = scannedTables.size();
+        progress->currentTablesLoaded = scannedTables.size();
+        progress->currentTask = "Scanning complete";
     }
 
     // Stage 3: Merge scanned tables with existing index
@@ -183,7 +230,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Metadata scanning complete";
-                // Do not advance currentStage here; wait until Stage 5 starts
             }
         } else {
             LOG_INFO("TableLoader: No tables need metadata scanning.");
@@ -194,7 +240,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->totalTablesToLoad = 0;
                 progress->numMatched = 0;
                 progress->numNoMatch = 0;
-                // Do not advance currentStage here; wait until Stage 5 starts
             }
         }
     }
@@ -390,7 +435,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = downloaded ? "Media downloading complete" : "No media downloaded";
-            progress->currentTablesLoaded = tables.size(); // All tables processed
+            progress->currentTablesLoaded = tables.size();
         }
     }
 
@@ -411,7 +456,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Index saving complete";
                 progress->currentTablesLoaded = tables.size();
-                // Do not advance currentStage here; wait until Stage 7 starts
             }
         } else {
             if (progress) {
@@ -419,7 +463,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->currentTask = "Index saving skipped";
                 progress->currentTablesLoaded = 0;
                 progress->totalTablesToLoad = 0;
-                // Do not advance currentStage here; wait until Stage 7 starts
             }
         }
     }
@@ -448,7 +491,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Index saving complete";
                 progress->currentTablesLoaded = tables.size();
-                // Do not advance currentStage here; wait until Stage 8 starts
             }
         } else {
             if (progress) {
@@ -456,7 +498,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->currentTask = "Index saving skipped";
                 progress->currentTablesLoaded = 0;
                 progress->totalTablesToLoad = 0;
-                // Do not advance currentStage here; wait until Stage 8 starts
             }
         }
     }
@@ -482,7 +523,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Overrides applied";
-        // Do not advance currentStage here; wait until Stage 9 starts
     }
 
     // Stage 10: Sorting and Indexing
@@ -498,19 +538,10 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     sortTables(tables, settings.titleSortBy, progress);
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->currentTask = "Sorting complete";
-        progress->currentTablesLoaded = tables.size();
-        // Do not advance currentStage here; wait until final step
-    }
-
-    if (progress) {
-        std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Loading complete";
         progress->currentTablesLoaded = tables.size();
         progress->totalTablesToLoad = tables.size();
         progress->currentStage = 11;
-        progress->numMatched = 0;
-        progress->numNoMatch = 0;
     }
     return tables;
 }
