@@ -15,7 +15,7 @@
 #include "file_scanner.h"
 #include "vpin_scanner.h"
 #include "vpxtool_scanner.h"
-#include "vpinmdb/vpinmdb_downloader.h"
+#include "vpinmdb/vpinmdb_client.h"
 #include "vpsdb/vps_database_client.h"
 #include "table_patcher.h"
 #include "log/logging.h"
@@ -385,7 +385,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numMatched = 0;
             progress->numNoMatch = 0;
         }
-        VpinMdbImagesDownloader downloader(settings, progress);
+        VpinMdbClient downloader(settings, progress);
         bool downloaded = downloader.downloadMedia(tables);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);

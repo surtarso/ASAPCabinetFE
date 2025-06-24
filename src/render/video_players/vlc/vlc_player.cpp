@@ -89,8 +89,8 @@ bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int 
             return false;
         }
 
-        const char* args[] = {"--quiet", "--no-xlib"};
-        ctx_->instance = libvlc_new(sizeof(args) / sizeof(args[0]), args);
+        const char* args[] = {"--quiet", "--no-xlib", "--loop"};
+        ctx_->instance = libvlc_new(3, args);
         if (!ctx_->instance) {
             LOG_ERROR("VlcVideoPlayer: Failed to create VLC instance");
             cleanupContext();
@@ -128,8 +128,15 @@ bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int 
         }
         libvlc_media_add_option(media, ":input-repeat=-1"); // -1 for infinite loop
 
-        // Set the new media to the existing player
+        // Set the new media to the existing player    libvlc_media_t* media = libvlc_media_new_path(ctx_->instance, path.c_str());
+    if (!media) {
+        LOG_ERROR("VlcVideoPlayer: Failed to create VLC media for path: " << path);
+        cleanupContext();
+        return false;
+    }
+
         libvlc_media_player_set_media(ctx_->player, media);
+        libvlc_media_add_option(media, "input-repeat=65535");
         libvlc_media_release(media); // Media can be released after setting it to the player
 
         // Recreate texture and pixel buffer only if dimensions change
@@ -244,6 +251,8 @@ SDL_Texture* VlcVideoPlayer::getTexture() const {
 }
 
 bool VlcVideoPlayer::isPlaying() const {
+    // return ctx_ ? ctx_->isPlaying : false;
+
     // Also check VLC's internal state to be more robust
     if (ctx_ && ctx_->player) {
         libvlc_state_t state = libvlc_media_player_get_state(ctx_->player);
