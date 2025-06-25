@@ -12,7 +12,7 @@
 
 #include "config/settings.h"
 #include "tables/table_data.h"
-#include "core/loading_progress.h"
+#include "core/ui/loading_progress.h"
 #include "log/logging.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>

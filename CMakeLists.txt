@@ -259,11 +259,12 @@ set(SOURCES
     src/core/app.cpp
     src/core/dependency_factory.cpp
     src/core/first_run.cpp
-    src/core/gui_manager.cpp
-    src/core/joystick_manager.cpp
-    src/core/loading_screen.cpp
-    src/core/playfield_overlay.cpp
+    src/core/imgui_manager.cpp
     src/core/window_manager.cpp
+    src/core/joystick_manager.cpp
+    src/core/ui/loading_screen.cpp
+    src/core/ui/metadata_panel.cpp
+    src/core/ui/playfield_overlay.cpp
     src/launcher/table_launcher.cpp
     src/sound/pulseaudio_player.cpp
     src/capture/process_handler.cpp
@@ -330,6 +331,7 @@ add_dependencies(${PROJECT_NAME} build_rust_lib)
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/core/ui
     ${CMAKE_SOURCE_DIR}/src/capture
     ${CMAKE_SOURCE_DIR}/src/config
     ${CMAKE_SOURCE_DIR}/src/config/ui

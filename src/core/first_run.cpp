@@ -1,4 +1,4 @@
-#include "core/first_run.h"
+#include "first_run.h"
 #include "log/logging.h"
 #include <iostream>
 

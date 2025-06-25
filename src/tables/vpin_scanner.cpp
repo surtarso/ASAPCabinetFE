@@ -1,4 +1,4 @@
-#include "tables/vpin_scanner.h"
+#include "vpin_scanner.h"
 #include "log/logging.h"
 #include "vpin_wrapper.h"
 #include "utils/string_utils.h"

@@ -11,8 +11,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "render/irenderer.h"
-#include "render/ivideo_player.h"
+#include "irenderer.h"
+#include "ivideo_player.h"
 #include "config/settings.h" // Include Settings for passing by const reference
 #include <SDL.h>
 

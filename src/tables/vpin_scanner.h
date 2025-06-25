@@ -13,10 +13,10 @@
 #ifndef VPIN_SCANNER_H
 #define VPIN_SCANNER_H // Header guard to prevent multiple inclusions
 
-#include "tables/vpsdb/vps_database_client.h"
-#include "tables/table_data.h" // Structure for storing table data
+#include "vpsdb/vps_database_client.h"
+#include "table_data.h" // Structure for storing table data
 #include "config/settings.h" // Configuration settings for paths and VPSDB options
-#include "core/loading_progress.h" // Structure for tracking matchmaking progress
+#include "core/ui/loading_progress.h" // Structure for tracking matchmaking progress
 #include <nlohmann/json.hpp> // For nlohmann::json to handle JSON parsing
 #include <vector> // For passing vectors of TableData
 

@@ -1,4 +1,4 @@
-#include "core/joystick_manager.h"
+#include "joystick_manager.h"
 #include "log/logging.h"
 #include <iostream>
 

@@ -34,14 +34,14 @@
 #include "tables/vpsdb/vpsdb_catalog_table.h" // Added for VpsdbJsonLoader
 #include "sound/isound_manager.h"
 #include "capture/iscreenshot_manager.h"
-#include "core/iwindow_manager.h"
-#include "core/joystick_manager.h"
-#include "core/playfield_overlay.h"
-#include "core/gui_manager.h"
-#include "core/dependency_factory.h"
-#include "core/iapp_callbacks.h"
-#include "core/loading_progress.h"
-#include "core/loading_screen.h"
+#include "iwindow_manager.h"
+#include "joystick_manager.h"
+#include "ui/playfield_overlay.h"
+#include "imgui_manager.h"
+#include "dependency_factory.h"
+#include "iapp_callbacks.h"
+#include "ui/loading_progress.h"
+#include "ui/loading_screen.h"
 struct Mix_Chunk;
 
 /**

@@ -1,6 +1,6 @@
-#include "core/app.h"
-#include "core/window_manager.h"
-#include "core/first_run.h"
+#include "app.h"
+#include "window_manager.h"
+#include "first_run.h"
 #include "tables/table_loader.h"
 #include "log/logging.h"
 #include <SDL2/SDL_ttf.h>

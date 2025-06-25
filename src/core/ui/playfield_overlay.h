@@ -1,15 +1,3 @@
-/**
- * @file playfield_overlay.h
- * @brief Defines the PlayfieldOverlay class for rendering ImGui overlays in ASAPCabinetFE.
- *
- * This header provides the PlayfieldOverlay class, which manages ImGui-based UI elements
- * for the playfield display, including scrollbars, navigation arrows, and metadata panels.
- * It integrates with table data, configuration services, window management, and asset
- * management to render interactive and customizable overlays. Settings for these elements
- * are defined in namespaces (e.g., NavigationArrowSettings, ScrollbarSettings,
- * MetadataPanelSettings) for user-configurable adjustments via configUI.
- */
-
 #ifndef PLAYFIELD_OVERLAY_H
 #define PLAYFIELD_OVERLAY_H
 
@@ -44,7 +32,7 @@ public:
      * ScrollbarSettings, MetadataPanelSettings) that can be modified via configUI.
      *
      * @param tables Pointer to the list of table data.
-     * @param currentIndex Pointer to the current table index.
+     * @param currentIndex Pointer Items the current table index.
      * @param configService The configuration service for accessing settings.
      * @param windowManager The window manager for playfield window dimensions.
      * @param assetManager The asset manager for accessing textures or video players.
@@ -103,15 +91,6 @@ private:
      * in ScrollbarSettings, allowing customization via configUI.
      */
     void renderScrollbar();
-
-    /**
-     * @brief Renders the metadata panel UI element.
-     *
-     * Draws the metadata panel with table information (e.g., title, author) using
-     * ImGui, if the panel is visible. The panel's size (width and height factors) and
-     * transparency are controlled by MetadataPanelSettings, enabling configUI adjustments.
-     */
-    void renderMetadataPanel();
 };
 
 #endif // PLAYFIELD_OVERLAY_H

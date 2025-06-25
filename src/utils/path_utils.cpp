@@ -10,7 +10,7 @@
  * (e.g., custom defaults or validation rules) in the future.
  */
 
-#include "utils/path_utils.h"
+#include "path_utils.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <algorithm> // Required for std::transform

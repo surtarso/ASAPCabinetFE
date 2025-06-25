@@ -1,4 +1,4 @@
-#include "core/loading_screen.h"
+#include "loading_screen.h"
 #include "imgui.h"
 #include <SDL2/SDL.h>
 #include <algorithm>

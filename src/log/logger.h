@@ -4,7 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <mutex>
-#include "core/loading_progress.h"
+#include "core/ui/loading_progress.h"
 
 /**
  * @file logger.h

@@ -6,9 +6,9 @@
 #include "sound/isound_manager.h"
 #include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
-#include "render/assets/texture_cache.h"
-#include "render/assets/video_player_cache.h"
-#include "render/assets/title_renderer.h"
+#include "texture_cache.h"
+#include "video_player_cache.h"
+#include "title_renderer.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <memory>

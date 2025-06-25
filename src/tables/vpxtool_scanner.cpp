@@ -9,7 +9,7 @@
  * After loading/generating the index, it processes table metadata.
  */
 
-#include "tables/vpxtool_scanner.h"
+#include "vpxtool_scanner.h"
 #include "log/logging.h"
 #include "utils/string_utils.h"
 #include <filesystem>

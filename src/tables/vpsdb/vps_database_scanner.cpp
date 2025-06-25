@@ -1,4 +1,4 @@
-#include "tables/vpsdb/vps_database_scanner.h"
+#include "vps_database_scanner.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <mutex>

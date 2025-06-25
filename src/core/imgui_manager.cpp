@@ -1,5 +1,5 @@
-#include "core/gui_manager.h"
-#include "core/iwindow_manager.h"
+#include "imgui_manager.h"
+#include "iwindow_manager.h"
 #include "config/iconfig_service.h"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"

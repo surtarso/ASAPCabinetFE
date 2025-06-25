@@ -10,7 +10,7 @@
 #ifndef PULSEAUDIO_PLAYER_H
 #define PULSEAUDIO_PLAYER_H
 
-#include "sound/isound_manager.h"
+#include "isound_manager.h"
 #include <string>
 #include <unordered_map>
 #include <memory>

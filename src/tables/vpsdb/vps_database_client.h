@@ -17,7 +17,7 @@
 #include "vps_database_loader.h" // Class for loading the VPS database
 #include "vps_database_scanner.h" // Class for matchmaking table data with VPS data
 #include "vps_database_updater.h" // Class for updating the VPS database
-#include "core/loading_progress.h" // Structure for tracking progress
+#include "core/ui/loading_progress.h" // Structure for tracking progress
 
 /**
  * @class VpsDatabaseClient

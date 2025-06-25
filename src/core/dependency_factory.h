@@ -16,8 +16,8 @@
 
 #include <memory>
 #include <string> // For std::string in file paths and settings
-#include "core/iwindow_manager.h" // Interface for window management
-#include "core/gui_manager.h" // GUI manager for ImGui rendering
+#include "iwindow_manager.h" // Interface for window management
+#include "imgui_manager.h" // GUI manager for ImGui rendering
 #include "render/iasset_manager.h" // Interface for asset management
 #include "tables/table_data.h" // Table data structure for asset loading
 #include "render/irenderer.h" // Renderer for playfield, backglass, and DMD

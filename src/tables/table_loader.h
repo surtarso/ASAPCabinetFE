@@ -14,9 +14,9 @@
 #ifndef TABLE_LOADER_H
 #define TABLE_LOADER_H // Header guard to prevent multiple inclusions
 
-#include "tables/itable_loader.h"    // Interface for table loading
-#include "tables/overrides/table_override_manager.h"
-#include "core/loading_progress.h"   // Structure for tracking loading progress
+#include "itable_loader.h"    // Interface for table loading
+#include "overrides/table_override_manager.h"
+#include "core/ui/loading_progress.h"   // Structure for tracking loading progress
 #include "config/settings.h"         // For Settings class
 #include <vector>                    // For std::vector
 #include <string>                    // For std::string

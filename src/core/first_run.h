@@ -13,7 +13,7 @@
 
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
-#include "core/gui_manager.h"
+#include "imgui_manager.h"
 #include <SDL2/SDL.h>
 
 /**

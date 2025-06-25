@@ -1,4 +1,4 @@
-#include "sound/pulseaudio_player.h"
+#include "pulseaudio_player.h"
 #include "log/logging.h"
 #include <algorithm>
 #include <iostream>

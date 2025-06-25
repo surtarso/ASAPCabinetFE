@@ -1,4 +1,4 @@
-#include "core/window_manager.h"
+#include "window_manager.h"
 #include "log/logging.h"
 #include <iostream>
 

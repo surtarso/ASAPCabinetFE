@@ -2,7 +2,7 @@
  * @file table_launcher.cpp
  * @brief Implementation of the TableLauncher class.
  */
-#include "launcher/table_launcher.h"
+#include "table_launcher.h"
 #include "log/logging.h"
 #include <chrono>
 #include <sstream>

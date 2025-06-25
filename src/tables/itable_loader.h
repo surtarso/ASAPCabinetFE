@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <map>
-#include "tables/table_data.h"
+#include "table_data.h"
 #include "config/settings.h"
-#include "core/loading_progress.h"
+#include "core/ui/loading_progress.h"
 
 /**
  * @brief Interface for loading table data.

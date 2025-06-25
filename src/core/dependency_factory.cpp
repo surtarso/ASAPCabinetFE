@@ -12,10 +12,10 @@
  * logic for future expansion.
  */
 
-#include "core/dependency_factory.h"
-#include "core/app.h"
+#include "dependency_factory.h"
+#include "app.h"
 #include "config/config_service.h"
-#include "core/window_manager.h"
+#include "window_manager.h"
 #include "render/assets/asset_manager.h"
 #include "render/renderer.h"
 #include "sound/pulseaudio_player.h"

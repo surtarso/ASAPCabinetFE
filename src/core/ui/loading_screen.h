@@ -5,7 +5,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include "imgui.h"
-#include "core/loading_progress.h"
+#include "loading_progress.h"
 
 /**
  * @class LoadingScreen

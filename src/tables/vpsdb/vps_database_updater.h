@@ -14,7 +14,7 @@
 #define VPS_DATABASE_UPDATER_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to handle paths and URLs
-#include "core/loading_progress.h" // Structure for tracking update progress
+#include "core/ui/loading_progress.h" // Structure for tracking update progress
 
 /**
  * @class VpsDatabaseUpdater

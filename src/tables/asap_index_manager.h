@@ -14,7 +14,7 @@
 #include "table_data.h"
 #include "itable_callbacks.h"
 #include "config/settings.h"
-#include "core/loading_progress.h"
+#include "core/ui/loading_progress.h"
 #include <vector>
 
 /**

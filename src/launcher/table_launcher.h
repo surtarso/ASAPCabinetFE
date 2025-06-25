@@ -9,7 +9,7 @@
 #ifndef TABLE_LAUNCHER_H
 #define TABLE_LAUNCHER_H
 
-#include "launcher/itable_launcher.h"
+#include "itable_launcher.h"
 #include "config/iconfig_service.h"
 
 /**

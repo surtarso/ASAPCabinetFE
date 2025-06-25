@@ -2,7 +2,7 @@
 #define VPS_DATABASE_SCANNER_H 
 
 #include "tables/table_data.h"
-#include "core/loading_progress.h"
+#include "core/ui/loading_progress.h"
 #include "config/settings.h"
 #include "utils/string_utils.h"
 #include <nlohmann/json.hpp>

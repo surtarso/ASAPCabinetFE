@@ -1,4 +1,4 @@
-#include "utils/sha_utils.h"
+#include "sha_utils.h"
 #include "log/logging.h"
 #include <openssl/evp.h>
 #include <fstream>

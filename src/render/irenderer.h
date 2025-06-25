@@ -1,7 +1,7 @@
 #ifndef IRENDERER_H
 #define IRENDERER_H
 
-#include "render/iasset_manager.h"
+#include "iasset_manager.h"
 #include "core/iwindow_manager.h"
 
 /**

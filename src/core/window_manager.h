@@ -10,7 +10,7 @@
 #ifndef WINDOW_MANAGER_H
 #define WINDOW_MANAGER_H
 
-#include "core/iwindow_manager.h"
+#include "iwindow_manager.h"
 #include "config/iconfig_service.h"
 
 /**
