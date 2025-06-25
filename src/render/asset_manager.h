@@ -8,6 +8,7 @@
 #include "sound/isound_manager.h"
 #include "render/texture_cache.h"
 #include "render/video_player_cache.h"
+#include "render/title_renderer.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <memory>
@@ -44,9 +45,9 @@ public:
     IVideoPlayer* getDmdVideoPlayer() override { return dmdVideoPlayer.get(); }
     IVideoPlayer* getTopperVideoPlayer() override { return topperVideoPlayer.get(); }
     IConfigService* getSettingsManager() override { return configManager_; }
-    SDL_Rect getTitleRect() override { return titleRect; }
-    void setTitlePosition(int x, int y) override;
-    void setFont(TTF_Font* font) override;
+    SDL_Rect getTitleRect() override { return titleRenderer_->getTitleRect(); }
+    void setTitlePosition(int x, int y) override { titleRenderer_->setTitlePosition(x, y); }
+    void setFont(TTF_Font* font) override { titleRenderer_->setFont(font); }
     void reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) override;
     void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) override;
     void setSettingsManager(IConfigService* cm) override;
@@ -58,7 +59,6 @@ public:
     void applyVideoAudioSettings() override;
     void clearVideoCache();
     void clearTextureCache();
-    SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message, SDL_Color color, SDL_Rect& textRect);
 
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
@@ -99,7 +99,6 @@ private:
     SDL_Texture* topperTexture;
     SDL_Texture* topperWheelTexture;
     SDL_Texture* topperTitleTexture;
-    SDL_Rect titleRect;
     std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
     std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
     std::unique_ptr<IVideoPlayer> dmdVideoPlayer;
@@ -113,7 +112,6 @@ private:
     std::string currentBackglassVideoPath_;
     std::string currentDmdVideoPath_;
     std::string currentTopperVideoPath_;
-    TTF_Font* font;
     IConfigService* configManager_;
     std::unique_ptr<ITableLoader> tableLoader_;
     std::string currentPlayfieldImagePath_;
@@ -135,6 +133,7 @@ private:
 
     std::unique_ptr<TextureCache> textureCache_;
     std::unique_ptr<VideoPlayerCache> videoPlayerCache_;
+    std::unique_ptr<TitleRenderer> titleRenderer_;
 };
 
 #endif // ASSET_MANAGER_H

@@ -4,6 +4,7 @@
 #include "log/logging.h"
 #include "render/texture_cache.h"
 #include "render/video_player_cache.h"
+#include "render/title_renderer.h"
 #include <SDL_image.h>
 #include <chrono>
 #include <algorithm>
@@ -21,7 +22,6 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       topperTexture(nullptr),
       topperWheelTexture(nullptr),
       topperTitleTexture(nullptr),
-      titleRect{0, 0, 0, 0},
       playfieldVideoPlayer(nullptr),
       backglassVideoPlayer(nullptr),
       dmdVideoPlayer(nullptr),
@@ -31,11 +31,12 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       dmdRenderer(dmd),
       topperRenderer(topper),
       soundManager_(soundManager),
-      font(f),
       configManager_(nullptr),
       textureCache_(std::make_unique<TextureCache>()),
-      videoPlayerCache_(std::make_unique<VideoPlayerCache>())
+      videoPlayerCache_(std::make_unique<VideoPlayerCache>()),
+      titleRenderer_(std::make_unique<TitleRenderer>(nullptr))
 {
+    titleRenderer_->setFont(f);
 }
 
 void AssetManager::setSoundManager(ISoundManager* soundManager) {
@@ -59,55 +60,17 @@ void AssetManager::playTableMusic(size_t index, const std::vector<TableData>& ta
 
 void AssetManager::setSettingsManager(IConfigService* configService) {
     configManager_ = configService;
-}
-
-void AssetManager::setTitlePosition(int x, int y) {
-    titleRect.x = x;
-    titleRect.y = y;
-    LOG_DEBUG("AssetManager: Updated title position to x=" << x << ", y=" << y);
-}
-
-void AssetManager::setFont(TTF_Font* font) {
-    this->font = font;
-    LOG_DEBUG("AssetManager: Font set to " << font);
+    titleRenderer_->setFont(nullptr); // Reset font to ensure consistency
+    titleRenderer_->setTitlePosition(0, 0); // Reset position
+    titleRenderer_ = std::make_unique<TitleRenderer>(configService);
 }
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
-    const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
-
-    struct WindowTitleInfo {
-        SDL_Renderer* renderer;
-        SDL_Texture*& texture;
-        const std::string& windowName;
-    };
-
-    WindowTitleInfo windows[] = {
-        {playfieldRenderer, playfieldTitleTexture, "playfield"},
-        {backglassRenderer, backglassTitleTexture, "backglass"},
-        {dmdRenderer, dmdTitleTexture, "dmd"},
-        {topperRenderer, topperTitleTexture, "topper"}
-    };
-
-    for (auto& w : windows) {
-        w.texture = nullptr;
-        if (w.renderer && font && settings.showTitle && settings.titleWindow == w.windowName) {
-            this->titleRect.x = titleRect.x;
-            this->titleRect.y = titleRect.y;
-            this->titleRect.w = 0;
-            this->titleRect.h = 0;
-
-            w.texture = renderText(w.renderer, font, title, color, this->titleRect);
-            int texWidth = 0, texHeight = 0;
-            if (w.texture) {
-                SDL_QueryTexture(w.texture, nullptr, nullptr, &texWidth, &texHeight);
-                titleRect.w = this->titleRect.w;
-                titleRect.h = this->titleRect.h;
-            }
-            LOG_DEBUG("AssetManager: " << w.windowName << " title texture reloaded, font=" << font
-                      << ", font_height=" << (font ? TTF_FontHeight(font) : 0)
-                      << ", width=" << texWidth << ", height=" << texHeight);
-        }
-    }
+    titleRenderer_->reloadTitleTexture(title, color, titleRect,
+                                       playfieldRenderer, playfieldTitleTexture,
+                                       backglassRenderer, backglassTitleTexture,
+                                       dmdRenderer, dmdTitleTexture,
+                                       topperRenderer, topperTitleTexture);
 }
 
 void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) {
@@ -121,7 +84,7 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     backglassRenderer = windowManager->getBackglassRenderer();
     dmdRenderer = windowManager->getDMDRenderer();
     topperRenderer = windowManager->getTopperRenderer();
-    this->font = font;
+    titleRenderer_->setFont(font);
 
     loadTableAssets(index, tables);
     LOG_DEBUG("AssetManager: Completed asset reload for index " << index);
@@ -357,16 +320,14 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             w.wheelTexture = nullptr;
         }
 
-        if (font && settings.showTitle && settings.titleWindow == w.name) {
+        if (settings.showTitle && settings.titleWindow == w.name) {
             SDL_Rect currentTitleRenderRect = {settings.titleX, settings.titleY, 0, 0};
             std::string title = table.title.empty() ? "Unknown Title" : table.title;
-            w.titleTexture = renderText(w.renderer, font, title, settings.fontColor, currentTitleRenderRect);
-            if (w.titleTexture) {
-                this->titleRect.x = currentTitleRenderRect.x;
-                this->titleRect.y = currentTitleRenderRect.y;
-                this->titleRect.w = currentTitleRenderRect.w;
-                this->titleRect.h = currentTitleRenderRect.h;
-            }
+            titleRenderer_->reloadTitleTexture(title, settings.fontColor, currentTitleRenderRect,
+                                               playfieldRenderer, playfieldTitleTexture,
+                                               backglassRenderer, backglassTitleTexture,
+                                               dmdRenderer, dmdTitleTexture,
+                                               topperRenderer, topperTitleTexture);
         } else {
             w.titleTexture = nullptr;
         }
@@ -435,32 +396,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
 void AssetManager::clearOldVideoPlayers() {
     videoPlayerCache_->clearOldVideoPlayers();
-}
-
-SDL_Texture* AssetManager::renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& message,
-                                     SDL_Color color, SDL_Rect& textRect) {
-    if (!font || !renderer || message.empty()) {
-        LOG_ERROR("AssetManager: Invalid font, renderer, or empty message for renderText");
-        return nullptr;
-    }
-
-    SDL_Surface* surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
-    if (!surf) {
-        LOG_ERROR("AssetManager: TTF_RenderUTF8_Blended error: " << TTF_GetError());
-        return nullptr;
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
-    if (!texture) {
-        LOG_ERROR("AssetManager: SDL_CreateTextureFromSurface error: " << SDL_GetError());
-    } else {
-        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-        textRect.w = surf->w;
-        textRect.h = surf->h;
-    }
-
-    SDL_FreeSurface(surf);
-    return texture;
 }
 
 void AssetManager::cleanupVideoPlayers() {
