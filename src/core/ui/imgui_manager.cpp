@@ -1,27 +1,27 @@
 #include "imgui_manager.h"
-#include "iwindow_manager.h"
+#include "core/iwindow_manager.h"
 #include "config/iconfig_service.h"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 #include "log/logging.h"
 
-GuiManager::GuiManager(IWindowManager* windowManager, IConfigService* configService) 
+ImGuiManager::ImGuiManager(IWindowManager* windowManager, IConfigService* configService) 
     : windowManager_(windowManager), configService_(configService), configWindow_(nullptr), configRenderer_(nullptr), context_(nullptr) {}
 
-GuiManager::GuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService) 
+ImGuiManager::ImGuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService) 
     : windowManager_(nullptr), configService_(configService), configWindow_(window), configRenderer_(renderer), context_(nullptr) {}
 
-GuiManager::~GuiManager() {
+ImGuiManager::~ImGuiManager() {
     if (context_) {
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext(context_);
-        LOG_DEBUG("GuiManager: GuiManager destroyed");
+        LOG_DEBUG("ImGuiManager: ImGuiManager destroyed");
     }
 }
 
-void GuiManager::initialize() {
+void ImGuiManager::initialize() {
     IMGUI_CHECKVERSION();
     context_ = ImGui::CreateContext();
     ImGui::StyleColorsDark();
@@ -33,7 +33,7 @@ void GuiManager::initialize() {
     // Apply DPI scaling to ImGui
     const Settings& settings = configService_->getSettings();
     if (settings.enableDpiScaling) {
-        //LOG_DEBUG("GuiManager: Applying DPI scale: " << settings.dpiScale);
+        //LOG_DEBUG("ImGuiManager: Applying DPI scale: " << settings.dpiScale);
         io.FontGlobalScale = settings.dpiScale;
         // Scale all ImGui style sizes
         ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
@@ -49,24 +49,24 @@ void GuiManager::initialize() {
     LOG_INFO("ImGui Initialized.");
 }
 
-void GuiManager::newFrame() {
+void ImGuiManager::newFrame() {
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 }
 
-void GuiManager::render(SDL_Renderer* renderer) {
+void ImGuiManager::render(SDL_Renderer* renderer) {
     ImGui::Render();
     if (ImGui::GetDrawData()) {
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
     }
 }
 
-void GuiManager::processEvent(const SDL_Event& event) {
+void ImGuiManager::processEvent(const SDL_Event& event) {
     if (event.type == SDL_TEXTINPUT) {
-        LOG_DEBUG("GuiManager: SDL_TEXTINPUT event, text: " << event.text.text);
+        LOG_DEBUG("ImGuiManager: SDL_TEXTINPUT event, text: " << event.text.text);
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-        LOG_DEBUG("GuiManager: SDL_KEYDOWN event, Escape key pressed");
+        LOG_DEBUG("ImGuiManager: SDL_KEYDOWN event, Escape key pressed");
     }
     ImGui_ImplSDL2_ProcessEvent(&event);
 }

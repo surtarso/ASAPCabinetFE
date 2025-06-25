@@ -246,7 +246,7 @@ void App::initializeDependencies() {
     }
 
     windowManager_ = DependencyFactory::createWindowManager(configManager_->getSettings());
-    guiManager_ = DependencyFactory::createGuiManager(windowManager_.get(), configManager_.get());
+    imGuiManager_ = DependencyFactory::createImGuiManager(windowManager_.get(), configManager_.get());
     soundManager_ = DependencyFactory::createSoundManager(configManager_->getSettings());
 
     if (!configManager_->getSettings().ambienceSound.empty()) {
@@ -285,7 +285,7 @@ void App::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (!screenshotManager_->isActive()) {
-            guiManager_->processEvent(event);
+            imGuiManager_->processEvent(event);
             ImGuiIO& io = ImGui::GetIO();
             if (event.type == SDL_TEXTINPUT && io.WantCaptureKeyboard) {
                 LOG_DEBUG("App: Consuming SDL_TEXTINPUT event due to ImGui WantCaptureKeyboard");
@@ -354,7 +354,7 @@ void App::render() {
         LOG_DEBUG("App::render: topperRenderer is null but showTopper is true");
     }
 
-    guiManager_->newFrame();
+    imGuiManager_->newFrame();
     
     // Render loading screen if tables are loading
     if (isLoadingTables_) {
@@ -409,7 +409,7 @@ void App::render() {
         }
     }
     
-    guiManager_->render(playfieldRenderer);
+    imGuiManager_->render(playfieldRenderer);
 
     SDL_RenderPresent(playfieldRenderer);
     if (settings.showBackglass && backglassRenderer) {

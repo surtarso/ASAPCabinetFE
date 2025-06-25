@@ -21,7 +21,7 @@ bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindPr
         return false;
     }
 
-    auto guiManager = std::make_unique<GuiManager>(configWindow, configRenderer, configService);
+    auto guiManager = std::make_unique<ImGuiManager>(configWindow, configRenderer, configService);
     guiManager->initialize();
 
     bool showConfig = true;

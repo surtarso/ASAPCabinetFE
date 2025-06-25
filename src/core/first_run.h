@@ -4,7 +4,7 @@
  *
  * This header provides the runInitialConfig function, which executes the initial
  * configuration setup using a configuration service and a specified configuration
- * file path. It integrates with GuiManager and ConfigUI to render the configuration
+ * file path. It integrates with ImGuiManager and ConfigUI to render the configuration
  * UI during the first run of the application.
  */
 
@@ -13,7 +13,7 @@
 
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
-#include "imgui_manager.h"
+#include "ui/imgui_manager.h"
 #include <SDL2/SDL.h>
 
 /**
@@ -21,7 +21,7 @@
  *
  * This function initializes and runs the configuration UI using the provided
  * configuration service and configuration file path. It sets up an SDL window
- * and renderer, uses GuiManager for ImGui rendering, and applies settings via
+ * and renderer, uses ImGuiManager for ImGui rendering, and applies settings via
  * ConfigUI.
  *
  * @param configService The configuration service for managing settings.

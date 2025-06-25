@@ -37,7 +37,7 @@
 #include "iwindow_manager.h"
 #include "joystick_manager.h"
 #include "ui/playfield_overlay.h"
-#include "imgui_manager.h"
+#include "ui/imgui_manager.h"
 #include "dependency_factory.h"
 #include "iapp_callbacks.h"
 #include "ui/loading_progress.h"
@@ -50,7 +50,7 @@ struct Mix_Chunk;
  *
  * This class implements the IAppCallbacks interface to manage the application lifecycle,
  * including initialization, event handling, updating, rendering, and cleanup. It uses
- * DependencyFactory to create and integrate components like IWindowManager, GuiManager,
+ * DependencyFactory to create and integrate components like IWindowManager, ImGuiManager,
  * IInputManager, IRenderer, and PlayfieldOverlay, and handles table data, configuration,
  * and UI interactions.
  */
@@ -132,7 +132,7 @@ private:
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.
     std::unique_ptr<JoystickManager> joystickManager_;   ///< Manager for SDL joysticks.
     std::unique_ptr<IWindowManager> windowManager_;      ///< Manager for SDL windows and renderers.
-    std::unique_ptr<GuiManager> guiManager_;             ///< Manager for ImGui UI rendering.
+    std::unique_ptr<ImGuiManager> imGuiManager_;             ///< Manager for ImGui UI rendering.
     std::unique_ptr<ISoundManager> soundManager_;        ///< Manager for sound playback.
     std::unique_ptr<IKeybindProvider> keybindProvider_; ///< Keybind provider for input management
     std::unique_ptr<IConfigService> configManager_;      ///< Configuration service for settings.

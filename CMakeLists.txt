@@ -255,28 +255,37 @@ set_target_properties(${VPIN_FFI_WRAPPER_LIB_NAME} PROPERTIES
 
 # Define source files
 set(SOURCES
+    # main/entry
     src/main.cpp
+    # core
     src/core/app.cpp
     src/core/dependency_factory.cpp
     src/core/first_run.cpp
-    src/core/imgui_manager.cpp
-    src/core/window_manager.cpp
     src/core/joystick_manager.cpp
+    src/core/window_manager.cpp
+    src/core/ui/imgui_manager.cpp
     src/core/ui/loading_screen.cpp
     src/core/ui/metadata_panel.cpp
     src/core/ui/playfield_overlay.cpp
+    # launcher
     src/launcher/table_launcher.cpp
+    # sound
     src/sound/pulseaudio_player.cpp
+    # capture
     src/capture/process_handler.cpp
     src/capture/screenshot_capture.cpp
     src/capture/screenshot_manager.cpp
     src/capture/screenshot_window.cpp
+    # config
     src/config/config_service.cpp
     src/config/ui/config_ui.cpp
     src/config/ui/section_renderer.cpp
+    # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
+    #l log
     src/log/logger.cpp
+    # render
     src/render/renderer.cpp
     src/render/assets/asset_manager.cpp
     src/render/assets/texture_cache.cpp
@@ -287,6 +296,7 @@ set(SOURCES
     src/render/video_players/ffmpeg/audio_decoder.cpp
     src/render/video_players/ffmpeg/video_decoder.cpp
     src/render/video_players/vlc/vlc_player.cpp
+    # tables
     src/tables/asap_index_manager.cpp
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
@@ -306,6 +316,7 @@ set(SOURCES
     src/tables/vpsdb/vpsdb_catalog_image.cpp
     src/tables/vpsdb/vpsdb_catalog_json.cpp
     src/tables/vpsdb/vpsdb_catalog_table.cpp
+    # utils
     src/utils/path_utils.cpp
     src/utils/sha_utils.cpp
     src/utils/string_utils.cpp

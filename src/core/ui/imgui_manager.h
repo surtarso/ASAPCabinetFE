@@ -1,8 +1,8 @@
 /**
  * @file gui_manager.h
- * @brief Defines the GuiManager class for managing ImGui contexts in ASAPCabinetFE.
+ * @brief Defines the ImGuiManager class for managing ImGui contexts in ASAPCabinetFE.
  *
- * This header provides the GuiManager class, which initializes and manages ImGui
+ * This header provides the ImGuiManager class, which initializes and manages ImGui
  * contexts for rendering UI elements in both the main application (using IWindowManager)
  * and standalone initial configuration modes (using raw SDL window/renderer). It
  * processes SDL events and renders ImGui draw data.
@@ -33,7 +33,7 @@ class IWindowManager;
 class IConfigService;
 
 /**
- * @class GuiManager
+ * @class ImGuiManager
  * @brief Manages ImGui contexts for UI rendering.
  *
  * This class initializes and manages ImGui contexts for rendering UI elements in
@@ -42,10 +42,10 @@ class IConfigService;
  * and renderer). It handles SDL event processing and ImGui rendering, integrating
  * with IConfigService for settings.
  */
-class GuiManager {
+class ImGuiManager {
 public:
     /**
-     * @brief Constructs a GuiManager for the main application.
+     * @brief Constructs a ImGuiManager for the main application.
      *
      * Initializes the ImGui context for the main application using the provided
      * window manager and configuration service.
@@ -53,10 +53,10 @@ public:
      * @param windowManager The window manager for accessing SDL windows and renderers.
      * @param configService The configuration service for accessing settings.
      */
-    GuiManager(IWindowManager* windowManager, IConfigService* configService);
+    ImGuiManager(IWindowManager* windowManager, IConfigService* configService);
 
     /**
-     * @brief Constructs a GuiManager for standalone initial configuration.
+     * @brief Constructs a ImGuiManager for standalone initial configuration.
      *
      * Initializes the ImGui context for initial configuration using a single SDL
      * window and renderer, with the provided configuration service.
@@ -65,14 +65,14 @@ public:
      * @param renderer The SDL renderer for the configuration UI.
      * @param configService The configuration service for accessing settings.
      */
-    GuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService);
+    ImGuiManager(SDL_Window* window, SDL_Renderer* renderer, IConfigService* configService);
 
     /**
-     * @brief Destroys the GuiManager instance.
+     * @brief Destroys the ImGuiManager instance.
      *
      * Cleans up the ImGui context and any associated resources.
      */
-    ~GuiManager();
+    ~ImGuiManager();
 
     /**
      * @brief Initializes the ImGui context.

@@ -17,7 +17,7 @@
 #include <memory>
 #include <string> // For std::string in file paths and settings
 #include "iwindow_manager.h" // Interface for window management
-#include "imgui_manager.h" // GUI manager for ImGui rendering
+#include "ui/imgui_manager.h" // GUI manager for ImGui rendering
 #include "render/iasset_manager.h" // Interface for asset management
 #include "tables/table_data.h" // Table data structure for asset loading
 #include "render/irenderer.h" // Renderer for playfield, backglass, and DMD
@@ -44,7 +44,7 @@ class App;
  * @brief Static factory for creating component instances.
  *
  * This class provides static methods to create instances of key application components,
- * such as IWindowManager, GuiManager, IAssetManager, and others, configured with the
+ * such as IWindowManager, ImGuiManager, IAssetManager, and others, configured with the
  * necessary dependencies. It is used by the App class to initialize the application.
  * The factory supports customization through settings (e.g., via IConfigService) and
  * can be extended with configUI to allow user-defined parameters (e.g., window sizes,
@@ -69,16 +69,16 @@ public:
     /**
      * @brief Creates a GUI manager instance.
      *
-     * Initializes a GuiManager with the provided window manager and configuration service,
+     * Initializes a ImGuiManager with the provided window manager and configuration service,
      * and calls its initialize method to set up the ImGui context. The configuration
      * service provides settings (e.g., UI theme) that could be user-customizable via
      * configUI.
      *
      * @param windowManager The window manager for accessing SDL windows and renderers.
      * @param configService The configuration service for accessing settings.
-     * @return A unique pointer to a GuiManager instance.
+     * @return A unique pointer to a ImGuiManager instance.
      */
-    static std::unique_ptr<GuiManager> createGuiManager(IWindowManager* windowManager, IConfigService* configService);
+    static std::unique_ptr<ImGuiManager> createImGuiManager(IWindowManager* windowManager, IConfigService* configService);
 
     /**
      * @brief Creates an asset manager instance.

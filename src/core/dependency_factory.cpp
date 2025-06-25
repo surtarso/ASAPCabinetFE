@@ -3,7 +3,7 @@
  * @brief Implements the DependencyFactory class for creating component instances in ASAPCabinetFE.
  *
  * This file provides the implementation of the DependencyFactory class, which creates
- * instances of core components, such as WindowManager, GuiManager, AssetManager, and
+ * instances of core components, such as WindowManager, ImGuiManager, AssetManager, and
  * others, with their required dependencies. It is used by the App class to initialize
  * the application. The factory methods initialize components with settings from
  * IConfigService and other dependencies, with potential for user customization via
@@ -48,15 +48,15 @@ std::unique_ptr<IWindowManager> DependencyFactory::createWindowManager(const Set
 /**
  * @brief Creates a GUI manager instance.
  *
- * Initializes a GuiManager with the provided window manager and configuration service,
+ * Initializes a ImGuiManager with the provided window manager and configuration service,
  * and calls its initialize method to set up the ImGui context.
  *
  * @param windowManager The window manager for accessing SDL windows and renderers.
  * @param configService The configuration service for accessing settings.
- * @return A unique pointer to a GuiManager instance.
+ * @return A unique pointer to a ImGuiManager instance.
  */
-std::unique_ptr<GuiManager> DependencyFactory::createGuiManager(IWindowManager* windowManager, IConfigService* configService) {
-    auto gui = std::make_unique<GuiManager>(windowManager, configService);
+std::unique_ptr<ImGuiManager> DependencyFactory::createImGuiManager(IWindowManager* windowManager, IConfigService* configService) {
+    auto gui = std::make_unique<ImGuiManager>(windowManager, configService);
     gui->initialize(); // Sets up ImGui context with window and renderer data
     return gui;
 }
