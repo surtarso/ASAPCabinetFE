@@ -1,11 +1,13 @@
 TODO
 
 FIX:
+- fix log on release build
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 
 QOL:
 - refactor the monoliths...
+- screenshot mode using app size/pos as frame
 - key for metadata toggle?
 - key to switch sorting type (joystick oriented)
 - feedback for table launch/failure
