@@ -278,6 +278,8 @@ set(SOURCES
     src/log/logger.cpp
     src/render/asset_manager.cpp
     src/render/renderer.cpp
+    src/render/texture_cache.cpp
+    src/render/video_player_cache.cpp
     src/render/video_players/video_player_factory.cpp
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/ffmpeg/audio_decoder.cpp
