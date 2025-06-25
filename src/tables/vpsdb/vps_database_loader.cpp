@@ -22,7 +22,7 @@ bool VpsDatabaseLoader::load(LoadingProgress* progress) {
     try {
         std::ifstream file(vpsDbPath_);
         if (!file.is_open()) {
-            LOG_ERROR("VpsDatabaseLoader: Failed to open vpsdb.json at: " << vpsDbPath_);
+            LOG_ERROR("Failed to open vpsdb.json at: " + vpsDbPath_);
             return false;
         }
 
@@ -42,7 +42,7 @@ bool VpsDatabaseLoader::load(LoadingProgress* progress) {
                 progress->currentTablesLoaded = vpsDb_.size(); // Update with number of entries
                 progress->currentTask = "VPSDB JSON loaded";
             }
-            LOG_INFO("VpsDatabaseLoader: Loaded vpsdb.json with " << vpsDb_.size() << " entries");
+            LOG_INFO("Loaded vpsdb.json with " + std::to_string(vpsDb_.size()) + " entries");
             return true;
         } else if (vpsDb_.is_object() && vpsDb_.contains("tables") && vpsDb_["tables"].is_array()) {
             vpsDb_ = vpsDb_["tables"]; // Adjust to store the 'tables' array directly
@@ -51,14 +51,14 @@ bool VpsDatabaseLoader::load(LoadingProgress* progress) {
                 progress->currentTablesLoaded = vpsDb_.size(); // Update with number of entries
                 progress->currentTask = "VPSDB JSON loaded";
             }
-            LOG_INFO("VpsDatabaseLoader: Loaded vpsdb.json with " << vpsDb_.size() << " entries");
+            LOG_INFO("Loaded vpsdb.json with " + std::to_string(vpsDb_.size()) + " entries");
             return true;
         } else {
-            LOG_ERROR("VpsDatabaseLoader: Invalid vpsdb.json: expected an array or an object with 'tables' array");
+            LOG_ERROR("Invalid vpsdb.json: expected an array or an object with 'tables' array");
             return false;
         }
     } catch (const std::exception& e) {
-        LOG_ERROR("VpsDatabaseLoader: Failed to parse vpsdb.json: " << e.what());
+        LOG_ERROR("Failed to parse vpsdb.json: " + std::string(e.what()));
         return false;
     }
 }

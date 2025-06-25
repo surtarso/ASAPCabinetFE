@@ -1,5 +1,11 @@
+/**
+ * @file video_player_cache.cpp
+ * @brief Implementation of the VideoPlayerCache class for managing video player caching.
+ */
+
 #include "video_player_cache.h"
 #include "log/logging.h"
+#include <string>
 
 VideoPlayerCache::VideoPlayerCache() {}
 
@@ -14,7 +20,7 @@ std::unique_ptr<IVideoPlayer> VideoPlayerCache::getVideoPlayer(const std::string
         std::unique_ptr<IVideoPlayer> player = std::move(it->second.player);
         cache_.erase(it);
         lruKeys_.remove(key);
-        LOG_DEBUG("VideoPlayerCache: Reused cached video player for key: " << key);
+        LOG_DEBUG("Reused cached video player for key: " + key);
         return player;
     }
     return nullptr;
@@ -27,13 +33,13 @@ void VideoPlayerCache::cacheVideoPlayer(const std::string& key, std::unique_ptr<
     auto [it, inserted] = cache_.emplace(key, CacheEntry(renderer, width, height, std::move(player)));
     if (inserted) {
         lruKeys_.push_front(key);
-        LOG_DEBUG("VideoPlayerCache: Cached video player for key: " << key);
+        LOG_DEBUG("Cached video player for key: " + key);
         if (lruKeys_.size() > MAX_CACHE_SIZE) {
             evictOldest();
         }
     } else {
         addOldVideoPlayer(std::move(player));
-        LOG_WARN("VideoPlayerCache: Duplicate key found for video player: " << key << ". Discarding.");
+        LOG_WARN("Duplicate key found for video player: " + key + ". Discarding.");
     }
 }
 
@@ -43,14 +49,13 @@ void VideoPlayerCache::addOldVideoPlayer(std::unique_ptr<IVideoPlayer> player) {
         oldVideoPlayers_.push_back(std::move(player));
         if (oldVideoPlayers_.size() > MAX_CACHE_SIZE * 2) {
             oldVideoPlayers_.pop_front();
-            LOG_DEBUG("VideoPlayerCache: Removed oldest video player from oldVideoPlayers_ queue (size: " << oldVideoPlayers_.size() << ")");
+            LOG_DEBUG("Removed oldest video player from oldVideoPlayers_ queue (size: " + std::to_string(oldVideoPlayers_.size()) + ")");
         }
     }
 }
 
 void VideoPlayerCache::clearOldVideoPlayers() {
     oldVideoPlayers_.clear();
-    //LOG_DEBUG("VideoPlayerCache: Cleared all old video players from queue");
 }
 
 void VideoPlayerCache::clearCache() {
@@ -62,7 +67,7 @@ void VideoPlayerCache::clearCache() {
     }
     cache_.clear();
     lruKeys_.clear();
-    LOG_DEBUG("VideoPlayerCache: Video player cache cleared.");
+    LOG_DEBUG("Video player cache cleared.");
 }
 
 void VideoPlayerCache::evictOldest() {
@@ -73,7 +78,7 @@ void VideoPlayerCache::evictOldest() {
         if (it != cache_.end()) {
             addOldVideoPlayer(std::move(it->second.player));
             cache_.erase(it);
-            LOG_DEBUG("VideoPlayerCache: Evicted oldest cached video player for key: " << keyToEvict);
+            LOG_DEBUG("Evicted oldest cached video player for key: " + keyToEvict);
         }
     }
 }

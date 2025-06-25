@@ -1,13 +1,19 @@
+/**
+ * @file config_ui.cpp
+ * @brief Implementation of the ConfigUI class for rendering and managing the configuration UI in ASAPCabinetFE.
+ */
+
 #include "config_ui.h"
 #include "section_renderer.h"
 #include "sound/isound_manager.h"
-#include "utils/string_utils.h"
+#include "log/logging.h"
 #include <set>
-#include <algorithm>
+#include <string>
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
-                   IAssetManager* assets,[[maybe_unused]] size_t* currentIndex,[[maybe_unused]] std::vector<TableData>* tables,
-                   IAppCallbacks* appCallbacks, bool& showConfig, bool standaloneMode)
+                   IAssetManager* assets, [[maybe_unused]] size_t* currentIndex,
+                   [[maybe_unused]] std::vector<TableData>* tables, IAppCallbacks* appCallbacks,
+                   bool& showConfig, bool standaloneMode)
     : configService_(configService),
       keybindProvider_(keybindProvider),
       assets_(assets),
@@ -15,8 +21,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       showConfig_(showConfig),
       standaloneMode_(standaloneMode),
       standaloneFileDialog_(),
-      normalFileDialog_()
-{
+      normalFileDialog_() {
     LOG_DEBUG("ConfigUI constructed.");
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
@@ -40,33 +45,31 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
         }
         originalJsonData_ = jsonData_;
     } catch (const std::exception& e) {
-        LOG_ERROR("ConfigUI: Error initializing JSON data: " << e.what());
+        LOG_ERROR("Error initializing JSON data: " + std::string(e.what()));
     }
     initializeRenderers();
 }
 
 void ConfigUI::initializeRenderers() {
     for (const auto& section : sectionConfig_.getSectionOrder()) {
-        renderers_[section] = std::make_unique<SectionRenderer>(
-            this,  // Pass the ConfigUI instance
-            sectionConfig_.getKeyOrder(section));
+        renderers_[section] = std::make_unique<SectionRenderer>(this, sectionConfig_.getKeyOrder(section));
     }
 }
 
 void ConfigUI::drawGUI() {
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | 
-                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
     if (standaloneMode_) {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);
     } else {
-        float configUIWidth = 0.7f;  // Default if not found
-        float configUIHeight = 0.5f; // Default if not found
+        float configUIWidth = 0.7f;
+        float configUIHeight = 0.5f;
         try {
-            if (jsonData_.contains("Internal")) {
+            if (jsonData_.contains("Internal") && jsonData_["Internal"].is_object()) {
                 if (jsonData_["Internal"].contains("configUIWidth")) {
                     configUIWidth = jsonData_["Internal"]["configUIWidth"].get<float>();
                 }
@@ -75,21 +78,21 @@ void ConfigUI::drawGUI() {
                 }
             }
         } catch (const std::exception& e) {
-            LOG_ERROR("ConfigUI: Error accessing window size ratios: " << e.what());
+            LOG_ERROR("Error accessing window size ratios: " + std::string(e.what()));
         }
 
         float configWidth = io.DisplaySize.x * configUIWidth;
         float configHeight = io.DisplaySize.y * configUIHeight;
         float configX = io.DisplaySize.x / 2.0f - configWidth / 2.0f;
         float configY = io.DisplaySize.y / 2.0f - configHeight / 2.0f;
-        
+
         ImGui::SetNextWindowPos(ImVec2(configX, configY), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(configWidth, configHeight), ImGuiCond_Always);
         ImGui::Begin("ASAPCabinetFE Configuration", &showConfig_, windowFlags);
     }
 
     if (jsonData_.is_null()) {
-        LOG_ERROR("ConfigUI: JSON data is null.");
+        LOG_ERROR("JSON data is null.");
         ImGui::Text("Error: Failed to load configuration data.");
         ImGui::End();
         return;
@@ -101,7 +104,6 @@ void ConfigUI::drawGUI() {
     ImGui::BeginChild("ConfigContent", ImVec2(0, -buttonHeight), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     std::set<std::string> renderedSections;
 
-    // Select the appropriate file dialog instance based on mode
     ImGuiFileDialog* fileDialog = standaloneMode_ ? &standaloneFileDialog_ : &normalFileDialog_;
 
     if (standaloneMode_) {
@@ -114,7 +116,7 @@ void ConfigUI::drawGUI() {
                     resetSectionToDefault("VPX");
                 }
             } else {
-                LOG_ERROR("ConfigUI: No renderer for section VPX");
+                LOG_ERROR("No renderer for section VPX");
             }
             renderedSections.insert("VPX");
             ImGui::PopID();
@@ -126,7 +128,7 @@ void ConfigUI::drawGUI() {
             if (it != renderers_.end()) {
                 it->second->render("WindowSettings", jsonData_["WindowSettings"], isCapturingKey_, capturingKeyName_, fileDialog, false, isDialogOpen_, dialogKey_);
             } else {
-                LOG_ERROR("ConfigUI: No renderer for section WindowSettings");
+                LOG_ERROR("No renderer for section WindowSettings");
             }
             renderedSections.insert("WindowSettings");
             ImGui::PopID();
@@ -144,7 +146,7 @@ void ConfigUI::drawGUI() {
                     }
                     it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, fileDialog, defaultOpen, isDialogOpen_, dialogKey_);
                 } else {
-                    LOG_ERROR("ConfigUI: No renderer for section " << sectionName);
+                    LOG_ERROR("No renderer for section " + sectionName);
                 }
                 renderedSections.insert(sectionName);
                 ImGui::PopID();
@@ -189,42 +191,42 @@ void ConfigUI::drawGUI() {
     }
 
     if (isDialogOpen_) {
-        LOG_DEBUG("ConfigUI: Attempting to display dialog for key: " << dialogKey_ << ", isDialogOpen_: " << isDialogOpen_);
+        LOG_DEBUG("Attempting to display dialog for key: " + dialogKey_ + ", isDialogOpen_: " + std::to_string(isDialogOpen_));
         ImVec2 maxSize = ImVec2(ImGui::GetIO().DisplaySize.x * 0.8f, ImGui::GetIO().DisplaySize.y * 0.8f);
         ImVec2 minSize = ImVec2(600, 400);
 
         if (dialogKey_ == "VPXTablesPath") {
             if (fileDialog->Display("FolderDlg_VPXTablesPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                LOG_DEBUG("ConfigUI: Displaying FolderDlg_VPXTablesPath");
+                LOG_DEBUG("Displaying FolderDlg_VPXTablesPath");
                 if (fileDialog->IsOk()) {
                     jsonData_["VPX"]["VPXTablesPath"] = fileDialog->GetCurrentPath();
-                    LOG_INFO("ConfigUI: Selected VPXTablesPath: " << jsonData_["VPX"]["VPXTablesPath"].get<std::string>());
+                    LOG_INFO("Selected VPXTablesPath: " + jsonData_["VPX"]["VPXTablesPath"].get<std::string>());
                 }
                 fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else if (dialogKey_ == "VPinballXPath") {
             if (fileDialog->Display("FileDlg_VPinballXPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                LOG_DEBUG("ConfigUI: Displaying FileDlg_VPinballXPath");
+                LOG_DEBUG("Displaying FileDlg_VPinballXPath");
                 if (fileDialog->IsOk()) {
                     jsonData_["VPX"]["VPinballXPath"] = fileDialog->GetFilePathName();
-                    LOG_INFO("ConfigUI: Selected VPinballXPath: " << jsonData_["VPX"]["VPinballXPath"].get<std::string>());
+                    LOG_INFO("Selected VPinballXPath: " + jsonData_["VPX"]["VPinballXPath"].get<std::string>());
                 }
                 fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else if (dialogKey_ == "vpxIniPath") {
             if (fileDialog->Display("FileDlg_vpxIniPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                LOG_DEBUG("ConfigUI: Displaying FileDlg_vpxIniPath");
+                LOG_DEBUG("Displaying FileDlg_vpxIniPath");
                 if (fileDialog->IsOk()) {
                     jsonData_["VPX"]["vpxIniPath"] = fileDialog->GetFilePathName();
-                    LOG_INFO("ConfigUI: Selected vpxIniPath: " << jsonData_["VPX"]["vpxIniPath"].get<std::string>());
+                    LOG_INFO("Selected vpxIniPath: " + jsonData_["VPX"]["vpxIniPath"].get<std::string>());
                 }
                 fileDialog->Close();
                 isDialogOpen_ = false;
             }
         } else {
-            LOG_ERROR("ConfigUI: Unknown dialog key: " << dialogKey_);
+            LOG_ERROR("Unknown dialog key: " + dialogKey_);
             isDialogOpen_ = false;
         }
     }
@@ -235,11 +237,11 @@ void ConfigUI::drawGUI() {
 void ConfigUI::handleEvent(const SDL_Event& event) {
     if (!isCapturingKey_) return;
 
-    if (event.type == SDL_KEYDOWN || event.type == SDL_JOYBUTTONDOWN || 
+    if (event.type == SDL_KEYDOWN || event.type == SDL_JOYBUTTONDOWN ||
         event.type == SDL_JOYHATMOTION || event.type == SDL_JOYAXISMOTION) {
         std::string newBind = keybindProvider_->eventToString(event);
         if (!newBind.empty()) {
-            LOG_DEBUG("ConfigUI: Captured bind: " << newBind << " for " << capturingKeyName_);
+            LOG_DEBUG("Captured bind: " + newBind + " for " + capturingKeyName_);
             updateKeybind(capturingKeyName_, newBind);
             isCapturingKey_ = false;
         }
@@ -249,13 +251,13 @@ void ConfigUI::handleEvent(const SDL_Event& event) {
 void ConfigUI::updateKeybind(const std::string& action, const std::string& bind) {
     if (!jsonData_.contains("Keybinds") || !keybindProvider_) return;
 
-    std::string storedBind = bind; // Use the full SDL key name directly, no normalization
+    std::string storedBind = bind;
 
-    jsonData_["Keybinds"][action] = storedBind; // Store the full name in JSON
-    SDL_Keycode key = SDL_GetKeyFromName(bind.c_str()); // Use original bind to get keycode
+    jsonData_["Keybinds"][action] = storedBind;
+    SDL_Keycode key = SDL_GetKeyFromName(bind.c_str());
     if (key != SDLK_UNKNOWN) {
         keybindProvider_->setKey(action, key);
-        LOG_DEBUG("ConfigUI: Updated keybind " << action << " to " << storedBind << " (keycode: " << key << ")");
+        LOG_DEBUG("Updated keybind " + action + " to " + storedBind + " (keycode: " + std::to_string(key) + ")");
     } else if (bind.find("JOY_") == 0) {
         try {
             if (bind.find("_BUTTON_") != std::string::npos) {
@@ -283,19 +285,19 @@ void ConfigUI::updateKeybind(const std::string& action, const std::string& bind)
                 bool positiveDirection = (bind.substr(axisEnd + 1) == "POSITIVE");
                 keybindProvider_->setJoystickAxis(action, joystickId, axis, positiveDirection);
             }
-            LOG_DEBUG("ConfigUI: Updated joystick bind " << action << " to " << bind);
+            LOG_DEBUG("Updated joystick bind " + action + " to " + bind);
         } catch (const std::exception& e) {
-            LOG_ERROR("ConfigUI: Invalid joystick bind format for " << action << ": " << bind << ", error: " << e.what());
+            LOG_ERROR("Invalid joystick bind format for " + action + ": " + bind + ", error: " + std::string(e.what()));
         }
     } else {
-        LOG_ERROR("ConfigUI: Invalid keybind " << bind << " for action " << action);
+        LOG_ERROR("Invalid keybind " + bind + " for action " + action);
     }
 }
 
 void ConfigUI::saveConfig() {
-    LOG_DEBUG("ConfigUI::saveConfig called.");
+    LOG_DEBUG("saveConfig called.");
     if (!configService_ || jsonData_.is_null()) {
-        LOG_ERROR("ConfigUI: Cannot save config, service or JSON data is null.");
+        LOG_ERROR("Cannot save config, service or JSON data is null.");
         return;
     }
 
@@ -311,9 +313,9 @@ void ConfigUI::saveConfig() {
                     auto it = Settings::settingsMetadata.find(fullKey);
                     if (it != Settings::settingsMetadata.end()) {
                         reloadTypes.insert(it->second.first);
-                        LOG_DEBUG("ConfigUI: Detected change in " << sectionName << "." << key << ", ReloadType: " << static_cast<int>(it->second.first));
+                        LOG_DEBUG("Detected change in " + sectionName + "." + key + ", ReloadType: " + std::to_string(static_cast<int>(it->second.first)));
                     } else {
-                        LOG_DEBUG("ConfigUI: No ReloadType found for " << sectionName << "." << key);
+                        LOG_DEBUG("No ReloadType found for " + sectionName + "." + key);
                     }
                 }
             }
@@ -330,11 +332,11 @@ void ConfigUI::saveConfig() {
                 }
             }
             keybindProvider_->loadKeybinds(keybindData);
-            LOG_DEBUG("ConfigUI: Synced keybinds to KeybindManager");
+            LOG_DEBUG("Synced keybinds to KeybindManager");
         }
 
         configService_->saveConfig();
-        LOG_DEBUG("ConfigUI: Config saved successfully.");
+        LOG_INFO("Config saved successfully.");
 
         for (const auto& reloadType : reloadTypes) {
             switch (reloadType) {
@@ -343,37 +345,37 @@ void ConfigUI::saveConfig() {
                 case Settings::ReloadType::Title:
                     if (assets_) {
                         assets_->setTitlePosition(settings.titleX, settings.titleY);
-                        LOG_DEBUG("ConfigUI: Triggered setTitlePosition for ReloadType " << static_cast<int>(reloadType));
+                        LOG_DEBUG("Triggered setTitlePosition for ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     }
                     break;
                 case Settings::ReloadType::Font:
                     if (appCallbacks_) {
                         appCallbacks_->reloadFont(standaloneMode_);
-                        LOG_DEBUG("ConfigUI: Triggered reloadFont for ReloadType " << static_cast<int>(reloadType));
+                        LOG_DEBUG("Triggered reloadFont for ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     }
                     break;
                 case Settings::ReloadType::Windows:
                     if (appCallbacks_) {
                         appCallbacks_->reloadWindows();
-                        LOG_DEBUG("ConfigUI: Triggered reloadWindows");
+                        LOG_DEBUG("Triggered reloadWindows");
                     }
                     break;
                 case Settings::ReloadType::Assets:
                     if (appCallbacks_) {
                         appCallbacks_->reloadAssetsAndRenderers();
-                        LOG_DEBUG("ConfigUI: Triggered reloadAssetsAndRenderers for ReloadType " << static_cast<int>(reloadType));
+                        LOG_DEBUG("Triggered reloadAssetsAndRenderers for ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     }
                     break;
                 case Settings::ReloadType::Tables:
                     if (appCallbacks_) {
                         appCallbacks_->reloadTablesAndTitle();
-                        LOG_DEBUG("ConfigUI: Triggered reloadTablesAndTitle for ReloadType " << static_cast<int>(reloadType));
+                        LOG_DEBUG("Triggered reloadTablesAndTitle for ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     }
                     break;
                 case Settings::ReloadType::Overlay:
                     if (appCallbacks_) {
                         appCallbacks_->reloadOverlaySettings();
-                        LOG_DEBUG("ConfigUI: Triggered reloadOverlaySettings");
+                        LOG_DEBUG("Triggered reloadOverlaySettings");
                     }
                     break;
                 case Settings::ReloadType::Audio:
@@ -381,47 +383,47 @@ void ConfigUI::saveConfig() {
                         ISoundManager* soundManager = appCallbacks_->getSoundManager();
                         if (soundManager) {
                             soundManager->updateSettings(configService_->getSettings());
-                            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated ISoundManager");
+                            LOG_DEBUG("AudioSettings changed and saved, updated ISoundManager");
                         }
                         if (assets_) {
                             assets_->applyVideoAudioSettings();
-                            LOG_DEBUG("ConfigUI: AudioSettings changed and saved, updated AssetManager");
+                            LOG_DEBUG("AudioSettings changed and saved, updated AssetManager");
                         }
                     }
                     break;
                 default:
-                    LOG_ERROR("ConfigUI: Unknown ReloadType " << static_cast<int>(reloadType));
+                    LOG_ERROR("Unknown ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     break;
             }
         }
 
         originalJsonData_ = jsonData_;
     } catch (const std::exception& e) {
-        LOG_ERROR("ConfigUI: Error saving config: " << e.what());
+        LOG_ERROR("Error saving config: " + std::string(e.what()));
     }
 }
 
 void ConfigUI::resetSectionToDefault(const std::string& sectionName) {
-    LOG_DEBUG("ConfigUI: Resetting section " << sectionName << " to default.");
+    LOG_DEBUG("Resetting section " + sectionName + " to default.");
     Settings defaultSettings;
     nlohmann::json defaultJson;
     to_json(defaultJson, defaultSettings);
 
     if (defaultJson.contains(sectionName)) {
         jsonData_[sectionName] = defaultJson[sectionName];
-        LOG_DEBUG("ConfigUI: Section " << sectionName << " reset to default values.");
+        LOG_INFO("Section " + sectionName + " reset to default values.");
     } else {
-        LOG_ERROR("ConfigUI: No default data found for section " << sectionName);
+        LOG_ERROR("No default data found for section " + sectionName);
     }
 }
 
 void ConfigUI::refreshUIState() {
-    LOG_DEBUG("ConfigUI: Refreshing UI state");
+    LOG_DEBUG("Refreshing UI state");
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
         originalJsonData_ = jsonData_;
-        LOG_DEBUG("ConfigUI: UI state refreshed successfully");
+        LOG_INFO("UI state refreshed successfully");
     } catch (const std::exception& e) {
-        LOG_ERROR("ConfigUI: Error refreshing UI state: " << e.what());
+        LOG_ERROR("Error refreshing UI state: " + std::string(e.what()));
     }
 }

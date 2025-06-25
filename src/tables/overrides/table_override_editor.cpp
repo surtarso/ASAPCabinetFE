@@ -65,7 +65,7 @@ TableOverrideEditor::TableOverrideEditor(TableData& table, TableOverrideManager&
         {"tableYear", table_.tableYear}
     };
     originalFields_ = fields_; // Store for reset
-    LOG_DEBUG("TableOverrideEditor: Initialized for table: " << table_.title << " with " << fields_.size() << " fields");
+    LOG_DEBUG("Initialized for table: " + table_.title + " with " + std::to_string(fields_.size()) + " fields");
 }
 
 bool TableOverrideEditor::render() {
@@ -120,7 +120,7 @@ bool TableOverrideEditor::render() {
 
         if (ImGui::IsItemDeactivatedAfterEdit()) {
             fields_[key] = buffers[key].data();
-            LOG_DEBUG("TableOverrideEditor: Updated field " << key << " to: " << fields_[key]);
+            LOG_DEBUG("Updated field " + std::string(key) + " to: " + std::string(fields_[key]));
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -141,7 +141,7 @@ bool TableOverrideEditor::render() {
 
         if (ImGui::IsItemDeactivatedAfterEdit()) {
             fields_[key] = buffers[key].data();
-            LOG_DEBUG("TableOverrideEditor: Updated field " << key << " to: " << fields_[key]);
+            LOG_DEBUG("Updated field " + std::string(key) + " to: " + std::string(fields_[key]));
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -171,7 +171,7 @@ bool TableOverrideEditor::render() {
     ImGui::SameLine();
     if (ImGui::Button("Discard", ImVec2(100, 0))) {
         shouldClose_ = true;
-        LOG_DEBUG("TableOverrideEditor: Discarded changes for table: " << table_.title);
+        LOG_DEBUG("Discarded changes for table: " + table_.title);
     }
     if (hasChanges) {
         ImGui::PopStyleColor(3);
@@ -191,14 +191,14 @@ void TableOverrideEditor::save() {
     if (!overrides.empty()) {
         overrideManager_.saveOverride(table_, overrides);
         saved_ = true;
-        LOG_INFO("TableOverrideEditor: Saved overrides for table: " << table_.title);
+        LOG_INFO("Saved overrides for table: " + table_.title);
     } else {
         saved_ = false;
         if (overrideManager_.overrideFileExists(table_)) {
             overrideManager_.deleteOverride(table_);
-            LOG_DEBUG("TableOverrideEditor: Deleted empty override file for table: " << table_.title);
+            LOG_DEBUG("Deleted empty override file for table: " + table_.title);
         } else {
-            LOG_DEBUG("TableOverrideEditor: No changes to save and no override file exists for table: " << table_.title);
+            LOG_DEBUG("No changes to save and no override file exists for table: " + table_.title);
         }
     }
 }

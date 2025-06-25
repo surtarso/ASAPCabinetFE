@@ -19,9 +19,10 @@ void Renderer::setRenderers(IWindowManager* windowManager) {
     backglassRenderer_ = windowManager->getBackglassRenderer();
     dmdRenderer_ = windowManager->getDMDRenderer();
     topperRenderer_ = windowManager->getTopperRenderer();
-    LOG_DEBUG("Renderer: Updated renderers - playfield=" << playfieldRenderer_ 
-              << ", backglass=" << backglassRenderer_ << ", dmd=" << dmdRenderer_
-              << ", topper=" << topperRenderer_);
+    LOG_DEBUG("Updated renderers - playfield=" + std::to_string(reinterpret_cast<uintptr_t>(playfieldRenderer_)) +
+              ", backglass=" + std::to_string(reinterpret_cast<uintptr_t>(backglassRenderer_)) +
+              ", dmd=" + std::to_string(reinterpret_cast<uintptr_t>(dmdRenderer_)) +
+              ", topper=" + std::to_string(reinterpret_cast<uintptr_t>(topperRenderer_)));
 }
 
 void Renderer::render(IAssetManager& assets) {

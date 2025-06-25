@@ -32,7 +32,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
     std::mutex tables_mutex;
 
     if (settings.VPXTablesPath.empty() || !fs::exists(settings.VPXTablesPath)) {
-        LOG_ERROR("FileScanner: Invalid or empty VPX tables path: " << settings.VPXTablesPath);
+        LOG_ERROR("Invalid or empty VPX tables path: " + settings.VPXTablesPath);
         return tables;
     }
 
@@ -85,7 +85,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                             sctp.time_since_epoch()
                         ).count();
                     } catch (const fs::filesystem_error& e) {
-                        LOG_ERROR("FileScanner: Failed to get last modified time for " << path << ": " << e.what());
+                        LOG_ERROR("Failed to get last modified time for " + path.string() + ": " + std::string(e.what()));
                     }
 
                     // Compute hashes to compare
@@ -104,7 +104,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     if (fileLastModified == existingTable.fileLastModified && 
                         vpxHash == existingTable.hashFromVpx && 
                         vbsHash == existingTable.hashFromVbs) {
-                        LOG_DEBUG("FileScanner: Skipping unchanged file: " << path.string());
+                        LOG_DEBUG("Skipping unchanged file: " + path.string());
                         if (progress) {
                             std::lock_guard<std::mutex> lock(progress->mutex);
                             progress->currentTablesLoaded++;
@@ -129,7 +129,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     sctp.time_since_epoch()
                 ).count();
             } catch (const fs::filesystem_error& e) {
-                LOG_ERROR("FileScanner: Failed to get last modified time for " << path << ": " << e.what());
+                LOG_ERROR("Failed to get last modified time for " + path.string() + ": " + std::string(e.what()));
                 table.fileLastModified = 0;
             }
 
@@ -150,7 +150,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 }
             }
             if (table.manufacturer.empty()) {
-                LOG_DEBUG("FileScanner: No known manufacturer found in filename: " << table.title);
+                LOG_DEBUG("No known manufacturer found in filename: " + table.title);
             }
 
             char* code_ptr = get_vpx_gamedata_code(table.vpxFile.c_str());
@@ -159,9 +159,9 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 vpx_script = std::string(code_ptr);
                 free_rust_string(code_ptr);
                 table.hashFromVpx = calculate_string_sha256(vpx_script);
-                LOG_INFO("FileScanner: hashFromVpx for " << table.title << ": " << table.hashFromVpx);
+                LOG_INFO("hashFromVpx for " + table.title + ": " + table.hashFromVpx);
             } else {
-                LOG_ERROR("FileScanner: Failed to extract GameData.code for: " << table.vpxFile);
+                LOG_ERROR("Failed to extract GameData.code for: " + table.vpxFile);
                 table.hashFromVpx = "";
             }
 
@@ -169,21 +169,21 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             if (fs::exists(vbs_path)) {
                 table.hashFromVbs = compute_file_sha256(vbs_path.string());
                 if (table.hashFromVbs.empty()) {
-                    LOG_ERROR("FileScanner: Failed to compute hash for .vbs file: " << vbs_path.string());
+                    LOG_ERROR("Failed to compute hash for .vbs file: " + vbs_path.string());
                     table.hasDiffVbs = false;
                 } else {
-                    LOG_INFO("FileScanner: hashFromVbs for " << vbs_path.string() << ": " << table.hashFromVbs);
+                    LOG_INFO("hashFromVbs for " + vbs_path.string() + ": " + table.hashFromVbs);
                     if (!vpx_script.empty()) {
                         std::ifstream vbs_file(vbs_path, std::ios::binary);
                         if (vbs_file.is_open()) {
                             std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
                             table.hasDiffVbs = (vpx_script != vbs_content);
                             if (table.hasDiffVbs) {
-                                LOG_INFO("FileScanner: .vbs differs from VPX script for " << table.title);
+                                LOG_INFO(".vbs differs from VPX script for " + table.title);
                             }
                             vbs_file.close();
                         } else {
-                            LOG_ERROR("FileScanner: Failed to open .vbs file for comparison: " << vbs_path.string());
+                            LOG_ERROR("Failed to open .vbs file for comparison: " + vbs_path.string());
                             table.hasDiffVbs = false;
                         }
                     } else {
@@ -193,7 +193,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             } else {
                 table.hashFromVbs = "";
                 table.hasDiffVbs = false;
-                LOG_DEBUG("FileScanner: No .vbs file found for " << table.title);
+                LOG_DEBUG("No .vbs file found for " + table.title);
             }
 
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
@@ -241,6 +241,6 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         future.wait();
     }
 
-    LOG_INFO("FileScanner: Processed " << tables.size() << " VPX tables (out of " << vpx_files.size() << " found)");
+    LOG_INFO("Processed " + std::to_string(tables.size()) + " VPX tables (out of " + std::to_string(vpx_files.size()) + " found)");
     return tables;
 }

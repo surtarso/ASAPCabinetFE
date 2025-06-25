@@ -95,7 +95,7 @@ PinballTable loadTableFromJson(const std::string& vpsdbFilePath, size_t index) {
         }
         return table;
     } catch (const std::exception& e) {
-        LOG_ERROR("VpsdbCatalog: Failed to load table at index " << index << ": " << e.what());
+        LOG_ERROR("Failed to load table at index " + std::to_string(index) + ": " + std::string(e.what()));
         return PinballTable{};
     }
 }
@@ -104,61 +104,61 @@ void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
                            std::mutex& mutex, std::atomic<bool>& isTableLoading,
                            const std::string& exePath) {
-    LOG_DEBUG("VpsdbCatalog: Starting background load for index: " << index);
-    LOG_DEBUG("VpsdbCatalog: exePath = " << exePath);
+    LOG_DEBUG("Starting background load for index: " + std::to_string(index));
+    LOG_DEBUG("exePath = " + exePath);
     LoadedTableData data;
     data.index = index;
     data.table = loadTableFromJson(vpsdbFilePath, index);
     if (data.table.id.empty()) {
         std::lock_guard<std::mutex> lock(mutex);
         isTableLoading = false;
-        LOG_ERROR("VpsdbCatalog: Failed to load table for index: " << index << ", empty ID");
+        LOG_ERROR("Failed to load table for index: " + std::to_string(index) + ", empty ID");
         return;
     }
-    LOG_DEBUG("VpsdbCatalog: Loaded table data for index: " << index << ", name: " << data.table.name);
+    LOG_DEBUG("Loaded table data for index: " + std::to_string(index) + ", name: " + data.table.name);
 
     std::string backglassUrl, playfieldUrl;
     if (!data.table.b2sFiles.empty()) {
         backglassUrl = data.table.b2sFiles[0].imgUrl;
-        LOG_DEBUG("VpsdbCatalog: Backglass URL for index " << index << ": " << backglassUrl);
+        LOG_DEBUG("Backglass URL for index " + std::to_string(index) + ": " + backglassUrl);
     }
     if (!data.table.tableFiles.empty()) {
         playfieldUrl = data.table.tableFiles[0].imgUrl;
-        LOG_DEBUG("VpsdbCatalog: Playfield URL for index " << index << ": " << playfieldUrl);
+        LOG_DEBUG("Playfield URL for index " + std::to_string(index) + ": " + playfieldUrl);
     }
 
     fs::path exeDir = fs::path(exePath).parent_path(); // Get directory of executable
     fs::path cachePath = exeDir / "data/cache";
     fs::create_directories(cachePath);
-    LOG_DEBUG("VpsdbCatalog: Cache dir = " << cachePath.string());
+    LOG_DEBUG("Cache dir = " + cachePath.string());
 
     if (!backglassUrl.empty()) {
         data.backglassPath = (cachePath / (data.table.id + "_backglass.webp")).string();
-        LOG_DEBUG("VpsdbCatalog: Resolved backglassPath = " << data.backglassPath);
+        LOG_DEBUG("Resolved backglassPath = " + data.backglassPath);
         if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
             data.backglassPath.clear();
-            LOG_ERROR("VpsdbCatalog: Failed to download backglass for index: " << index);
+            LOG_ERROR("Failed to download backglass for index: " + std::to_string(index));
         } else {
-            LOG_DEBUG("VpsdbCatalog: Downloaded backglass to: " << data.backglassPath);
+            LOG_DEBUG("Downloaded backglass to: " + data.backglassPath);
         }
     }
     if (!playfieldUrl.empty()) {
         data.playfieldPath = (cachePath / (data.table.id + "_playfield.webp")).string();
-        LOG_DEBUG("VpsdbCatalog: Resolved playfieldPath = " << data.playfieldPath);
+        LOG_DEBUG("Resolved playfieldPath = " + data.playfieldPath);
         if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
             data.playfieldPath.clear();
-            LOG_ERROR("VpsdbCatalog: Failed to download playfield for index: " << index);
+            LOG_ERROR("Failed to download playfield for index: " + std::to_string(index));
         } else {
-            LOG_DEBUG("VpsdbCatalog: Downloaded playfield to: " << data.playfieldPath);
+            LOG_DEBUG("Downloaded playfield to: " + data.playfieldPath);
         }
     }
 
     {
         std::lock_guard<std::mutex> lock(mutex);
         loadedTableQueue.push(std::move(data));
-        LOG_DEBUG("VpsdbCatalog: Enqueued table data for index: " << index);
+        LOG_DEBUG("Enqueued table data for index: " + std::to_string(index));
     }
-    LOG_DEBUG("VpsdbCatalog: Background table load complete, index: " << index);
+    LOG_DEBUG("Background table load complete, index: " + std::to_string(index));
 }
 
 } // namespace vpsdb

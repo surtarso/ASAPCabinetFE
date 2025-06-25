@@ -1,11 +1,3 @@
-#ifndef LOGGER_H
-#define LOGGER_H
-
-#include <fstream>
-#include <memory>
-#include <mutex>
-#include "core/ui/loading_progress.h"
-
 /**
  * @file logger.h
  * @brief Defines the Logger class for logging in ASAPCabinetFE.
@@ -14,6 +6,17 @@
  * console with color coding, and integration with LoadingProgress. It supports
  * debug, info, and error levels with conditional logging based on build mode.
  */
+
+#ifndef LOGGER_H
+#define LOGGER_H
+
+#include <fstream>
+#include <memory>
+#include <mutex>
+#include <string>
+#include "core/ui/loading_progress.h"
+
+namespace asap::logging {
 
 /**
  * @class Logger
@@ -79,7 +82,7 @@ public:
     /**
      * @brief Logs a warning message.
      *
-     * Logs unconditionally with info level.
+     * Logs unconditionally with warning level.
      *
      * @param message The warning message to log.
      */
@@ -105,5 +108,7 @@ private:
 
     void log(const std::string& level, const std::string& message);
 };
+
+} // namespace asap::logging
 
 #endif // LOGGER_H

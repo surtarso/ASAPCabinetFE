@@ -285,6 +285,7 @@ set(SOURCES
     src/keybinds/keybind_manager.cpp
     #l log
     src/log/logger.cpp
+    src/log/logger_proxy.cpp
     # render
     src/render/renderer.cpp
     src/render/assets/asset_manager.cpp

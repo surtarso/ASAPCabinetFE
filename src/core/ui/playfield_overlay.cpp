@@ -72,7 +72,7 @@ PlayfieldOverlay::PlayfieldOverlay(const std::vector<TableData>* tables, size_t*
 
 void PlayfieldOverlay::updateSettings(const Settings& settings) {
     showMetadataPanel_ = settings.showMetadata;
-    LOG_DEBUG("PlayfieldOverlay: Updated showMetadataPanel to " << (showMetadataPanel_ ? "true" : "false"));
+    LOG_DEBUG("PlayfieldOverlay: Updated showMetadataPanel to " + std::string((showMetadataPanel_ ? "true" : "false")));
 }
 
 void PlayfieldOverlay::ResetMetadataFlags() {

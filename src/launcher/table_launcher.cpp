@@ -2,33 +2,33 @@
  * @file table_launcher.cpp
  * @brief Implementation of the TableLauncher class.
  */
-#include "table_launcher.h"
+
+#include "launcher/table_launcher.h"
 #include "log/logging.h"
 #include <chrono>
-#include <sstream>
-#include <iomanip>
+#include <string>
 #include <cstdlib>
 
 TableLauncher::TableLauncher(IConfigService* configService)
     : configService_(configService) {
-    LOG_INFO("TableLauncher: Initialized");
+    LOG_INFO("Initialized");
 }
 
 std::pair<int, float> TableLauncher::launchTable(const TableData& table) {
-    LOG_DEBUG("TableLauncher: Launching table: " << table.title);
+    LOG_DEBUG("Launching table: " + table.title);
 
     // Get settings
     const auto& settings = configService_->getSettings();
-    
+
     // Build command
     std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
                          settings.vpxSubCmd + " \"" + table.vpxFile + "\" " +
                          settings.vpxEndArgs;
-    LOG_DEBUG("TableLauncher: Command: " << command);
+    LOG_DEBUG("Command: " + command);
 
     // Record start time
     auto start = std::chrono::system_clock::now();
-    LOG_INFO("TableLauncher: Launching " << table.title);
+    LOG_INFO("Launching " + table.title);
 
     // Execute command (Linux-specific for now)
     int result = std::system((command + " > /dev/null 2>&1").c_str());
@@ -43,13 +43,11 @@ std::pair<int, float> TableLauncher::launchTable(const TableData& table) {
     int hours = totalSeconds / 3600;
     int minutes = (totalSeconds % 3600) / 60;
     int seconds = totalSeconds % 60;
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(2) << hours << ":"
-       << std::setfill('0') << std::setw(2) << minutes << ":"
-       << std::setfill('0') << std::setw(2) << seconds;
-    std::string timeFormatted = ss.str();
+    std::string timeFormatted = std::to_string(hours) + ":" +
+                               (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
+                               (seconds < 10 ? "0" : "") + std::to_string(seconds);
     LOG_INFO("Welcome back to ASAPCabinetFE.");
-    LOG_INFO("You Played " << table.title << " for " << timeFormatted);
+    LOG_INFO("You Played " + table.title + " for " + timeFormatted);
 
     return {result, timePlayed};
 }

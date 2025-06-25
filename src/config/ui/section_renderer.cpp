@@ -66,7 +66,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                             value = val;
                         }
                     } else {
-                        LOG_DEBUG("ConfigUI: Skipping invalid type for " << key1 << ", expected number, got " << value.type_name());
+                        LOG_DEBUG("Skipping invalid type for " + std::string(key1) + ", expected number, got " + std::string(value.type_name()));
                         int val = 0;
                         ImGui::InputInt("##first", &val);
                     }
@@ -83,7 +83,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                             value2 = val;
                         }
                     } else {
-                        LOG_DEBUG("ConfigUI: Skipping invalid type for " << key2 << ", expected number, got " << value2.type_name());
+                        LOG_DEBUG("Skipping invalid type for " + std::string(key2) + ", expected number, got " + std::string(value2.type_name()));
                         int val = 0;
                         ImGui::InputInt("##second", &val);
                     }
@@ -92,7 +92,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                     ImGui::PopItemWidth();
                     processedKeys.insert(key1);
                     processedKeys.insert(key2);
-                    //LOG_DEBUG("ConfigUI: Rendered group " << groupLabel << " with keys " << key1 << ", " << key2);
+                    //LOG_DEBUG("Rendered group " << groupLabel << " with keys " << key1 << ", " << key2);
                     break;
                 }
             }
@@ -131,11 +131,11 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                         }, (void*)&options, static_cast<int>(options.size()))) {
                             if (currentIndex >= 0 && currentIndex < static_cast<int>(options.size())) {
                                 value = options[currentIndex];
-                                LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
+                                LOG_DEBUG("Updated " + std::string(keyDisplayName) + " to " + std::string(options[currentIndex]));
                             }
                         }
                     } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
-                        //LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
+                        //LOG_DEBUG("Rendering path for key " << key << " in section " << sectionName);
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "Keybinds") {
                         renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
@@ -145,7 +145,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                 } else if (value.is_array() && value.size() == 4) {
                     renderColor(keyDisplayName, value, sectionName);
                 } else {
-                    LOG_DEBUG("ConfigUI: Skipping invalid type for " << keyDisplayName << ", expected valid type, got " << value.type_name());
+                    LOG_DEBUG("Skipping invalid type for " + std::string(keyDisplayName) + ", expected valid type, got " + std::string(value.type_name()));
                     int val = 0;
                     ImGui::InputInt(keyDisplayName.c_str(), &val);
                 }
@@ -207,11 +207,11 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                     }, (void*)&options, static_cast<int>(options.size()))) {
                         if (currentIndex >= 0 && currentIndex < static_cast<int>(options.size())) {
                             value = options[currentIndex];
-                            LOG_DEBUG("ConfigUI: Updated " << keyDisplayName << " to " << options[currentIndex]);
+                            LOG_DEBUG("Updated " + std::string(keyDisplayName) + " to " + std::string(options[currentIndex]));
                         }
                     }
                 } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
-                    //LOG_DEBUG("ConfigUI: Rendering path for key " << key << " in section " << sectionName);
+                    //LOG_DEBUG("Rendering path for key " << key << " in section " << sectionName);
                     renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                 } else if (sectionName == "Keybinds") {
                     renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
@@ -221,7 +221,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             } else if (value.is_array() && value.size() == 4) {
                 renderColor(keyDisplayName, value, sectionName);
             } else {
-                LOG_DEBUG("ConfigUI: Skipping invalid type for " << keyDisplayName << ", expected valid type, got " << value.type_name());
+                LOG_DEBUG("Skipping invalid type for " + std::string(keyDisplayName) + ", expected valid type, got " + std::string(value.type_name()));
                 int val = 0;
                 ImGui::InputInt(keyDisplayName.c_str(), &val);
             }

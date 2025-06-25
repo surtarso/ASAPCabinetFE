@@ -8,13 +8,13 @@ VPinballXIniReader::VPinballXIniReader(const std::string& iniPath) : iniPath_(in
 
 std::optional<VPinballXIniSettings> VPinballXIniReader::readIniSettings() const {
     if (!std::filesystem::exists(iniPath_)) {
-        LOG_DEBUG("VPinballXIniReader: INI file does not exist: " << iniPath_);
+        LOG_DEBUG("INI file does not exist: " + std::string(iniPath_));
         return std::nullopt;
     }
 
     std::ifstream file(iniPath_);
     if (!file.is_open()) {
-        LOG_DEBUG("VPinballXIniReader: Failed to open INI file: " << iniPath_);
+        LOG_DEBUG("Failed to open INI file: " + std::string(iniPath_));
         return std::nullopt;
     }
 

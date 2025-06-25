@@ -1,6 +1,12 @@
-#include "window_manager.h"
+/**
+ * @file window_manager.cpp
+ * @brief Implementation of the WindowManager class for managing SDL windows and renderers.
+ */
+
+#include "core/window_manager.h"
 #include "log/logging.h"
-#include <iostream>
+#include <SDL2/SDL.h>
+#include <string>
 
 WindowManager::WindowManager(const Settings& settings)
     : playfieldWindow_(nullptr, SDL_DestroyWindow),
@@ -34,7 +40,7 @@ void WindowManager::updateWindows(const Settings& settings) {
         bool update = false;
         if (w.show != !!w.window) {
             update = true;
-            // LOG_DEBUG("WindowManager: " << w.title << " needs update due to visibility change: " << w.show);
+            // LOG_DEBUG("Needs update for " + std::string(w.title) + " due to visibility change: " + (w.show ? "true" : "false"));
         } else if (w.window) {
             int currentWidth, currentHeight, currentX, currentY;
             SDL_GetWindowSize(w.window.get(), &currentWidth, &currentHeight);
@@ -44,18 +50,17 @@ void WindowManager::updateWindows(const Settings& settings) {
             if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
                 currentX != w.x || currentY != w.y) {
                 update = true;
-                LOG_DEBUG("WindowManager: " << w.title << " needs update - "
-                          << "width: " << currentWidth << "->" << scaledWidth
-                          << ", height: " << currentHeight << "->" << scaledHeight
-                          << ", x: " << currentX << "->" << w.x
-                          << ", y: " << currentY << "->" << w.y);
+                LOG_DEBUG(std::string(w.title) + " needs update - width: " + std::to_string(currentWidth) + "->" + std::to_string(scaledWidth) +
+                          ", height: " + std::to_string(currentHeight) + "->" + std::to_string(scaledHeight) +
+                          ", x: " + std::to_string(currentX) + "->" + std::to_string(w.x) +
+                          ", y: " + std::to_string(currentY) + "->" + std::to_string(w.y));
             }
         } else {
             update = w.show;
         }
 
         if (update) {
-            // LOG_DEBUG("WindowManager: Updating " << w.title << " window");
+            LOG_DEBUG("Updating " + std::string(w.title) + " window");
             if (w.show) {
                 createOrUpdateWindow(w.window, w.renderer, w.title,
                                      w.width, w.height,
@@ -94,11 +99,10 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
             SDL_GetWindowPosition(window.get(), &actualX, &actualY);
             if (actualWidth != scaledWidth || actualHeight != scaledHeight ||
                 actualX != posX || actualY != posY) {
-                LOG_DEBUG("WindowManager: Window " << title << " reset due to mismatch - "
-                          << "width: " << actualWidth << "!=" << scaledWidth
-                          << ", height: " << actualHeight << "!=" << scaledHeight
-                          << ", x: " << actualX << "!=" << posX
-                          << ", y: " << actualY << "!=" << posY);
+                LOG_DEBUG(std::string(title) + " window reset due to mismatch - width: " + std::to_string(actualWidth) + "!=" + std::to_string(scaledWidth) +
+                          ", height: " + std::to_string(actualHeight) + "!=" + std::to_string(scaledHeight) +
+                          ", x: " + std::to_string(actualX) + "!=" + std::to_string(posX) +
+                          ", y: " + std::to_string(actualY) + "!=" + std::to_string(posY));
                 renderer.reset();
                 window.reset();
             }
@@ -109,14 +113,14 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
         window.reset(SDL_CreateWindow(title, posX, posY, scaledWidth, scaledHeight,
                                       SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS));
         if (!window) {
-            LOG_ERROR("WindowManager: Failed to create " << title << " window: " << SDL_GetError());
+            LOG_ERROR("Failed to create " + std::string(title) + " window: " + std::string(SDL_GetError()));
             exit(1);
         }
 
         renderer.reset(SDL_CreateRenderer(window.get(), -1,
                                          SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
         if (!renderer) {
-            LOG_ERROR("WindowManager: Failed to create renderer for " << title << ": " << SDL_GetError());
+            LOG_ERROR("Failed to create renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
             exit(1);
         }
         SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
@@ -124,9 +128,9 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
 }
 
 void WindowManager::getWindowSetup(int& playfieldX, int& playfieldY, int& playfieldWidth, int& playfieldHeight,
-                                      int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
-                                      int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
-                                      int& topperX, int& topperY, int& topperWidth, int& topperHeight) {
+                                  int& backglassX, int& backglassY, int& backglassWidth, int& backglassHeight,
+                                  int& dmdX, int& dmdY, int& dmdWidth, int& dmdHeight,
+                                  int& topperX, int& topperY, int& topperWidth, int& topperHeight) {
     if (playfieldWindow_) {
         SDL_GetWindowPosition(playfieldWindow_.get(), &playfieldX, &playfieldY);
         SDL_GetWindowSize(playfieldWindow_.get(), &playfieldWidth, &playfieldHeight);

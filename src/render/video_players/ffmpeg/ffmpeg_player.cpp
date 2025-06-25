@@ -1,3 +1,8 @@
+/**
+ * @file ffmpeg_player.cpp
+ * @brief Implementation of the FFmpegPlayer class for managing video and audio playback in ASAPCabinetFE.
+ */
+
 #include "ffmpeg_player.h"
 #include "video_decoder.h"
 #include "audio_decoder.h"
@@ -24,14 +29,15 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     height_ = height;
 
     if (!renderer_ || path_.empty() || width_ <= 0 || height_ <= 0) {
-        LOG_ERROR("FFmpegPlayer: Invalid setup parameters.");
+        LOG_ERROR("Invalid setup parameters: renderer=" + std::to_string(reinterpret_cast<uintptr_t>(renderer)) +
+                  ", path=" + path_ + ", width=" + std::to_string(width) + ", height=" + std::to_string(height));
         cleanup();
         return false;
     }
 
     formatContext_ = avformat_alloc_context();
     if (!formatContext_) {
-        LOG_ERROR("FFmpegPlayer: Failed to allocate format context.");
+        LOG_ERROR("Failed to allocate format context.");
         cleanup();
         return false;
     }
@@ -43,13 +49,13 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     }
 
     if (avformat_open_input(&formatContext_, path_.c_str(), nullptr, nullptr) < 0) {
-        LOG_ERROR("FFmpegPlayer: Failed to open video file: " << path_ << ".");
+        LOG_ERROR("Failed to open video file: " + path_);
         cleanup();
         return false;
     }
 
     if (avformat_find_stream_info(formatContext_, nullptr) < 0) {
-        LOG_ERROR("FFmpegPlayer: Failed to find stream info.");
+        LOG_ERROR("Failed to find stream info for: " + path_);
         cleanup();
         return false;
     }
@@ -58,11 +64,12 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
     bool audioSetup = audioDecoder_->setup(formatContext_);
 
     if (!videoSetup && !audioSetup) {
-        LOG_ERROR("FFmpegPlayer: No video or audio streams found. Cannot play.");
+        LOG_ERROR("No video or audio streams found in: " + path_);
         cleanup();
         return false;
     }
 
+    LOG_INFO("FFmpegPlayer setup complete for: " + path_);
     return true;
 }
 
@@ -71,6 +78,7 @@ void FFmpegPlayer::play() {
     isPlaying_ = true;
     videoDecoder_->play();
     audioDecoder_->play();
+    LOG_DEBUG("Playback started for: " + path_);
 }
 
 void FFmpegPlayer::stop() {
@@ -81,14 +89,15 @@ void FFmpegPlayer::stop() {
 
     if (formatContext_) {
         if (videoDecoder_->getTexture()) {
-            seekToBeginning(-1); // Seek video stream
+            seekToBeginning(-1);
             videoDecoder_->flush();
         }
         if (audioDecoder_) {
-            seekToBeginning(-1); // Seek audio stream
+            seekToBeginning(-1);
             audioDecoder_->flush();
         }
     }
+    LOG_DEBUG("Playback stopped for: " + path_);
 }
 
 void FFmpegPlayer::update() {
@@ -107,10 +116,12 @@ bool FFmpegPlayer::isPlaying() const {
 
 void FFmpegPlayer::setVolume(float volume) {
     audioDecoder_->setVolume(volume);
+    //LOG_DEBUG("Volume set to: " + std::to_string(volume));
 }
 
 void FFmpegPlayer::setMute(bool mute) {
     audioDecoder_->setMute(mute);
+    //LOG_DEBUG("Mute set to: " + std::to_string(mute));
 }
 
 void FFmpegPlayer::seekToBeginning(int streamIndex) {
@@ -124,7 +135,7 @@ void FFmpegPlayer::seekToBeginning(int streamIndex) {
                     if (ret < 0) {
                         char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                         av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                        LOG_ERROR("FFmpegPlayer: Seek failed for stream " << i << ": " << err_buf << ".");
+                        LOG_ERROR("Seek failed for stream " + std::to_string(i) + ": " + err_buf);
                     }
                 }
             }
@@ -133,7 +144,7 @@ void FFmpegPlayer::seekToBeginning(int streamIndex) {
             if (ret < 0) {
                 char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                 av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                LOG_ERROR("FFmpegPlayer: Seek failed for stream " << targetStream << ": " << err_buf << ".");
+                LOG_ERROR("Seek failed for stream " + std::to_string(targetStream) + ": " + err_buf);
             }
         }
         avformat_flush(formatContext_);
@@ -143,6 +154,7 @@ void FFmpegPlayer::seekToBeginning(int streamIndex) {
         if (audioDecoder_) {
             audioDecoder_->flush();
         }
+        //LOG_DEBUG("Seek to beginning completed for stream: " + std::to_string(streamIndex));
     }
 }
 
@@ -153,30 +165,25 @@ void FFmpegPlayer::cleanup() {
         avformat_close_input(&formatContext_);
         formatContext_ = nullptr;
     }
+    //std::string oldPath_ = path_;
     renderer_ = nullptr;
     path_.clear();
     width_ = 0;
     height_ = 0;
     isPlaying_ = false;
+    //LOG_DEBUG("FFmpegPlayer resources cleaned up for: " + oldPath_);
 }
 
 void FFmpegPlayer::seek(double time_seconds, int stream_index) {
     if (!formatContext_) return;
 
-    int64_t timestamp = time_seconds * AV_TIME_BASE; // Convert seconds to FFmpeg's internal time base
-
-    // Use AV_SEEK_FLAG_BACKWARD to seek to nearest keyframe *before* or *at* the timestamp
-    // AV_SEEK_FLAG_ANY can seek to non-key frames, but might result in more corruption
-    // For recovery from severe errors, seeking to a keyframe is safer.
+    int64_t timestamp = time_seconds * AV_TIME_BASE;
     int ret = av_seek_frame(formatContext_, stream_index, timestamp, AVSEEK_FLAG_BACKWARD);
     if (ret < 0) {
         char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
         av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-        LOG_ERROR("FFmpegPlayer: Failed to seek: " << err_buf);
+        LOG_ERROR("Failed to seek to " + std::to_string(time_seconds) + "s: " + err_buf);
     } else {
-        // After a seek, you *must* flush all decoders associated with the seeked stream
-        // This is done by the VideoDecoder::flush() in your current needsReset_ path.
-        // If you implement a direct seek here, remember to flush.
-        LOG_DEBUG("FFmpegPlayer: Successfully sought to " << time_seconds << "s.");
+        LOG_DEBUG("Successfully sought to " + std::to_string(time_seconds) + "s for stream: " + std::to_string(stream_index));
     }
 }

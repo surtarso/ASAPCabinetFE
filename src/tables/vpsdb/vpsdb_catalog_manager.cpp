@@ -32,15 +32,15 @@ VpsdbCatalog::~VpsdbCatalog() {
 
 void VpsdbCatalog::startTableLoad(size_t index, const std::string& exePath) {
     if (tableLoadThread_.joinable()) {
-        LOG_DEBUG("VpsdbCatalog: Joining existing thread before starting new load for index: " << index);
+        LOG_DEBUG("Joining existing thread before starting new load for index: " + std::to_string(index));
         tableLoadThread_.join();
     }
-    LOG_DEBUG("VpsdbCatalog: Starting table load for index: " << index);
+    LOG_DEBUG("Starting table load for index: " + std::to_string(index));
     isTableLoading_ = true;
     tableLoadThread_ = std::thread(vpsdb::loadTableInBackground, vpsdbFilePath_, index,
                                    std::ref(loadedTableQueue_), std::ref(mutex_),
                                    std::ref(isTableLoading_), exePath);
-    LOG_DEBUG("VpsdbCatalog: Thread created for index: " << index);
+    LOG_DEBUG("Thread created for index: " + std::to_string(index));
 }
 
 bool VpsdbCatalog::render() {
@@ -65,12 +65,12 @@ bool VpsdbCatalog::render() {
     }
 
     jsonLoader_.initialize();
-    // LOG_DEBUG("VpsdbCatalog: JSON loader initialized, loaded: " << jsonLoader_.isLoaded() << ", index size: " << jsonLoader_.getIndex().size());
+    // LOG_DEBUG("JSON loader initialized, loaded: " << jsonLoader_.isLoaded() << ", index size: " << jsonLoader_.getIndex().size());
 
     if (!jsonLoader_.isLoaded()) {
         if (!jsonLoader_.isLoading() && jsonLoader_.getIndex().empty()) {
             ImGui::Text("Error: VPSDB JSON not loaded");
-            LOG_ERROR("VpsdbCatalog: JSON not loaded at " << vpsdbFilePath_);
+            LOG_ERROR("JSON not loaded at " + vpsdbFilePath_);
         }
         return true;
     }
@@ -94,7 +94,7 @@ bool VpsdbCatalog::render() {
         if (!loadedTableQueue_.empty()) {
             auto data = std::move(loadedTableQueue_.front());
             loadedTableQueue_.pop();
-            LOG_DEBUG("VpsdbCatalog: Processing queued table, index: " << data.index);
+            LOG_DEBUG("Processing queued table, index: " + std::to_string(data.index));
 
             currentIndex_ = data.index;
             currentTable_ = std::move(data.table);
@@ -103,19 +103,19 @@ bool VpsdbCatalog::render() {
             if (!data.backglassPath.empty()) {
                 backglassTexture_.reset(VpsdbImage::loadTexture(*this, data.backglassPath));
                 currentBackglassPath_ = data.backglassPath;
-                LOG_DEBUG("VpsdbCatalog: Loaded backglass texture for index: " << data.index);
+                LOG_DEBUG("Loaded backglass texture for index: " + std::to_string(data.index));
             }
             if (!data.playfieldPath.empty()) {
                 playfieldTexture_.reset(VpsdbImage::loadTexture(*this, data.playfieldPath));
                 currentPlayfieldPath_ = data.playfieldPath;
-                LOG_DEBUG("VpsdbCatalog: Loaded playfield texture for index: " << data.index);
+                LOG_DEBUG("Loaded playfield texture for index: " + std::to_string(data.index));
             }
 
             isTableLoading_ = false;
-            LOG_DEBUG("VpsdbCatalog: Processed loaded table, index: " << currentIndex_);
+            LOG_DEBUG("Processed loaded table, index: " + std::to_string(currentIndex_));
         }
         // else {
-        //     LOG_DEBUG("VpsdbCatalog: Loaded table queue is empty");
+        //     LOG_DEBUG("Loaded table queue is empty");
         // }
     }
 
@@ -145,7 +145,7 @@ bool VpsdbCatalog::render() {
     static bool initialLoadAttempted = false;
     if (!initialLoadAttempted && jsonLoader_.isLoaded() && !jsonLoader_.getIndex().empty() &&
         (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id)) {
-        LOG_DEBUG("VpsdbCatalog: Triggering initial load for index: " << currentIndex_);
+        LOG_DEBUG("Triggering initial load for index: " + std::to_string(currentIndex_));
         if (!isTableLoading_ && !tableLoadThread_.joinable()) {
             startTableLoad(currentIndex_, settings_.exeDir);
             initialLoadAttempted = true;
@@ -198,7 +198,7 @@ bool VpsdbCatalog::render() {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
-                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+                LOG_DEBUG("Opened URL: " + url);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -239,7 +239,7 @@ bool VpsdbCatalog::render() {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
-                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+                LOG_DEBUG("Opened URL: " + url);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -278,7 +278,7 @@ bool VpsdbCatalog::render() {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
-                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+                LOG_DEBUG("Opened URL: " + url);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -317,7 +317,7 @@ bool VpsdbCatalog::render() {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
             if (ImGui::Button("Download", ImVec2(100, 0))) {
                 openUrl(url);
-                LOG_DEBUG("VpsdbCatalog: Opened URL: " << url);
+                LOG_DEBUG("Opened URL: " + url);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -402,7 +402,7 @@ bool VpsdbCatalog::render() {
                 newIndex = jsonLoader_.getIndex().size() - 1;
             }
             startTableLoad(newIndex, settings_.exeDir);
-            LOG_DEBUG("VpsdbCatalog: Navigated to previous table, index: " << newIndex);
+            LOG_DEBUG("Navigated to previous table, index: " + std::to_string(newIndex));
         }
     }
     ImGui::SameLine();
@@ -426,7 +426,7 @@ bool VpsdbCatalog::render() {
                 newIndex = 0;
             }
             startTableLoad(newIndex, settings_.exeDir);
-            LOG_DEBUG("VpsdbCatalog: Navigated to next table, index: " << newIndex);
+            LOG_DEBUG("Navigated to next table, index: " + std::to_string(newIndex));
         }
     }
 
@@ -485,19 +485,19 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
         }
         isTableLoading_ = true;
         startTableLoad(newIndex, settings_.exeDir);
-        LOG_DEBUG("VpsdbCatalog: Filtered to table at index: " << newIndex << ", name: " << jsonLoader_.getIndex()[newIndex].name);
+        LOG_DEBUG("Filtered to table at index: " + std::to_string(newIndex) + ", name: " + std::string(jsonLoader_.getIndex()[newIndex].name));
     }
 }
 
 void VpsdbCatalog::openUrl(const std::string& url) {
     if (url.empty()) {
-        LOG_ERROR("VpsdbCatalog: Attempted to open empty URL");
+        LOG_ERROR("Attempted to open empty URL");
         return;
     }
     std::string command = "xdg-open \"" + url + "\" &";
     int result = system(command.c_str());
     if (result != 0) {
-        LOG_ERROR("VpsdbCatalog: Failed to open URL: " << url << ", system returned: " << result);
+        LOG_ERROR("Failed to open URL: " + url + ", system returned: " + std::to_string(result));
     }
 }
 

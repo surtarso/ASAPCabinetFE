@@ -24,7 +24,7 @@ std::string PathUtils::getImagePath(const std::string& root, const std::string& 
         return imageFile.string();
     }
     if (!fs::exists(defaultImagePath)) {
-        LOG_ERROR("PathUtils: Default image not found: " << defaultImagePath); // Log error if default is missing
+        LOG_ERROR("Default image not found: " + std::string(defaultImagePath)); // Log error if default is missing
     }
     return defaultImagePath; // Return default even if it doesn't exist
 }
@@ -42,15 +42,15 @@ std::string PathUtils::getVideoPath(const std::string& root, const std::string& 
 
 std::string PathUtils::getAudioPath(const std::string& root, const std::string& musicPath) {
     if (musicPath.empty()) {
-        // LOG_DEBUG("PathUtils: Music path from settings is empty for root: " << root); // Log debug if path is empty
+        // LOG_DEBUG("Music path from settings is empty for root: " << root); // Log debug if path is empty
         return "";
     }
     fs::path musicFile = fs::path(root) / musicPath; // Construct path from root and music path
     if (fs::exists(musicFile) && fs::is_regular_file(musicFile)) {
-        //LOG_DEBUG("PathUtils: Found Music: " << musicFile.string()); // Commented debug log
+        //LOG_DEBUG("Found Music: " << musicFile.string()); // Commented debug log
         return musicFile.string();
     }
-    //LOG_DEBUG("PathUtils: No music file found or not a regular file for: " << musicFile.string()); // Commented debug log
+    //LOG_DEBUG("No music file found or not a regular file for: " << musicFile.string()); // Commented debug log
     return ""; // Return empty string if file doesn't exist or isn't regular
 }
 
@@ -59,10 +59,10 @@ bool PathUtils::getAltMusic(const std::string& tableRoot) {
     std::string musicFolderActualPath = findSubfolderCaseInsensitive(tableRoot, "music");
     // Check if folder exists and is NOT empty (contains any files or subdirectories)
     if (!musicFolderActualPath.empty() && fs::exists(musicFolderActualPath) && !fs::is_empty(musicFolderActualPath)) {
-        // LOG_DEBUG("PathUtils: Found 'music' folder with content for table: " << tableRoot);
+        // LOG_DEBUG("Found 'music' folder with content for table: " << tableRoot);
         return true;
     }
-    // LOG_DEBUG("PathUtils: No 'music' folder with content found in " << tableRoot);
+    // LOG_DEBUG("No 'music' folder with content found in " << tableRoot);
     return false;
 }
 
@@ -71,10 +71,10 @@ bool PathUtils::getUltraDmdPath(const std::string& tableRoot) {
     std::string ultraDmdFolderActualPath = findSubfolderBySuffixCaseInsensitive(tableRoot, ".ultradmd");
     // Check if folder exists and is NOT empty (contains any files or subdirectories)
     if (!ultraDmdFolderActualPath.empty() && fs::exists(ultraDmdFolderActualPath) && !fs::is_empty(ultraDmdFolderActualPath)) {
-        // LOG_DEBUG("PathUtils: Found '.UltraDMD' folder with content for table: " << tableRoot);
+        // LOG_DEBUG("Found '.UltraDMD' folder with content for table: " << tableRoot);
         return true;
     }
-    // LOG_DEBUG("PathUtils: No '.UltraDMD' folder with content found in " << tableRoot);
+    // LOG_DEBUG("No '.UltraDMD' folder with content found in " << tableRoot);
     return false;
 }
 
@@ -83,10 +83,10 @@ bool PathUtils::getPupPath(const std::string& root) {
     std::string pupFolderActualPath = findSubfolderCaseInsensitive(root, "pupvideos");
     // Check if folder exists and is NOT empty (contains any files or subdirectories)
     if (!pupFolderActualPath.empty() && fs::exists(pupFolderActualPath) && !fs::is_empty(pupFolderActualPath)) {
-        // LOG_DEBUG("PathUtils: Found pupvideos folder with content: " << pupFolderActualPath);
+        // LOG_DEBUG("Found pupvideos folder with content: " << pupFolderActualPath);
         return true;
     }
-    // LOG_DEBUG("PathUtils: No pupvideos folder with content found in " << root);
+    // LOG_DEBUG("No pupvideos folder with content found in " << root);
     return false;
 }
 
@@ -94,49 +94,49 @@ bool PathUtils::getPupPath(const std::string& root) {
 std::string PathUtils::getPinmamePath(const std::string& root) {
     std::string pinmameFolderActualPath = findSubfolderCaseInsensitive(root, "pinmame");
     if (!pinmameFolderActualPath.empty()) { // findSubfolderCaseInsensitive already checks exists and is_directory
-        // LOG_DEBUG("PathUtils: Found pinmame folder: " << pinmameFolderActualPath);
+        // LOG_DEBUG("Found pinmame folder: " << pinmameFolderActualPath);
         return pinmameFolderActualPath;
     }
-    // LOG_DEBUG("PathUtils: No pinmame folder found at " << root); // Log parent folder if not found
+    // LOG_DEBUG("No pinmame folder found at " << root); // Log parent folder if not found
     return "";
 }
 
 // PathUtils::getAltcolorPath - NOW uses !fs::is_empty() for content check
 bool PathUtils::getAltcolorPath(const std::string& pinmamePath) {
     if (pinmamePath.empty()) {
-        // LOG_DEBUG("PathUtils: pinmamePath is empty, skipping AltColor check.");
+        // LOG_DEBUG("pinmamePath is empty, skipping AltColor check.");
         return false;
     }
     std::string altcolorFolderActualPath = findSubfolderCaseInsensitive(pinmamePath, "altcolor");
     // Check if folder exists and is NOT empty (contains any files or subdirectories)
     if (!altcolorFolderActualPath.empty() && fs::exists(altcolorFolderActualPath) && !fs::is_empty(altcolorFolderActualPath)) {
-        // LOG_DEBUG("PathUtils: Found AltColor folder with content: " << altcolorFolderActualPath);
+        // LOG_DEBUG("Found AltColor folder with content: " << altcolorFolderActualPath);
         return true;
     }
-    // LOG_DEBUG("PathUtils: No AltColor folder with content found in " << pinmamePath);
+    // LOG_DEBUG("No AltColor folder with content found in " << pinmamePath);
     return false;
 }
 
 // PathUtils::getAltsoundPath - NOW uses !fs::is_empty() for content check
 bool PathUtils::getAltsoundPath(const std::string& pinmamePath) {
     if (pinmamePath.empty()) {
-        // LOG_DEBUG("PathUtils: pinmamePath is empty, skipping AltSound check.");
+        // LOG_DEBUG("pinmamePath is empty, skipping AltSound check.");
         return false;
     }
     std::string altsoundFolderActualPath = findSubfolderCaseInsensitive(pinmamePath, "altsound");
     // Check if folder exists and is NOT empty (contains any files or subdirectories)
     if (!altsoundFolderActualPath.empty() && fs::exists(altsoundFolderActualPath) && !fs::is_empty(altsoundFolderActualPath)) {
-        // LOG_DEBUG("PathUtils: Found AltSound folder with content: " << altsoundFolderActualPath);
+        // LOG_DEBUG("Found AltSound folder with content: " << altsoundFolderActualPath);
         return true;
     }
-    // LOG_DEBUG("PathUtils: No AltSound folder with content found in " << pinmamePath);
+    // LOG_DEBUG("No AltSound folder with content found in " << pinmamePath);
     return false;
 }
 
 std::string PathUtils::getRomPath(const std::string& pinmamePath, std::string& outRomName) {
     outRomName = ""; // Ensure romName is cleared initially
     if (pinmamePath.empty()) {
-        // LOG_DEBUG("PathUtils: pinmamePath is empty, skipping ROM check.");
+        // LOG_DEBUG("pinmamePath is empty, skipping ROM check.");
         return "";
     }
 
@@ -145,13 +145,13 @@ std::string PathUtils::getRomPath(const std::string& pinmamePath, std::string& o
         for (const auto& romEntry : fs::directory_iterator(romsFolder)) {
             if (romEntry.is_regular_file() && romEntry.path().extension() == ".zip") {
                 outRomName = romEntry.path().stem().string();
-                // LOG_DEBUG("PathUtils: Found ROM for pinmame path " << pinmamePath << ": romName=" << outRomName << ", romPath=" << romEntry.path().string());
+                // LOG_DEBUG("Found ROM for pinmame path " << pinmamePath << ": romName=" << outRomName << ", romPath=" << romEntry.path().string());
                 return romEntry.path().string(); // Take the first .zip file
             }
         }
-        // LOG_DEBUG("PathUtils: No .zip file found in " << romsFolder.string());
+        // LOG_DEBUG("No .zip file found in " << romsFolder.string());
     } else {
-        // LOG_DEBUG("PathUtils: No pinmame/roms folder found at " << romsFolder.string());
+        // LOG_DEBUG("No pinmame/roms folder found at " << romsFolder.string());
     }
     return ""; // No ROM found
 }

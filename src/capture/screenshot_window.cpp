@@ -1,8 +1,14 @@
+/**
+ * @file screenshot_window.cpp
+ * @brief Implementation of the ScreenshotWindow class for displaying a screenshot control window.
+ */
+
 #include "capture/screenshot_window.h"
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
 #include "log/logging.h"
 #include <SDL2/SDL_ttf.h>
+#include <string>
 #include <unistd.h>
 
 ScreenshotWindow::ScreenshotWindow(IConfigService* configManager, IKeybindProvider* keybindProvider)
@@ -25,36 +31,37 @@ bool ScreenshotWindow::initialize(int width, int height) {
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
     const char* videoDriver = SDL_GetCurrentVideoDriver();
-    LOG_DEBUG("ScreenshotWindow: SDL Compiled Version: " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch);
-    LOG_DEBUG("ScreenshotWindow: SDL Linked Version: " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch);
-    LOG_DEBUG("ScreenshotWindow: Video Driver: " << (videoDriver ? videoDriver : "unknown"));
+    LOG_DEBUG("SDL Compiled Version: " + std::to_string(compiled.major) + "." + 
+              std::to_string(compiled.minor) + "." + std::to_string(compiled.patch));
+    LOG_DEBUG("SDL Linked Version: " + std::to_string(linked.major) + "." + 
+              std::to_string(linked.minor) + "." + std::to_string(linked.patch));
+    LOG_DEBUG("Video Driver: " + std::string(videoDriver ? videoDriver : "unknown"));
 
     // Use SDL_WINDOWPOS_CENTERED for x and y, and proper flags
     Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS;
-    // Only add SDL_WINDOW_ALWAYS_ON_TOP if not running on Wayland, as it may cause issues
     if (videoDriver && strcmp(videoDriver, "wayland") != 0) {
         windowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
     }
-    LOG_DEBUG("ScreenshotWindow: Creating window with flags: 0x" << std::hex << windowFlags << std::dec
-              << ", position: SDL_WINDOWPOS_CENTERED");
+    LOG_DEBUG("Creating window with flags: 0x" + std::to_string(windowFlags) +
+              ", position: SDL_WINDOWPOS_CENTERED");
 
     window_ = SDL_CreateWindow("VPX Screenshot",
-                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               width, height, windowFlags);
+                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                              width, height, windowFlags);
     if (!window_) {
-        LOG_ERROR("ScreenshotWindow: SDL_CreateWindow Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
         return false;
     }
 
     renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer_) {
-        LOG_ERROR("ScreenshotWindow: SDL_CreateRenderer Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
         return false;
     }
 
     font_ = TTF_OpenFont(settings.fontPath.c_str(), 14);
     if (!font_) {
-        LOG_ERROR("ScreenshotWindow: TTF_OpenFont Error: " << TTF_GetError());
+        LOG_ERROR("TTF_OpenFont Error: " + std::string(TTF_GetError()));
         return false;
     }
 
@@ -66,13 +73,13 @@ bool ScreenshotWindow::initialize(int width, int height) {
     SDL_Color white = {255, 255, 255, 255};
     SDL_Surface* textSurface = TTF_RenderText_Solid(font_, buttonText_.c_str(), white);
     if (!textSurface) {
-        LOG_ERROR("ScreenshotWindow: TTF_RenderText_Solid Error: " << TTF_GetError());
+        LOG_ERROR("TTF_RenderText_Solid Error: " + std::string(TTF_GetError()));
         return false;
     }
     textTexture_ = SDL_CreateTextureFromSurface(renderer_, textSurface);
     SDL_FreeSurface(textSurface);
     if (!textTexture_) {
-        LOG_ERROR("ScreenshotWindow: SDL_CreateTextureFromSurface Error: " << SDL_GetError());
+        LOG_ERROR("SDL_CreateTextureFromSurface Error: " + std::string(SDL_GetError()));
         return false;
     }
 
@@ -98,14 +105,14 @@ void ScreenshotWindow::raiseAndFocus() {
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
     for (int i = 0; i < 5; i++) {
         if (std::system(cmd.c_str()) == 0) {
-            LOG_INFO("ScreenshotWindow: Focus stolen to VPX Screenshot window after " << i << " attempts.");
+            LOG_INFO("Focus stolen to VPX Screenshot window after " + std::to_string(i) + " attempts.");
             break;
         }
-        LOG_DEBUG("ScreenshotWindow: Focus steal attempt " << i << " failed.");
+        LOG_DEBUG("Focus steal attempt " + std::to_string(i) + " failed.");
         SDL_RaiseWindow(window_);
         usleep(1000000);
         if (i == 4) {
-            LOG_INFO("ScreenshotWindow: Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
+            LOG_INFO("Warning: Failed to steal focus to VPX Screenshot window after 5 attempts.");
         }
     }
 }
@@ -127,5 +134,5 @@ void ScreenshotWindow::cleanup() {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
     }
-    LOG_INFO("ScreenshotWindow: ScreenshotWindow cleaned up.");
+    LOG_INFO("ScreenshotWindow cleaned up.");
 }

@@ -155,19 +155,10 @@ public:
     /**
      * @brief Creates an input manager instance.
      *
-     * Initializes an InputManager with the keybind manager (from configService) and
-     * screenshot manager, setting minimal dependencies with dummy values (e.g., index,
-     * tables) for basic functionality. The method registers actions and could be
-     * extended to support configurable keybinds via configUI.
-     *
-     * @param configService The configuration service for accessing keybind settings.
-     * @param screenshotManager The screenshot manager for screenshot mode.
+     * Initializes an InputManager with the keybind manager (from configService)
      * @return A unique pointer to an InputManager instance.
      */
-    static std::unique_ptr<IInputManager> createInputManager(IKeybindProvider* keybindProvider,
-                                                            IScreenshotManager* screenshotManager,
-                                                            ITableLauncher* tableLauncher,
-                                                            ITableCallbacks* tableCallbacks);
+    static std::unique_ptr<IInputManager> createInputManager(IKeybindProvider* keybindProvider);
 
     /**
      * @brief Creates a configuration UI instance.

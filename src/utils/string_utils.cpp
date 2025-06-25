@@ -213,7 +213,7 @@ std::string StringUtils::extractYearFromDate(const std::string& dateString) cons
             // Heuristic: 00-49 -> 20xx, 50-99 -> 19xx. This is a common interpretation.
             return (year <= 49 ? "20" : "19") + yy;
         } catch (const std::exception&) {
-            LOG_DEBUG("StringUtils: Failed to convert 2-digit year '" << yy << "' to int.");
+            LOG_DEBUG("Failed to convert 2-digit year '" + yy + "' to int.");
         }
     }
 
@@ -225,7 +225,7 @@ std::string StringUtils::extractYearFromDate(const std::string& dateString) cons
     }
 
     // Step 7: No valid year found
-    LOG_DEBUG("StringUtils: No year found in date string: '" << dateString << "'");
+    LOG_DEBUG("No year found in date string: '" + dateString + "'");
     return "";
 }
 
@@ -237,12 +237,12 @@ std::string StringUtils::join(const nlohmann::json& array, const std::string& de
             if (item.is_string()) {
                 items.push_back(item.get<std::string>());
             } else {
-                LOG_DEBUG("StringUtils: Skipping non-string item in JSON array during join. Type: " << item.type_name());
+                LOG_DEBUG("Skipping non-string item in JSON array during join. Type: " + std::string(item.type_name()));
             }
         } catch (const nlohmann::json::exception& e) {
-            LOG_DEBUG("StringUtils: JSON error skipping invalid array item in join: " << e.what());
+            LOG_DEBUG("JSON error skipping invalid array item in join: " + std::string(e.what()));
         } catch (const std::exception& e) {
-            LOG_DEBUG("StringUtils: General error skipping invalid array item in join: " << e.what());
+            LOG_DEBUG("General error skipping invalid array item in join: " + std::string(e.what()));
         }
     }
 
@@ -440,7 +440,7 @@ std::string StringUtils::safeGetMetadataString(const nlohmann::json& j, const st
         } else if (j[key].is_null()) {
             return defaultValue;
         } else {
-            LOG_DEBUG("Field " << key << " is not a string, number, or null, type: " << j[key].type_name());
+            LOG_DEBUG("Field " + std::string(key) + " is not a string, number, or null, type: " + j[key].type_name());
             return defaultValue;
         }
     }

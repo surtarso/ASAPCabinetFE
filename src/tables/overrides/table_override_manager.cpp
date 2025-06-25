@@ -19,7 +19,7 @@ using json = nlohmann::json;
 
 std::string TableOverrideManager::getOverrideFilePath(const TableData& table) const {
     if (table.vpxFile.empty()) {
-        LOG_ERROR("TableOverrideManager: Invalid vpxFile path for table: " << table.title);
+        LOG_ERROR("Invalid vpxFile path for table: " + table.title);
         return "";
     }
 
@@ -41,14 +41,14 @@ void TableOverrideManager::applyOverrides(TableData& table) const {
     }
 
     if (!fs::exists(overridePath)) {
-        // LOG_DEBUG("TableOverrideManager: No override file found at: " << overridePath);
+        // LOG_DEBUG("No override file found at: " + overridePath);
         return;
     }
 
     try {
         std::ifstream file(overridePath);
         if (!file.is_open()) {
-            LOG_ERROR("TableOverrideManager: Failed to open override file: " << overridePath);
+            LOG_ERROR("Failed to open override file: " + overridePath);
             return;
         }
 
@@ -145,22 +145,22 @@ void TableOverrideManager::applyOverrides(TableData& table) const {
             table.tableYear = overrides["tableYear"].get<std::string>();
         }
 
-        LOG_INFO("TableOverrideManager: Applied overrides for table: " << table.title << " from: " << overridePath);
+        LOG_INFO("Applied overrides for table: " + table.title + " from: " + overridePath);
     } catch (const json::exception& e) {
-        LOG_ERROR("TableOverrideManager: JSON parsing error in override file: " << overridePath << ": " << e.what());
+        LOG_ERROR("JSON parsing error in override file: " + overridePath + ": " + e.what());
     } catch (const std::exception& e) {
-        LOG_ERROR("TableOverrideManager: Failed to load override file: " << overridePath << ": " << e.what());
+        LOG_ERROR("Failed to load override file: " + overridePath + ": " + e.what());
     }
 }
 
 void TableOverrideManager::reloadOverrides(TableData& table) const {
-    LOG_DEBUG("TableOverrideManager: reloadOverrides called for table: " << table.title << " (not implemented)");
+    LOG_DEBUG("reloadOverrides called for table: " + table.title + " (not implemented)");
 }
 
 void TableOverrideManager::saveOverride(const TableData& table, const std::map<std::string, std::string>& overrides) const {
     std::string overridePath = getOverrideFilePath(table);
     if (overridePath.empty()) {
-        LOG_ERROR("TableOverrideManager: Cannot save override, invalid path for table: " << table.title);
+        LOG_ERROR("Cannot save override, invalid path for table: " + table.title);
         return;
     }
 
@@ -170,7 +170,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         if (fs::exists(overridePath)) {
             std::ifstream inFile(overridePath);
             if (!inFile.is_open()) {
-                LOG_ERROR("TableOverrideManager: Failed to open override file for reading: " << overridePath);
+                LOG_ERROR("Failed to open override file for reading: " + overridePath);
                 return;
             }
             inFile >> overrideJson;
@@ -191,7 +191,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         // If no changes and JSON is empty, delete the file
         if (!hasChanges && overrideJson.empty()) {
             deleteOverride(table);
-            LOG_DEBUG("TableOverrideManager: No overrides to save, deleted file for table: " << table.title);
+            LOG_DEBUG("No overrides to save, deleted file for table: " + table.title);
             return;
         }
 
@@ -201,35 +201,35 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         // Write updated JSON
         std::ofstream outFile(overridePath);
         if (!outFile.is_open()) {
-            LOG_ERROR("TableOverrideManager: Failed to open override file for writing: " << overridePath);
+            LOG_ERROR("Failed to open override file for writing: " + overridePath);
             return;
         }
         outFile << overrideJson.dump(4);
         outFile.close();
 
-        LOG_DEBUG("TableOverrideManager: Saved overrides for table: " << table.title << " to: " << overridePath);
+        LOG_DEBUG("Saved overrides for table: " + table.title + " to: " + overridePath);
     } catch (const json::exception& e) {
-        LOG_ERROR("TableOverrideManager: JSON error while saving override file: " << overridePath << ": " << e.what());
+        LOG_ERROR("JSON error while saving override file: " + overridePath + ": " + e.what());
     } catch (const std::exception& e) {
-        LOG_ERROR("TableOverrideManager: Failed to save override file: " << overridePath << ": " << e.what());
+        LOG_ERROR("Failed to save override file: " + overridePath + ": " + e.what());
     }
 }
 
 void TableOverrideManager::deleteOverride(const TableData& table) const {
     std::string overridePath = getOverrideFilePath(table);
     if (overridePath.empty()) {
-        LOG_ERROR("TableOverrideManager: Cannot delete override, invalid path for table: " << table.title);
+        LOG_ERROR("Cannot delete override, invalid path for table: " + table.title);
         return;
     }
 
     if (fs::exists(overridePath)) {
         std::error_code ec;
         if (fs::remove(overridePath, ec)) {
-            LOG_DEBUG("TableOverrideManager: Deleted override file: " << overridePath);
+            LOG_DEBUG("Deleted override file: " + overridePath);
         } else {
-            LOG_ERROR("TableOverrideManager: Failed to delete override file: " << overridePath << ": " << ec.message());
+            LOG_ERROR("Failed to delete override file: " + overridePath + ": " + ec.message());
         }
     } else {
-        LOG_DEBUG("TableOverrideManager: No override file to delete: " << overridePath);
+        LOG_DEBUG("No override file to delete: " + overridePath);
     }
 }

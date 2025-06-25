@@ -7,12 +7,13 @@
  * Logging operations are thread-safe using a mutex for file and console output.
  */
 
+#include "log/logger.h"
 #include <iostream>
 #include <ctime>
 #include <sstream>
 #include <filesystem>
-#include "logger.h"
-#include "logging.h"
+
+namespace asap::logging {
 
 // ANSI color codes
 #define COLOR_RED     "\033[31m"  // For ERROR
@@ -30,16 +31,16 @@ Logger& Logger::getInstance() {
 
 void Logger::initialize(const std::string& logFile, bool debugBuild) {
     debugBuild_ = debugBuild;
-    
+
     std::filesystem::path logsDir = std::filesystem::path(logFile).parent_path();
     std::filesystem::create_directories(logsDir);
 
-    logFile_.open(logFile, std::ios::out | std::ios::app);
+    logFile_.open(logFile, std::ios::out | std::ios::trunc);
     if (!logFile_.is_open()) {
         std::cerr << "Failed to open log file: " << logFile << std::endl;
         return;
     }
-    
+
     info("Logger Initialized.");
 }
 
@@ -58,17 +59,17 @@ void Logger::log(const std::string& level, const std::string& message) {
     std::time_t now = std::time(nullptr);
     std::string timestamp = std::ctime(&now);
     timestamp = timestamp.substr(0, timestamp.length() - 1);
-    
+
     std::stringstream logMessage;
     logMessage << "[" << timestamp << "] " << level << ": " << message;
-    
+
     // Protect log file and console output with mutex
     {
         std::lock_guard<std::mutex> lock(logMutex_);
         if (logFile_.is_open()) {
             logFile_ << logMessage.str() << std::endl;
         }
-        
+
         if (level == "INFO" || level == "ERROR" || level == "WARN" || debugBuild_) {
             std::string colorCode;
             if (level == "ERROR") {
@@ -82,11 +83,11 @@ void Logger::log(const std::string& level, const std::string& message) {
             } else {
                 colorCode = COLOR_RESET;
             }
-            
+
             std::cout << colorCode << logMessage.str() << COLOR_RESET << std::endl;
         }
     }
-    
+
     // Protect loading progress separately with its own mutex
     if (loadingProgress_) {
         std::lock_guard<std::mutex> lock(loadingProgress_->mutex);
@@ -115,3 +116,5 @@ void Logger::warn(const std::string& message) {
 bool Logger::isDebugEnabled() const {
     return debugBuild_;
 }
+
+} // namespace asap::logging

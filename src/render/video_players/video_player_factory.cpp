@@ -1,3 +1,8 @@
+/**
+ * @file video_player_factory.cpp
+ * @brief Implementation of the VideoPlayerFactory class for creating video players with different backends.
+ */
+
 #include "video_player_factory.h"
 #include "dummy_player.h"
 #include "vlc/vlc_player.h"
@@ -6,6 +11,7 @@
 #include "config/settings.h"
 #include "log/logging.h"
 #include <map>
+#include <string>
 
 enum class VideoBackendType {
     VLC,
@@ -22,10 +28,7 @@ VideoBackendType getVideoBackendType(const std::string& backendName) {
     };
 
     auto it = backendMap.find(backendName);
-    if (it != backendMap.end()) {
-        return it->second;
-    }
-    return VideoBackendType::UNKNOWN;
+    return it != backendMap.end() ? it->second : VideoBackendType::UNKNOWN;
 }
 
 std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
@@ -36,8 +39,8 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
     IConfigService* configService) {
 
     if (!renderer || path.empty() || width <= 0 || height <= 0) {
-        LOG_ERROR("VideoPlayerFactory: Invalid parameters - renderer=" << renderer
-                  << ", path=" << path << ", width=" << width << ", height=" << height);
+        LOG_ERROR("Invalid parameters - renderer=" + std::to_string(reinterpret_cast<uintptr_t>(renderer)) +
+                  ", path=" + path + ", width=" + std::to_string(width) + ", height=" + std::to_string(height));
         return nullptr;
     }
 
@@ -45,9 +48,9 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
     if (configService) {
         const Settings& settings = configService->getSettings();
         videoBackendStr = settings.videoBackend.empty() ? "vlc" : settings.videoBackend;
-        LOG_DEBUG("VideoPlayerFactory: Requested videoBackend=" << videoBackendStr);
+        LOG_DEBUG("Requested videoBackend=" + videoBackendStr);
     } else {
-        LOG_DEBUG("VideoPlayerFactory: No configService provided, defaulting to vlc");
+        LOG_DEBUG("No configService provided, defaulting to vlc");
     }
 
     VideoBackendType backendType = getVideoBackendType(videoBackendStr);
@@ -58,10 +61,10 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
         case VideoBackendType::NOVIDEO:
             player = std::make_unique<DummyVideoPlayer>();
             if (player->setup(renderer, path, width, height)) {
-                LOG_DEBUG("VideoPlayerFactory: Created DummyVideoPlayer for path=" << path);
+                LOG_DEBUG("Created DummyVideoPlayer for path=" + path);
                 return player;
             }
-            LOG_ERROR("VideoPlayerFactory: Failed to setup Dummy video player for path=" << path);
+            LOG_ERROR("Failed to setup Dummy video player for path=" + path);
             return nullptr;
         case VideoBackendType::VLC:
             player = std::make_unique<VlcVideoPlayer>();
@@ -71,21 +74,21 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             break;
         case VideoBackendType::UNKNOWN:
         default:
-            LOG_DEBUG("VideoPlayerFactory: Unsupported videoBackend=" << videoBackendStr << ", attempting VLC fallback.");
+            LOG_DEBUG("Unsupported videoBackend=" + videoBackendStr + ", attempting VLC fallback.");
             player = std::make_unique<VlcVideoPlayer>();
             break;
     }
 
     if (player) {
-        LOG_DEBUG("VideoPlayerFactory: Attempting setup for path=" << path << ", width=" << width << ", height=" << height);
+        LOG_DEBUG("Attempting setup for path=" + path + ", width=" + std::to_string(width) + ", height=" + std::to_string(height));
         if (player->setup(renderer, path, width, height)) {
-            LOG_DEBUG("VideoPlayerFactory: Successfully created player for path=" << path << " with backend=" << videoBackendStr);
+            LOG_DEBUG("Successfully created player for path=" + path + " with backend=" + videoBackendStr);
             return player;
         } else {
-            LOG_ERROR("VideoPlayerFactory: Failed to setup " << videoBackendStr << " player for path=" << path);
+            LOG_ERROR("Failed to setup " + videoBackendStr + " player for path=" + path);
         }
     }
 
-    LOG_ERROR("VideoPlayerFactory: Failed to setup any video player for path=" << path);
+    LOG_ERROR("Failed to setup any video player for path=" + path);
     return nullptr;
 }

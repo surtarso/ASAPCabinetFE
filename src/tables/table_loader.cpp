@@ -54,7 +54,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->totalTablesToLoad = 0;
         }
         if (indexManager.load(settings, tables, progress)) {
-            LOG_INFO("TableLoader: Fast path loaded " << tables.size() << " tables from asapcab_index.json");
+            LOG_INFO("Fast path loaded " + std::to_string(tables.size()) + " tables from asapcab_index.json");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Loaded from index";
@@ -62,7 +62,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->totalTablesToLoad = tables.size();
             }
         } else {
-            LOG_ERROR("TableLoader: Failed to load asapcab_index.json in fast path");
+            LOG_ERROR("Failed to load asapcab_index.json in fast path");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Index loading failed";
@@ -103,7 +103,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->numNoMatch = 0;
     }
     if (!settings.forceRebuildMetadata && indexManager.load(settings, tables, progress)) {
-        LOG_INFO("TableLoader: Loaded " << tables.size() << " tables from asapcab_index.json");
+        LOG_INFO("Loaded " + std::to_string(tables.size()) + " tables from asapcab_index.json");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Loaded from index";
@@ -111,7 +111,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->totalTablesToLoad = tables.size();
         }
     } else {
-        LOG_INFO("TableLoader: No index loaded (forceRebuildMetadata=" << settings.forceRebuildMetadata << ")");
+        LOG_INFO("No index loaded (forceRebuildMetadata=" + std::to_string(settings.forceRebuildMetadata) + ")");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Index loading skipped";
@@ -198,7 +198,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             }
             if (settings.useVpxtool) {
                 if (!VPXToolScanner::scanFiles(settings, tablesToScan, progress)) {
-                    LOG_INFO("TableLoader: VPXTool skipped or failed. Proceeding with VPin File Scanner.");
+                    LOG_INFO("VPXTool skipped or failed. Proceeding with VPin File Scanner.");
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->currentTask = "Scanning metadata with VPin...";
@@ -206,7 +206,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     VPinScanner::scanFiles(tablesToScan, progress);
                 }
             } else {
-                LOG_INFO("TableLoader: useVpxtool is false, using VPin File Scanner.");
+                LOG_INFO("useVpxtool is false, using VPin File Scanner.");
                 VPinScanner::scanFiles(tablesToScan, progress);
             }
 
@@ -232,7 +232,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->currentTask = "Metadata scanning complete";
             }
         } else {
-            LOG_INFO("TableLoader: No tables need metadata scanning.");
+            LOG_INFO("No tables need metadata scanning.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Metadata scanning skipped";
@@ -282,7 +282,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                         tablesForVpsdb.push_back(table);
                     }
                 }
-                LOG_INFO("TableLoader: Processing " << tablesForVpsdb.size() << " tables for VPSDB matching");
+                LOG_INFO("Processing " + std::to_string(tablesForVpsdb.size()) + " tables for VPSDB matching");
 
                 if (!tablesForVpsdb.empty()) {
                     if (progress) {
@@ -354,7 +354,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                         try {
                             future.get();
                         } catch (const std::exception& e) {
-                            LOG_ERROR("TableLoader: VPSDB thread exception: " << e.what());
+                            LOG_ERROR("VPSDB thread exception: " + std::string(e.what()));
                         }
                     }
 
@@ -385,7 +385,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                         progress->numNoMatch = numNoMatch;
                     }
                 } else {
-                    LOG_INFO("TableLoader: No tables need VPSDB scanning.");
+                    LOG_INFO("No tables need VPSDB scanning.");
                     if (progress) {
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->currentTask = "VPSDB matching skipped";
@@ -396,7 +396,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     }
                 }
             } else {
-                LOG_ERROR("TableLoader: Failed to load VPSDB, skipping VPSDB matching.");
+                LOG_ERROR("Failed to load VPSDB, skipping VPSDB matching.");
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->currentTask = "VPSDB loading failed";
@@ -407,7 +407,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 }
             }
         } else {
-            LOG_ERROR("TableLoader: Failed to fetch VPSDB, skipping VPSDB matching.");
+            LOG_ERROR("Failed to fetch VPSDB, skipping VPSDB matching.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "VPSDB fetch failed";
@@ -548,7 +548,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
 
 void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& sortBy, LoadingProgress* progress) {
     if (tables.empty()) {
-        LOG_DEBUG("TableLoader: No tables to sort");
+        LOG_DEBUG("No tables to sort");
         return;
     }
 
@@ -585,7 +585,7 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
     letterIndex.clear();
     for (size_t i = 0; i < tables.size(); ++i) {
         if (tables[i].title.empty()) {
-            LOG_DEBUG("TableLoader: Empty title at index " << i);
+            LOG_DEBUG("Empty title at index " + std::to_string(i));
             continue;
         }
         char firstChar = tables[i].title[0];
@@ -595,10 +595,10 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
                 letterIndex[key] = static_cast<int>(i);
             }
         } else {
-            LOG_DEBUG("TableLoader: Invalid first character in title: " << tables[i].title << " at index " << i);
+            LOG_DEBUG("Invalid first character in title: " + tables[i].title + " at index " + std::to_string(i));
         }
     }
     if (letterIndex.empty()) {
-        LOG_ERROR("TableLoader: Letter index is empty after building");
+        LOG_ERROR("Letter index is empty after building");
     }
 }

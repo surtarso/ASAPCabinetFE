@@ -23,14 +23,14 @@ AsapIndexManager::AsapIndexManager(const Settings& settings) : settings_(setting
 
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
-        LOG_INFO("AsapIndexManager: asapcab_index.json not found at: " << settings.indexPath << ". Will create a new one on save.");
+        LOG_INFO("asapcab_index.json not found at: " + settings.indexPath + ". Will create a new one on save.");
         return false;
     }
 
     try {
         std::ifstream indexFile(settings.indexPath);
         if (!indexFile.is_open()) {
-            LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for reading.");
+            LOG_ERROR("Failed to open " + settings.indexPath + " for reading.");
             return false;
         }
 
@@ -39,7 +39,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
         indexFile.close();
 
         if (!asapIndex.contains("tables") || !asapIndex["tables"].is_array()) {
-            LOG_ERROR("AsapIndexManager: Invalid asapcab_index.json: 'tables' key missing or not an array. Attempting to clear and rebuild index.");
+            LOG_ERROR("Invalid asapcab_index.json: 'tables' key missing or not an array. Attempting to clear and rebuild index.");
             // Consider clearing the file or backing it up if it's malformed to prevent constant errors
             return false; // Indicate failure to load
         }
@@ -142,14 +142,14 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
                 progress->currentTablesLoaded++;
             }
         }
-        LOG_DEBUG("AsapIndexManager: Loaded " << tables.size() << " tables from asapcab_index.json");
+        LOG_DEBUG("Loaded " + std::to_string(tables.size()) + " tables from asapcab_index.json");
         return !tables.empty();
     } catch (const json::exception& e) {
-        LOG_ERROR("AsapIndexManager: JSON parsing error while loading asapcab_index.json: " << e.what() << ". File might be corrupt.");
+        LOG_ERROR("JSON parsing error while loading asapcab_index.json: " + std::string(e.what()) + ". File might be corrupt.");
         // Potentially rename/backup the corrupt file here
         return false;
     } catch (const std::exception& e) {
-        LOG_ERROR("AsapIndexManager: Failed to load asapcab_index.json: " << e.what());
+        LOG_ERROR("Failed to load asapcab_index.json: " + std::string(e.what()));
         return false;
     }
 }
@@ -261,7 +261,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         
         std::ofstream out(outputPath);
         if (!out.is_open()) {
-            LOG_ERROR("AsapIndexManager: Failed to open " << settings.indexPath << " for writing. Check permissions.");
+            LOG_ERROR("Failed to open " + settings.indexPath + " for writing. Check permissions.");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->logMessages.push_back("ERROR: Failed to open asapcab_index.json for writing. Check permissions.");
@@ -270,14 +270,14 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         }
         out << asapIndex.dump(4); // Serialize with 4-space indentation for readability
         out.close();
-        LOG_INFO("AsapIndexManager: Saved " << tables.size() << " tables to asapcab_index.json");
+        LOG_INFO("Saved " + std::to_string(tables.size()) + " tables to asapcab_index.json");
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->logMessages.push_back("INFO: Saved " + std::to_string(tables.size()) + " tables to index.");
         }
         return true;
     } catch (const std::exception& e) {
-        LOG_ERROR("AsapIndexManager: Failed to save asapcab_index.json: " << e.what());
+        LOG_ERROR("Failed to save asapcab_index.json: " + std::string(e.what()));
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->logMessages.push_back("ERROR: Failed to save asapcab_index.json: " + std::string(e.what()));
@@ -302,7 +302,7 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
             }
         }
     } else {
-        LOG_INFO("AsapIndexManager: No existing index found or failed to load. Treating all tables as new.");
+        LOG_INFO("No existing index found or failed to load. Treating all tables as new.");
     }
 
     // Define jsonOwner priority
@@ -326,7 +326,7 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
     // Process new tables
     for (const auto& newTable : newTables) {
         if (newTable.vpxFile.empty()) {
-            LOG_WARN("AsapIndexManager: Skipping new table with empty vpxFile.");
+            LOG_WARN("Skipping new table with empty vpxFile.");
             continue;
         }
 
@@ -357,19 +357,19 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
             }
 
             if (shouldUpdate) {
-                LOG_INFO("AsapIndexManager: Updating table " << newTable.vpxFile << " due to " << updateReason);
+                LOG_INFO("Updating table " + newTable.vpxFile + " due to " + updateReason);
                 // Preserve user fields
                 mergedTable.playCount = existingTable.playCount;
                 mergedTable.playTimeLast = existingTable.playTimeLast;
                 mergedTable.playTimeTotal = existingTable.playTimeTotal;
                 mergedTable.isBroken = existingTable.isBroken;
             } else {
-                LOG_DEBUG("AsapIndexManager: Keeping existing table " << newTable.vpxFile << " (no update needed)");
+                LOG_DEBUG("Keeping existing table " + newTable.vpxFile + " (no update needed)");
                 mergedTable = existingTable;
                 mergedTable.fileLastModified = newTable.fileLastModified; // Update timestamp to match scan
             }
         } else {
-            LOG_INFO("AsapIndexManager: Adding new table " << newTable.vpxFile);
+            LOG_INFO("Adding new table " + newTable.vpxFile);
         }
 
         mergedTables.push_back(mergedTable);
@@ -384,18 +384,18 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
     for (const auto& [vpxFile, existingTable] : existingTableMap) {
         if (processedNewTables.find(vpxFile) == processedNewTables.end()) {
             if (!fs::exists(vpxFile)) {
-                LOG_INFO("AsapIndexManager: Removing deleted table " << vpxFile);
+                LOG_INFO("Removing deleted table " + vpxFile);
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->logMessages.push_back("Removed deleted table: " + vpxFile);
                 }
             } else {
-                LOG_DEBUG("AsapIndexManager: Keeping existing table " << vpxFile << " (not in new scan but file exists)");
+                LOG_DEBUG("Keeping existing table " + vpxFile + " (not in new scan but file exists)");
                 mergedTables.push_back(existingTable);
             }
         }
     }
 
-    LOG_INFO("AsapIndexManager: Merged " << mergedTables.size() << " tables");
+    LOG_INFO("Merged " + std::to_string(mergedTables.size()) + " tables");
     return mergedTables;
 }

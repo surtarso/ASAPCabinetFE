@@ -1,22 +1,28 @@
-#include "first_run.h"
+/**
+ * @file first_run.cpp
+ * @brief Implementation of the initial configuration setup for ASAPCabinetFE.
+ */
+
+#include "core/first_run.h"
 #include "log/logging.h"
-#include <iostream>
+#include <SDL2/SDL.h>
+#include <memory>
 
 bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindProvider, const std::string& configPath) {
-    LOG_INFO("Config Path: " << configPath);
+    LOG_INFO("Config Path: " + configPath);
     SDL_Window* configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                 800, 500, SDL_WINDOW_SHOWN);
-    
-        LOG_DEBUG("FirstRun: Running initial config with path: " << configPath);
-        if (!configWindow) {
-            LOG_ERROR("FirstRun: Failed to create config window: " << SDL_GetError());
+
+    LOG_DEBUG("Running initial config with path: " + configPath);
+    if (!configWindow) {
+        LOG_ERROR("Failed to create config window: " + std::string(SDL_GetError()));
         return false;
     }
 
     SDL_Renderer* configRenderer = SDL_CreateRenderer(configWindow, -1, SDL_RENDERER_ACCELERATED);
     if (!configRenderer) {
-        LOG_ERROR("FirstRun: Failed to create config renderer: " << SDL_GetError());
+        LOG_ERROR("Failed to create config renderer: " + std::string(SDL_GetError()));
         SDL_DestroyWindow(configWindow);
         return false;
     }
@@ -26,15 +32,15 @@ bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindPr
 
     bool showConfig = true;
     ConfigUI configEditor(configService, keybindProvider, 
-                      nullptr, nullptr, nullptr, nullptr, showConfig, true);
-                      
+                          nullptr, nullptr, nullptr, nullptr, showConfig, true);
+
     while (true) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             guiManager->processEvent(event);
             configEditor.handleEvent(event);
             if (event.type == SDL_QUIT) {
-                LOG_ERROR("FirstRun: Config window closed without saving. Exiting...");
+                LOG_ERROR("Config window closed without saving. Exiting...");
                 return false;
             }
         }
@@ -45,7 +51,7 @@ bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindPr
 
         if (!showConfig && configService->isConfigValid()) break;
         else if (!showConfig) {
-            LOG_ERROR("FirstRun: Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
+            LOG_ERROR("Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
             showConfig = true;
         }
     }
@@ -53,6 +59,6 @@ bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindPr
     guiManager.reset();
     SDL_DestroyRenderer(configRenderer);
     SDL_DestroyWindow(configWindow);
-    LOG_INFO("FirstRun: Initial config completed");
+    LOG_INFO("Initial config completed");
     return true;
 }

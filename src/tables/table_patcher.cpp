@@ -22,7 +22,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
     try {
         fs::create_directories(settings.exeDir + "data/");
     } catch (const fs::filesystem_error& e) {
-        LOG_ERROR("TablePatcher: Failed to create data directory: " << e.what());
+        LOG_ERROR("Failed to create data directory: " + std::string(e.what()));
         return "";
     }
 
@@ -32,7 +32,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
         if (cacheFile.is_open()) {
             readBuffer.assign((std::istreambuf_iterator<char>(cacheFile)), std::istreambuf_iterator<char>());
             cacheFile.close();
-            LOG_INFO("TablePatcher: Loaded hashes.json from cache: " << cachePath);
+            LOG_INFO("Loaded hashes.json from cache: " + cachePath);
 
             // Get file's last-modified time for If-Modified-Since
             try {
@@ -59,24 +59,24 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                         long responseCode;
                         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
                         if (responseCode == 304) { // Not Modified
-                            LOG_DEBUG("TablePatcher: Cached hashes.json is up-to-date");
+                            LOG_DEBUG("Cached hashes.json is up-to-date");
                             curl_easy_cleanup(curl);
                             // curl_global_cleanup();
                             return readBuffer;
                         }
                     } else {
-                        LOG_WARN("TablePatcher: Failed to check hashes.json modification: " << curl_easy_strerror(res));
+                        LOG_WARN("Failed to check hashes.json modification: " + std::string(curl_easy_strerror(res)));
                     }
                     curl_easy_cleanup(curl);
                 } else {
-                    LOG_ERROR("TablePatcher: Failed to initialize curl for modification check");
+                    LOG_ERROR("Failed to initialize curl for modification check");
                 }
                 // curl_global_cleanup();
             } catch (const fs::filesystem_error& e) {
-                LOG_WARN("TablePatcher: Failed to get last modified time for " << cachePath << ": " << e.what());
+                LOG_WARN("Failed to get last modified time for " + cachePath + ": " + std::string(e.what()));
             }
         } else {
-            LOG_WARN("TablePatcher: Failed to open cached hashes.json: " << cachePath);
+            LOG_WARN("Failed to open cached hashes.json: " + cachePath);
         }
     }
 
@@ -92,23 +92,23 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
-            LOG_INFO("TablePatcher: Successfully downloaded hashes.json");
+            LOG_INFO("Successfully downloaded hashes.json");
             // Save to cache
             std::ofstream outFile(cachePath, std::ios::binary);
             if (outFile.is_open()) {
                 outFile.write(readBuffer.data(), readBuffer.size());
                 outFile.close();
-                LOG_INFO("TablePatcher: Saved hashes.json to cache: " << cachePath);
+                LOG_INFO("Saved hashes.json to cache: " + cachePath);
             } else {
-                LOG_ERROR("TablePatcher: Failed to save hashes.json to " << cachePath);
+                LOG_ERROR("Failed to save hashes.json to " + cachePath);
             }
         } else {
-            LOG_ERROR("TablePatcher: Failed to download hashes.json: " << curl_easy_strerror(res));
+            LOG_ERROR("Failed to download hashes.json: " + std::string(curl_easy_strerror(res)));
             readBuffer.clear();
         }
         curl_easy_cleanup(curl);
     } else {
-        LOG_ERROR("TablePatcher: Failed to initialize curl");
+        LOG_ERROR("Failed to initialize curl");
     }
     // curl_global_cleanup();
     return readBuffer;
@@ -116,22 +116,22 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
 
 nlohmann::json TablePatcher::parseHashesJson(const std::string& jsonContent) {
     if (jsonContent.empty()) {
-        LOG_ERROR("TablePatcher: No content to parse from hashes.json");
+        LOG_ERROR("No content to parse from hashes.json");
         return nlohmann::json();
     }
     try {
         nlohmann::json parsed = nlohmann::json::parse(jsonContent);
-        LOG_INFO("TablePatcher: Successfully parsed hashes.json");
+        LOG_INFO("Successfully parsed hashes.json");
         return parsed;
     } catch (const nlohmann::json::parse_error& e) {
-        LOG_ERROR("TablePatcher: Failed to parse hashes.json: " << e.what());
+        LOG_ERROR("Failed to parse hashes.json: " + std::string(e.what()));
         return nlohmann::json();
     }
 }
 
 bool TablePatcher::needsPatch(const TableData& table, const nlohmann::json& hashes) {
     if (table.hashFromVpx.empty()) {
-        LOG_DEBUG("TablePatcher: No hashFromVpx for table " << table.title << ", skipping patch check");
+        LOG_DEBUG("No hashFromVpx for table " + table.title + ", skipping patch check");
         return false;
     }
 
@@ -139,18 +139,18 @@ bool TablePatcher::needsPatch(const TableData& table, const nlohmann::json& hash
         if (entry.is_object() && entry.contains("sha256") && entry["sha256"] == table.hashFromVpx) {
             std::string patchedHash = entry["patched"]["sha256"];
             if (table.hashFromVbs.empty()) {
-                LOG_INFO("TablePatcher: No sidecar .vbs for " << table.title << ", patch needed");
+                LOG_INFO("No sidecar .vbs for " + table.title + ", patch needed");
                 return true;
             } else if (table.hashFromVbs != patchedHash) {
-                LOG_WARN("TablePatcher: Sidecar .vbs hash mismatch for " << table.title << ", computed: " << table.hashFromVbs << ", expected: " << patchedHash);
+                LOG_WARN("Sidecar .vbs hash mismatch for " + table.title + ", computed: " + table.hashFromVbs + ", expected: " + patchedHash);
                 return true;
             } else {
-                LOG_INFO("TablePatcher: Sidecar .vbs for " << table.title << " is already patched");
+                LOG_INFO("Sidecar .vbs for " + table.title + " is already patched");
                 return false;
             }
         }
     }
-    LOG_DEBUG("TablePatcher: No matching hash entry found for " << table.title);
+    LOG_DEBUG("No matching hash entry found for " + table.title);
     return false;
 }
 
@@ -187,46 +187,46 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
                 for (size_t i = 0; i < std::min(readBuffer.size(), size_t(16)); ++i) {
                     debugSs << std::setw(2) << (unsigned int)(unsigned char)readBuffer[i];
                 }
-                LOG_DEBUG("TablePatcher: Downloaded .vbs from " << encodedUrl << ", first 16 bytes: " << debugSs.str());
+                LOG_DEBUG("Downloaded .vbs from " + encodedUrl + ", first 16 bytes: " + debugSs.str());
 
                 std::ofstream outFile(savePath, std::ios::binary);
                 if (outFile.is_open()) {
                     outFile.write(readBuffer.data(), readBuffer.size());
                     outFile.close();
-                    LOG_INFO("TablePatcher: Successfully saved .vbs to " << savePath);
+                    LOG_INFO("Successfully saved .vbs to " + savePath);
                     curl_easy_cleanup(curl);
                     // curl_global_cleanup();
                     return;
                 } else {
-                    LOG_ERROR("TablePatcher: Failed to open file for writing at " << savePath);
+                    LOG_ERROR("Failed to open file for writing at " + savePath);
                 }
             } else {
-                LOG_ERROR("TablePatcher: Failed to download .vbs from " << encodedUrl << ": " << curl_easy_strerror(res));
+                LOG_ERROR("Failed to download .vbs from " + encodedUrl + ": " + std::string(curl_easy_strerror(res)));
             }
             curl_easy_cleanup(curl);
         } else {
-            LOG_ERROR("TablePatcher: Failed to initialize curl for .vbs download");
+            LOG_ERROR("Failed to initialize curl for .vbs download");
         }
         // curl_global_cleanup();
         retryCount++;
         if (retryCount < maxRetries) {
-            LOG_INFO("TablePatcher: Retrying download for " << encodedUrl << ", attempt " << retryCount + 1);
+            LOG_INFO("Retrying download for " + encodedUrl + ", attempt " + std::to_string(retryCount + 1));
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
-    LOG_ERROR("TablePatcher: Failed to download .vbs from " << encodedUrl << " after " << maxRetries << " attempts");
+    LOG_ERROR("Failed to download .vbs from " + encodedUrl + " after " + std::to_string(maxRetries) + " attempts");
 }
 
 void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     std::string jsonContent = downloadHashesJson(settings);
     if (jsonContent.empty()) {
-        LOG_ERROR("TablePatcher: Aborting patch process due to empty hashes.json content");
+        LOG_ERROR("Aborting patch process due to empty hashes.json content");
         return;
     }
 
     nlohmann::json hashes = parseHashesJson(jsonContent);
     if (hashes.is_null() || !hashes.is_array()) {
-        LOG_ERROR("TablePatcher: Aborting patch process due to invalid hashes.json");
+        LOG_ERROR("Aborting patch process due to invalid hashes.json");
         return;
     }
 
@@ -243,7 +243,7 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
                 if (entry["sha256"] == table.hashFromVpx) {
                     std::string url = entry["patched"]["url"];
                     std::string savePath = table.folder + "/" + table.title + ".vbs";
-                    LOG_INFO("TablePatcher: Patching " << table.title << " with .vbs from " << url);
+                    LOG_INFO("Patching " + table.title + " with .vbs from " + url);
                     downloadAndSaveVbs(url, savePath);
 
                     std::string computedHash = compute_file_sha256(savePath);
@@ -251,12 +251,12 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
                         std::string expectedHash = entry["patched"]["sha256"];
                         if (computedHash == expectedHash) {
                             table.hashFromVbs = computedHash;
-                            LOG_INFO("TablePatcher: Updated hashFromVbs for " << table.title << ": " << table.hashFromVbs);
+                            LOG_INFO("Updated hashFromVbs for " + table.title + ": " + table.hashFromVbs);
                         } else {
-                            LOG_ERROR("TablePatcher: Hash mismatch for downloaded .vbs for " << table.title << ", computed: " << computedHash << ", expected: " << expectedHash);
+                            LOG_ERROR("Hash mismatch for downloaded .vbs for " + table.title + ", computed: " + computedHash + ", expected: " + expectedHash);
                         }
                     } else {
-                        LOG_ERROR("TablePatcher: Failed to compute hash for downloaded .vbs: " << savePath);
+                        LOG_ERROR("Failed to compute hash for downloaded .vbs: " + savePath);
                     }
                     break;
                 }
@@ -267,5 +267,5 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
             progress->currentTablesLoaded++;
         }
     }
-    LOG_INFO("TablePatcher: Patch process completed");
+    LOG_INFO("Patch process completed");
 }

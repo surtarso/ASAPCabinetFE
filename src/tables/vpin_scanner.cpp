@@ -14,7 +14,7 @@ using json = nlohmann::json;
 
 // void VPinScanner::scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
 void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* progress) {
-    LOG_DEBUG("VPinFileScanner: Starting scan with vpin for " << tables.size() << " tables.");
+    LOG_DEBUG("Starting scan with vpin for " + std::to_string(tables.size()) + " tables.");
 
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
@@ -37,7 +37,7 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
                     try {
                         it->get();
                     } catch (const std::exception& e) {
-                        LOG_ERROR("VPinFileScanner: Thread exception during VPin scan for " << table.vpxFile << ": " << e.what());
+                        LOG_ERROR("Thread exception during VPin scan for " + table.vpxFile + ": " + std::string(e.what()));
                     }
                     it = futures.erase(it);
                 } else {
@@ -49,10 +49,10 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
 
         futures.push_back(std::async(std::launch::async, [&table, progress, &processedVpin]() {
             std::string vpxFile = table.vpxFile;
-            LOG_DEBUG("VPinFileScanner: Processing VPX file with VPin: " << vpxFile);
+            LOG_DEBUG("Processing VPX file with VPin: " + vpxFile);
             char* json_result = get_vpx_table_info_as_json(vpxFile.c_str());
             if (!json_result) {
-                LOG_ERROR("VPinFileScanner: Failed to get metadata for " << vpxFile);
+                LOG_ERROR("Failed to get metadata for " + vpxFile);
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->numNoMatch++;
@@ -100,14 +100,14 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
                     progress->logMessages.push_back("DEBUG: Processed: " + vpxFile);
                 }
             } catch (const json::exception& e) {
-                LOG_ERROR("VPinFileScanner: JSON parsing error for " << vpxFile << ": " << e.what());
+                LOG_ERROR("JSON parsing error for " + vpxFile + ": " + e.what());
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->numNoMatch++;
                     progress->logMessages.push_back("DEBUG: JSON error: " + vpxFile);
                 }
             } catch (...) {
-                LOG_ERROR("VPinFileScanner: Unexpected error processing " << vpxFile);
+                LOG_ERROR("Unexpected error processing " + vpxFile);
                 if (progress) {
                     std::lock_guard<std::mutex> lock(progress->mutex);
                     progress->numNoMatch++;
@@ -128,9 +128,9 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
         try {
             future.get();
         } catch (const std::exception& e) {
-            LOG_ERROR("VPinFileScanner: Thread exception: " << e.what());
+            LOG_ERROR("Thread exception: " + std::string(e.what()));
         }
     }
 
-    LOG_INFO("VPinFileScanner: Scan Completed.");
+    LOG_INFO("Scan Completed.");
 }

@@ -2,31 +2,39 @@
  * @file logging.h
  * @brief Defines logging macros for ASAPCabinetFE.
  *
- * This header provides macro definitions (LOG_DEBUG, LOG_INFO, LOG_ERROR) for logging
- * messages at different levels using the Logger singleton. The macros handle string
- * streaming and conditional logging based on debug mode.
+ * This header provides macro definitions (LOG_DEBUG, LOG_INFO, LOG_ERROR, LOG_WARN)
+ * for logging messages at different levels using a LoggerProxy. The macros add
+ * automatic context (function, file, line) and minimize dependencies to reduce
+ * recompilation overhead.
  */
 
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include "log/logger.h"
-#include <sstream>
+#include <string>
+
+namespace asap::logging {
+class LoggerProxy {
+public:
+    static void debug(const std::string& message, const char* func, const char* file, int line);
+    static void info(const std::string& message, const char* func, const char* file, int line);
+    static void error(const std::string& message, const char* func, const char* file, int line);
+    static void warn(const std::string& message, const char* func, const char* file, int line);
+    static bool isDebugEnabled();
+};
+}
 
 /**
  * @def LOG_DEBUG(msg)
  * @brief Logs a debug message if debug mode is enabled.
  *
- * Constructs a stringstream to format the message and logs it using Logger::debug
- * only if isDebugEnabled() returns true. Uses a do-while(0) loop for proper scoping.
+ * Adds function, file, and line context and logs via LoggerProxy::debug.
  *
- * @param msg The message to log, can include stream operators (e.g., <<).
+ * @param msg The message to log (string literal or std::string).
  */
 #define LOG_DEBUG(msg) do { \
-    if (Logger::getInstance().isDebugEnabled()) { \
-        std::stringstream ss; \
-        ss << msg; \
-        Logger::getInstance().debug(ss.str()); \
+    if (asap::logging::LoggerProxy::isDebugEnabled()) { \
+        asap::logging::LoggerProxy::debug(std::string(msg), __PRETTY_FUNCTION__, __FILE__, __LINE__); \
     } \
 } while (0)
 
@@ -34,45 +42,30 @@
  * @def LOG_INFO(msg)
  * @brief Logs an info message.
  *
- * Constructs a stringstream to format the message and logs it using Logger::info
- * unconditionally. Uses a do-while(0) loop for proper scoping.
+ * Adds function, file, and line context and logs via LoggerProxy::info.
  *
- * @param msg The message to log, can include stream operators (e.g., <<).
+ * @param msg The message to log (string literal or std::string).
  */
-#define LOG_INFO(msg) do { \
-    std::stringstream ss; \
-    ss << msg; \
-    Logger::getInstance().info(ss.str()); \
-} while (0)
+#define LOG_INFO(msg) asap::logging::LoggerProxy::info(std::string(msg), __PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 /**
  * @def LOG_ERROR(msg)
  * @brief Logs an error message.
  *
- * Constructs a stringstream to format the message and logs it using Logger::error
- * unconditionally. Uses a do-while(0) loop for proper scoping.
+ * Adds function, file, and line context and logs via LoggerProxy::error.
  *
- * @param msg The message to log, can include stream operators (e.g., <<).
+ * @param msg The message to log (string literal or std::string).
  */
-#define LOG_ERROR(msg) do { \
-    std::stringstream ss; \
-    ss << msg; \
-    Logger::getInstance().error(ss.str()); \
-} while (0)
+#define LOG_ERROR(msg) asap::logging::LoggerProxy::error(std::string(msg), __PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 /**
  * @def LOG_WARN(msg)
- * @brief Logs an error message.
+ * @brief Logs a warning message.
  *
- * Constructs a stringstream to format the message and logs it using Logger::error
- * unconditionally. Uses a do-while(0) loop for proper scoping.
+ * Adds function, file, and line context and logs via LoggerProxy::warn.
  *
- * @param msg The message to log, can include stream operators (e.g., <<).
+ * @param msg The message to log (string literal or std::string).
  */
-#define LOG_WARN(msg) do { \
-    std::stringstream ss; \
-    ss << msg; \
-    Logger::getInstance().warn(ss.str()); \
-} while (0)
+#define LOG_WARN(msg) asap::logging::LoggerProxy::warn(std::string(msg), __PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 #endif // LOGGING_H

@@ -59,7 +59,7 @@ void VpsdbJsonLoader::loadJson() {
     try {
         std::ifstream file(vpsdbFilePath_);
         if (!file.is_open()) {
-            LOG_ERROR("VpsdbJsonLoader: Failed to open JSON file: " << vpsdbFilePath_);
+            LOG_ERROR("VpsdbJsonLoader: Failed to open JSON file: " + std::string(vpsdbFilePath_));
             loaded_ = false;
             return;
         }
@@ -75,9 +75,9 @@ void VpsdbJsonLoader::loadJson() {
             index_.push_back(idx);
         }
         loaded_ = true;
-        LOG_INFO("VpsdbJsonLoader: Loaded " << index_.size() << " tables from JSON");
+        LOG_INFO("VpsdbJsonLoader: Loaded " + std::to_string(index_.size()) + " tables from JSON");
     } catch (const std::exception& e) {
-        LOG_ERROR("VpsdbJsonLoader: JSON parsing error: " << e.what());
+        LOG_ERROR("VpsdbJsonLoader: JSON parsing error: " + std::string(e.what()));
         loaded_ = false;
     }
 }

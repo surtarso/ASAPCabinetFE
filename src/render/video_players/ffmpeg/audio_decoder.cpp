@@ -1,3 +1,8 @@
+/**
+ * @file audio_decoder.cpp
+ * @brief Implementation of the AudioDecoder class for decoding audio streams in ASAPCabinetFE.
+ */
+
 #include "audio_decoder.h"
 #include "ffmpeg_player.h"
 #include "log/logging.h"
@@ -29,32 +34,32 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
         }
     }
     if (audioStreamIndex_ == -1) {
-        LOG_DEBUG("AudioDecoder: No audio stream found.");
+        LOG_DEBUG("No audio stream found.");
         return false;
     }
 
     const AVCodec* audioCodec = avcodec_find_decoder(formatContext->streams[audioStreamIndex_]->codecpar->codec_id);
     if (!audioCodec) {
-        LOG_ERROR("AudioDecoder: Audio codec not found.");
+        LOG_ERROR("Audio codec not found.");
         cleanup();
         return false;
     }
 
     audioCodecContext_ = avcodec_alloc_context3(audioCodec);
     if (!audioCodecContext_) {
-        LOG_ERROR("AudioDecoder: Failed to allocate audio codec context.");
+        LOG_ERROR("Failed to allocate audio codec context.");
         cleanup();
         return false;
     }
 
     if (avcodec_parameters_to_context(audioCodecContext_, formatContext->streams[audioStreamIndex_]->codecpar) < 0) {
-        LOG_ERROR("AudioDecoder: Failed to copy audio codec parameters.");
+        LOG_ERROR("Failed to copy audio codec parameters.");
         cleanup();
         return false;
     }
 
     if (avcodec_open2(audioCodecContext_, audioCodec, nullptr) < 0) {
-        LOG_ERROR("AudioDecoder: Failed to open audio codec.");
+        LOG_ERROR("Failed to open audio codec.");
         cleanup();
         return false;
     }
@@ -62,7 +67,7 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
     audioFrame_ = av_frame_alloc();
     audioPacket_ = av_packet_alloc();
     if (!audioFrame_ || !audioPacket_) {
-        LOG_ERROR("AudioDecoder: Failed to allocate audio frame or packet.");
+        LOG_ERROR("Failed to allocate audio frame or packet.");
         cleanup();
         return false;
     }
@@ -77,14 +82,14 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
 
     audioDevice_ = SDL_OpenAudioDevice(nullptr, 0, &wantedSpec, &audioSpec_, 0);
     if (audioDevice_ == 0) {
-        LOG_ERROR("AudioDecoder: Failed to open audio device: " << SDL_GetError() << ".");
+        LOG_ERROR("Failed to open audio device: " + std::string(SDL_GetError()));
         cleanup();
         return false;
     }
 
     swrContext_ = swr_alloc();
     if (!swrContext_) {
-        LOG_ERROR("AudioDecoder: Could not allocate resampler context.");
+        LOG_ERROR("Could not allocate resampler context.");
         cleanup();
         return false;
     }
@@ -106,7 +111,7 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
     av_opt_set_sample_fmt(swrContext_, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
 
     if (swr_init(swrContext_) < 0) {
-        LOG_ERROR("AudioDecoder: Could not initialize resampler.");
+        LOG_ERROR("Could not initialize resampler.");
         swr_free(&swrContext_);
         cleanup();
         return false;
@@ -114,18 +119,21 @@ bool AudioDecoder::setup(AVFormatContext* formatContext) {
 
     audioFifo_ = av_audio_fifo_alloc(AV_SAMPLE_FMT_S16, wantedSpec.channels, 1);
     if (!audioFifo_) {
-        LOG_ERROR("AudioDecoder: Could not allocate audio FIFO.");
+        LOG_ERROR("Could not allocate audio FIFO.");
         cleanup();
         return false;
     }
 
     SDL_PauseAudioDevice(audioDevice_, 0);
+    LOG_INFO("Audio decoder setup complete: stream index=" + std::to_string(audioStreamIndex_) +
+             ", codec=" + std::string(audioCodec->name));
     return true;
 }
 
 void AudioDecoder::play() {
     if (audioDevice_ != 0) {
         SDL_PauseAudioDevice(audioDevice_, 0);
+        LOG_DEBUG("Audio playback started.");
     }
 }
 
@@ -135,6 +143,7 @@ void AudioDecoder::stop() {
         if (audioFifo_) {
             av_audio_fifo_drain(audioFifo_, av_audio_fifo_size(audioFifo_));
         }
+        LOG_DEBUG("Audio playback stopped.");
     }
     flush();
 }
@@ -160,11 +169,12 @@ bool AudioDecoder::decodeAudioFrame() {
         if (ret < 0) {
             if (ret == AVERROR_EOF) {
                 av_packet_unref(audioPacket_);
+                LOG_DEBUG("Reached EOF.");
                 return false;
             }
             char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
             av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-            LOG_ERROR("AudioDecoder: Error reading audio packet: " << err_buf << ".");
+            LOG_ERROR("Error reading audio packet: " + std::string(err_buf));
             av_packet_unref(audioPacket_);
             return false;
         }
@@ -175,7 +185,7 @@ bool AudioDecoder::decodeAudioFrame() {
             if (ret < 0) {
                 char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                 av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                LOG_ERROR("AudioDecoder: Error sending audio packet to decoder: " << err_buf << ".");
+                LOG_ERROR("Error sending audio packet to decoder: " + std::string(err_buf));
                 return false;
             }
 
@@ -183,14 +193,14 @@ bool AudioDecoder::decodeAudioFrame() {
             if (ret >= 0) {
                 int out_samples = swr_get_out_samples(swrContext_, audioFrame_->nb_samples);
                 if (out_samples < 0) {
-                    LOG_ERROR("AudioDecoder: Failed to calculate output samples for resampling.");
+                    LOG_ERROR("Failed to calculate output samples for resampling.");
                     return false;
                 }
 
                 uint8_t* out_buffer = nullptr;
                 av_samples_alloc(&out_buffer, nullptr, audioSpec_.channels, out_samples, AV_SAMPLE_FMT_S16, 0);
                 if (!out_buffer) {
-                    LOG_ERROR("AudioDecoder: Failed to allocate output buffer for resampling.");
+                    LOG_ERROR("Failed to allocate output buffer for resampling.");
                     return false;
                 }
 
@@ -199,7 +209,7 @@ bool AudioDecoder::decodeAudioFrame() {
                 if (converted_samples < 0) {
                     char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                     av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, converted_samples);
-                    LOG_ERROR("AudioDecoder: Audio resampling failed: " << err_buf << ".");
+                    LOG_ERROR("Audio resampling failed: " + std::string(err_buf));
                     av_freep(&out_buffer);
                     return false;
                 }
@@ -209,7 +219,7 @@ bool AudioDecoder::decodeAudioFrame() {
                 if (ret < 0) {
                     char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                     av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                    LOG_ERROR("AudioDecoder: Failed to write to audio FIFO: " << err_buf << ".");
+                    LOG_ERROR("Failed to write to audio FIFO: " + std::string(err_buf));
                     return false;
                 }
                 return true;
@@ -218,7 +228,7 @@ bool AudioDecoder::decodeAudioFrame() {
             } else {
                 char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
                 av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
-                LOG_ERROR("AudioDecoder: Error receiving audio frame from decoder: " << err_buf << ".");
+                LOG_ERROR("Error receiving audio frame: " + std::string(err_buf));
                 return false;
             }
         }
@@ -235,7 +245,7 @@ void AudioDecoder::fillAudioStream(Uint8* stream, int len) {
 
     SDL_memset(stream, 0, len);
     if (isMuted_) {
-        LOG_DEBUG("AudioDecoder: Muted, returning silence.");
+        LOG_DEBUG("Muted, returning silence.");
         return;
     }
 
@@ -247,13 +257,13 @@ void AudioDecoder::fillAudioStream(Uint8* stream, int len) {
     if (read_samples < 0) {
         char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
         av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, read_samples);
-        LOG_ERROR("AudioDecoder: Error reading from audio FIFO: " << err_buf << ".");
+        LOG_ERROR("Error reading from audio FIFO: " + std::string(err_buf));
         return;
     }
 
     if (currentVolume_ <= 0.001f) {
         SDL_memset(stream, 0, audio_len_bytes);
-        LOG_DEBUG("AudioDecoder: Forcing silence due to very low currentVolume_ (" << currentVolume_ << ").");
+        LOG_DEBUG("Forcing silence due to low volume: " + std::to_string(currentVolume_));
         return;
     }
 
@@ -273,16 +283,20 @@ void AudioDecoder::setVolume(float volume) {
         logScaledVolume = (std::log10(normalizedVolume * 9.0f + 1.0f) / std::log10(10.0f));
     }
     currentVolume_ = std::min(std::max(logScaledVolume, 0.0f), 1.0f);
-    LOG_DEBUG("AudioDecoder: setVolume: Input=" << volume << ", Normalized (linear)=" << normalizedVolume << ", LogScaled=" << currentVolume_);
+    LOG_DEBUG("Set volume: input=" + std::to_string(volume) +
+              ", normalized=" + std::to_string(normalizedVolume) +
+              ", logScaled=" + std::to_string(currentVolume_));
 }
 
 void AudioDecoder::setMute(bool mute) {
     isMuted_ = mute;
+    LOG_DEBUG("Mute set to: " + std::to_string(mute));
 }
 
 void AudioDecoder::flush() {
     if (audioCodecContext_) {
         avcodec_flush_buffers(audioCodecContext_);
+        LOG_DEBUG("Codec buffers flushed.");
     }
 }
 
@@ -310,4 +324,5 @@ void AudioDecoder::cleanup() {
         avcodec_free_context(&audioCodecContext_);
     }
     audioStreamIndex_ = -1;
+    //LOG_DEBUG("Audio decoder resources cleaned up.");
 }

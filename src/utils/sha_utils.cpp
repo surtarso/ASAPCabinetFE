@@ -1,4 +1,4 @@
-#include "sha_utils.h"
+#include "utils/sha_utils.h"
 #include "log/logging.h"
 #include <openssl/evp.h>
 #include <fstream>
@@ -36,19 +36,19 @@ std::string calculate_string_sha256(const std::string& input) {
 
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     if (!mdctx) {
-        LOG_ERROR("ShaUtils: Failed to create EVP_MD_CTX");
+        LOG_ERROR("Failed to create EVP_MD_CTX");
         return "";
     }
 
     if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to initialize SHA256 digest");
+        LOG_ERROR("Failed to initialize SHA256 digest");
         return "";
     }
 
     if (EVP_DigestUpdate(mdctx, normalized.c_str(), normalized.size()) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to update SHA256 digest");
+        LOG_ERROR("Failed to update SHA256 digest");
         return "";
     }
 
@@ -56,7 +56,7 @@ std::string calculate_string_sha256(const std::string& input) {
     unsigned int hash_len;
     if (EVP_DigestFinal_ex(mdctx, hash, &hash_len) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to finalize SHA256 digest");
+        LOG_ERROR("Failed to finalize SHA256 digest");
         return "";
     }
 
@@ -72,7 +72,7 @@ std::string calculate_string_sha256(const std::string& input) {
 std::string compute_file_sha256(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {
-        LOG_ERROR("ShaUtils: Failed to open file for hashing: " << filename);
+        LOG_ERROR("Failed to open file for hashing: " + filename);
         return "";
     }
 
@@ -82,19 +82,19 @@ std::string compute_file_sha256(const std::string& filename) {
 
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     if (!mdctx) {
-        LOG_ERROR("ShaUtils: Failed to create EVP_MD_CTX");
+        LOG_ERROR("Failed to create EVP_MD_CTX");
         return "";
     }
 
     if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to initialize SHA256 digest");
+        LOG_ERROR("Failed to initialize SHA256 digest");
         return "";
     }
 
     if (EVP_DigestUpdate(mdctx, normalized.c_str(), normalized.size()) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to update SHA256 digest");
+        LOG_ERROR("Failed to update SHA256 digest");
         return "";
     }
 
@@ -102,7 +102,7 @@ std::string compute_file_sha256(const std::string& filename) {
     unsigned int hash_len;
     if (EVP_DigestFinal_ex(mdctx, hash, &hash_len) != 1) {
         EVP_MD_CTX_free(mdctx);
-        LOG_ERROR("ShaUtils: Failed to finalize SHA256 digest");
+        LOG_ERROR("Failed to finalize SHA256 digest");
         return "";
     }
 

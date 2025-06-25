@@ -34,7 +34,7 @@ VpsDatabaseUpdater::VpsDatabaseUpdater(const std::string& vpsDbPath) : vpsDbPath
 
 bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress) {
     if (updateFrequency != "startup") {
-        LOG_INFO("VpsDatabaseUpdater: VpsDb update skipped, frequency set to: " << updateFrequency);
+        LOG_INFO("VpsDb update skipped, frequency set to: " + updateFrequency);
         return fs::exists(vpsDbPath_);
     }
 
@@ -65,14 +65,14 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                     try {
                         localTimestamp = std::stol(lastUpdatedJson["updatedAt"].get<std::string>());
                     } catch (const std::exception& e) {
-                        LOG_DEBUG("VpsDatabaseUpdater: Invalid updatedAt string format: " << e.what());
+                        LOG_DEBUG("Invalid updatedAt string format: " + std::string(e.what()));
                     }
                 }
             }
             lastUpdatedFile.close();
-            LOG_DEBUG("VpsDatabaseUpdater: Loaded localTimestamp from " << lastUpdatedPath << ": " << localTimestamp);
+            LOG_DEBUG("Loaded localTimestamp from " + lastUpdatedPath + ": " + std::to_string(localTimestamp));
         } else {
-            LOG_DEBUG("VpsDatabaseUpdater: No local lastUpdated.json found at " << lastUpdatedPath);
+            LOG_DEBUG("No local lastUpdated.json found at " + lastUpdatedPath);
         }
 
         std::string lastUpdatedContent, lastUpdatedHeaders;
@@ -92,20 +92,20 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
             curl_easy_cleanup(curl);
             if (res != CURLE_OK) {
-                LOG_ERROR("VpsDatabaseUpdater: Failed to fetch lastUpdated.json: " << curl_easy_strerror(res));
+                LOG_ERROR("Failed to fetch lastUpdated.json: " + std::string(curl_easy_strerror(res)));
                 return fs::exists(vpsDbPath_);
             }
             if (httpCode != 200) {
-                LOG_ERROR("VpsDatabaseUpdater: Failed to fetch lastUpdated.json, HTTP status: " << httpCode);
+                LOG_ERROR("Failed to fetch lastUpdated.json, HTTP status: " + std::to_string(httpCode));
                 return fs::exists(vpsDbPath_);
             }
             if (lastUpdatedHeaders.find("application/json") == std::string::npos) {
-                LOG_ERROR("VpsDatabaseUpdater: lastUpdated.json has invalid content-type, headers: " << lastUpdatedHeaders);
+                LOG_ERROR("lastUpdated.json has invalid content-type, headers: " + lastUpdatedHeaders);
                 return fs::exists(vpsDbPath_);
             }
-            LOG_DEBUG("VpsDatabaseUpdater: lastUpdated.json content (first 100 chars): " << lastUpdatedContent.substr(0, 100));
+            LOG_DEBUG("lastUpdated.json content (first 100 chars): " + lastUpdatedContent.substr(0, 100));
         } else {
-            LOG_ERROR("VpsDatabaseUpdater: Failed to initialize curl");
+            LOG_ERROR("Failed to initialize curl");
             return fs::exists(vpsDbPath_);
         }
 
@@ -113,7 +113,7 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
         try {
             remoteLastUpdated = nlohmann::json::parse(lastUpdatedContent); // Parse remote lastUpdated.json
         } catch (const std::exception& e) {
-            LOG_ERROR("VpsDatabaseUpdater: Failed to parse remote lastUpdated.json: " << e.what());
+            LOG_ERROR("Failed to parse remote lastUpdated.json: " + std::string(e.what()));
             return fs::exists(vpsDbPath_);
         }
 
@@ -127,14 +127,14 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 try {
                     remoteTimestamp = std::stol(remoteLastUpdated["updatedAt"].get<std::string>());
                 } catch (const std::exception& e) {
-                    LOG_DEBUG("VpsDatabaseUpdater: Invalid remote updatedAt string format: " << e.what());
+                    LOG_DEBUG("Invalid remote updatedAt string format: " + std::string(e.what()));
                 }
             }
         } else {
-            LOG_ERROR("VpsDatabaseUpdater: Invalid lastUpdated.json format; expected a number or object with 'updatedAt'");
+            LOG_ERROR("Invalid lastUpdated.json format; expected a number or object with 'updatedAt'");
             return fs::exists(vpsDbPath_);
         }
-        LOG_DEBUG("VpsDatabaseUpdater: Remote timestamp: " << remoteTimestamp);
+        LOG_DEBUG("Remote timestamp: " + std::to_string(remoteTimestamp));
 
         if (remoteTimestamp > localTimestamp || !fs::exists(vpsDbPath_)) {
             bool downloadSuccess = false;
@@ -154,7 +154,7 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 try {
                     std::ofstream lastUpdatedOut(lastUpdatedPath);
                     if (!lastUpdatedOut.is_open()) {
-                        LOG_ERROR("VpsDatabaseUpdater: Failed to open " << lastUpdatedPath << " for writing");
+                        LOG_ERROR("Failed to open " + lastUpdatedPath + " for writing");
                         return true;
                     }
                     // Write as a plain number to match the remote format
@@ -164,13 +164,13 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->currentTask = "Updated VPSDB and lastUpdated.json";
                     }
-                    LOG_INFO("VpsDatabaseUpdater: Updated vpsdb.json and lastUpdated.json");
+                    LOG_INFO("Updated vpsdb.json and lastUpdated.json");
                 } catch (const std::exception& e) {
-                    LOG_ERROR("VpsDatabaseUpdater: Failed to save lastUpdated.json: " << e.what());
+                    LOG_ERROR("Failed to save lastUpdated.json: " + std::string(e.what()));
                     return true;
                 }
             } else {
-                LOG_ERROR("VpsDatabaseUpdater: Failed to download valid vpsdb.json from all URLs");
+                LOG_ERROR("Failed to download valid vpsdb.json from all URLs");
                 return fs::exists(vpsDbPath_);
             }
         } else {
@@ -178,10 +178,10 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "VPSDB is up-to-date";
             }
-            LOG_INFO("VpsDatabaseUpdater: vpsdb.json is up-to-date (local: " << localTimestamp << ", remote: " << remoteTimestamp << ")");
+            LOG_INFO("vpsdb.json is up-to-date (local: " + std::to_string(localTimestamp) + ", remote: " + std::to_string(remoteTimestamp) + ")");
         }
     } catch (const std::exception& e) {
-        LOG_ERROR("VpsDatabaseUpdater: Error checking vpsdb update: " << e.what());
+        LOG_ERROR("Error checking vpsdb update: " + std::string(e.what()));
         return fs::exists(vpsDbPath_);
     }
     return true;
@@ -201,15 +201,15 @@ bool VpsDatabaseUpdater::downloadVpsDb(const std::string& url, LoadingProgress* 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         curl_easy_cleanup(curl);
         if (res != CURLE_OK) {
-            LOG_ERROR("VpsDatabaseUpdater: Failed to download vpsdb.json from " << url << ": " << curl_easy_strerror(res));
+            LOG_ERROR("Failed to download vpsdb.json from " + url + ": " + std::string(curl_easy_strerror(res)));
             return false;
         }
         if (httpCode != 200) {
-            LOG_ERROR("VpsDatabaseUpdater: Failed to download vpsdb.json from " << url << ", HTTP status: " << httpCode);
+            LOG_ERROR("Failed to download vpsdb.json from " + url + ", HTTP status: " + std::to_string(httpCode));
             return false;
         }
         if (vpsDbHeaders.find("application/json") == std::string::npos) {
-            LOG_ERROR("VpsDatabaseUpdater: vpsdb.json from " << url << " has invalid content-type, headers: " << vpsDbHeaders);
+            LOG_ERROR("vpsdb.json from " + url + " has invalid content-type, headers: " + vpsDbHeaders);
             return false;
         }
         try {
@@ -217,7 +217,7 @@ bool VpsDatabaseUpdater::downloadVpsDb(const std::string& url, LoadingProgress* 
             fs::create_directories(fs::path(vpsDbPath_).parent_path()); // Ensure parent directories exist
             std::ofstream out(vpsDbPath_);
             if (!out.is_open()) {
-                LOG_ERROR("VpsDatabaseUpdater: Failed to open " << vpsDbPath_ << " for writing");
+                LOG_ERROR("Failed to open " + vpsDbPath_ + " for writing");
                 return false;
             }
             out << vpsDbContent; // Save downloaded content
@@ -228,10 +228,10 @@ bool VpsDatabaseUpdater::downloadVpsDb(const std::string& url, LoadingProgress* 
             }
             return true;
         } catch (const std::exception& e) {
-            LOG_ERROR("VpsDatabaseUpdater: Failed to process downloaded vpsdb.json from " << url << ": " << e.what());
+            LOG_ERROR("Failed to process downloaded vpsdb.json from " + url + ": " + std::string(e.what()));
             return false;
         }
     }
-    LOG_ERROR("VpsDatabaseUpdater: Failed to initialize curl");
+    LOG_ERROR("Failed to initialize curl");
     return false;
 }

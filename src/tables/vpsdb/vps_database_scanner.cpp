@@ -14,12 +14,12 @@ VpsDataScanner::VpsDataScanner(const nlohmann::json& vpsDb) : vpsDb_(vpsDb), uti
 
 bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
     if (!vpxTable.is_object()) {
-        LOG_DEBUG("VpsDataScanner: vpxTable is not an object, type: " << vpxTable.type_name());
+        LOG_DEBUG("vpxTable is not an object, type: " + std::string(vpxTable.type_name()));
         return false;
     }
 
     if (tableData.jsonOwner == "Virtual Pinball Spreadsheet Database") {
-        LOG_DEBUG("VpsDataScanner: " << tableData.title << " already scanned.");
+        LOG_DEBUG(tableData.title + " already scanned.");
         return false;
     }
 
@@ -70,22 +70,22 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
         if (utils_.normalizeStringLessAggressive(tableData.title) == "terminator") {
             if (normRomName == "t2_l8") {
                 adjustedTitle = "terminator 2";
-                LOG_DEBUG("Adjusted terminator title to terminator 2 due to ROM: romName='" << normRomName << "'");
+                LOG_DEBUG("Adjusted terminator title to terminator 2 due to ROM: romName='" + normRomName + "'");
             } else if (normRomName == "term3") {
                 adjustedTitle = "terminator 3";
-                LOG_DEBUG("Adjusted terminator title to terminator 3 due to ROM: romName='" << normRomName << "'");
+                LOG_DEBUG("Adjusted terminator title to terminator 3 due to ROM: romName='" + normRomName + "'");
             }
         } else if (utils_.normalizeStringLessAggressive(tableData.title) == "x") {
             if (normRomName == "xfiles") {
                 adjustedTitle = "x-files";
-                LOG_DEBUG("Adjusted x title to x-files due to ROM: romName='" << normRomName << "'");
+                LOG_DEBUG("Adjusted x title to x-files due to ROM: romName='" + normRomName + "'");
             } else if (normRomName == "xmn_151h") {
                 adjustedTitle = "x-men";
-                LOG_DEBUG("Adjusted x title to x-men due to ROM: romName='" << normRomName << "'");
+                LOG_DEBUG("Adjusted x title to x-men due to ROM: romName='" + normRomName + "'");
             }
         } else if (utils_.normalizeStringLessAggressive(tableData.title) == "batman the dark knight" && normRomName == "bdk_294") {
             adjustedTitle = "batman the dark knight";
-            LOG_DEBUG("Confirmed batman the dark knight title due to ROM: romName='" << normRomName << "'");
+            LOG_DEBUG("Confirmed batman the dark knight title due to ROM: romName='" + normRomName + "'");
         }
     }
     std::set<std::string> titles;
@@ -93,23 +93,23 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     // Skip filename_title if it matches original tableData.title to avoid reinforcing bad metadata
     if (!filenameTitle.empty() && filenameTitle != originalTitle) {
         titles.insert(cleanTitle(filenameTitle));
-        LOG_DEBUG("Added filename_title: input='" << filenameTitle << "', cleaned='" << cleanTitle(filenameTitle) << "'");
+        LOG_DEBUG("Added filename_title: input='" + filenameTitle + "', cleaned='" + cleanTitle(filenameTitle) + "'");
     }
     if (!filename.empty() && filename != "N/A") {
         titles.insert(cleanTitle(filename));
-        //LOG_DEBUG("Added filename: input='" << filename << "', cleaned='" << cleanTitle(filename) << "'");
+        //LOG_DEBUG("Added filename: input='" + filename + "', cleaned='" + cleanTitle(filename) << "'");
     }
     if (!adjustedTitle.empty() && adjustedTitle != originalTitle) {
         titles.insert(cleanTitle(adjustedTitle));
-        LOG_DEBUG("Added adjusted title: input='" << adjustedTitle << "', cleaned='" << cleanTitle(adjustedTitle) << "'");
+        LOG_DEBUG("Added adjusted title: input='" + adjustedTitle + "', cleaned='" + cleanTitle(adjustedTitle) + "'");
     }
     if (!tableData.title.empty() && tableData.title != adjustedTitle) {
         titles.insert(cleanTitle(tableData.title));
-        LOG_DEBUG("Added tableData.title: input='" << tableData.title << "', cleaned='" << cleanTitle(tableData.title) << "'");
+        LOG_DEBUG("Added tableData.title: input='" + tableData.title + "', cleaned='" + cleanTitle(tableData.title) + "'");
     }
     if (!tableData.tableName.empty()) {
         titles.insert(cleanTitle(tableData.tableName));
-        //LOG_DEBUG("Added tableName: input='" << tableData.tableName << "', cleaned='" << cleanTitle(tableData.tableName) << "'");
+        //LOG_DEBUG("Added tableName: input='" + tableData.tableName + "', cleaned='" + cleanTitle(tableData.tableName) << "'");
     }
     std::string manufacturer = utils_.safeGetString(vpxTable, "filename_manufacturer", "");
     if (manufacturer.empty()) manufacturer = tableData.manufacturer.empty() ? tableData.tableManufacturer : tableData.manufacturer;
@@ -175,7 +175,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
                     for (const auto& rom : file["roms"]) {
                         if (rom.contains("name") && utils_.normalizeString(utils_.safeGetString(rom, "name", "")) == normRomName) {
                             score += ROM_WEIGHT;
-                            LOG_DEBUG("ROM match: romName='" << normRomName << "', score+=" << ROM_WEIGHT);
+                            LOG_DEBUG("ROM match: romName='" + normRomName + "', score+=" + std::to_string(ROM_WEIGHT));
                             break;
                         }
                     }
@@ -249,7 +249,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             tableData.tableVersion = currentVersion.empty() ? bestVpsVersion :
                                      currentVersion + " (Latest: " + bestVpsVersion + ")";
         }
-        LOG_INFO("Matched table: " << tableData.vpsName << ", confidence: " << bestScore);
+        LOG_INFO("Matched table: " + tableData.vpsName + ", confidence: " + std::to_string(bestScore));
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->numMatched++;
@@ -269,7 +269,7 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
             }
             mismatchLog << "\n";
         }
-        LOG_WARN("No VPSDB match for: " << filename << ", best score: " << bestScore);
+        LOG_WARN("No VPSDB match for: " + filename + ", best score: " + std::to_string(bestScore));
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->numNoMatch++;

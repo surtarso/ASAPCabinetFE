@@ -17,6 +17,7 @@
 #include "config/settings.h"
 #include "core/ui/loading_progress.h"
 #include <vector>
+#include <fstream>
 
 namespace fs = std::filesystem;
 

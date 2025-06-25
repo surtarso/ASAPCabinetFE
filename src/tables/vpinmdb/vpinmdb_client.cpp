@@ -28,13 +28,13 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
         if (!fs::exists(dbPath.parent_path())) {
             try {
                 fs::create_directories(dbPath.parent_path());
-                LOG_INFO("Created directory " << dbPath.parent_path().string());
+                LOG_INFO("Created directory " + dbPath.parent_path().string());
                 if (progress_) {
                     std::lock_guard<std::mutex> lock(progress_->mutex);
                     progress_->logMessages.push_back("Created directory " + dbPath.parent_path().string());
                 }
             } catch (const fs::filesystem_error& e) {
-                LOG_ERROR("Failed to create directory " << dbPath.parent_path().string() << ": " << e.what());
+                LOG_ERROR("Failed to create directory " + dbPath.parent_path().string() + ": " + std::string(e.what()));
                 if (progress_) {
                     std::lock_guard<std::mutex> lock(progress_->mutex);
                     progress_->logMessages.push_back("Failed to create directory for vpinmdb.json: " + std::string(e.what()));
@@ -44,13 +44,13 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
         }
 
         if (vpinmdb::downloadFile(url, dbPath)) {
-            LOG_INFO("Downloaded vpinmdb.json to " << dbPath.string());
+            LOG_INFO("Downloaded vpinmdb.json to " + dbPath.string());
             if (progress_) {
                 std::lock_guard<std::mutex> lock(progress_->mutex);
                 progress_->logMessages.push_back("Downloaded vpinmdb.json to " + dbPath.string());
             }
         } else {
-            LOG_ERROR("Failed to download vpinmdb.json from " << url);
+            LOG_ERROR("Failed to download vpinmdb.json from " + url);
             if (progress_) {
                 std::lock_guard<std::mutex> lock(progress_->mutex);
                 progress_->logMessages.push_back("Failed to download vpinmdb.json");
@@ -61,7 +61,7 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
 
     std::ifstream file(dbPath);
     if (!file.is_open()) {
-        LOG_ERROR("Failed to open " << dbPath.string());
+        LOG_ERROR("Failed to open " + dbPath.string());
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
             progress_->logMessages.push_back("Failed to open vpinmdb.json: " + dbPath.string());
@@ -70,13 +70,13 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
     }
     try {
         file >> mediaDb_;
-        LOG_INFO("Loaded vpinmdb.json from " << dbPath.string());
+        LOG_INFO("Loaded vpinmdb.json from " + dbPath.string());
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
             progress_->logMessages.push_back("Loaded vpinmdb.json from " + dbPath.string());
         }
     } catch (const std::exception& e) {
-        LOG_ERROR("Failed to parse vpinmdb.json: " << e.what());
+        LOG_ERROR("Failed to parse vpinmdb.json: " + std::string(e.what()));
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
             progress_->logMessages.push_back("Failed to parse vpinmdb.json: " + std::string(e.what()));
@@ -150,7 +150,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
             for (const auto& media : mediaTypes) {
                 fs::path destPath = tableDir / media.filename;
                 if (fs::exists(destPath)) {
-                    LOG_INFO("Skipping " << media.type << " for " << table.title << ": File exists at " << destPath.string());
+                    LOG_INFO("Skipping " + media.type + " for " + table.title + ": File exists at " + destPath.string());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
                         progress_->logMessages.push_back("Skipping " + media.type + " for " + table.title + ": File exists");
@@ -190,7 +190,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                         continue;
                     }
                 } catch (const std::exception& e) {
-                    LOG_ERROR("Error parsing media for " << table.title << ": " << e.what());
+                    LOG_ERROR("Error parsing media for " + table.title + ": " + e.what());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
                         progress_->logMessages.push_back("Error parsing media for " + table.title + ": " + std::string(e.what()));
@@ -201,13 +201,13 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                 if (!fs::exists(destPath.parent_path())) {
                     try {
                         fs::create_directories(destPath.parent_path());
-                        LOG_INFO("Created directory " << destPath.parent_path().string() << " for " << table.title);
+                        LOG_INFO("Created directory " + destPath.parent_path().string() + " for " + table.title);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
                             progress_->logMessages.push_back("Created directory for " + table.title + ": " + destPath.parent_path().string());
                         }
                     } catch (const fs::filesystem_error& e) {
-                        LOG_ERROR("Failed to create directory " << destPath.parent_path().string() << " for " << table.title << ": " << e.what());
+                        LOG_ERROR("Failed to create directory " + destPath.parent_path().string() + " for " + table.title + ": " + std::string(e.what()));
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
                             progress_->logMessages.push_back("Failed to create directory for " + table.title + ": " + std::string(e.what()));
@@ -222,37 +222,37 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                     bool shouldAttemptRotation = isPlayfieldImage && isVerticalMonitor;
 
                     if (shouldAttemptRotation) {
-                        LOG_INFO("Calling rotateImage for " << destPath.string() << " (Target: Playfield, Monitor: Vertical)");
+                        LOG_INFO("Calling rotateImage for " + destPath.string() + " (Target: Playfield, Monitor: Vertical)");
                         if (!vpinmdb::rotateImage(destPath, shouldAttemptRotation)) {
-                            LOG_ERROR("Failed to rotate " << media.type << " for " << table.title << " at " << destPath.string());
+                            LOG_ERROR("Failed to rotate " + media.type + " for " + table.title + " at " + destPath.string());
                             fs::remove(destPath);
                             continue;
                         }
-                        LOG_INFO("rotateImage completed for " << destPath.string());
+                        LOG_INFO("rotateImage completed for " + destPath.string());
                     } else {
-                        LOG_INFO("No rotation attempt for " << destPath.string() << " (Playfield: " << isPlayfieldImage << ", Vertical Monitor: " << isVerticalMonitor << ")");
+                        LOG_INFO("No rotation attempt for " + destPath.string() + " (Playfield: " + std::to_string(isPlayfieldImage) + ", Vertical Monitor: " + std::to_string(isVerticalMonitor) + ")");
                     }
 
                     if (settings_.resizeToWindows) {
-                        LOG_INFO("resizeToWindows: 1, calling resizeImage for " << destPath.string() << " to " << media.width << "x" << media.height);
+                        LOG_INFO("resizeToWindows: 1, calling resizeImage for " + destPath.string() + " to " + std::to_string(media.width) + "x" + std::to_string(media.height));
                         if (!vpinmdb::resizeImage(destPath, media.width, media.height)) {
-                            LOG_ERROR("Failed to resize " << media.type << " for " << table.title << " at " << destPath.string());
+                            LOG_ERROR("Failed to resize " + media.type + " for " + table.title + " at " + destPath.string());
                             fs::remove(destPath);
                             continue;
                         }
-                        LOG_INFO("resizeImage completed for " << destPath.string());
+                        LOG_INFO("resizeImage completed for " + destPath.string());
                     }
                     *media.destPath = destPath.string();
                     downloaded = true;
                     downloadedCount++;
-                    LOG_INFO("Downloaded " << media.type << " for " << table.title << " to " << destPath.string());
+                    LOG_INFO("Downloaded " + media.type + " for " + table.title + " to " + destPath.string());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
                         progress_->logMessages.push_back("Downloaded " + media.type + " for " + table.title);
                         progress_->currentTablesLoaded++;
                     }
                 } else {
-                    LOG_ERROR("Failed to download " << media.type << " for " << table.title << " from " << url);
+                    LOG_ERROR("Failed to download " + media.type + " for " + table.title + " from " + url);
                 }
             }
 
@@ -286,7 +286,7 @@ std::string VpinMdbClient::selectResolution() const {
         LOG_INFO("Selected 4k resolution for high-resolution displays");
         return "4k";
     }
-    LOG_INFO("Selected 1k resolution for display dimensions (e.g., playfield: " << 
-             settings_.playfieldWindowWidth << "x" << settings_.playfieldWindowHeight << ")");
+    LOG_INFO("Selected 1k resolution for display dimensions (e.g., playfield: " + 
+             std::to_string(settings_.playfieldWindowWidth) + "x" + std::to_string(settings_.playfieldWindowHeight) + ")");
     return "1k";
 }

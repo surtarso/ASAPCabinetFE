@@ -26,7 +26,6 @@
 #include "launcher/table_launcher.h"
 #include "log/logging.h"
 
-static std::atomic<bool> dummyIsLoadingTables{false}; // Atomic flag used as a placeholder for loading state in InputManager
 
 std::unique_ptr<IKeybindProvider> DependencyFactory::createKeybindProvider() {
     return std::make_unique<KeybindManager>();
@@ -155,28 +154,11 @@ std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(c
 /**
  * @brief Creates an input manager instance.
  *
- * Initializes an InputManager with the keybind manager (from configService) and
- * screenshot manager, setting minimal dependencies with dummy values (e.g., index,
- * tables) for basic functionality. The method registers actions and could be
- * extended to support configurable keybinds via configUI.
- *
- * @param configService The configuration service for accessing keybind settings.
- * @param screenshotManager The screenshot manager for screenshot mode.
+ * Initializes an InputManager with the keybind manager (from configService)
  * @return A unique pointer to an InputManager instance.
  */
-std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider,
-                                                                     IScreenshotManager* screenshotManager,
-                                                                     ITableLauncher* tableLauncher,
-                                                                     ITableCallbacks* tableCallbacks) {
+std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindProvider* keybindProvider) {
     auto input = std::make_unique<InputManager>(keybindProvider);
-    size_t dummyIndex = 0;
-    bool dummyShowConfig = false;
-    bool dummyShowEditor = false;
-    bool dummyShowCatalog = false;
-    std::vector<TableData> dummyTables;
-    input->setDependencies(nullptr, nullptr, nullptr, dummyIndex, dummyTables,
-                           dummyShowConfig, dummyShowEditor, dummyShowCatalog, "", screenshotManager, nullptr, dummyIsLoadingTables, tableLauncher, tableCallbacks);
-    // input->registerActions();
     return input;
 }
 

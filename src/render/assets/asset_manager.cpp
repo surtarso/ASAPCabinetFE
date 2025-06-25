@@ -1,3 +1,8 @@
+/**
+ * @file asset_manager.cpp
+ * @brief Implementation of the AssetManager class for managing and rendering assets in ASAPCabinetFE.
+ */
+
 #include "render/assets/asset_manager.h"
 #include "render/assets/texture_cache.h"
 #include "render/assets/video_player_cache.h"
@@ -34,51 +39,53 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       configManager_(nullptr),
       textureCache_(std::make_unique<TextureCache>()),
       videoPlayerCache_(std::make_unique<VideoPlayerCache>()),
-      titleRenderer_(std::make_unique<TitleRenderer>(nullptr))
-{
+      titleRenderer_(std::make_unique<TitleRenderer>(nullptr)) {
     titleRenderer_->setFont(f);
+    LOG_INFO("AssetManager constructed.");
 }
 
 void AssetManager::setSoundManager(ISoundManager* soundManager) {
     soundManager_ = soundManager;
-    LOG_DEBUG("AssetManager: Sound manager set to " << soundManager);
+    LOG_DEBUG("Sound manager set to " + std::to_string(reinterpret_cast<uintptr_t>(soundManager)));
 }
 
 void AssetManager::playTableMusic(size_t index, const std::vector<TableData>& tables) {
     if (!soundManager_ || index >= tables.size()) {
-        LOG_ERROR("AssetManager: Cannot play table music: invalid soundManager or index " << index);
+        LOG_ERROR("Cannot play table music: invalid soundManager or index " + std::to_string(index));
         return;
     }
     const std::string& musicPath = tables[index].music;
     soundManager_->playTableMusic(musicPath);
     if (!musicPath.empty()) {
-        LOG_DEBUG("AssetManager: Playing table music: " << musicPath);
+        LOG_DEBUG("Playing table music: " + musicPath);
     } else {
-        LOG_DEBUG("AssetManager: No music path for table, stopping table music (if any was playing)");
+        LOG_DEBUG("No music path for table, stopping table music");
     }
 }
 
 void AssetManager::setSettingsManager(IConfigService* configService) {
     configManager_ = configService;
-    titleRenderer_->setFont(nullptr); // Reset font to ensure consistency
-    titleRenderer_->setTitlePosition(0, 0); // Reset position
+    titleRenderer_->setFont(nullptr);
+    titleRenderer_->setTitlePosition(0, 0);
     titleRenderer_ = std::make_unique<TitleRenderer>(configService);
+    //LOG_DEBUG("Settings manager set to " + std::to_string(reinterpret_cast<uintptr_t>(configService)));
 }
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
     titleRenderer_->reloadTitleTexture(title, color, titleRect,
-                                       playfieldRenderer, playfieldTitleTexture,
-                                       backglassRenderer, backglassTitleTexture,
-                                       dmdRenderer, dmdTitleTexture,
-                                       topperRenderer, topperTitleTexture);
+                                      playfieldRenderer, playfieldTitleTexture,
+                                      backglassRenderer, backglassTitleTexture,
+                                      dmdRenderer, dmdTitleTexture,
+                                      topperRenderer, topperTitleTexture);
+    LOG_DEBUG("Reloaded title texture for: " + title);
 }
 
 void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) {
     if (index >= tables.size()) {
-        LOG_ERROR("AssetManager: Invalid table index " << index);
+        LOG_ERROR("Invalid table index " + std::to_string(index));
         return;
     }
-    LOG_DEBUG("AssetManager: Reloading assets for table index " << index);
+    LOG_DEBUG("Reloading assets for table index " + std::to_string(index));
 
     playfieldRenderer = windowManager->getPlayfieldRenderer();
     backglassRenderer = windowManager->getBackglassRenderer();
@@ -87,17 +94,29 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     titleRenderer_->setFont(font);
 
     loadTableAssets(index, tables);
-    LOG_DEBUG("AssetManager: Completed asset reload for index " << index);
+    LOG_INFO("Completed asset reload for index " + std::to_string(index));
 }
 
 void AssetManager::clearVideoCache() {
-    LOG_DEBUG("AssetManager: Clearing video player cache (including active ones)");
+    LOG_DEBUG("Clearing video player cache");
     videoPlayerCache_->clearCache();
 
-    if (playfieldVideoPlayer) { playfieldVideoPlayer->stop(); videoPlayerCache_->addOldVideoPlayer(std::move(playfieldVideoPlayer)); }
-    if (backglassVideoPlayer) { backglassVideoPlayer->stop(); videoPlayerCache_->addOldVideoPlayer(std::move(backglassVideoPlayer)); }
-    if (dmdVideoPlayer) { dmdVideoPlayer->stop(); videoPlayerCache_->addOldVideoPlayer(std::move(dmdVideoPlayer)); }
-    if (topperVideoPlayer) { topperVideoPlayer->stop(); videoPlayerCache_->addOldVideoPlayer(std::move(topperVideoPlayer)); }
+    if (playfieldVideoPlayer) {
+        playfieldVideoPlayer->stop();
+        videoPlayerCache_->addOldVideoPlayer(std::move(playfieldVideoPlayer));
+    }
+    if (backglassVideoPlayer) {
+        backglassVideoPlayer->stop();
+        videoPlayerCache_->addOldVideoPlayer(std::move(backglassVideoPlayer));
+    }
+    if (dmdVideoPlayer) {
+        dmdVideoPlayer->stop();
+        videoPlayerCache_->addOldVideoPlayer(std::move(dmdVideoPlayer));
+    }
+    if (topperVideoPlayer) {
+        topperVideoPlayer->stop();
+        videoPlayerCache_->addOldVideoPlayer(std::move(topperVideoPlayer));
+    }
 
     currentPlayfieldVideoPath_.clear();
     currentBackglassVideoPath_.clear();
@@ -113,28 +132,28 @@ void AssetManager::clearVideoCache() {
     currentTopperMediaHeight_ = 0;
 
     videoPlayerCache_->clearOldVideoPlayers();
-    LOG_DEBUG("AssetManager: Video player cache and active players cleared.");
+    LOG_INFO("Video player cache and active players cleared.");
 }
 
 void AssetManager::clearTextureCache() {
     textureCache_->clearCache();
+    LOG_INFO("Texture cache cleared.");
 }
 
 void AssetManager::applyVideoAudioSettings() {
     if (!configManager_) {
-        LOG_ERROR("AssetManager: Cannot apply video audio settings: configManager is null");
+        LOG_ERROR("Cannot apply video audio settings: configManager is null");
         return;
     }
     const Settings& settings = configManager_->getSettings();
-
     bool effective_mute = settings.masterMute || settings.mediaAudioMute;
     float effective_volume = (settings.mediaAudioVol / 100.0f) * (settings.masterVol / 100.0f);
 
-    LOG_DEBUG("AssetManager: Applying video audio settings: mediaAudioVol=" << settings.mediaAudioVol
-              << ", mediaAudioMute=" << settings.mediaAudioMute
-              << ", masterVol=" << settings.masterVol
-              << ", masterMute=" << settings.masterMute
-              << ", effective volume=" << effective_volume * 100.0f << "%, effective mute=" << effective_mute);
+    LOG_DEBUG("Applying video audio settings: mediaAudioVol=" + std::to_string(settings.mediaAudioVol) +
+              ", mediaAudioMute=" + std::to_string(settings.mediaAudioMute) +
+              ", masterVol=" + std::to_string(settings.masterVol) +
+              ", masterMute=" + std::to_string(settings.masterMute) +
+              ", effective volume=" + std::to_string(effective_volume * 100.0f) + "%, effective mute=" + std::to_string(effective_mute));
 
     struct VideoPlayerInfo {
         std::unique_ptr<IVideoPlayer>& player;
@@ -152,10 +171,8 @@ void AssetManager::applyVideoAudioSettings() {
         if (p.player) {
             p.player->setVolume(effective_volume * 100.0f);
             p.player->setMute(effective_mute);
-            LOG_DEBUG("AssetManager: Applied audio settings to " << p.name << " video player: effective volume="
-                      << effective_volume * 100.0f << ", effective mute=" << effective_mute);
-        } else {
-            LOG_DEBUG("AssetManager: No " << p.name << " video player to apply audio settings");
+            LOG_DEBUG("Applied audio settings to " + std::string(p.name) + " video player: effective volume=" +
+                      std::to_string(effective_volume * 100.0f) + ", effective mute=" + std::to_string(effective_mute));
         }
     }
 }
@@ -164,11 +181,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     auto start = std::chrono::high_resolution_clock::now();
 
     if (tables.empty()) {
-        LOG_DEBUG("AssetManager: Tables not yet loaded, skipping asset reload");
+        LOG_ERROR("Tables not yet loaded, skipping asset reload");
         return;
     }
     if (index >= tables.size()) {
-        LOG_ERROR("AssetManager: Invalid table index: " << index << ", table count: " << tables.size());
+        LOG_ERROR("Invalid table index: " + std::to_string(index) + ", table count: " + std::to_string(tables.size()));
         return;
     }
 
@@ -180,19 +197,19 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     if (playfieldVideoPlayer) {
         playfieldVideoPlayer->stop();
-        LOG_DEBUG("AssetManager: Stopped playfield video player");
+        LOG_DEBUG("Stopped playfield video player");
     }
     if (backglassVideoPlayer) {
         backglassVideoPlayer->stop();
-        LOG_DEBUG("AssetManager: Stopped backglass video player");
+        LOG_DEBUG("Stopped backglass video player");
     }
     if (dmdVideoPlayer) {
         dmdVideoPlayer->stop();
-        LOG_DEBUG("AssetManager: Stopped DMD video player");
+        LOG_DEBUG("Stopped DMD video player");
     }
     if (topperVideoPlayer) {
         topperVideoPlayer->stop();
-        LOG_DEBUG("AssetManager: Stopped topper video player");
+        LOG_DEBUG("Stopped topper video player");
     }
 
     if (index == lastIndex &&
@@ -218,10 +235,10 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         for (auto& w : currentPlayers) {
             if (w.videoPlayer && !w.videoPlayer->isPlaying()) {
                 w.videoPlayer->play();
-                LOG_DEBUG("AssetManager: Resumed playing active video for " << w.name << ": " << w.videoPath);
+                LOG_DEBUG("Resumed playing active video for " + std::string(w.name) + ": " + w.videoPath);
             }
         }
-        LOG_INFO("AssetManager: Table " << tables[index].title << " already loaded and settings unchanged. Ensured videos are playing.");
+        LOG_INFO("Table " + tables[index].title + " already loaded and settings unchanged. Ensured videos are playing.");
         return;
     }
 
@@ -251,11 +268,9 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             }
             w.videoPlayer.reset();
         }
-
         w.texture = nullptr;
         w.wheelTexture = nullptr;
         w.titleTexture = nullptr;
-
         w.imagePath.clear();
         w.wheelImagePath.clear();
         w.videoPath.clear();
@@ -269,7 +284,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     lastShowTopper = settings.showTopper;
 
     const auto& table = tables[index];
-    LOG_DEBUG("AssetManager: Loading assets for table: " << table.title);
+    LOG_DEBUG("Loading assets for table: " + table.title);
 
     WindowAssetInfo windowsToLoad[] = {
         {playfieldRenderer, playfieldTexture, playfieldWheelTexture, playfieldTitleTexture, playfieldVideoPlayer,
@@ -292,7 +307,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     for (auto& w : windowsToLoad) {
         if (!w.renderer || !w.show) {
-            LOG_DEBUG("AssetManager: Skipping asset load for " << w.name << " (renderer missing or window not shown).");
+            LOG_DEBUG("Skipping asset load for " + std::string(w.name) + " (renderer missing or window not shown).");
             continue;
         }
 
@@ -300,36 +315,32 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             w.texture = textureCache_->getTexture(w.renderer, w.tableImage);
             if (w.texture) {
                 w.imagePath = w.tableImage;
+                LOG_DEBUG("Loaded texture for " + std::string(w.name) + ": " + w.tableImage);
             } else {
                 w.imagePath.clear();
             }
-        } else {
-            w.imagePath.clear();
         }
 
-        LOG_DEBUG("AssetManager: Loading wheel texture for " << w.name << ": " << table.wheelImage);
         if (settings.showWheel && settings.wheelWindow == w.name && !table.wheelImage.empty()) {
             w.wheelTexture = textureCache_->getTexture(w.renderer, table.wheelImage);
             if (w.wheelTexture) {
                 w.wheelImagePath = table.wheelImage;
+                LOG_DEBUG("Loaded wheel texture for " + std::string(w.name) + ": " + table.wheelImage);
             } else {
-                LOG_WARN("AssetManager: Failed to load wheel texture for " << w.name << ": " << table.wheelImage);
+                LOG_WARN("Failed to load wheel texture for " + std::string(w.name) + ": " + table.wheelImage);
                 w.wheelImagePath.clear();
             }
-        } else {
-            w.wheelTexture = nullptr;
         }
 
         if (settings.showTitle && settings.titleWindow == w.name) {
             SDL_Rect currentTitleRenderRect = {settings.titleX, settings.titleY, 0, 0};
             std::string title = table.title.empty() ? "Unknown Title" : table.title;
             titleRenderer_->reloadTitleTexture(title, settings.fontColor, currentTitleRenderRect,
-                                               playfieldRenderer, playfieldTitleTexture,
-                                               backglassRenderer, backglassTitleTexture,
-                                               dmdRenderer, dmdTitleTexture,
-                                               topperRenderer, topperTitleTexture);
-        } else {
-            w.titleTexture = nullptr;
+                                              playfieldRenderer, playfieldTitleTexture,
+                                              backglassRenderer, backglassTitleTexture,
+                                              dmdRenderer, dmdTitleTexture,
+                                              topperRenderer, topperTitleTexture);
+            LOG_DEBUG("Loaded title texture for " + std::string(w.name) + ": " + title);
         }
 
         int mediaWidth = 0;
@@ -348,9 +359,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             mediaHeight = settings.topperMediaHeight;
         }
 
-        LOG_DEBUG("AssetManager: Checking video for " << w.name << ": tableVideo=" << w.tableVideo
-                  << ", desired media=" << mediaWidth << "x" << mediaHeight);
-
         if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
             std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
             w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
@@ -359,7 +367,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 w.videoPath = w.tableVideo;
                 w.mediaWidth = mediaWidth;
                 w.mediaHeight = mediaHeight;
-                LOG_DEBUG("AssetManager: Reused cached video player for " << w.name << ": " << w.tableVideo);
+                LOG_DEBUG("Reused cached video player for " + std::string(w.name) + ": " + w.tableVideo);
             } else {
                 auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
                 if (newPlayer) {
@@ -368,21 +376,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                     w.videoPath = w.tableVideo;
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
-                    LOG_DEBUG("AssetManager: Created new video player for " << w.name << ": " << w.tableVideo);
+                    LOG_DEBUG("Created new video player for " + std::string(w.name) + ": " + w.tableVideo);
                 } else {
-                    LOG_WARN("AssetManager: Failed to create video player for " << w.name << ": " << w.tableVideo);
-                    w.videoPlayer.reset();
-                    w.videoPath.clear();
-                    w.mediaWidth = 0;
-                    w.mediaHeight = 0;
+                    LOG_WARN("Failed to create video player for " + std::string(w.name) + ": " + w.tableVideo);
                 }
             }
-        } else {
-            w.videoPlayer.reset();
-            w.videoPath.clear();
-            w.mediaWidth = 0;
-            w.mediaHeight = 0;
-            LOG_DEBUG("AssetManager: No video desired for " << w.name << " or configuration prevents video playback (forceImagesOnly or invalid params).");
         }
     }
 
@@ -391,16 +389,16 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    LOG_INFO("Loaded " << table.title << " in " << duration << "ms");
+    LOG_INFO("Loaded " + table.title + " in " + std::to_string(duration) + "ms");
 }
 
 void AssetManager::clearOldVideoPlayers() {
     videoPlayerCache_->clearOldVideoPlayers();
+    //LOG_DEBUG("Cleared old video players.");
 }
 
 void AssetManager::cleanupVideoPlayers() {
-    LOG_DEBUG("AssetManager: Cleaning up video players (active ones)");
-
+    //LOG_DEBUG("Cleaning up video players");
     struct VideoPlayerInfo {
         std::unique_ptr<IVideoPlayer>& player;
         std::string& videoPath;
@@ -424,11 +422,11 @@ void AssetManager::cleanupVideoPlayers() {
             p.videoPath.clear();
             p.mediaWidth = 0;
             p.mediaHeight = 0;
-            LOG_DEBUG("AssetManager: Moved " << p.name << " video player to oldVideoPlayers_ for cleanup.");
+            //LOG_DEBUG("Moved " + std::string(p.name) + " video player to oldVideoPlayers_ for cleanup.");
         }
     }
 
     videoPlayerCache_->clearCache();
     videoPlayerCache_->clearOldVideoPlayers();
-    LOG_DEBUG("AssetManager: All video players and cache entries processed for cleanup.");
+    LOG_INFO("All video players and cache entries processed for cleanup.");
 }

@@ -13,6 +13,7 @@
 #include "core/first_run.h"
 #include <curl/curl.h>
 #include "log/logging.h"
+#include "log/logger.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
@@ -43,37 +44,37 @@ struct SDLBootstrap {
      */
     SDLBootstrap() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0) {
-            LOG_ERROR("Main: SDL_Init failed: " << SDL_GetError());
+            LOG_ERROR("Failed to initialize SDL: " + std::string(SDL_GetError()));
             throw std::runtime_error("Main: SDL initialization failed");
         }
-        
+
         // Get system DPI
         float ddpi, hdpi, vdpi;
         if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-            LOG_ERROR("Main: Warning: Could not get DPI: " << SDL_GetError());
+            LOG_ERROR("Warning: Could not get DPI: " + std::string(SDL_GetError()));
             ddpi = 96.0f; // Default fallback DPI
         }
-        
+
         // Enable DPI awareness
         SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
         SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
 
         if (TTF_Init() < 0) {
-            LOG_ERROR("Main: TTF_Init failed: " << TTF_GetError());
+            LOG_ERROR("Failed to initialize TTF: " + std::string(TTF_GetError()));
             SDL_Quit();
             throw std::runtime_error("Main: TTF initialization failed");
         }
         int imgFlags = IMG_INIT_PNG;
         if (!(IMG_Init(imgFlags) & imgFlags)) {
-            LOG_ERROR("Main: IMG_Init failed: " << IMG_GetError());
+            LOG_ERROR("Failed to initialize IMG: " + std::string(IMG_GetError()));
             TTF_Quit();
             SDL_Quit();
             throw std::runtime_error("Main: IMG initialization failed");
         }
-        LOG_DEBUG("Main: SDL subsystems initialized");
+        LOG_DEBUG("SDL subsystems initialized");
         // Initialize libcurl
         curl_global_init(CURL_GLOBAL_DEFAULT);
-        LOG_DEBUG("Main: Initialized libcurl");
+        LOG_DEBUG("Initialized libcurl");
     }
 
     /**
@@ -87,7 +88,7 @@ struct SDLBootstrap {
         TTF_Quit();
         SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
         SDL_Quit();
-        LOG_DEBUG("Main: Subsystems cleaned up");
+        LOG_DEBUG("Subsystems cleaned up");
         // Cleanup libcurl
         curl_global_cleanup();
     }
@@ -114,8 +115,12 @@ int main(int argc, char* argv[]) {
         exeDir = std::filesystem::path(path).parent_path().string() + "/";
     } else {
         exeDir = std::filesystem::current_path().string() + "/";
-        LOG_DEBUG("main: Failed to resolve executable path, using current directory: " << exeDir);
+        LOG_DEBUG("Failed to resolve executable path, using current directory: " + exeDir);
     }
+
+    // Initialize logger
+    std::string logFile = exeDir + "logs/debug.txt";
+    asap::logging::Logger::getInstance().initialize(logFile, true);
 
     // Set configPath using exeDir
     std::string configPath = exeDir + "data/settings.json";
@@ -125,10 +130,10 @@ int main(int argc, char* argv[]) {
         try {
             if (!std::filesystem::exists(configDir)) {
                 std::filesystem::create_directories(configDir);
-                LOG_DEBUG("main: Created directory " << configDir.string());
+                LOG_DEBUG("Created directory " + configDir.string());
             }
         } catch (const std::filesystem::filesystem_error& e) {
-            LOG_ERROR("Failed to create directory " << configDir.string() << ": " << e.what());
+            LOG_ERROR("Failed to create directory " + configDir.string() + ": " + std::string(e.what()));
             LOG_ERROR("Live changes will not persist on restart, check writing permissions.");
         }
     }

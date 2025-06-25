@@ -20,13 +20,13 @@ static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* use
 bool downloadFile(const std::string& url, const fs::path& destPath) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        LOG_ERROR("Failed to initialize curl for " << destPath.string());
+        LOG_ERROR("Failed to initialize curl for " + destPath.string());
         return false;
     }
 
     std::ofstream out(destPath, std::ios::binary);
     if (!out.is_open()) {
-        LOG_ERROR("Failed to open " << destPath.string());
+        LOG_ERROR("Failed to open " + destPath.string());
         curl_easy_cleanup(curl);
         return false;
     }
@@ -43,7 +43,7 @@ bool downloadFile(const std::string& url, const fs::path& destPath) {
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        LOG_ERROR("curl failed for " << destPath.string() << ": " << curl_easy_strerror(res));
+        LOG_ERROR("curl failed for " + destPath.string() + ": " + curl_easy_strerror(res));
         fs::remove(destPath);
         return false;
     }
