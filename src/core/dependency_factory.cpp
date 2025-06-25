@@ -16,7 +16,7 @@
 #include "core/app.h"
 #include "config/config_service.h"
 #include "core/window_manager.h"
-#include "render/asset_manager.h"
+#include "render/assets/asset_manager.h"
 #include "render/renderer.h"
 #include "sound/pulseaudio_player.h"
 #include "capture/screenshot_manager.h"

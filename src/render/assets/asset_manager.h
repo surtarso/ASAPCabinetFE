@@ -3,12 +3,12 @@
 
 #include "tables/itable_loader.h"
 #include "tables/table_data.h"
+#include "sound/isound_manager.h"
 #include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
-#include "sound/isound_manager.h"
-#include "render/texture_cache.h"
-#include "render/video_player_cache.h"
-#include "render/title_renderer.h"
+#include "render/assets/texture_cache.h"
+#include "render/assets/video_player_cache.h"
+#include "render/assets/title_renderer.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <memory>

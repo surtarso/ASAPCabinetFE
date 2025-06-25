@@ -1,6 +1,6 @@
 #include "render/renderer.h"
 #include "log/logging.h"
-#include "imgui.h" // Assuming ImGui is for UI rendering, not main game rendering
+#include "imgui.h" 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 #include "config/config_service.h" // Included for Settings struct definition
@@ -48,7 +48,7 @@ void Renderer::render(IAssetManager& assets) {
 
 void Renderer::renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const std::string& windowName,
                             bool isVisible, int mediaX, int mediaY, int mediaWidth, int mediaHeight,
-                            double rotation, const Settings& settings) { // Added const Settings& settings
+                            double rotation, const Settings& settings) { 
     if (!renderer || !isVisible) {
         return;
     }

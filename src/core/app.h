@@ -28,8 +28,8 @@
 #include "tables/itable_loader.h"
 #include "tables/itable_callbacks.h"
 #include "tables/table_data.h"
-#include "tables/table_override_editor.h"
-#include "tables/table_override_manager.h"
+#include "tables/overrides/table_override_editor.h"
+#include "tables/overrides/table_override_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_table.h" // Added for VpsdbJsonLoader
 #include "sound/isound_manager.h"

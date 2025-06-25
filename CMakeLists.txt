@@ -276,11 +276,11 @@ set(SOURCES
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
     src/log/logger.cpp
-    src/render/asset_manager.cpp
     src/render/renderer.cpp
-    src/render/texture_cache.cpp
-    src/render/title_renderer.cpp
-    src/render/video_player_cache.cpp
+    src/render/assets/asset_manager.cpp
+    src/render/assets/texture_cache.cpp
+    src/render/assets/title_renderer.cpp
+    src/render/assets/video_player_cache.cpp
     src/render/video_players/video_player_factory.cpp
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/ffmpeg/audio_decoder.cpp
@@ -289,11 +289,11 @@ set(SOURCES
     src/tables/asap_index_manager.cpp
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
-    src/tables/table_override_manager.cpp
-    src/tables/table_override_editor.cpp
     src/tables/table_patcher.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
+    src/tables/overrides/table_override_manager.cpp
+    src/tables/overrides/table_override_editor.cpp
     src/tables/vpinmdb/vpinmdb_client.cpp
     src/tables/vpinmdb/vpinmdb_downloader.cpp
     src/tables/vpinmdb/vpinmdb_image.cpp
@@ -336,11 +336,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/keybinds
     ${CMAKE_SOURCE_DIR}/src/log
     ${CMAKE_SOURCE_DIR}/src/render
+    ${CMAKE_SOURCE_DIR}/src/render/assets
     ${CMAKE_SOURCE_DIR}/src/render/video_players
     ${CMAKE_SOURCE_DIR}/src/render/video_players/ffmpeg
     ${CMAKE_SOURCE_DIR}/src/render/video_players/gstreamer
     ${CMAKE_SOURCE_DIR}/src/render/video_players/vlc
     ${CMAKE_SOURCE_DIR}/src/tables
+    ${CMAKE_SOURCE_DIR}/src/tables/overrides
+    ${CMAKE_SOURCE_DIR}/src/tables/vpinmdb
     ${CMAKE_SOURCE_DIR}/src/tables/vpsdb
     ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils

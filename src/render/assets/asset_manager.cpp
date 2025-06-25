@@ -1,10 +1,10 @@
-#include "render/asset_manager.h"
+#include "render/assets/asset_manager.h"
+#include "render/assets/texture_cache.h"
+#include "render/assets/video_player_cache.h"
+#include "render/assets/title_renderer.h"
 #include "render/video_players/video_player_factory.h"
 #include "config/iconfig_service.h"
 #include "log/logging.h"
-#include "render/texture_cache.h"
-#include "render/video_player_cache.h"
-#include "render/title_renderer.h"
 #include <SDL_image.h>
 #include <chrono>
 #include <algorithm>

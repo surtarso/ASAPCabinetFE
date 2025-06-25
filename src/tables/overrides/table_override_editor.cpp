@@ -8,7 +8,7 @@
  * and matches the visual style of the metadata panel and config UI.
  */
 
-#include "tables/table_override_editor.h"
+#include "table_override_editor.h"
 #include "log/logging.h"
 #include "imgui.h"
 #include <vector>
@@ -106,7 +106,6 @@ bool TableOverrideEditor::render() {
 
     // FILE SCANNER section
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FILE SCANNER");
-    // ImGui::PopStyleColor();
     ImGui::Separator();
     for (const auto& key : {"title", "manufacturer", "year", "vpxFile", "folder", "playfieldImage", "wheelImage",
                            "backglassImage", "dmdImage", "topperImage", "playfieldVideo", "backglassVideo",
@@ -129,7 +128,6 @@ bool TableOverrideEditor::render() {
 
     // FILE METADATA section
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FILE METADATA");
-    // ImGui::PopStyleColor();
     ImGui::Separator();
     for (const auto& key : {"tableName", "tableAuthor", "tableDescription", "tableSaveDate", "tableLastModified",
                            "tableReleaseDate", "tableVersion", "tableRevision", "tableBlurb", "tableRules",

@@ -8,7 +8,7 @@
  * on existing components and includes placeholders for future dynamic reloading and saving.
  */
 
-#include "tables/table_override_manager.h"
+#include "table_override_manager.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <fstream>
