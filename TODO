@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- fix log on release build
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 

@@ -119,8 +119,13 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize logger
-    std::string logFile = exeDir + "logs/debug.txt";
-    asap::logging::Logger::getInstance().initialize(logFile, true);
+    #ifdef DEBUG_LOGGING
+        std::string logFile = exeDir + "logs/debug.log";
+        asap::logging::Logger::getInstance().initialize(logFile, true);
+    #else
+        std::string logFile = exeDir + "logs/asapcab.log";
+        asap::logging::Logger::getInstance().initialize(logFile, false);
+    #endif
 
     // Set configPath using exeDir
     std::string configPath = exeDir + "data/settings.json";
