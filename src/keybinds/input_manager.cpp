@@ -53,7 +53,7 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     //         }
     //     }
     // }
-    LOG_INFO("InputManager dependencies set, table count: " + std::to_string(tables_->size()));
+    LOG_DEBUG("InputManager dependencies set, table count: " + std::to_string(tables_->size()));
 }
 
 void InputManager::registerActions() {

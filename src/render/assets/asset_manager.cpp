@@ -94,7 +94,7 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     titleRenderer_->setFont(font);
 
     loadTableAssets(index, tables);
-    LOG_INFO("Completed asset reload for index " + std::to_string(index));
+    LOG_DEBUG("Completed asset reload for index " + std::to_string(index));
 }
 
 void AssetManager::clearVideoCache() {
@@ -428,5 +428,5 @@ void AssetManager::cleanupVideoPlayers() {
 
     videoPlayerCache_->clearCache();
     videoPlayerCache_->clearOldVideoPlayers();
-    LOG_INFO("All video players and cache entries processed for cleanup.");
+    LOG_DEBUG("All video players and cache entries processed for cleanup.");
 }

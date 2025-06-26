@@ -203,7 +203,7 @@ void App::loadTablesThreaded(size_t oldIndex) {
                 std::lock_guard<std::mutex> lock(loadingMutex_);
                 isLoadingTables_ = false;
                 asap::logging::Logger::getInstance().setLoadingProgress(nullptr);
-                LOG_INFO("Loaded " + std::to_string(tables_.size()) + " table(s).");
+                LOG_DEBUG("Loaded " + std::to_string(tables_.size()) + " table(s).");
                 if (flagsReset && playfieldOverlay_) {
                     playfieldOverlay_->ResetMetadataFlags();
                 }
@@ -223,7 +223,7 @@ void App::initializeDependencies() {
     keybindProvider_ = DependencyFactory::createKeybindProvider();
     configManager_ = DependencyFactory::createConfigService(configPath_, keybindProvider_.get());
     if (!isConfigValid()) {
-        LOG_INFO("Config invalid, running initial config");
+        LOG_WARN("Config invalid, running initial config...");
         if (!runInitialConfig(configManager_.get(), keybindProvider_.get(), configPath_)) {
             LOG_ERROR("Initial config failed or was aborted. Exiting...");
             exit(1);

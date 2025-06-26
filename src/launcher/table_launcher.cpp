@@ -11,7 +11,7 @@
 
 TableLauncher::TableLauncher(IConfigService* configService)
     : configService_(configService) {
-    LOG_INFO("Initialized");
+    LOG_INFO("TableLauncher Initialized");
 }
 
 std::pair<int, float> TableLauncher::launchTable(const TableData& table) {

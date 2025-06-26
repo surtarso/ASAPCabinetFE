@@ -9,7 +9,7 @@
 #include <memory>
 
 bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindProvider, const std::string& configPath) {
-    LOG_INFO("Config Path: " + configPath);
+    //LOG_INFO("Config Path: " + configPath);
     SDL_Window* configWindow = SDL_CreateWindow("ASAPCabinetFE Setup",
                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                 800, 500, SDL_WINDOW_SHOWN);
@@ -51,7 +51,7 @@ bool runInitialConfig(IConfigService* configService, IKeybindProvider* keybindPr
 
         if (!showConfig && configService->isConfigValid()) break;
         else if (!showConfig) {
-            LOG_ERROR("Configuration invalid. Please fix VPX.VPinballXPath and VPX.VPXTablesPath.");
+            LOG_DEBUG("Configuration invalid.");
             showConfig = true;
         }
     }

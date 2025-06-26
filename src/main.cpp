@@ -71,7 +71,7 @@ struct SDLBootstrap {
             SDL_Quit();
             throw std::runtime_error("Main: IMG initialization failed");
         }
-        LOG_DEBUG("SDL subsystems initialized");
+        LOG_INFO("SDL Subsystems Initialized");
         // Initialize libcurl
         curl_global_init(CURL_GLOBAL_DEFAULT);
         LOG_DEBUG("Initialized libcurl");
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
         exeDir = std::filesystem::path(path).parent_path().string() + "/";
     } else {
         exeDir = std::filesystem::current_path().string() + "/";
-        LOG_DEBUG("Failed to resolve executable path, using current directory: " + exeDir);
+        LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
     }
 
     // Initialize logger

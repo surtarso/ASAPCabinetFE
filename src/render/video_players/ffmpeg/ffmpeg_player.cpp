@@ -69,7 +69,7 @@ bool FFmpegPlayer::setup(SDL_Renderer* renderer, const std::string& path, int wi
         return false;
     }
 
-    LOG_INFO("FFmpegPlayer setup complete for: " + path_);
+    LOG_DEBUG("FFmpegPlayer setup complete for: " + path_);
     return true;
 }
 

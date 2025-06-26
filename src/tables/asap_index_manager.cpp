@@ -396,6 +396,6 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
         }
     }
 
-    LOG_INFO("Merged " + std::to_string(mergedTables.size()) + " tables");
+    LOG_DEBUG("Merged " + std::to_string(mergedTables.size()) + " tables");
     return mergedTables;
 }

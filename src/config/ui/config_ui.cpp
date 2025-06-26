@@ -22,7 +22,7 @@ ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvi
       standaloneMode_(standaloneMode),
       standaloneFileDialog_(),
       normalFileDialog_() {
-    LOG_DEBUG("ConfigUI constructed.");
+    LOG_INFO("ConfigUI constructed.");
     try {
         jsonData_ = nlohmann::json(configService_->getSettings());
         if (jsonData_.contains("Keybinds")) {
@@ -179,7 +179,7 @@ void ConfigUI::drawGUI() {
     if (ImGui::Button("Close", ImVec2(100, 0))) {
         jsonData_ = originalJsonData_;
         if (standaloneMode_) {
-            LOG_INFO("Quit without saving.");
+            LOG_WARN("Quit without saving.");
             exit(1);
         } else {
             showConfig_ = false;
@@ -336,7 +336,7 @@ void ConfigUI::saveConfig() {
         }
 
         configService_->saveConfig();
-        LOG_INFO("Config saved successfully.");
+        LOG_DEBUG("Config saved successfully.");
 
         for (const auto& reloadType : reloadTypes) {
             switch (reloadType) {

@@ -36,7 +36,7 @@ IKeybindProvider& ConfigService::getKeybindProvider() {
 }
 
 bool ConfigService::isConfigValid() const {
-    LOG_DEBUG("Validating config file.");
+    LOG_INFO("Validating config file.");
 
     if (settings_.VPinballXPath.empty()) {
         LOG_ERROR("Config validation failed: VPinballXPath is empty.");
@@ -127,7 +127,7 @@ void ConfigService::loadConfig() {
             VPinballXIniReader iniReader(iniPath);
             auto iniSettings = iniReader.readIniSettings();
             if (iniSettings) {
-                LOG_DEBUG("Applying VPinballX.ini settings");
+                LOG_WARN("Applying VPinballX.ini settings");
                 applyIniSettings(iniSettings);
                 updateJsonWithIniValues(iniSettings);
             } else {
@@ -160,11 +160,11 @@ void ConfigService::saveConfig() {
             VPinballXIniReader iniReader(iniPath);
             auto iniSettings = iniReader.readIniSettings();
             if (iniSettings) {
-                LOG_DEBUG("Reapplying VPinballX.ini settings after save");
+                LOG_WARN("Reapplying VPinballX.ini settings after save");
                 applyIniSettings(iniSettings);
                 updateJsonWithIniValues(iniSettings);
             } else {
-                LOG_DEBUG("VPinballX.ini not found during save, disabling useVPinballXIni");
+                LOG_WARN("VPinballX.ini not found during save, disabling useVPinballXIni");
                 settings_.useVPinballXIni = false;
                 jsonData_["WindowSettings"]["useVPinballXIni"] = false;
             }
