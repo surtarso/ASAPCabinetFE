@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- make fast start and rebuild exclusive between eachother
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 
