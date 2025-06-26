@@ -159,7 +159,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 vpx_script = std::string(code_ptr);
                 free_rust_string(code_ptr);
                 table.hashFromVpx = calculate_string_sha256(vpx_script);
-                LOG_INFO("hashFromVpx for " + table.title + ": " + table.hashFromVpx);
+                LOG_DEBUG("hashFromVpx for " + table.title + ": " + table.hashFromVpx);
             } else {
                 LOG_ERROR("Failed to extract GameData.code for: " + table.vpxFile);
                 table.hashFromVpx = "";
