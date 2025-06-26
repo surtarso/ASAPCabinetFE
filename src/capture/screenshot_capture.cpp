@@ -18,16 +18,24 @@ void ScreenshotCapture::captureAllScreenshots(const std::string& playfieldImage,
     threads.emplace_back([this, playfieldImage]() {
         captureScreenshot("Visual Pinball Player", playfieldImage);
     });
-
+    // 10.8.0
     if (isWindowVisible("B2SBackglass")) {
         threads.emplace_back([this, backglassImage]() {
             captureScreenshot("B2SBackglass", backglassImage);
         });
     } else {
-        LOG_INFO("Warning: Backglass window not visible.");
+        LOG_WARN("B2SBackglass window not visible.");
+    }
+    // 10.8.1
+    if (isWindowVisible("Backglass")) {
+        threads.emplace_back([this, backglassImage]() {
+            captureScreenshot("Backglass", backglassImage);
+        });
+    } else {
+        LOG_WARN("Backglass window not visible.");
     }
 
-    std::string dmdWindows[] = {"FlexDMD", "PinMAME", "B2SDMD", "PUPDMD", "PUPFullDMD"};
+    std::string dmdWindows[] = {"Score", "FlexDMD", "PinMAME", "B2SDMD", "PUPDMD", "PUPFullDMD"};
     bool dmdCaptured = false;
     for (const auto& dmd : dmdWindows) {
         if (isWindowVisible(dmd)) {
@@ -39,7 +47,7 @@ void ScreenshotCapture::captureAllScreenshots(const std::string& playfieldImage,
         }
     }
     if (!dmdCaptured) {
-        LOG_INFO("Warning: No visible DMD window detected.");
+        LOG_WARN("No visible DMD window detected.");
     }
 
     for (auto& thread : threads) {
@@ -49,7 +57,7 @@ void ScreenshotCapture::captureAllScreenshots(const std::string& playfieldImage,
     SDL_RaiseWindow(window);
     std::string cmd = "xdotool search --name \"VPX Screenshot\" windowactivate >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        LOG_INFO("Warning: Failed to refocus VPX Screenshot window.");
+        LOG_WARN("Failed to refocus VPX Screenshot window.");
     }
 }
 
@@ -57,7 +65,7 @@ void ScreenshotCapture::captureScreenshot(const std::string& windowName, const s
     std::string cmd = "xdotool search --name " + shellEscape(windowName) + " | head -n 1";
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
-        LOG_ERROR("Error: Failed to run xdotool search for " + windowName);
+        LOG_ERROR("Failed to run xdotool search for " + windowName);
         return;
     }
     char buffer[128];
@@ -69,30 +77,30 @@ void ScreenshotCapture::captureScreenshot(const std::string& windowName, const s
     pclose(pipe);
 
     if (windowId.empty()) {
-        LOG_INFO("Warning: Window '" + windowName + "' not found.");
+        LOG_WARN("Window '" + windowName + "' not found.");
         return;
     }
 
     cmd = "xdotool windowactivate " + windowId + " >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        LOG_ERROR("Warning: Failed to activate window " + windowName);
+        LOG_WARN("Failed to activate window " + windowName);
     }
     cmd = "xdotool windowraise " + windowId + " >/dev/null 2>&1";
     if (std::system(cmd.c_str()) != 0) {
-        LOG_ERROR("Warning: Failed to raise window " + windowName);
+        LOG_WARN("Failed to raise window " + windowName);
     }
     usleep(400000);
 
     cmd = "mkdir -p " + shellEscape(outputPath.substr(0, outputPath.find_last_of('/')));
     if (std::system(cmd.c_str()) != 0) {
-        LOG_ERROR("Error: Failed to create directory for " + outputPath);
+        LOG_ERROR("Failed to create directory for " + outputPath);
         return;
     }
     cmd = "import -window " + windowId + " " + shellEscape(outputPath);
     if (std::system(cmd.c_str()) == 0) {
         LOG_INFO("Saved screenshot to " + outputPath);
     } else {
-        LOG_ERROR("Error: Failed to save screenshot to " + outputPath);
+        LOG_ERROR("Failed to save screenshot to " + outputPath);
     }
 }
 
