@@ -238,7 +238,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 LOG_DEBUG("Resumed playing active video for " + std::string(w.name) + ": " + w.videoPath);
             }
         }
-        LOG_INFO("Table " + tables[index].title + " already loaded and settings unchanged. Ensured videos are playing.");
+        LOG_INFO("Table " + tables[index].title + " already loaded.");
         return;
     }
 

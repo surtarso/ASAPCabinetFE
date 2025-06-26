@@ -164,7 +164,7 @@ bool VpsDatabaseUpdater::fetchIfNeeded(const std::string& lastUpdatedPath, const
                         std::lock_guard<std::mutex> lock(progress->mutex);
                         progress->currentTask = "Updated VPSDB and lastUpdated.json";
                     }
-                    LOG_INFO("Updated vpsdb.json and lastUpdated.json");
+                    LOG_INFO("Updated Virtual Pinball Spreadsheet Database.");
                 } catch (const std::exception& e) {
                     LOG_ERROR("Failed to save lastUpdated.json: " + std::string(e.what()));
                     return true;

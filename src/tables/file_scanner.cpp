@@ -172,14 +172,14 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     LOG_ERROR("Failed to compute hash for .vbs file: " + vbs_path.string());
                     table.hasDiffVbs = false;
                 } else {
-                    LOG_INFO("hashFromVbs for " + vbs_path.string() + ": " + table.hashFromVbs);
+                    LOG_DEBUG("hashFromVbs for " + vbs_path.string() + ": " + table.hashFromVbs);
                     if (!vpx_script.empty()) {
                         std::ifstream vbs_file(vbs_path, std::ios::binary);
                         if (vbs_file.is_open()) {
                             std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
                             table.hasDiffVbs = (vpx_script != vbs_content);
                             if (table.hasDiffVbs) {
-                                LOG_INFO(".vbs differs from VPX script for " + table.title);
+                                LOG_DEBUG(".vbs differs from VPX script for " + table.title);
                             }
                             vbs_file.close();
                         } else {

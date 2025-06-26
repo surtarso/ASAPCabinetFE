@@ -34,7 +34,7 @@ protected:
         bool val = value.get<bool>();
         if (ImGui::Checkbox(key.c_str(), &val)) {
             value = val;
-            LOG_INFO("Updated " + sectionName + "." + key + " to " + std::to_string(val));
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + std::to_string(val));
         }
     }
 
@@ -72,7 +72,7 @@ protected:
         }
         if (ImGui::SliderFloat(key.c_str(), &val, minVal, maxVal, format)) {
             value = val;
-            LOG_INFO("Updated " + sectionName + "." + key + " to " + std::to_string(val));
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + std::to_string(val));
         }
     }
 
@@ -90,7 +90,7 @@ protected:
         if (ImGui::InputInt(key.c_str(), &val)) {
             val = std::clamp(val, minVal, maxVal);
             value = val;
-            LOG_INFO("Updated " + sectionName + "." + key + " to " + std::to_string(val));
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + std::to_string(val));
         }
     }
 
@@ -101,7 +101,7 @@ protected:
         buffer[sizeof(buffer) - 1] = '\0';
         if (ImGui::InputText(key.c_str(), buffer, sizeof(buffer))) {
             value = std::string(buffer);
-            LOG_INFO("Updated " + sectionName + "." + key + " to " + buffer);
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + buffer);
         }
     }
 
@@ -119,7 +119,7 @@ protected:
                 static_cast<int>(color[2] * 255.0f),
                 static_cast<int>(color[3] * 255.0f)
             };
-            LOG_INFO("Updated " + sectionName + "." + key + " to [" +
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to [" +
                      std::to_string(value[0].get<int>()) + "," +
                      std::to_string(value[1].get<int>()) + "," +
                      std::to_string(value[2].get<int>()) + "," +
@@ -136,7 +136,7 @@ protected:
             if (snappedValue != lastLoggedValues[key]) {
                 value = snappedValue;
                 lastLoggedValues[key] = snappedValue;
-                LOG_INFO("Updated " + sectionName + "." + key + " to " + std::to_string(snappedValue) + "°");
+                LOG_DEBUG("Updated " + sectionName + "." + key + " to " + std::to_string(snappedValue) + "°");
             }
         }
     }
@@ -170,7 +170,7 @@ protected:
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 60);
         if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
             value = std::string(buffer);
-            LOG_INFO("Updated " + sectionName + "." + key + " to " + buffer);
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + buffer);
         }
         ImGui::PopItemWidth();
         ImGui::SameLine();

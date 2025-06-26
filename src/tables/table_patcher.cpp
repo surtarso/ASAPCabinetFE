@@ -92,13 +92,13 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
-            LOG_INFO("Successfully downloaded hashes.json");
+            LOG_INFO("Successfully downloaded VBScript patches database.");
             // Save to cache
             std::ofstream outFile(cachePath, std::ios::binary);
             if (outFile.is_open()) {
                 outFile.write(readBuffer.data(), readBuffer.size());
                 outFile.close();
-                LOG_INFO("Saved hashes.json to cache: " + cachePath);
+                LOG_DEBUG("Saved hashes.json to: " + cachePath);
             } else {
                 LOG_ERROR("Failed to save hashes.json to " + cachePath);
             }
@@ -121,7 +121,7 @@ nlohmann::json TablePatcher::parseHashesJson(const std::string& jsonContent) {
     }
     try {
         nlohmann::json parsed = nlohmann::json::parse(jsonContent);
-        LOG_INFO("Successfully parsed hashes.json");
+        LOG_DEBUG("Successfully parsed hashes.json");
         return parsed;
     } catch (const nlohmann::json::parse_error& e) {
         LOG_ERROR("Failed to parse hashes.json: " + std::string(e.what()));
@@ -251,7 +251,7 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
                         std::string expectedHash = entry["patched"]["sha256"];
                         if (computedHash == expectedHash) {
                             table.hashFromVbs = computedHash;
-                            LOG_INFO("Updated hashFromVbs for " + table.title + ": " + table.hashFromVbs);
+                            LOG_DEBUG("Updated hashFromVbs for " + table.title + ": " + table.hashFromVbs);
                         } else {
                             LOG_ERROR("Hash mismatch for downloaded .vbs for " + table.title + ", computed: " + computedHash + ", expected: " + expectedHash);
                         }
