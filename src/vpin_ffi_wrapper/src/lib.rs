@@ -106,7 +106,7 @@ pub extern "C" fn get_vpx_table_info_as_json(vpx_file_path: *const c_char) -> *m
 pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_char {
     // Safety check for null pointer
     if vpx_file_path.is_null() {
-        eprintln!("get_vpx_gamedata_code_optimized: Input file path is null.");
+        eprintln!("get_vpx_gamedata_code: Input file path is null.");
         return std::ptr::null_mut();
     }
 
@@ -115,7 +115,7 @@ pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_
         match CStr::from_ptr(vpx_file_path).to_str() {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("get_vpx_gamedata_code_optimized: Invalid UTF-8 in path: {}", e);
+                eprintln!("get_vpx_gamedata_code: Invalid UTF-8 in path: {}", e);
                 return std::ptr::null_mut();
             }
         }
@@ -136,7 +136,7 @@ pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_
                             Ok(c_string) => Some(c_string.into_raw()),
                             Err(e) => {
                                 eprintln!(
-                                    "get_vpx_gamedata_code_optimized: CString conversion failed for '{}': {}",
+                                    "get_vpx_gamedata_code: CString conversion failed for '{}': {}",
                                     path_str, e
                                 );
                                 None
@@ -145,7 +145,7 @@ pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_
                     }
                     Err(e) => {
                         eprintln!(
-                            "get_vpx_gamedata_code_optimized: Failed to read gamedata for '{}': {}",
+                            "get_vpx_gamedata_code: Failed to read gamedata for '{}': {}",
                             path_str, e
                         );
                         None
@@ -154,7 +154,7 @@ pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_
             }
             Err(e) => {
                 eprintln!(
-                    "get_vpx_gamedata_code_optimized: Failed to open '{}': {}",
+                    "get_vpx_gamedata_code: Failed to open '{}': {}",
                     path_str, e
                 );
                 None
@@ -166,11 +166,11 @@ pub extern "C" fn get_vpx_gamedata_code(vpx_file_path: *const c_char) -> *mut c_
     match result {
         Ok(Some(ptr)) => ptr,
         Ok(None) => {
-            eprintln!("get_vpx_gamedata_code_optimized: Returning null for '{}'", path_str);
+            eprintln!("get_vpx_gamedata_code: Returning null for '{}'", path_str);
             std::ptr::null_mut()
         }
         Err(_) => {
-            eprintln!("get_vpx_gamedata_code_optimized: Panic occurred for '{}'", path_str);
+            eprintln!("get_vpx_gamedata_code: Panic occurred for '{}'", path_str);
             std::ptr::null_mut()
         }
     }

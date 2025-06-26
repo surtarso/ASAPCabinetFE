@@ -139,7 +139,7 @@ bool TablePatcher::needsPatch(const TableData& table, const nlohmann::json& hash
         if (entry.is_object() && entry.contains("sha256") && entry["sha256"] == table.hashFromVpx) {
             std::string patchedHash = entry["patched"]["sha256"];
             if (table.hashFromVbs.empty()) {
-                LOG_INFO("No sidecar .vbs for " + table.title + ", patch needed");
+                LOG_WARN("No sidecar .vbs for " + table.title + ", patch needed");
                 return true;
             } else if (table.hashFromVbs != patchedHash) {
                 LOG_WARN("Sidecar .vbs hash mismatch for " + table.title + ", computed: " + table.hashFromVbs + ", expected: " + patchedHash);

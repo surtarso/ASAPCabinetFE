@@ -44,7 +44,7 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
         }
 
         if (vpinmdb::downloadFile(url, dbPath)) {
-            LOG_INFO("Downloaded vpinmdb.json to " + dbPath.string());
+            LOG_INFO("Downloaded VPin Media Database to " + dbPath.string());
             if (progress_) {
                 std::lock_guard<std::mutex> lock(progress_->mutex);
                 progress_->logMessages.push_back("Downloaded vpinmdb.json to " + dbPath.string());
@@ -70,7 +70,7 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
     }
     try {
         file >> mediaDb_;
-        LOG_INFO("Loaded vpinmdb.json from " + dbPath.string());
+        LOG_INFO("Loaded VPin Media Database from " + dbPath.string());
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
             progress_->logMessages.push_back("Loaded vpinmdb.json from " + dbPath.string());
@@ -86,7 +86,7 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
 
 bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
     if (!settings_.fetchVpinMediaDb) {
-        LOG_INFO("Media downloading disabled (fetchVpinMediaDb=false)");
+        LOG_WARN("Media downloading disabled (fetchVpinMediaDb=false)");
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
             progress_->logMessages.push_back("Media downloading disabled (fetchVpinMediaDb=false)");
@@ -111,7 +111,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
         futures.push_back(std::async(std::launch::async, [&table, this, resolution, &downloadedCount]() {
             if (table.vpsId.empty()) {
                 std::string msg = "Skipping media download for " + table.title + ": No VPSDB ID";
-                LOG_INFO(msg);
+                LOG_WARN(msg);
                 if (progress_) {
                     std::lock_guard<std::mutex> lock(progress_->mutex);
                     progress_->logMessages.push_back(msg);
@@ -150,7 +150,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
             for (const auto& media : mediaTypes) {
                 fs::path destPath = tableDir / media.filename;
                 if (fs::exists(destPath)) {
-                    LOG_INFO("Skipping " + media.type + " for " + table.title + ": File exists at " + destPath.string());
+                    LOG_DEBUG("Skipping " + media.type + " for " + table.title + ": File exists at " + destPath.string());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
                         progress_->logMessages.push_back("Skipping " + media.type + " for " + table.title + ": File exists");
@@ -162,7 +162,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                 try {
                     if (!mediaDb_.contains(table.vpsId)) {
                         std::string msg = "No entry for vpsId " + table.vpsId + " in vpinmdb.json for " + table.title;
-                        LOG_INFO(msg);
+                        LOG_WARN(msg);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
                             progress_->logMessages.push_back(msg);
@@ -182,7 +182,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                     }
                     if (url.empty()) {
                         std::string msg = "No " + media.type + " URL for " + table.title + " in " + (media.type == "wheel" ? "wheel" : resolution);
-                        LOG_INFO(msg);
+                        LOG_WARN(msg);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
                             progress_->logMessages.push_back(msg);
@@ -283,10 +283,10 @@ std::string VpinMdbClient::selectResolution() const {
     if (maxPlayfieldDim >= 2560 && maxPlayfieldDim >= 1440 &&
         maxBackglassDim >= 2560 && maxBackglassDim >= 1440 &&
         maxDmdDim >= 2560 && maxDmdDim >= 1440) {
-        LOG_INFO("Selected 4k resolution for high-resolution displays");
+        LOG_INFO("Selected 4k for high-resolution displays");
         return "4k";
     }
-    LOG_INFO("Selected 1k resolution for display dimensions (e.g., playfield: " + 
-             std::to_string(settings_.playfieldWindowWidth) + "x" + std::to_string(settings_.playfieldWindowHeight) + ")");
+    LOG_WARN("Selected 1k resolution for your display dimensions: Playfield: " + 
+             std::to_string(settings_.playfieldWindowWidth) + "x" + std::to_string(settings_.playfieldWindowHeight));
     return "1k";
 }

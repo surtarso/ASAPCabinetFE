@@ -23,7 +23,7 @@ AsapIndexManager::AsapIndexManager(const Settings& settings) : settings_(setting
 
 bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     if (!fs::exists(settings.indexPath)) {
-        LOG_WARN("asapcab_index.json not found at: " + settings.indexPath + ". Will create a new one on save.");
+        LOG_DEBUG("asapcab_index.json not found at: " + settings.indexPath + ". Will create a new one on save.");
         return false;
     }
 
@@ -302,7 +302,7 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
             }
         }
     } else {
-        LOG_WARN("No existing index found or failed to load. Treating all tables as new.");
+        LOG_WARN("Treating all tables as new.");
     }
 
     // Define jsonOwner priority
