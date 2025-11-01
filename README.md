@@ -158,8 +158,8 @@ _Built something cool? Share it with us in the [Discussions](https://github.com/
 
 ### 🚨 For Hyprland users 🚨
 **Window positioning won't work in Hyprland**
-<p>Use <b>hyprctl clients | grep -i <name> </b> to check exact titles/classes name.</p>
-<p>You can add window rules using windoe titles like this:</p>
+<p>Use <b>hyprctl clients | grep -i appname </b> to check exact titles/classes names.</p>
+<p>You can add window rules using titles like this:</p>
   
 ```
 windowrulev2 = workspace 4, title:^(Playfield)$
