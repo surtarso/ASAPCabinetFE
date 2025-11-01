@@ -99,6 +99,9 @@ If you've already set up your window positions within VPinballX, and your `VPinb
 >[!IMPORTANT]
 >While this feature is enabled, manual positioning is disabled.
 
+>[!WARNING]
+>In Hyprland, positioning will be handled by Hyprland's window rules.
+
 ## Adding Your Own Previews
 
 The app enhances your table browse experience with pictures or videos. You can easily add your own custom previews!
