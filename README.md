@@ -158,28 +158,36 @@ _Built something cool? Share it with us in the [Discussions](https://github.com/
 
 ### 🚨 For Hyprland users 🚨
 **Window positioning won't work in Hyprland**
-<p>Use <b>hyprctl clients | grep -i appname </b> to check exact titles/classes names.</p>
-<p>You can add window rules using titles like this:</p>
+<p>Use <b>hyprctl clients</b> to check exact titles or classes.</p>
+
+<details>
+<summary>You can add window rules like this</summary>
   
 ```
+# ----------- ASAPCabinetFE + VPinballX
+# Playfield
 windowrulev2 = workspace 4, title:^(Playfield)$
 windowrulev2 = monitor:DP-1, title:^(Playfield)$
 windowrulev2 = fullscreen, title:^(Playfield)$
-
+windowrulev2 = workspace 4, title:^(Visual Pinball Player)$
+windowrulev2 = monitor:DP-1, title:^(Visual Pinball Player)$
+windowrulev2 = fullscreen, title:^(Visual Pinball Player)$
+# Backglass
 windowrulev2 = workspace 3, title:^(Backglass)$
 windowrulev2 = monitor:HDMI-A-1, title:^(Backglass)$
-windowrulev2 = move 5%, title:^(Backglass)$
-
-windowrulev2 = workspace 2, title:^(DMD)$
-windowrulev2 = monitor:HDMI-A-3, title:^(DMD)$
-windowrulev2 = size 60% 45%, title:^(DMD)$
-
-windowrulev2 = workspace 1, title:^(Topper)$
-windowrulev2 = monitor:DVI-D-1, title:^(Topper)$
-windowrulev2 = float, title:^(Topper)$
+windowrulev2 = move 45% 3%, title:^(Backglass)$
+windowrulev2 = workspace 3, title:^(Visual Pinball - Backglass)$
+windowrulev2 = monitor:HDMI-A-1, title:^(Visual Pinball - Backglass)$
+windowrulev2 = move 45% 3%, title:^(Visual Pinball - Backglass)$
+# DMD/Score
+windowrulev2 = workspace 3, title:^(DMD)$
+windowrulev2 = monitor:HDMI-A-1, title:^(DMD)$
+windowrulev2 = move 45% 75%, title:^(DMD)$
+windowrulev2 = workspace 2, title:^(Visual Pinball - Score)$
+windowrulev2 = monitor:HDMI-A-3, title:^(Visual Pinball - Score)$
+windowrulev2 = move 45% 75%, title:^(Visual Pinball - Score)$
 ```
-Similarly you can add the same rules to VPinballX windows (Visual Pinball Player, Backglass, Scoreboard)
-
+</details>
 
 ---
 
