@@ -154,6 +154,35 @@ cd ~/ASAPCabinetFE
 
 _Built something cool? Share it with us in the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions)!_
 
+---
+
+### 🚨 For Hyprland users 🚨
+**Window positioning won't work in Hyprland**
+<p>Use <b>hyprctl clients | grep -i <name> </b> to check exact titles/classes name.</p>
+<p>You can add window rules using windoe titles like this:</p>
+  
+```
+windowrulev2 = workspace 4, title:^(Playfield)$
+windowrulev2 = monitor:DP-1, title:^(Playfield)$
+windowrulev2 = fullscreen, title:^(Playfield)$
+
+windowrulev2 = workspace 3, title:^(Backglass)$
+windowrulev2 = monitor:HDMI-A-1, title:^(Backglass)$
+windowrulev2 = move 5%, title:^(Backglass)$
+
+windowrulev2 = workspace 2, title:^(DMD)$
+windowrulev2 = monitor:HDMI-A-3, title:^(DMD)$
+windowrulev2 = size 60% 45%, title:^(DMD)$
+
+windowrulev2 = workspace 1, title:^(Topper)$
+windowrulev2 = monitor:DVI-D-1, title:^(Topper)$
+windowrulev2 = float, title:^(Topper)$
+```
+Similarly you can add the same rules to VPinballX windows (Visual Pinball Player, Backglass, Scoreboard)
+
+
+---
+
 ## Default Keymap
 Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
 
