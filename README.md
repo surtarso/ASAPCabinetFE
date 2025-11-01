@@ -90,13 +90,14 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 
 Check the [User's Manual](UserManual.md) for more details.
 ## Compiling and Running
-
-👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
+<details open>
+<summary>👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
+  
 ```sh
 sudo apt-get update
 sudo apt-get install git findutils -y
 ```
-
+</details>
 <details>
 <summary>👫 Make sure you have `git` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
@@ -110,11 +111,13 @@ sudo pacman -S git
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 ```
-
-👪 Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
+<details open>
+<summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
+  
 ```sh
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
+</details>
 <details>
 <summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
