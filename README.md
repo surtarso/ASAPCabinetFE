@@ -26,13 +26,26 @@
 
 <p align="center"><i>"As Simple As Possible".</i></p>
 
-## TL:DR
-Get up and running in minutes—whether you’re a player or a code tinkerer.
+## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="40"/> Debian
 ```sh
 sudo apt-get install git findutils -y -qq
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat apt-packages.txt | xargs sudo apt-get install -y
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j$(nproc)
+cmake --install .
+cd ~/ASAPCabinetFE
+./ASAPCabinetFE
+```
+
+## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="40"/> Arch
+```sh
+sudo pacman -S git
+git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+cd ASAPCabinetFE-src
+sudo pacman -S base-devel cmake git sdl2 sdl2_image sdl2_ttf sdl2_mixer vlc ffmpeg curl nlohmann-json cargo xdotool imagemagick
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j$(nproc)
@@ -78,11 +91,19 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 Check the [User's Manual](UserManual.md) for more details.
 ## Compiling and Running
 
-👫 Make sure you have `git` and `xargs` available
+👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
 ```sh
 sudo apt-get update
 sudo apt-get install git findutils -y
 ```
+
+<details>
+<summary>👫 Make sure you have `git` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
+  
+```sh
+sudo pacman -S git
+```
+</details>
 
 💏 Clone the Repository
 ```sh
@@ -90,10 +111,18 @@ git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-
 cd ASAPCabinetFE-src
 ```
 
-👪 Install Dependencies (Debian based)
+👪 Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
 ```sh
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
+<details>
+<summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
+  
+```sh
+sudo pacman -S base-devel cmake sdl2 sdl2_image sdl2_ttf sdl2_mixer vlc ffmpeg curl nlohmann-json cargo xdotool imagemagick
+```
+</details>
+
 <details>
 <summary>🐞 Build and Run (Debug)</summary>
 
