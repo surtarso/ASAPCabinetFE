@@ -45,7 +45,7 @@ cd ~/ASAPCabinetFE
 sudo pacman -S git
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
-sudo pacman -S base-devel cmake git sdl2 sdl2_image sdl2_ttf sdl2_mixer vlc ffmpeg curl nlohmann-json cargo xdotool imagemagick
+cat pacman-packages.txt | xargs sudo pacman -S --needed
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j$(nproc)
