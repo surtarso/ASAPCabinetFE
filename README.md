@@ -157,8 +157,10 @@ _Built something cool? Share it with us in the [Discussions](https://github.com/
 ---
 
 ### 🚨 For Hyprland users 🚨
-**Window positioning won't work in Hyprland**
-<p>Use <b>hyprctl clients</b> to check exact titles or classes.</p>
+>[!WARNING]
+>**Window positioning won't work in Hyprland**
+>
+>Use `hyprctl clients` to check exact titles or classes.
 
 <details>
 <summary>You can add window rules like this</summary>
