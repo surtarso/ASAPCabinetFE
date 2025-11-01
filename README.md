@@ -26,7 +26,7 @@
 
 <p align="center"><i>"As Simple As Possible".</i></p>
 
-## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="40"/> Debian
+## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="25"/> Debian
 ```sh
 sudo apt-get install git findutils -y -qq
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -40,7 +40,7 @@ cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
 
-## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="40"/> Arch
+## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch
 ```sh
 sudo pacman -S git
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
