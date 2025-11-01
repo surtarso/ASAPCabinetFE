@@ -99,10 +99,10 @@ sudo apt-get install git findutils -y
 ```
 </details>
 <details>
-<summary>👫 Make sure you have `git` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
+<summary>👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
 ```sh
-sudo pacman -S git
+sudo pacman -S git findutils
 ```
 </details>
 
@@ -122,7 +122,7 @@ cat apt-packages.txt | xargs sudo apt-get install -y
 <summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
 ```sh
-sudo pacman -S base-devel cmake sdl2 sdl2_image sdl2_ttf sdl2_mixer vlc ffmpeg curl nlohmann-json cargo xdotool imagemagick
+cat pacman-packages.txt | xargs sudo pacman -S --needed
 ```
 </details>
 
