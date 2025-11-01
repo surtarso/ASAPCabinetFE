@@ -185,8 +185,8 @@ windowrulev2 = move 45% 3%, title:^(Visual Pinball - Backglass)$
 windowrulev2 = workspace 3, title:^(DMD)$
 windowrulev2 = monitor:HDMI-A-1, title:^(DMD)$
 windowrulev2 = move 45% 75%, title:^(DMD)$
-windowrulev2 = workspace 2, title:^(Visual Pinball - Score)$
-windowrulev2 = monitor:HDMI-A-3, title:^(Visual Pinball - Score)$
+windowrulev2 = workspace 3, title:^(Visual Pinball - Score)$
+windowrulev2 = monitor:HDMI-A-1, title:^(Visual Pinball - Score)$
 windowrulev2 = move 45% 75%, title:^(Visual Pinball - Score)$
 ```
 </details>
