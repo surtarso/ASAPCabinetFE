@@ -42,7 +42,7 @@ cd ~/ASAPCabinetFE
 
 ## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch
 ```sh
-sudo pacman -S git
+sudo pacman -S git findutils
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 cat pacman-packages.txt | xargs sudo pacman -S --needed
