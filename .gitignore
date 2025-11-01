@@ -8,6 +8,8 @@ settings.json
 imgui.ini
 create_codebase.sh
 codebase.txt
+build/
+Doxyfile.bak
 
 # Doxygen generated documentation
 docs/
