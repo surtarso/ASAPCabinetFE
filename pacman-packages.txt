@@ -1,0 +1,13 @@
+base-devel
+cmake
+sdl2
+sdl2_image
+sdl2_ttf
+sdl2_mixer
+vlc
+ffmpeg
+curl
+nlohmann-json
+cargo
+xdotool
+imagemagick
