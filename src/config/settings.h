@@ -25,14 +25,14 @@ struct Settings {
     // Metadata for each setting: field name -> reload type
     // static const std::unordered_map<std::string, ReloadType> settingsMetadata;
     static const std::map<std::string, std::pair<ReloadType, std::string>> settingsMetadata;
-    
+
     // [VPX]
     std::string VPXTablesPath = "$HOME/Games/VPX_Tables/"; // imguifiledialog
     std::string VPinballXPath = "$HOME/Games/vpinball/build/VPinballX_BGFX"; // imguifiledialog
     std::string vpxIniPath = ""; // imguifiledialog
     std::string vpxStartArgs = "";
     std::string vpxEndArgs = "";
-    bool autoPatchTables = false; //TODO: nyi
+    bool autoPatchTables = false;
 
     // [DPISettings]
     float dpiScale = 1.0f; // 0.1-1.0
@@ -239,17 +239,17 @@ struct Settings {
 
         // List all paths that need resolution
         std::vector<std::string> pathFields = {
-            // Default Media Paths (already in your original code, correctly resolved)
+            // Default Media Paths
             "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
             "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
             "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo",
 
-            // UI Sounds Paths (NOT resolved in your original code, need to be added - these are your "default sounds")
+            // UI Sounds Paths ("default sounds")
             "scrollNormalSound", "scrollFastSound", "scrollJumpSound",
             "scrollRandomSound", "launchTableSound", "launchScreenshotSound",
             "panelToggleSound", "screenshotTakeSound", "ambienceSound",
 
-            // Other internal/external paths (NOT resolved in your original code, need to be added)
+            // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath",//"vpxtoolBin", "vpxtoolIndex", "vpxIniPath" // From Internal section
         };
 
@@ -280,14 +280,14 @@ struct Settings {
             else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
         }
 
-        // Apply DPI scaling to fontSize if enabled (already handled correctly)
+        // Apply DPI scaling to fontSize if enabled
         if (enableDpiScaling) {
             fontSize = static_cast<int>(fontSize * dpiScale);
         }
     }
 
 public:
-    // Resolve relative paths and environment variables (e.g., $USER)
+    // Resolve relative paths and environment variables
     std::string resolvePath(const std::string& value, const std::string& exeDir) const {
         std::string result = value;
         // Replace $HOME with actual home directory
@@ -693,7 +693,7 @@ private:
         s.configUIWidth = j.value("Internal", nlohmann::json{}).value("configUIWidth", s.configUIWidth);
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
-        
+
         // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
             s.keybinds_.clear();
@@ -795,8 +795,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     // WindowSettings
     {"videoBackend", {Settings::ReloadType::Assets, "Select video playback backend:\n"
                                                    "VLC: Reliable software-based playback with broad format support. Ideal for compatibility.\n"
-                                                   "FFmpeg: Efficient software-based playback with extensive codec support. Suitable for most systems.\n"
-                                                   "GStreamer: Flexible playback with plugin-based architecture. Good for customized setups."}},
+                                                   "FFmpeg: Efficient software-based playback with extensive codec support. Suitable for most systems."}},
     {"useVPinballXIni", {Settings::ReloadType::Windows, "Uses sizes and positions from ~/.vpinball/VPinballX.ini\n"
                                                        "Using this option will override options below."}},
     {"playfieldWindowWidth", {Settings::ReloadType::Assets, "Width of the Playfield window in pixels.\n"
@@ -841,11 +840,11 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Fetches Virtual Pinball Spreadsheet database and\n"
                                                "attempts to match with file metadata to improve information."}},
     {"useVpxtool",{Settings::ReloadType::Tables, "Use an existing vpxtool_index.json or run vpxtool instead of internal VPin."}},
-    
+
     {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the Vpin Media Database.\n"
                                                         "- Requires VPSdb metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Resize downloaded images to current windows configuration."}},
-    
+
     {"ignoreScanners", {Settings::ReloadType::Tables, "Ignore scanners and read straight from index.\n"
                                                         "- Rebuilding tables requires this to be uncheckd."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Forces re-building metadata from scratch.\n"
@@ -867,7 +866,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleThreshold", {Settings::ReloadType::None, "Minimum similarity score (based on Levenshtein distance) required for a title to be considered a potential match."}},
     {"confidenceThreshold", {Settings::ReloadType::None, "Minimum total score required to confirm a table as a match in the database.\n"
                                                     "- Higher values ensure stricter matching."}},
- 
+
     // UIWidgets
     {"showArrowHint", {Settings::ReloadType::None, "Toggle visibility of the arrow hint widget."}},
     {"arrowHintWidth", {Settings::ReloadType::None, "Width of the arrow hint in pixels."}},
