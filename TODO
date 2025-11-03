@@ -2,8 +2,6 @@ TODO
 
 FIX:
 - Arch Font path not compatible with debian leads to missing font/title display
-- ImGuiFileDialog display of binaries without extension problem
-- update deprecated IGFD calls
 - make fast start and rebuild exclusive between eachother
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
