@@ -64,7 +64,7 @@ struct Settings {
 
     // [WindowSettings]
     std::string videoBackend = "vlc"; // + 'ffmpeg', 'novideo'
-    bool useVPinballXIni = true; // use vpx_ini_reader
+    bool useVPinballXIni = false; // use vpx_ini_reader
     int playfieldWindowWidth = 1080;
     int playfieldWindowHeight = 1920;
     int playfieldX = -1;
