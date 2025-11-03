@@ -39,8 +39,10 @@ cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
-
-## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch
+## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch (experimental)
+<details>
+<summary>Arch builds work but live reloading some configs may cause hangs.</summary>
+  
 ```sh
 sudo pacman -Syu --noconfirm git findutils
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -53,6 +55,7 @@ cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+</details>
 
 > [!NOTE]
 > :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
