@@ -11,6 +11,7 @@
 #include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
+// #include "editor/editor.h"
 #include <curl/curl.h>
 #include "log/logging.h"
 #include "log/logger.h"
@@ -143,8 +144,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Handle --version argument
-    if (argc > 1 && std::string(argv[1]) == "--version") {
+    // Handle --version / -v argument
+    if (argc > 1 && (std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v")) {
         std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
         std::cout << "Git Hash: " << ASAPCABINETFE_GIT_HASH << std::endl;
         std::cout << "Git Branch: " << ASAPCABINETFE_GIT_BRANCH << std::endl;
@@ -154,8 +155,40 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // Handle --help / -h argument
+    if (argc > 1 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
+        std::cout << "\n"
+                << "=========================================================\n"
+                << "          ASAPCabinetFE - Command Line Options\n"
+                << "=========================================================\n"
+                << "Version: " << ASAPCABINETFE_VERSION_STRING << "\n\n"
+                << "Usage:\n"
+                << "  ./ASAPCabinetFE [option]\n\n"
+                << "Options:\n"
+                << "  <no args>       Launch the Front-End\n"
+                << "  -e, --editor    Launch the Table Editor (placeholder)\n"
+                << "  -v, --version   Display version information\n"
+                << "  -h, --help      Show this help message\n\n"
+                << "Example:\n"
+                << "  ./ASAPCabinetFE --editor\n"
+                << "=========================================================\n"
+                << "User's Manual:\n"
+                << "github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md\n"
+                << "=========================================================\n"
+                << std::endl;
+        return 0;
+    }
+
     // Initialize SDL subsystems
     SDLBootstrap bootstrap;
+
+    // Handle --editor / -e argument
+    if (argc > 1 && (std::string(argv[1]) == "--editor" || std::string(argv[1]) == "-e")) {
+        std::cout << "ASAPCabinetFE Editor version " << ASAPCABINETFE_VERSION_STRING << std::endl;
+        //Editor editor();
+        //editor.run();
+        return 0;
+    }
 
     // Create and run the application
     App app(configPath);
