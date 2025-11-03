@@ -121,14 +121,17 @@ jobs:
       curl_version: ${{ steps.get-lib-versions.outputs.curl_version }}
       glibc_version: ${{ steps.get-lib-versions.outputs.glibc_version }}
     steps:
+    - name: Install git and git-lfs
+      run: |
+        pacman -Syu --noconfirm
+        pacman -S --noconfirm --needed git git-lfs
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         lfs: true
     - name: Install System Dependencies
       run: |
-        pacman -Syu --noconfirm
-        pacman -S --noconfirm --needed git git-lfs findutils cmake base-devel pkgconf
+        pacman -S --noconfirm --needed findutils cmake base-devel pkgconf
         git config --global --add safe.directory "/github/workspace"
         cat pacman-packages.txt | xargs pacman -S --noconfirm --needed
     - name: Get Library Versions for Release Tag
