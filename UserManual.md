@@ -92,7 +92,7 @@ You can freely drag and place any of the app's windows wherever you prefer on yo
 
 ### Automatic Positioning
 
-If you've already set up your window positions within VPinballX, and your `VPinballX.ini` file is in its default location (`~/.vpinball`), ASAPCabinetFE can automatically adopt those positions and sizes when it loads. This feature is enabled by default but can be toggled in the configuration menu.
+If you've already set up your window positions within VPinballX, and your `VPinballX.ini` file is in its default location (`~/.vpinball`), ASAPCabinetFE can automatically adopt those positions and sizes when it loads. This feature is not enabled by default but can be toggled in the configuration menu.
 >[!NOTE]
 >You can set a custom path for your VPinballX.ini in case you dont use the default location (optional).
 
