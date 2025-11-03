@@ -284,6 +284,34 @@ struct Settings {
         if (enableDpiScaling) {
             fontSize = static_cast<int>(fontSize * dpiScale);
         }
+
+        // Resolve font path
+        if (fontPath.empty() || !std::filesystem::exists(fontPath)) {
+            std::vector<std::string> candidates = {
+                "/usr/share/fonts/truetype/dejavu/Arial.ttf",      // Debian/Ubuntu
+                "/usr/share/fonts/truetype/dejavu/FreeSans.ttf",
+                "/usr/share/fonts/truetype/dejavu/FreeMono.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans.ttf",             // Arch
+                "/usr/share/fonts/TTF/Arial.ttf",
+                "/usr/share/fonts/TTF/FreeSans.ttf",
+                "/usr/share/fonts/TTF/FreeMono.ttf",
+                "/usr/share/fonts/dejavu/DejaVuSans.ttf",          // Fedora/openSUSE
+                "/usr/share/fonts/arial/Arial.ttf",
+                "/usr/share/fonts/freesans/FreeSans.ttf",
+                "/usr/share/fonts/freemono/FreeMono.ttf",
+                "/usr/local/share/fonts/DejaVuSans.ttf",           // Custom system install
+                "/usr/local/share/fonts/Arial.ttf",
+                "/usr/local/share/fonts/FreeSans.ttf",
+                "/usr/local/share/fonts/FreeMono.ttf",
+                "/usr/share/fonts/TTF/HackNerdFont-Regular.ttf"    // Mine =]
+            };
+            for (const auto& path : candidates) {
+                if (std::filesystem::exists(path)) {
+                    fontPath = path;
+                    break;
+                }
+            }
+        }
     }
 
 public:
