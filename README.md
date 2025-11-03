@@ -18,7 +18,7 @@
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
 <p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your Linux virtual pinball cabinet.</p>
-<p align="center">Crafted for pinball lovers, by a pinball lover.</p>
+<p align="center">Yes! You <i>can</i> use on single monitor 🙃</p>
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/019e4170-94f2-464c-9209-4754ba87a029" width="400" />
@@ -29,7 +29,9 @@
 > [!TIP]
 > :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start. Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md)
 
-## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="25"/> Debian
+---
+
+### TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian
 <details>
 <summary>Copy/Paste like a vibe coder.</summary>
 
@@ -48,7 +50,7 @@ cd ~/ASAPCabinetFE
 ```
 </details>
 
-## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch (experimental)
+### TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch (experimental)
 <details>
 <summary>Use Ffmpeg as backend, reloading some configs may cause hangs.</summary>
   
