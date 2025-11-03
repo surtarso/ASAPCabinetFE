@@ -243,7 +243,7 @@ ASAPCabinetFE provides you with three distinct scanners:
 - VPin Scanner: This is the scanner that will run when you select to use _metadata_. It will extract the metadata from your VPX files to display on the panel and possible help on matchmaking with vpsdb.
 - VPSDb Scanner: Using all gathered information, toggling fetchVPSDB will attempt to match you metadata with the Virtual Pinball Spreadsheet metadata.
 
-![image](https://github.com/user-attachments/assets/c42db096-bba6-4481-bf7d-958eb46f280b)
+<img width="729" height="443" alt="image" src="https://github.com/user-attachments/assets/4aeea268-9656-45b1-be55-dac02f963c30" />
 
 >[!NOTE]
 > If you already have `vpxtool` installed or `vpxtool_index.json` already built in your tables folder, we will try to use it instead of VPin. No need to double scan or keep multiple metadata files.
