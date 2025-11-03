@@ -1,12 +1,13 @@
 TODO
 
 FIX:
-- Arch Font path not compatible with debian leads to missing font/title display
+- switching video renderer causes black screen and hangs (Arch only!)
 - make fast start and rebuild exclusive between eachother
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 
 QOL:
+- a proper font picker
 - refactor the monoliths...
 - screenshot mode using app size/pos as frame
 - key for metadata toggle?
