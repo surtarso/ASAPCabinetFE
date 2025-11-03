@@ -173,7 +173,7 @@ jobs:
         ARTIFACT_TEMP_DIR="/tmp/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
-        cd "/root/ASAPCabinetFE"
+        cd "/github/home/ASAPCabinetFE"
         tar -czvhf "${TARBALL_FULL_PATH}" ./*
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
@@ -185,7 +185,7 @@ jobs:
         retention-days: 7
     - name: Test Version Flag
       run: |
-        cd "/root/ASAPCabinetFE"
+        cd "/github/home/ASAPCabinetFE"
         VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
