@@ -27,6 +27,9 @@
 <p align="center"><i>"As Simple As Possible".</i></p>
 
 ## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="25"/> Debian
+<details>
+<summary>Copy/Paste like a vibe coder.</summary>
+
 ```sh
 sudo apt-get install git findutils -y -qq
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
@@ -40,6 +43,8 @@ cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+</details>
+
 ## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch (experimental)
 <details>
 <summary>Arch builds work but live reloading some configs may cause hangs.</summary>
