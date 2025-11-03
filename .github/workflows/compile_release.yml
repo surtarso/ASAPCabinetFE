@@ -14,7 +14,7 @@ on:
       - "Doxyfile"
       - "docs/**"
     tags:
-      - 'test-*'
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
