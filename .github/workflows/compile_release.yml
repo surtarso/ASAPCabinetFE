@@ -14,7 +14,7 @@ on:
       - "Doxyfile"
       - "docs/**"
     tags:
-      - 'v*'
+      - 'test-*'
   pull_request:
     branches: [ "main" ]
 
@@ -217,21 +217,27 @@ jobs:
         body: |
           ### _As Simple As Possible Cabinet Front-End_ release ${{ github.ref_name }}
 
-          #### Ubuntu Build
-          Compiled using:
+          <details>
+          <summary>Ubuntu build compiled using...</summary>
+
           - GLIBC: ${{ needs.build_ubuntu.outputs.glibc_version }}
           - SDL2: ${{ needs.build_ubuntu.outputs.sdl2_version }}
           - FFmpeg: ${{ needs.build_ubuntu.outputs.ffmpeg_version }}
           - VLC: ${{ needs.build_ubuntu.outputs.vlc_version }}
           - cURL: ${{ needs.build_ubuntu.outputs.curl_version }}
 
-          #### Arch Linux Build
-          Compiled using:
+          </details>
+
+          <details>
+          <summary>Arch Linux build compiled using...</summary>
+
           - GLIBC: ${{ needs.build_arch.outputs.glibc_version }}
           - SDL2: ${{ needs.build_arch.outputs.sdl2_version }}
           - FFmpeg: ${{ needs.build_arch.outputs.ffmpeg_version }}
           - VLC: ${{ needs.build_arch.outputs.vlc_version }}
           - cURL: ${{ needs.build_arch.outputs.curl_version }}
+
+          </details>
 
           Unpack and run `./ASAPCabinetFE`
           Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md)
