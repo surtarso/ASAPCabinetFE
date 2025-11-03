@@ -141,7 +141,7 @@ endif()
 
 FetchContent_Declare(
     ImGuiFileDialog
-    URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.7.tar.gz
+    URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_GetProperties(ImGuiFileDialog)

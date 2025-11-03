@@ -184,8 +184,8 @@ protected:
             if (key == "VPXTablesPath") {
                 fileDialog->OpenDialog("FolderDlg_VPXTablesPath", "Select VPX Tables Folder", nullptr, config);
             } else if (key == "VPinballXPath") {
-                fileDialog->SetFileStyle(IGFD_FileStyleByFullName, "VPinballX*", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
-                fileDialog->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "VPinballX*", config);
+                fileDialog->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX.*))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "((VPinballX.*))", config);
             } else if (key == "vpxIniPath") {
                 fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
                 fileDialog->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
