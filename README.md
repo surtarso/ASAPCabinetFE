@@ -31,6 +31,7 @@
 sudo apt-get install git findutils -y -qq
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
+git lfs install && git lfs pull
 cat apt-packages.txt | xargs sudo apt-get install -y
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -47,6 +48,7 @@ cd ~/ASAPCabinetFE
 sudo pacman -Syu --noconfirm git findutils
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
+git lfs install && git lfs pull
 cat pacman-packages.txt | xargs sudo pacman -S --needed --noconfirm
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -113,6 +115,8 @@ sudo pacman -Syu git findutils --noconfirm
 ```sh
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
+git lfs install
+git lfs pull
 ```
 <details open>
 <summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
