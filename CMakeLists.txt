@@ -136,7 +136,7 @@ FetchContent_Declare(
 # Instead, we'll get its properties and include its source files directly.
 FetchContent_GetProperties(imgui)
 if(NOT imgui_POPULATED)
-    FetchContent_Populate(imgui)
+    FetchContent_MakeAvailable(imgui)
 endif()
 
 FetchContent_Declare(
@@ -159,7 +159,7 @@ FetchContent_Declare(
 )
 FetchContent_GetProperties(vpin)
 if(NOT vpin_POPULATED)
-    FetchContent_Populate(vpin)
+    FetchContent_MakeAvailable(vpin)
 endif()
 
 # 2. Find Rust Toolchain (cargo)
