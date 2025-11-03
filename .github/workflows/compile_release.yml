@@ -70,7 +70,7 @@ jobs:
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/build"
         cd "${GITHUB_WORKSPACE}/build"
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root -S .. -B .
     - name: Compile with CMake
       run: |
         cd "${GITHUB_WORKSPACE}/build"
@@ -124,7 +124,8 @@ jobs:
     - name: Install git and git-lfs
       run: |
         pacman -Syu --noconfirm
-        pacman -S --noconfirm --needed git git-lfs nodejs
+        pacman -S --noconfirm --needed git git-lfs
+        git lfs install
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -132,7 +133,7 @@ jobs:
     - name: Install System Dependencies
       run: |
         pacman -S --noconfirm --needed findutils cmake base-devel pkgconf
-        git config --global --add safe.directory "/github/workspace"
+        git config --global --add safe.directory "${GITHUB_WORKSPACE}"
         cat pacman-packages.txt | xargs pacman -S --noconfirm --needed
     - name: Get Library Versions for Release Tag
       if: startsWith(github.ref, 'refs/tags/')
@@ -150,16 +151,16 @@ jobs:
         echo "glibc_version=$GLIBC_VER" >> $GITHUB_OUTPUT
     - name: Configure with CMake
       run: |
-        mkdir -p "/github/workspace/build"
-        cd "/github/workspace/build"
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/github/workspace/install_root ..
+        mkdir -p "${GITHUB_WORKSPACE}/build"
+        cd "${GITHUB_WORKSPACE}/build"
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/github/workspace/install_root -S .. -B .
     - name: Compile with CMake
       run: |
-        cd "/github/workspace/build"
+        cd "${GITHUB_WORKSPACE}/build"
         cmake --build . -j$(nproc)
     - name: Run `make install` for packaging
       run: |
-        cd "/github/workspace/build"
+        cd "${GITHUB_WORKSPACE}/build"
         cmake --install .
     - name: Create distributable archive
       id: create-archive
