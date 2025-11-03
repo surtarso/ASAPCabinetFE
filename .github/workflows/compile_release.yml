@@ -87,10 +87,10 @@ jobs:
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-ubuntu-x64.tar.gz"
-        ARTIFACT_TEMP_DIR="${GITHUB_WORKSPACE}/artifacts"
+        ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
-        cd "${GITHUB_WORKSPACE}/install_root"
+        cd "${HOME}/ASAPCabinetFE"
         tar -czvhf "${TARBALL_FULL_PATH}" ./*
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
@@ -98,11 +98,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-ubuntu-x64
-        path: "${{ steps.create-archive.outputs.tarball_full_path }}"
+        path: "${{ runner.temp }}/artifacts/${{ steps.create-archive.outputs.tarball_name }}"
         retention-days: 7
     - name: Test Version Flag
       run: |
-        cd "${GITHUB_WORKSPACE}/install_root"
+        cd "${HOME}/ASAPCabinetFE"
         VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
@@ -124,7 +124,7 @@ jobs:
     - name: Install git and git-lfs
       run: |
         pacman -Syu --noconfirm
-        pacman -S --noconfirm --needed git git-lfs
+        pacman -S --noconfirm --needed git git-lfs nodejs
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -169,10 +169,10 @@ jobs:
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
         TARBALL_NAME="ASAPCabinetFE-${VERSION}-archlinux-x64.tar.gz"
-        ARTIFACT_TEMP_DIR="/github/workspace/artifacts"
+        ARTIFACT_TEMP_DIR="/tmp/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
-        cd "/github/workspace/install_root"
+        cd "/root/ASAPCabinetFE"
         tar -czvhf "${TARBALL_FULL_PATH}" ./*
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
@@ -184,7 +184,7 @@ jobs:
         retention-days: 7
     - name: Test Version Flag
       run: |
-        cd "/github/workspace/install_root"
+        cd "/root/ASAPCabinetFE"
         VERSION_OUTPUT=$(./ASAPCabinetFE --version)
         if echo "$VERSION_OUTPUT" | grep -q "ASAPCabinetFE version"; then
           echo "Version check passed: $VERSION_OUTPUT"
