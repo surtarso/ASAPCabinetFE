@@ -26,6 +26,9 @@
 
 <p align="center"><i>"As Simple As Possible".</i></p>
 
+> [!TIP]
+> :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start. Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md)
+
 ## TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="25"/> Debian
 <details>
 <summary>Copy/Paste like a vibe coder.</summary>
@@ -47,7 +50,7 @@ cd ~/ASAPCabinetFE
 
 ## TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="25"/> Arch (experimental)
 <details>
-<summary>Arch builds work but live reloading some configs may cause hangs.</summary>
+<summary>Use Ffmpeg as backend, reloading some configs may cause hangs.</summary>
   
 ```sh
 sudo pacman -Syu --noconfirm git findutils
@@ -63,9 +66,6 @@ cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
 </details>
-
-> [!NOTE]
-> :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start, or dive into the code for full customization.
 
 ## Features
 ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for, and here is why:
@@ -98,7 +98,9 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - Loads default or custom media for each table.
 - Launches tables with desired VPX executable.
 
-Check the [User's Manual](UserManual.md) for more details.
+>[!NOTE]
+>Check the [User's Manual](UserManual.md) for more details.
+
 ## Compiling and Running
 <details open>
 <summary>👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
