@@ -127,18 +127,22 @@ configure_file(
 # -------------------- Fetch modules ---------------------
 include(FetchContent)
 
+# Allow legacy FetchContent_Populate usage for libraries without CMake targets
+cmake_policy(SET CMP0169 OLD)
+
+# -------------------- ImGui ---------------------
 FetchContent_Declare(
     imgui
-    URL https://github.com/ocornut/imgui/archive/refs/tags/v1.91.9b.tar.gz
+    URL https://github.com/ocornut/imgui/archive/refs/tags/v1.92.4.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
-# We won't use FetchContent_MakeAvailable for imgui because it doesn't provide a clean target.
-# Instead, we'll get its properties and include its source files directly.
 FetchContent_GetProperties(imgui)
 if(NOT imgui_POPULATED)
     FetchContent_MakeAvailable(imgui)
 endif()
 
+# -------------------- ImGuiFileDialog ---------------------
+# We won't use FetchContent_MakeAvailable for IGFD because it doesn't provide a clean target.
 FetchContent_Declare(
     ImGuiFileDialog
     URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
@@ -149,7 +153,7 @@ if(NOT imguifiledialog_POPULATED)
     FetchContent_Populate(ImGuiFileDialog)
 endif()
 
-# --- Rust Library Integration Start ---
+# ------------ Rust Library Integration Start --------------
 
 # 1. Fetch the vpin Rust library
 FetchContent_Declare(
