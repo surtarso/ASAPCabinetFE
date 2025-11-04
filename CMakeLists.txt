@@ -280,6 +280,8 @@ set(SOURCES
     src/config/config_service.cpp
     src/config/ui/config_ui.cpp
     src/config/ui/section_renderer.cpp
+    # editor
+    src/editor/editor.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
@@ -347,6 +349,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/capture
     ${CMAKE_SOURCE_DIR}/src/config
     ${CMAKE_SOURCE_DIR}/src/config/ui
+    ${CMAKE_SOURCE_DIR}/src/editor
     ${CMAKE_SOURCE_DIR}/src/keybinds
     ${CMAKE_SOURCE_DIR}/src/log
     ${CMAKE_SOURCE_DIR}/src/render

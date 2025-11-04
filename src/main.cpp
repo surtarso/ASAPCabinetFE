@@ -11,7 +11,7 @@
 #include "version.h"
 #include "core/app.h"
 #include "core/first_run.h"
-// #include "editor/editor.h"
+#include "editor/editor.h"
 #include <curl/curl.h>
 #include "log/logging.h"
 #include "log/logger.h"
@@ -184,9 +184,8 @@ int main(int argc, char* argv[]) {
 
     // Handle --editor / -e argument
     if (argc > 1 && (std::string(argv[1]) == "--editor" || std::string(argv[1]) == "-e")) {
-        std::cout << "ASAPCabinetFE Editor version " << ASAPCABINETFE_VERSION_STRING << std::endl;
-        //Editor editor();
-        //editor.run();
+        Editor editor(configPath);
+        editor.run();
         return 0;
     }
 

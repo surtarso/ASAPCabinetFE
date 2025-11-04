@@ -19,6 +19,7 @@
 #include <thread>
 #include <condition_variable>
 #include <SDL_events.h>
+#include "iapp.h"
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
 #include "keybinds/iinput_manager.h"
@@ -54,7 +55,7 @@ struct Mix_Chunk;
  * IInputManager, IRenderer, and PlayfieldOverlay, and handles table data, configuration,
  * and UI interactions.
  */
-class App : public IAppCallbacks {
+class App : public IApp, public IAppCallbacks {
 public:
     ISoundManager* getSoundManager() override; // Changed to ISoundManager*
     /**
@@ -176,7 +177,7 @@ private:
     /**
      * @brief Loads table data. (leftover)
      *
-     * Calls loadTablesThreaded() 
+     * Calls loadTablesThreaded()
      */
     void loadTables();
 
