@@ -1,4 +1,5 @@
 #include "editor/editor.h"
+#include "editor/editor_ui.h"
 #include "log/logger.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
@@ -18,6 +19,7 @@ Editor::Editor(const std::string& configPath)
     keybindProvider_ = std::move(keybindProvider);
     tableLoader_ = std::make_unique<TableLoader>();
 
+    editorUI_ = std::make_unique<EditorUI>(config_.get(), tableLoader_.get());
     LOG_INFO("Editor initialized using shared configuration");
 }
 
@@ -57,21 +59,19 @@ void Editor::initializeImGui() {
 }
 
 void Editor::mainLoop() {
-    while (!exitRequested_) {
+    while (!editorUI_->shouldExit()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT) exitRequested_ = true;
+            if (event.type == SDL_QUIT)
+                return;
         }
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Editor Mode");
-        ImGui::Text("This is a placeholder editor interface.");
-        if (ImGui::Button("Exit")) exitRequested_ = true;
-        ImGui::End();
+        editorUI_->draw();
 
         ImGui::Render();
         SDL_SetRenderDrawColor(renderer_, 30, 30, 30, 255);
@@ -82,7 +82,8 @@ void Editor::mainLoop() {
 }
 
 void Editor::cleanup() {
-    if (loadingThread_.joinable()) loadingThread_.join();
+    if (loadingThread_.joinable())
+        loadingThread_.join();
 
     ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();

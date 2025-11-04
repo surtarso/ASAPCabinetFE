@@ -282,6 +282,7 @@ set(SOURCES
     src/config/ui/section_renderer.cpp
     # editor
     src/editor/editor.cpp
+    src/editor/editor_ui.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp

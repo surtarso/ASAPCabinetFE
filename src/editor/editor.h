@@ -1,6 +1,7 @@
 #pragma once
-#include "iapp.h"
-#include "dependency_factory.h"
+#include "editor/editor_ui.h"
+#include "core/iapp.h"
+#include "core/dependency_factory.h"
 #include <SDL2/SDL.h>
 #include <thread>
 #include <string>
@@ -26,19 +27,17 @@ private:
     // Core paths and state
     std::string configPath_;
     bool exitRequested_ = false;
-    bool loadingTables_ = false;
-    bool loadingComplete_ = false;
 
     // SDL + ImGui
     SDL_Window* window_ = nullptr;
     SDL_Renderer* renderer_ = nullptr;
-    float dpiScale_ = 1.0f;
 
     // Async loading
     std::thread loadingThread_;
 
-    // ASAPCabinetFE dependencies (reused config + table structure)
+    // ASAPCabinetFE dependencies (shared resources)
     std::unique_ptr<IConfigService> config_;
     std::unique_ptr<IKeybindProvider> keybindProvider_;
     std::unique_ptr<ITableLoader> tableLoader_;
+    std::unique_ptr<EditorUI> editorUI_;
 };
