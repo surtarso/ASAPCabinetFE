@@ -3,8 +3,8 @@
 #include "log/logger.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_sdlrenderer2.h>
 #include <filesystem>
 #include <iostream>
 
