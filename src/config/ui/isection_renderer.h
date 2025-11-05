@@ -41,17 +41,18 @@ protected:
     void renderFloat(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                      float minVal = 0.0f, float maxVal = 1.0f, const char* format = "%.2f") {
         float val = value.get<float>();
-        if (key == "titleWeight") {
+        if (key == "Title weight") {
+            ImGui::Text("Metadata matchmaking settings:");
             minVal = 0.2f; maxVal = 0.8f;
-        } else if (key == "yearWeight") {
+        } else if (key == "Year weight") {
             minVal = 0.0f; maxVal = 0.4f;
-        } else if (key == "manufacturerWeight") {
+        } else if (key == "Manufacturer weight") {
             minVal = 0.0f; maxVal = 0.3f;
-        } else if (key == "romWeight") {
+        } else if (key == "ROM weight") {
             minVal = 0.0f; maxVal = 0.5f;
-        } else if (key == "titleThreshold") {
+        } else if (key == "Title similarity") {
             minVal = 0.3f; maxVal = 0.8f;
-        } else if (key == "confidenceThreshold") {
+        } else if (key == "Overall confidence") {
             minVal = 0.4f; maxVal = 0.9f;
         } else if (key == "DPI Scale") {
             minVal = 0.5f; maxVal = 3.0f;

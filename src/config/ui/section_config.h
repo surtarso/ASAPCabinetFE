@@ -76,7 +76,13 @@ public:
             {"metadataPanelHeight", "Panel Height"},
             {"metadataPanelAlpha", "Panel Opacity"},
             {"ignoreScanners", "Fast load (skip scanners)"},
-            {"forceRebuildMetadata", "Force rebuild metadata"}
+            {"forceRebuildMetadata", "Force rebuild metadata"},
+            {"titleWeight", "Title weight"},
+            {"yearWeight", "Year weight"},
+            {"manufacturerWeight", "Manufacturer weight"},
+            {"romWeight", "ROM weight"},
+            {"titleThreshold", "Title similarity"},
+            {"confidenceThreshold", "Overall confidence"}
         };
         keyDropdownOptions_["TableMetadata"] = {
             {"titleSource", {"filename", "metadata"}},

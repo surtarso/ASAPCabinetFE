@@ -743,15 +743,14 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                     "Enter the full path where your .vpx table folders are stored.\n"
                                                     "Example: /home/you/Games/VPX_Tables/\n\n"
                                                     "Used when launching tables with VPinballX."}},
-    {"VPinballXPath", {Settings::ReloadType::None, "Full path to the VPinballX executable.\n\n"
-                                                  "If VPinballX is not on your PATH, set the exact location here."}},
+    {"VPinballXPath", {Settings::ReloadType::None, "Absolute path to the VPinballX executable.\n\n"}},
     {"vpxIniPath", {Settings::ReloadType::None, "Path to VPinballX.ini (optional).\n\n"
                                                "Leave empty to use the default location (~/.vpinball/VPinballX.ini)."}},
     {"vpxStartArgs", {Settings::ReloadType::None, "Extra command-line arguments to prepend when launching VPinballX.\n\n"
-                                                 "These are added before the table filename in the launch command."}},
+                                                 "These start the command line, added before the launch command."}},
     {"vpxEndArgs", {Settings::ReloadType::None, "Extra command-line arguments to append when launching VPinballX.\n\n"
-                                               "These are added after the table filename in the launch command."}},
-    {"autoPatchTables",{Settings::ReloadType::Tables, "Automatically apply community VBScript patch files when scanning tables."}},
+                                               "These end the command line, added after the launch command."}},
+    {"autoPatchTables",{Settings::ReloadType::Tables, "Automatically download and apply community VBScript patch files when scanning tables."}},
 
     // DPI settings
     {"dpiScale", {Settings::ReloadType::Windows, "Manual DPI scale (used only when automatic DPI scaling is disabled).\n\n"
@@ -760,16 +759,16 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                         "Disable this to set a custom DPI with 'dpiScale'."}},
 
     // Default media files
-    {"defaultPlayfieldImage", {Settings::ReloadType::Tables, "Relative path to the default playfield preview image.\n\n"
+    {"defaultPlayfieldImage", {Settings::ReloadType::Tables, "Absolute path to the default playfield preview image.\n\n"
                                                             "Shown when a table has no custom preview image."}},
-    {"defaultBackglassImage", {Settings::ReloadType::Tables, "Relative path to the default backglass image used when none is provided by a table."}},
-    {"defaultDmdImage", {Settings::ReloadType::Tables, "Relative path to the default DMD image used when a table provides none."}},
-    {"defaultWheelImage", {Settings::ReloadType::Tables, "Relative path to the default wheel image used when a table provides none."}},
-    {"defaultTopperImage", {Settings::ReloadType::Tables, "Relative path to the default Topper image used when a table provides none."}},
-    {"defaultPlayfieldVideo", {Settings::ReloadType::Tables, "Relative path to the default preview video for playfields (used when table lacks video)."}},
-    {"defaultBackglassVideo", {Settings::ReloadType::Tables, "Relative path to the default backglass preview video (used when table lacks video)."}},
-    {"defaultDmdVideo", {Settings::ReloadType::Tables, "Relative path to the default DMD preview video (used when table lacks video)."}},
-    {"defaultTopperVideo", {Settings::ReloadType::Tables, "Relative path to the default Topper preview video (used when table lacks video)."}},
+    {"defaultBackglassImage", {Settings::ReloadType::Tables, "Absolute path to the default backglass image used when none is provided by a table."}},
+    {"defaultDmdImage", {Settings::ReloadType::Tables, "Absolute path to the default DMD image used when a table provides none."}},
+    {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
+    {"defaultTopperImage", {Settings::ReloadType::Tables, "Absolute path to the default Topper image used when a table provides none."}},
+    {"defaultPlayfieldVideo", {Settings::ReloadType::Tables, "Absolute path to the default preview video for playfields (used when table lacks video)."}},
+    {"defaultBackglassVideo", {Settings::ReloadType::Tables, "Absolute path to the default backglass preview video (used when table lacks video)."}},
+    {"defaultDmdVideo", {Settings::ReloadType::Tables, "Absolute path to the default DMD preview video (used when table lacks video)."}},
+    {"defaultTopperVideo", {Settings::ReloadType::Tables, "Absolute path to the default Topper preview video (used when table lacks video)."}},
 
     // Custom media per-table (relative to each table folder)
     {"customPlayfieldImage", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the playfield preview image."}},
@@ -789,10 +788,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                    "vlc - libVLC-based playback: broad codec support and good compatibility.\n"
                                                    "ffmpeg - internal FFmpeg playback: usually faster and lighter on modern Linux systems.\n"
                                                    "novideo - disable all in-app video (useful for debugging or low-power setups).\n"
-                                                   "software - force SDL software rendering for window renderers (diagnostic/testing only).\n\n"
-                                                   "If you are unsure, try 'ffmpeg' first."}},
+                                                   "software - force SDL software rendering for window renderers (diagnostic/testing only)."}},
     {"useVPinballXIni", {Settings::ReloadType::Windows, "If enabled, read sizes and positions from ~/.vpinball/VPinballX.ini.\n\n"
-                                                       "This will override the manual window position/size settings below."}},
+                                                       "NOTE: This will override the manual window position/size settings below."}},
     {"playfieldWindowWidth", {Settings::ReloadType::Assets, "Playfield window width in pixels (match this to your playfield media for best results)."}},
     {"playfieldWindowHeight", {Settings::ReloadType::Assets, "Playfield window height in pixels (match this to your playfield media for best results)."}},
     {"playfieldX", {Settings::ReloadType::Assets, "Playfield window X position on screen.\n\nDrag a window and double-click to save its position."}},
@@ -818,10 +816,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                   "filename' - use filename-based heuristics;\n"
                                                   "metadata' - run the scanners to extract embedded metadata."}},
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Download and use the VPSdb (community database) to improve automatic table matching and metadata accuracy."}},
-    {"useVpxtool",{Settings::ReloadType::Tables, "Use an external vpxtool index (if available) or run vpxtool to extract table metadata instead of the built-in scanner."}},
+    {"useVpxtool",{Settings::ReloadType::Tables, "Use an external vpxtool index (if available) or run vpxtool to extract table metadata instead of built-in VPin scanner."}},
     {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the VPin Media Database (requires VPSdb metadata)."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize downloaded images to match your current window dimensions to save memory and keep layout consistent."}},
-    {"ignoreScanners", {Settings::ReloadType::Tables, "Skip local scanners and read metadata only from the index file.\n\nUseful for debugging or when you have a trusted pre-built index."}},
+    {"ignoreScanners", {Settings::ReloadType::Tables, "Skip local scanners and read metadata only from the index file.\n\nUseful for when you have a trusted pre-built index."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Rebuild all table metadata from scratch.\n\nUse this if metadata is incorrect or you changed scanner settings."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Choose the field used to sort the table list (requires VPSdb metadata for some options)."}},
     {"showMetadata", {Settings::ReloadType::Overlay, "Show or hide the metadata overlay panel on the playfield window."}},
@@ -830,9 +828,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.0-1.0)."}},
     {"titleWeight", {Settings::ReloadType::None, "How much title similarity influences automatic matching (higher = stronger influence)."}},
     {"yearWeight", {Settings::ReloadType::None, "How much year similarity influences automatic matching (higher = stronger influence)."}},
-    {"manufacturerWeight", {Settings::ReloadType::None, "How much manufacturer similarity influences automatic matching."}},
-    {"romWeight", {Settings::ReloadType::None, "How much ROM name similarity influences automatic matching."}},
-    {"titleThreshold", {Settings::ReloadType::None, "Minimum similarity score required for a title to be considered a match."}},
+    {"manufacturerWeight", {Settings::ReloadType::None, "How much manufacturer similarity influences automatic matching (higher = stronger influence)."}},
+    {"romWeight", {Settings::ReloadType::None, "How much ROM name similarity influences automatic matching (higher = stronger influence)."}},
+    {"titleThreshold", {Settings::ReloadType::None, "Minimum similarity score required for a title to be considered a match (higher = stricter)."}},
     {"confidenceThreshold", {Settings::ReloadType::None, "Overall confidence threshold required to accept a metadata match (higher = stricter)."}},
 
     // UI widget settings
