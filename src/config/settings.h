@@ -97,11 +97,6 @@ struct Settings {
     bool ignoreScanners = false;
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
-    bool showMetadata = false;
-
-    float metadataPanelWidth = 0.7f; // 0.1-1.0
-    float metadataPanelHeight = 0.5f; // 0.1-1.0
-    float metadataPanelAlpha = 0.6f; // 0.1-1.0
 
     float titleWeight = 0.6f; //0.2 - 0.8
     float yearWeight = 0.2f; //0 - 0.4
@@ -111,6 +106,11 @@ struct Settings {
     float confidenceThreshold = 0.6f; //0.4 0.9
 
     // [UIWidgets]
+    bool showMetadata = false;
+    float metadataPanelWidth = 0.7f; // 0.1-1.0
+    float metadataPanelHeight = 0.5f; // 0.1-1.0
+    float metadataPanelAlpha = 0.6f; // 0.1-1.0
+
     bool showArrowHint = true;
     float arrowHintWidth = 20.0f;
     float arrowHintHeight = 100.0f;
@@ -407,10 +407,6 @@ private:
                 {"ignoreScanners", s.ignoreScanners},
                 {"forceRebuildMetadata", s.forceRebuildMetadata},
                 {"titleSortBy", s.titleSortBy},
-                {"showMetadata", s.showMetadata},
-                {"metadataPanelWidth", s.metadataPanelWidth},
-                {"metadataPanelHeight", s.metadataPanelHeight},
-                {"metadataPanelAlpha", s.metadataPanelAlpha},
                 {"titleWeight", s.titleWeight},
                 {"yearWeight", s.yearWeight},
                 {"manufacturerWeight", s.manufacturerWeight},
@@ -419,6 +415,10 @@ private:
                 {"confidenceThreshold", s.confidenceThreshold}
             }},
             {"UIWidgets", {
+                {"showMetadata", s.showMetadata},
+                {"metadataPanelWidth", s.metadataPanelWidth},
+                {"metadataPanelHeight", s.metadataPanelHeight},
+                {"metadataPanelAlpha", s.metadataPanelAlpha},
                 {"showArrowHint", s.showArrowHint},
                 {"arrowHintWidth", s.arrowHintWidth},
                 {"arrowHintHeight", s.arrowHintHeight},
@@ -583,10 +583,6 @@ private:
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
         s.ignoreScanners = j.value("TableMetadata", nlohmann::json{}).value("ignoreScanners", s.ignoreScanners);
         s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
-        s.showMetadata = j.value("TableMetadata", nlohmann::json{}).value("showMetadata", s.showMetadata);
-        s.metadataPanelWidth = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelWidth", s.metadataPanelWidth);
-        s.metadataPanelHeight = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelHeight", s.metadataPanelHeight);
-        s.metadataPanelAlpha = j.value("TableMetadata", nlohmann::json{}).value("metadataPanelAlpha", s.metadataPanelAlpha);
 
         s.titleWeight = j.value("TableMetadata", nlohmann::json{}).value("titleWeight", s.titleWeight);
         s.yearWeight = j.value("TableMetadata", nlohmann::json{}).value("yearWeight", s.yearWeight);
@@ -596,6 +592,10 @@ private:
         s.confidenceThreshold = j.value("TableMetadata", nlohmann::json{}).value("confidenceThreshold", s.confidenceThreshold);
 
         // UIWidgets
+        s.showMetadata = j.value("UIWidgets", nlohmann::json{}).value("showMetadata", s.showMetadata);
+        s.metadataPanelWidth = j.value("UIWidgets", nlohmann::json{}).value("metadataPanelWidth", s.metadataPanelWidth);
+        s.metadataPanelHeight = j.value("UIWidgets", nlohmann::json{}).value("metadataPanelHeight", s.metadataPanelHeight);
+        s.metadataPanelAlpha = j.value("UIWidgets", nlohmann::json{}).value("metadataPanelAlpha", s.metadataPanelAlpha);
         s.showArrowHint = j.value("UIWidgets", nlohmann::json{}).value("showArrowHint", s.showArrowHint);
         s.arrowHintWidth = j.value("UIWidgets", nlohmann::json{}).value("arrowHintWidth", s.arrowHintWidth);
         s.arrowHintHeight = j.value("UIWidgets", nlohmann::json{}).value("arrowHintHeight", s.arrowHintHeight);
@@ -820,10 +820,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ignoreScanners", {Settings::ReloadType::Tables, "Skip local scanners and read metadata only from the index file.\n\nUseful for when you have a trusted pre-built index."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Rebuild all table metadata from scratch.\n\nUse this if metadata is incorrect or you changed scanner settings."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Choose the field used to sort the table list (requires VPSdb metadata for some options)."}},
-    {"showMetadata", {Settings::ReloadType::Overlay, "Show or hide the metadata overlay panel on the playfield window."}},
-    {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Metadata panel width as a fraction of the screen (0.1-1.0)."}},
-    {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Metadata panel height as a fraction of the screen (0.1-1.0)."}},
-    {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.0-1.0)."}},
     {"titleWeight", {Settings::ReloadType::None, "How much title similarity influences automatic matching (higher = stronger influence)."}},
     {"yearWeight", {Settings::ReloadType::None, "How much year similarity influences automatic matching (higher = stronger influence)."}},
     {"manufacturerWeight", {Settings::ReloadType::None, "How much manufacturer similarity influences automatic matching (higher = stronger influence)."}},
@@ -832,6 +828,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"confidenceThreshold", {Settings::ReloadType::None, "Overall confidence threshold required to accept a metadata match (higher = stricter)."}},
 
     // UI widget settings
+    {"showMetadata", {Settings::ReloadType::Overlay, "Show or hide the metadata overlay panel on the playfield window."}},
+    {"metadataPanelWidth", {Settings::ReloadType::Overlay, "Metadata panel width as a fraction of the screen (0.1-1.0)."}},
+    {"metadataPanelHeight", {Settings::ReloadType::Overlay, "Metadata panel height as a fraction of the screen (0.1-1.0)."}},
+    {"metadataPanelAlpha", {Settings::ReloadType::Overlay, "Transparency of the metadata panel (0.0-1.0)."}},
     {"showArrowHint", {Settings::ReloadType::None, "Toggle the small arrow hint widget in the UI."}},
     {"arrowHintWidth", {Settings::ReloadType::None, "Width of the arrow hint in pixels."}},
     {"arrowHintHeight", {Settings::ReloadType::None, "Height of the arrow hint in pixels."}},

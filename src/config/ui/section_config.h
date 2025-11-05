@@ -47,13 +47,8 @@ public:
         keyOrders_["TableMetadata"] = {
             "titleSource",
             "titleSortBy",
-            "showMetadata",
-            "metadataPanelWidth",
-            "metadataPanelHeight",
-            "metadataPanelAlpha",
             "useVpxtool",
             "fetchVPSdb",
-
             "ignoreScanners",
             "forceRebuildMetadata",
             "titleWeight",
@@ -68,11 +63,6 @@ public:
             {"titleSortBy", "Sort By"},
             {"useVpxtool", "Enable VPXTool"},
             {"fetchVPSdb", "Use VPS DB"},
-
-            {"showMetadata", "Display Metadata"},
-            {"metadataPanelWidth", "Panel Width"},
-            {"metadataPanelHeight", "Panel Height"},
-            {"metadataPanelAlpha", "Panel Opacity"},
             {"ignoreScanners", "Fast load (skip scanners)"},
             {"forceRebuildMetadata", "Force rebuild metadata"},
             {"titleWeight", "Title weight"},
@@ -117,6 +107,10 @@ public:
         };
 
         keyOrders_["UIWidgets"] = {
+            "showMetadata",
+            "metadataPanelWidth",
+            "metadataPanelHeight",
+            "metadataPanelAlpha",
             "showArrowHint",
             "arrowHintWidth",
             "arrowHintHeight",
@@ -134,6 +128,10 @@ public:
             "scrollbarThumbColor"
         };
         keyDisplayNames_["UIWidgets"] = {
+            {"showMetadata", "Display Metadata"},
+            {"metadataPanelWidth", "Panel Width"},
+            {"metadataPanelHeight", "Panel Height"},
+            {"metadataPanelAlpha", "Panel Opacity"},
             {"showArrowHint", "Show arrow hint"},
             {"arrowHintWidth", "Arrow width"},
             {"arrowHintHeight", "Arrow height"},
