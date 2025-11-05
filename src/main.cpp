@@ -165,10 +165,11 @@ int main(int argc, char* argv[]) {
                 << "Usage:\n"
                 << "  ./ASAPCabinetFE [option]\n\n"
                 << "Options:\n"
-                << "  <no args>       Launch the Front-End\n"
-                << "  -e, --editor    Launch the Table Editor (placeholder)\n"
-                << "  -v, --version   Display version information\n"
-                << "  -h, --help      Show this help message\n\n"
+                << "  <no args>              Launch the main Front-End\n"
+                << "  --software-renderer    Launch in software mode (debug)\n"
+                << "  -e, --editor           Launch the Table Editor (not yet implemented)\n"
+                << "  -v, --version          Display version information\n"
+                << "  -h, --help             Show this help message\n\n"
                 << "Example:\n"
                 << "  ./ASAPCabinetFE --editor\n"
                 << "=========================================================\n"
@@ -189,7 +190,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // Parse --software-renderer flag (optional)
+    // Parse --software-renderer flag
     bool forceSoftware = false;
     for (int i = 1; i < argc; ++i) {
         if (std::string(argv[i]) == "--software-renderer") {
