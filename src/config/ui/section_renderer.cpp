@@ -15,6 +15,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
     if (ImGui::CollapsingHeader(displayName.c_str(), flags)) {
         ImGui::Indent();
 
+        // ----------------------- Special handling for AudioSettings section
         if (sectionName == "AudioSettings") {
             ImGui::Text("Audio Mixer");
             ImGui::Separator();
@@ -103,6 +104,103 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             return; // skip generic rendering for this section
         }
 
+        // ----------------------- Special handling for Window section
+        if (sectionName == "WindowSettings") {
+            ImGui::Text("Window Layout Preview");
+            ImGui::Separator();
+
+            // Only include windows that are toggled ON
+            struct WindowData {
+                const char* name;
+                ImU32 color;
+                const char* showKey;
+                const char* xKey;
+                const char* yKey;
+                const char* wKey;
+                const char* hKey;
+                bool visible;
+                int x, y, w, h;
+            } windows[] = {
+                {"Playfield", IM_COL32(80, 180, 255, 200), nullptr, "playfieldX", "playfieldY", "playfieldWindowWidth", "playfieldWindowHeight", true},
+                {"Backglass", IM_COL32(255, 180, 80, 200), "showBackglass", "backglassX", "backglassY", "backglassWindowWidth", "backglassWindowHeight", sectionData.value("showBackglass", false)},
+                {"DMD", IM_COL32(180, 255, 100, 200), "showDMD", "dmdX", "dmdY", "dmdWindowWidth", "dmdWindowHeight", sectionData.value("showDMD", false)},
+                {"Topper", IM_COL32(255, 100, 200, 200), "showTopper", "topperWindowX", "topperWindowY", "topperWindowWidth", "topperWindowHeight", sectionData.value("showTopper", false)},
+            };
+
+            // Calculate bounds and scaling for preview canvas
+            int maxX = 0, maxY = 0;
+            for (auto& w : windows) {
+                if (!w.visible) continue;
+                w.x = sectionData.value(w.xKey, 0);
+                w.y = sectionData.value(w.yKey, 0);
+                w.w = sectionData.value(w.wKey, 0);
+                w.h = sectionData.value(w.hKey, 0);
+                maxX = std::max(maxX, w.x + w.w);
+                maxY = std::max(maxY, w.y + w.h);
+            }
+            float scale = 1.0f;
+            if (maxX > 0 && maxY > 0)
+                scale = std::min(400.0f / (float)maxX, 300.0f / (float)maxY);
+
+            ImVec2 canvasSize(420, 320);
+            ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+            ImDrawList* draw = ImGui::GetWindowDrawList();
+            draw->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(25, 25, 25, 255));
+            draw->AddRect(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(180, 180, 180, 255));
+
+            // Handle dragging/resizing interaction
+            ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft);
+            bool isCanvasHovered = ImGui::IsItemHovered();
+            ImVec2 mouse = ImGui::GetIO().MousePos;
+            ImVec2 relMouse = ImVec2((mouse.x - canvasPos.x) / scale, (mouse.y - canvasPos.y) / scale);
+
+            static int activeIndex = -1;
+            static bool resizing = false;
+            if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                activeIndex = -1, resizing = false;
+
+            for (int i = 0; i < IM_ARRAYSIZE(windows); i++) {
+                auto& win = windows[i];
+                if (!win.visible) continue;
+                ImVec2 pMin(canvasPos.x + win.x * scale, canvasPos.y + win.y * scale);
+                ImVec2 pMax(canvasPos.x + (win.x + win.w) * scale, canvasPos.y + (win.y + win.h) * scale);
+
+                // Detect mouse hover
+                bool hover = isCanvasHovered && mouse.x >= pMin.x && mouse.x <= pMax.x && mouse.y >= pMin.y && mouse.y <= pMax.y;
+                ImU32 color = hover ? IM_COL32(255, 255, 255, 255) : IM_COL32(180, 180, 180, 255);
+                draw->AddRectFilled(pMin, pMax, win.color);
+                draw->AddRect(pMin, pMax, color);
+                draw->AddText(ImVec2(pMin.x + 5, pMin.y + 5), IM_COL32(255, 255, 255, 255), win.name);
+
+                // Start drag
+                if (hover && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    activeIndex = i, resizing = ImGui::GetIO().KeyShift; // Shift = resize
+
+                // Drag or resize
+                if (i == activeIndex && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                    if (resizing) {
+                        win.w = std::max(1, int((relMouse.x - win.x)));
+                        win.h = std::max(1, int((relMouse.y - win.y)));
+                    } else {
+                        win.x = int(relMouse.x - win.w / 2);
+                        win.y = int(relMouse.y - win.h / 2);
+                    }
+                    // Update JSON live
+                    sectionData[win.xKey] = win.x;
+                    sectionData[win.yKey] = win.y;
+                    sectionData[win.wKey] = win.w;
+                    sectionData[win.hKey] = win.h;
+                }
+            }
+
+            //ImGui::Dummy(canvasSize);
+            ImGui::TextDisabled("Tip: drag to move, Shift+drag to resize");
+            ImGui::Spacing();
+            ImGui::Separator();
+        }
+
+
+        // ----------------------- Generic rendering for other sections
         float singleFieldWidth = ImGui::GetContentRegionAvail().x * 0.5f;
         float pairedFieldWidth = ImGui::GetContentRegionAvail().x * 0.25f;
 
