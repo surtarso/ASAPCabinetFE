@@ -121,11 +121,21 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                 const char* hKey;
                 bool visible;
                 int x, y, w, h;
-            } windows[] = {
-                {"Playfield", IM_COL32(80, 180, 255, 200), nullptr, "playfieldX", "playfieldY", "playfieldWindowWidth", "playfieldWindowHeight", true},
-                {"Backglass", IM_COL32(255, 180, 80, 200), "showBackglass", "backglassX", "backglassY", "backglassWindowWidth", "backglassWindowHeight", sectionData.value("showBackglass", false)},
-                {"DMD", IM_COL32(180, 255, 100, 200), "showDMD", "dmdX", "dmdY", "dmdWindowWidth", "dmdWindowHeight", sectionData.value("showDMD", false)},
-                {"Topper", IM_COL32(255, 100, 200, 200), "showTopper", "topperWindowX", "topperWindowY", "topperWindowWidth", "topperWindowHeight", sectionData.value("showTopper", false)},
+            };
+
+            WindowData windows[] = {
+                {"Playfield", IM_COL32(80, 180, 255, 200), nullptr,
+                    "playfieldX", "playfieldY", "playfieldWindowWidth", "playfieldWindowHeight",
+                    true, 0, 0, 0, 0},
+                {"Backglass", IM_COL32(255, 180, 80, 200), "showBackglass",
+                    "backglassX", "backglassY", "backglassWindowWidth", "backglassWindowHeight",
+                    sectionData.value("showBackglass", false), 0, 0, 0, 0},
+                {"DMD", IM_COL32(180, 255, 100, 200), "showDMD",
+                    "dmdX", "dmdY", "dmdWindowWidth", "dmdWindowHeight",
+                    sectionData.value("showDMD", false), 0, 0, 0, 0},
+                {"Topper", IM_COL32(255, 100, 200, 200), "showTopper",
+                    "topperWindowX", "topperWindowY", "topperWindowWidth", "topperWindowHeight",
+                    sectionData.value("showTopper", false), 0, 0, 0, 0},
             };
 
             // Calculate bounds and scaling for preview canvas
@@ -163,8 +173,10 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             for (int i = 0; i < IM_ARRAYSIZE(windows); i++) {
                 auto& win = windows[i];
                 if (!win.visible) continue;
-                ImVec2 pMin(canvasPos.x + win.x * scale, canvasPos.y + win.y * scale);
-                ImVec2 pMax(canvasPos.x + (win.x + win.w) * scale, canvasPos.y + (win.y + win.h) * scale);
+                ImVec2 pMin(canvasPos.x + static_cast<float>(win.x) * scale,
+                            canvasPos.y + static_cast<float>(win.y) * scale);
+                ImVec2 pMax(canvasPos.x + static_cast<float>(win.x + win.w) * scale,
+                            canvasPos.y + static_cast<float>(win.y + win.h) * scale);
 
                 // Detect mouse hover
                 bool hover = isCanvasHovered && mouse.x >= pMin.x && mouse.x <= pMax.x && mouse.y >= pMin.y && mouse.y <= pMax.y;
@@ -180,11 +192,11 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                 // Drag or resize
                 if (i == activeIndex && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
                     if (resizing) {
-                        win.w = std::max(1, int((relMouse.x - win.x)));
-                        win.h = std::max(1, int((relMouse.y - win.y)));
+                        win.w = std::max(1, static_cast<int>(relMouse.x) - win.x);
+                        win.h = std::max(1, static_cast<int>(relMouse.y) - win.y);
                     } else {
-                        win.x = int(relMouse.x - win.w / 2);
-                        win.y = int(relMouse.y - win.h / 2);
+                        win.x = static_cast<int>(relMouse.x) - win.w / 2;
+                        win.y = static_cast<int>(relMouse.y) - win.h / 2;
                     }
                     // Update JSON live
                     sectionData[win.xKey] = win.x;
