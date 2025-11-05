@@ -15,8 +15,18 @@ struct SDL_Surface;
 namespace fs = std::filesystem;
 
 App::App(const std::string& configPath, bool forceSoftwareRenderer)
-        : configPath_(configPath),
-            forceSoftwareRenderer_(forceSoftwareRenderer),
+    : forceSoftwareRenderer_(forceSoftwareRenderer),
+      exeDir_(),
+      configPath_(configPath),
+      showConfig_(false),
+      overrideEditor_(nullptr),
+      overrideManager_(),
+      showEditor_(false),
+      vpsdbCatalog_(nullptr),
+      vpsdbJsonLoader_(nullptr),
+      showVpsdb_(false),
+      currentIndex_(0),
+      lastTableIndex_(),
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
       tableLoader_(std::make_unique<TableLoader>()),

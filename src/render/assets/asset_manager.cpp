@@ -483,7 +483,8 @@ void AssetManager::cleanupVideoPlayers() {
 }
 
 void AssetManager::processVlcFallbackEvent(void* data) {
-    // data is unused; we'll inspect our active players and see if any VLC players have zero frames
+    (void)data; // intentionally unused - the event contains no payload we need here
+    // Inspect active players and see if any VLC players have zero frames
     auto checkAndFallback = [this](std::unique_ptr<IVideoPlayer>& player, SDL_Renderer* renderer, const std::string& path, int w, int h, const char* name) {
         if (!player) return;
         VlcVideoPlayer* vlcPtr = dynamic_cast<VlcVideoPlayer*>(player.get());
