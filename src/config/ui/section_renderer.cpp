@@ -101,6 +101,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
 
             ImGui::Spacing();
             ImGui::Separator();
+            ImGui::Unindent();
             return; // skip generic rendering for this section
         }
 
