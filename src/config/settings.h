@@ -63,7 +63,9 @@ struct Settings {
     std::string customLaunchSound = "audio/launch.mp3";
 
     // [WindowSettings]
-    std::string videoBackend = "vlc"; // + 'ffmpeg', 'novideo'
+    std::string videoBackend = "vlc"; // + 'ffmpeg', 'novideo', 'software'
+    // When true, prefer SDL software renderers for all windows (diagnostic/testing)
+    bool forceSoftwareRenderer = false;
     bool useVPinballXIni = false; // use vpx_ini_reader
     int playfieldWindowWidth = 1080;
     int playfieldWindowHeight = 1920;

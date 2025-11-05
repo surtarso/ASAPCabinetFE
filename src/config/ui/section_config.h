@@ -252,7 +252,7 @@ public:
             {"topperWindowY", "Topper Y"}
         };
         keyDropdownOptions_["WindowSettings"] = {
-            {"videoBackend", {"vlc", "ffmpeg", "novideo"}}
+            {"videoBackend", {"vlc", "ffmpeg", "novideo", "software"}}
         };
 
         keyOrders_["MediaDimensions"] = {

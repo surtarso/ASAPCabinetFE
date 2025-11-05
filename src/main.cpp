@@ -189,8 +189,17 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // Parse --software-renderer flag (optional)
+    bool forceSoftware = false;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "--software-renderer") {
+            forceSoftware = true;
+            break;
+        }
+    }
+
     // Create and run the application
-    App app(configPath);
+    App app(configPath, forceSoftware);
     app.run();
 
     return 0;

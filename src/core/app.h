@@ -65,7 +65,7 @@ public:
      *
      * @param configPath The file path to the configuration file.
      */
-    App(const std::string& configPath);
+    App(const std::string& configPath, bool forceSoftwareRenderer = false);
 
     /**
      * @brief Destroys the App instance.
@@ -119,6 +119,7 @@ public:
     void reloadOverlaySettings() override;
 
 private:
+    bool forceSoftwareRenderer_ = false; ///< If true, force SDL software renderer for windows
     std::string exeDir_;                        ///< Executable directory for resolving paths.
     std::string configPath_;                    ///< Path to the configuration file.
     bool showConfig_ = false;                   ///< Flag controlling configuration UI visibility.

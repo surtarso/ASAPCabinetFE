@@ -170,6 +170,7 @@ private:
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> backglassRenderer_; ///< Renderer for the backglass window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> dmdRenderer_;      ///< Renderer for the DMD window.
     std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> topperRenderer_;    ///< Renderer for the topper window.
+    bool forceSoftwareRenderer_ = false; ///< If true, prefer SDL software renderers
 };
 
 #endif // WINDOW_MANAGER_H

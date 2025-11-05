@@ -14,8 +14,9 @@ struct SDL_Surface;
 
 namespace fs = std::filesystem;
 
-App::App(const std::string& configPath)
-    : configPath_(configPath),
+App::App(const std::string& configPath, bool forceSoftwareRenderer)
+        : configPath_(configPath),
+            forceSoftwareRenderer_(forceSoftwareRenderer),
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
       tableLoader_(std::make_unique<TableLoader>()),
@@ -226,6 +227,12 @@ void App::loadTablesThreaded(size_t oldIndex) {
 void App::initializeDependencies() {
     keybindProvider_ = DependencyFactory::createKeybindProvider();
     configManager_ = DependencyFactory::createConfigService(configPath_, keybindProvider_.get());
+    // Apply CLI override to force software renderer if requested
+    if (forceSoftwareRenderer_) {
+        Settings& mutableSettings = configManager_->getMutableSettings();
+        mutableSettings.forceSoftwareRenderer = true;
+        LOG_INFO("CLI override: forcing software renderer for all windows");
+    }
     if (!isConfigValid()) {
         LOG_WARN("Config invalid, running initial config...");
         if (!runInitialConfig(configManager_.get(), keybindProvider_.get(), configPath_)) {

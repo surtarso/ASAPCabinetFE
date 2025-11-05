@@ -17,10 +17,13 @@ WindowManager::WindowManager(const Settings& settings)
       backglassRenderer_(nullptr, SDL_DestroyRenderer),
       dmdRenderer_(nullptr, SDL_DestroyRenderer),
       topperRenderer_(nullptr, SDL_DestroyRenderer) {
-    updateWindows(settings);
+        forceSoftwareRenderer_ = settings.forceSoftwareRenderer;
+        updateWindows(settings);
 }
 
 void WindowManager::updateWindows(const Settings& settings) {
+    // Keep local copy of the software-renderer preference for subsequent window creations
+    forceSoftwareRenderer_ = settings.forceSoftwareRenderer;
     WindowInfo windows[] = {
         {playfieldWindow_, playfieldRenderer_, "Playfield", true,
          settings.playfieldWindowWidth, settings.playfieldWindowHeight,
@@ -117,17 +120,34 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
             exit(1);
         }
 
-        renderer.reset(SDL_CreateRenderer(window.get(), -1,
-                                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
-        if (!renderer) {
-            LOG_WARN("Accelerated renderer creation failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
-            // Try a software renderer fallback which can help on some Wayland/Hyprland setups
+        // If the user or CLI requested software renderer, try that first
+        if (forceSoftwareRenderer_) {
             renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
             if (!renderer) {
-                LOG_ERROR("Failed to create software fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
-                exit(1);
+                LOG_WARN("Software renderer requested but failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
+                // Fall back to accelerated if available
+                renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+                if (!renderer) {
+                    LOG_ERROR("Failed to create accelerated fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
+                    exit(1);
+                } else {
+                    LOG_INFO("Created accelerated fallback renderer for " + std::string(title));
+                }
             } else {
-                LOG_INFO("Created software fallback renderer for " + std::string(title));
+                LOG_INFO("Created software renderer for " + std::string(title));
+            }
+        } else {
+            renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+            if (!renderer) {
+                LOG_WARN("Accelerated renderer creation failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
+                // Try a software renderer fallback which can help on some Wayland/Hyprland setups
+                renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
+                if (!renderer) {
+                    LOG_ERROR("Failed to create software fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
+                    exit(1);
+                } else {
+                    LOG_INFO("Created software fallback renderer for " + std::string(title));
+                }
             }
         }
         // Log renderer details to help diagnose platform-specific issues
