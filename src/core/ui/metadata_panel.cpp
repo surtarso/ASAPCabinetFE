@@ -4,11 +4,11 @@
 #include <algorithm>
 
 void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, int playfieldHeight, const Settings& settings) {
-    float panelWidth = playfieldWidth * settings.metadataPanelWidth;
-    float panelHeight = playfieldHeight * settings.metadataPanelHeight;
+    float panelWidth = static_cast<float>(playfieldWidth) * settings.metadataPanelWidth;
+    float panelHeight = static_cast<float>(playfieldHeight) * settings.metadataPanelHeight;
 
-    float posX = (playfieldWidth - panelWidth) / 2.0f;
-    float posY = (playfieldHeight - panelHeight) / 2.0f;
+    float posX = (static_cast<float>(playfieldWidth) - panelWidth) / 2.0f;
+    float posY = (static_cast<float>(playfieldHeight) - panelHeight) / 2.0f;
 
     ImGui::SetNextWindowPos(ImVec2(posX, posY));
     ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight));
@@ -19,18 +19,18 @@ void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, in
                                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "TABLE INFO");
         std::filesystem::path filePath(currentTable.vpxFile);
-        
+
         // Essential fields, always display
-        
+
         ImGui::Text("File: %s", filePath.filename().string().c_str());
-        
+
         if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string()) {
             ImGui::Text("VPin Name: %s", currentTable.tableName.c_str()); // Fallback to local table name if title is same as filename
         }
         if (!currentTable.vpsName.empty()) {
             ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
         }
-        
+
         // ROM name special handling
         if (!currentTable.romName.empty()) {
              ImGui::Text("ROM: %s", currentTable.romName.c_str());
@@ -81,7 +81,7 @@ void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, in
             !currentTable.vpsTableImgUrl.empty() || !currentTable.vpsTableUrl.empty() ||
             !currentTable.vpsManufacturer.empty() || !currentTable.vpsYear.empty() ||
             !currentTable.vpsId.empty()) {
-            
+
             ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "VPSDB DETAILS");
             vpsdb_section_started = true;
@@ -147,7 +147,7 @@ void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, in
             !currentTable.tableBlurb.empty() || !currentTable.tableRules.empty() ||
             !currentTable.tableAuthorEmail.empty() || !currentTable.tableAuthorWebsite.empty() ||
             !currentTable.tableType.empty() || !currentTable.tableManufacturer.empty() || !currentTable.tableYear.empty()) {
-            
+
             if (vpsdb_section_started) ImGui::Separator(); // Add separator only if previous section was displayed
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FILE METADATA");
             file_meta_section_started = true;
@@ -199,11 +199,11 @@ void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, in
         if (!currentTable.tableAuthorWebsite.empty()) {
             ImGui::Text("Author Website: %s", currentTable.tableAuthorWebsite.c_str());
         }
-        
+
         // --- Operational Tags / Status ---
         if (currentTable.playCount > 0 || currentTable.hasPup || currentTable.hasAltColor || currentTable.hasAltSound ||
             currentTable.hasAltMusic || currentTable.hasUltraDMD) { // Add other operational tags here
-            
+
             if (file_meta_section_started || vpsdb_section_started) ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "STATUS & FEATURES");
         }
@@ -258,14 +258,14 @@ void MetadataPanel::render(const TableData& currentTable, int playfieldWidth, in
         if (!features_line.empty()) {
             ImGui::Text("Found Assets: %s", features_line.c_str());
         }
-        
+
         // --- Descriptions and Comments ---
         // Always add a separator before descriptions/comments if any previous section was displayed
         if (file_meta_section_started || vpsdb_section_started || !features_line.empty()) {
             ImGui::Separator();
         }
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DESCRIPTION & COMMENTS");
-        
+
         // Prefer vpsComment for tableDescription if it's more descriptive, otherwise show both if they differ
         if (!currentTable.tableDescription.empty()) {
             ImGui::TextWrapped("Description: %s", currentTable.tableDescription.c_str());

@@ -43,9 +43,9 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     if (vpxTable.contains("properties") && vpxTable["properties"].is_object()) {
         const auto& properties = vpxTable["properties"];
         tableData.tableType = utils_.cleanString(utils_.safeGetString(properties, "TableType", ""));
-        tableData.tableManufacturer = utils_.cleanString(utils_.safeGetString(properties, "CompanyName", 
+        tableData.tableManufacturer = utils_.cleanString(utils_.safeGetString(properties, "CompanyName",
                                                      utils_.safeGetString(properties, "Company", "")));
-        tableData.tableYear = utils_.cleanString(utils_.safeGetString(properties, "CompanyYear", 
+        tableData.tableYear = utils_.cleanString(utils_.safeGetString(properties, "CompanyYear",
                                                      utils_.safeGetString(properties, "Year", "")));
     }
     if (tableData.romName.empty()) {
@@ -153,7 +153,8 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
                 //LOG_DEBUG("Exact title match (case-insensitive): normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', score=" << TITLE_WEIGHT);
             } else {
                 size_t dist = utils_.levenshteinDistance(normTitle, normVpsName);
-                float sim = 1.0f - static_cast<float>(dist) / std::max(normTitle.size(), normVpsName.size());
+                float denom = static_cast<float>(std::max(normTitle.size(), normVpsName.size()));
+                float sim = 1.0f - static_cast<float>(dist) / denom;
                 if (sim >= LEVENSHTEIN_THRESHOLD) {
                     bestTitleScore = std::max(bestTitleScore, sim * TITLE_WEIGHT);
                     //LOG_DEBUG("Levenshtein match: normTitle='" << normTitle << "', normVpsName='" << normVpsName << "', dist=" << dist << ", sim=" << sim << ", score=" << sim * TITLE_WEIGHT);

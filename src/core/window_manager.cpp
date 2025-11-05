@@ -48,8 +48,8 @@ void WindowManager::updateWindows(const Settings& settings) {
             int currentWidth, currentHeight, currentX, currentY;
             SDL_GetWindowSize(w.window.get(), &currentWidth, &currentHeight);
             SDL_GetWindowPosition(w.window.get(), &currentX, &currentY);
-            int scaledWidth = settings.enableDpiScaling ? static_cast<int>(w.width * settings.dpiScale) : w.width;
-            int scaledHeight = settings.enableDpiScaling ? static_cast<int>(w.height * settings.dpiScale) : w.height;
+            int scaledWidth = settings.enableDpiScaling ? static_cast<int>(static_cast<float>(w.width) * settings.dpiScale) : w.width;
+            int scaledHeight = settings.enableDpiScaling ? static_cast<int>(static_cast<float>(w.height) * settings.dpiScale) : w.height;
             if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
                 currentX != w.x || currentY != w.y) {
                 update = true;
@@ -84,8 +84,8 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
                                         int width, int height,
                                         int posX, int posY,
                                         float dpiScale, bool enableDpiScaling) {
-    int scaledWidth = enableDpiScaling ? static_cast<int>(width * dpiScale) : width;
-    int scaledHeight = enableDpiScaling ? static_cast<int>(height * dpiScale) : height;
+    int scaledWidth = enableDpiScaling ? static_cast<int>(static_cast<float>(width) * dpiScale) : width;
+    int scaledHeight = enableDpiScaling ? static_cast<int>(static_cast<float>(height) * dpiScale) : height;
 
     if (window) {
         int currentWidth, currentHeight, currentX, currentY;

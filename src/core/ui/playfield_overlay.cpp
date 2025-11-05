@@ -94,7 +94,7 @@ void PlayfieldOverlay::render() {
     }
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(playfieldWidth, playfieldHeight));
+    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(playfieldWidth), static_cast<float>(playfieldHeight)));
     ImGui::Begin("Playfield Overlay", nullptr,
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground |
@@ -103,8 +103,8 @@ void PlayfieldOverlay::render() {
                  ImGuiWindowFlags_NoInputs);
 
     if (ScrollbarSettings::SHOW_SCROLLBAR()) {
-        float scrollbarLength = playfieldWidth * ScrollbarSettings::LENGTH_FACTOR();
-        float posX = (playfieldWidth - scrollbarLength) / 2.0f;
+    float scrollbarLength = static_cast<float>(playfieldWidth) * ScrollbarSettings::LENGTH_FACTOR();
+    float posX = (static_cast<float>(playfieldWidth) - scrollbarLength) / 2.0f;
         ImGui::SetCursorPos(ImVec2(posX, ScrollbarSettings::PADDING()));
         renderScrollbar();
     }
@@ -160,7 +160,7 @@ void PlayfieldOverlay::render() {
         ImU32 colorTop = IM_COL32(topR, topG, topB, static_cast<int>(255 * NavigationArrowSettings::BASE_ALPHA() * leftAlpha));
         ImU32 colorBottom = IM_COL32(bottomR, bottomG, bottomB, static_cast<int>(255 * NavigationArrowSettings::BASE_ALPHA() * leftAlpha));
 
-        float yPos = playfieldHeight / 2.0f - NavigationArrowSettings::ARROW_HEIGHT() / 2.0f;
+        float yPos = static_cast<float>(playfieldHeight) / 2.0f - NavigationArrowSettings::ARROW_HEIGHT() / 2.0f;
 
         // Left arrow (chevron pointing left)
         float leftX = 20.0f; // Padding from left edge
@@ -178,7 +178,7 @@ void PlayfieldOverlay::render() {
         drawList->AddLine(leftBottomStart, leftBottomEnd, glowColor, NavigationArrowSettings::LINE_THICKNESS() + NavigationArrowSettings::GLOW_THICKNESS());
 
         // Right arrow (chevron pointing right)
-        float rightX = playfieldWidth - 50.0f; // Padding from right edge
+        float rightX = static_cast<float>(playfieldWidth) - 50.0f; // Padding from right edge
         ImVec2 rightTopStart(rightX, yPos);
         ImVec2 rightTopEnd(rightX + chevronDepth, yPos + NavigationArrowSettings::ARROW_HEIGHT() / 2.0f);
         ImVec2 rightBottomStart(rightX, yPos + NavigationArrowSettings::ARROW_HEIGHT());
@@ -201,10 +201,10 @@ void PlayfieldOverlay::renderScrollbar() {
     }
 
     size_t numTables = tables_->size();
-    float playfieldWidth = ImGui::GetWindowWidth();
+    float playfieldWidth = static_cast<float>(ImGui::GetWindowWidth());
     float thumbWidth = ScrollbarSettings::THUMB_MIN_HEIGHT();
 
-    float scrollProgress = (float)*currentIndex_ / (numTables - 1);
+    float scrollProgress = static_cast<float>(*currentIndex_) / static_cast<float>(numTables - 1);
     float thumbXOffset = scrollProgress * (playfieldWidth * ScrollbarSettings::LENGTH_FACTOR() - thumbWidth);
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();

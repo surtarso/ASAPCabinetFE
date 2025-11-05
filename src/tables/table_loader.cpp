@@ -276,8 +276,8 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 }
 
                 for (auto& table : tables) {
-                    if (table.vpsId.empty() || table.jsonOwner == "System File Scan" || 
-                        (scannedTableMap.find(table.vpxFile) != scannedTableMap.end() && 
+                    if (table.vpsId.empty() || table.jsonOwner == "System File Scan" ||
+                        (scannedTableMap.find(table.vpxFile) != scannedTableMap.end() &&
                          scannedTableMap[table.vpxFile].fileLastModified > table.fileLastModified)) {
                         tablesForVpsdb.push_back(table);
                     }
@@ -589,8 +589,8 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
             continue;
         }
         char firstChar = tables[i].title[0];
-        if (std::isdigit(firstChar) || std::isalpha(firstChar)) {
-            char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
+        if (std::isdigit(static_cast<unsigned char>(firstChar)) || std::isalpha(static_cast<unsigned char>(firstChar))) {
+            char key = std::isalpha(static_cast<unsigned char>(firstChar)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(firstChar))) : firstChar;
             if (letterIndex.find(key) == letterIndex.end()) {
                 letterIndex[key] = static_cast<int>(i);
             }

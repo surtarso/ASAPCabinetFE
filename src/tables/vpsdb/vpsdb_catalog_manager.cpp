@@ -347,7 +347,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Backglass");
         int backglassWidth, backglassHeight;
         SDL_QueryTexture(backglassTexture_.get(), nullptr, nullptr, &backglassWidth, &backglassHeight);
-        float backglassAspectRatio = static_cast<float>(backglassHeight) / backglassWidth;
+    float backglassAspectRatio = static_cast<float>(backglassHeight) / static_cast<float>(backglassWidth);
         ImVec2 displaySize(200, 200 * backglassAspectRatio);
         ImGui::Image(reinterpret_cast<ImTextureID>(backglassTexture_.get()), displaySize);
     } else {
@@ -358,7 +358,7 @@ bool VpsdbCatalog::render() {
         ImGui::Text("Playfield");
         int playfieldWidth, playfieldHeight;
         SDL_QueryTexture(playfieldTexture_.get(), nullptr, nullptr, &playfieldWidth, &playfieldHeight);
-        float aspectRatio = static_cast<float>(playfieldHeight) / playfieldWidth;
+    float aspectRatio = static_cast<float>(playfieldHeight) / static_cast<float>(playfieldWidth);
         ImGui::Image(reinterpret_cast<ImTextureID>(playfieldTexture_.get()), ImVec2(200, 200 * aspectRatio));
     } else {
         ImGui::Text("Playfield: Not Available");

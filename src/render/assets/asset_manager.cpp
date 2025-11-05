@@ -483,7 +483,7 @@ void AssetManager::cleanupVideoPlayers() {
 }
 
 void AssetManager::processVlcFallbackEvent(void* data) {
-    // Parameter intentionally unused; signature marked with [[maybe_unused]] in the interface
+    (void)data; // Parameter intentionally unused; silence -Wunused-parameter
     // Inspect active players and see if any VLC players have zero frames
     auto checkAndFallback = [this](std::unique_ptr<IVideoPlayer>& player, SDL_Renderer* renderer, const std::string& path, int w, int h, const char* name) {
         if (!player) return;

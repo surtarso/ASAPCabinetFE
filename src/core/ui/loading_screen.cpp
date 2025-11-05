@@ -52,7 +52,7 @@ void LoadingScreen::render() {
     float minDmdContentHeight = 3 * textLineHeightWithSpacing;
     float minDmdHeight = minDmdContentHeight + framePaddingY * 4;
 
-    float minPlayfieldContentHeight = 1 * textLineHeightWithSpacing + loadingProgress_->maxLogMessages * textLineHeightWithSpacing;
+    float minPlayfieldContentHeight = 1 * textLineHeightWithSpacing + static_cast<float>(loadingProgress_->maxLogMessages) * textLineHeightWithSpacing;
     float minPlayfieldHeight = minPlayfieldContentHeight + framePaddingY * 4;
 
     float totalMinRequiredHeight = minTopperHeight + minBackglassHeight + minDmdHeight + minPlayfieldHeight + itemSpacingY * 3 + windowPaddingY * 2;
@@ -118,7 +118,9 @@ void LoadingScreen::render() {
     };
 
     for (int i = 0; i < loadingProgress_->totalStages; ++i) {
-        float alpha = (i == loadingProgress_->currentStage - 1) ? (0.8f + 0.2f * std::sin(ImGui::GetTime() * 2.0f)) : (i < loadingProgress_->currentStage ? 0.8f : 0.3f);
+    float alpha = (i == loadingProgress_->currentStage - 1)
+              ? (0.8f + 0.2f * static_cast<float>(std::sin(ImGui::GetTime() * 2.0)))
+              : (i < loadingProgress_->currentStage ? 0.8f : 0.3f);
         ImGui::TextColored(ImVec4(colorTimelineNode_.x, colorTimelineNode_.y, colorTimelineNode_.z, alpha), "%s", stages[i]);
     }
     ImGui::NextColumn();

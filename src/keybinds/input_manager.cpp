@@ -118,7 +118,7 @@ void InputManager::registerActions() {
             return;
         }
         char currentChar = currentTitle[0];
-        char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? std::toupper(currentChar) : '\0';
+    char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(currentChar))) : '\0';
         if (currentKey == '\0') {
             LOG_ERROR("Invalid first character in title: " + currentTitle);
             return;
@@ -130,7 +130,7 @@ void InputManager::registerActions() {
             std::string title = tables_->at(idx).title;
             if (title.empty()) continue;
             char c = title[0];
-            char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+            char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
             if (key != '\0' && key < currentKey) {
                 newIndex = idx;
                 found = true;
@@ -143,7 +143,7 @@ void InputManager::registerActions() {
                 std::string title = tables_->at(idx).title;
                 if (title.empty()) continue;
                 char c = title[0];
-                char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+                char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
                 if (key != '\0') {
                     newIndex = idx;
                     found = true;
@@ -177,7 +177,7 @@ void InputManager::registerActions() {
             return;
         }
         char currentChar = currentTitle[0];
-        char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? std::toupper(currentChar) : '\0';
+    char currentKey = (std::isalpha(currentChar) || std::isdigit(currentChar)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(currentChar))) : '\0';
         if (currentKey == '\0') {
             LOG_ERROR("Invalid first character in title: " + currentTitle);
             return;
@@ -188,7 +188,7 @@ void InputManager::registerActions() {
             std::string title = tables_->at(i).title;
             if (title.empty()) continue;
             char c = title[0];
-            char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+            char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
             if (key != '\0' && key > currentKey) {
                 newIndex = i;
                 found = true;
@@ -200,7 +200,7 @@ void InputManager::registerActions() {
                 std::string title = tables_->at(i).title;
                 if (title.empty()) continue;
                 char c = title[0];
-                char key = (std::isalpha(c) || std::isdigit(c)) ? std::toupper(c) : '\0';
+                char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
                 if (key != '\0') {
                     newIndex = i;
                     found = true;

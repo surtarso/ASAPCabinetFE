@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress, const nlohmann::json* mediaDb)
     : settings_(settings), progress_(progress) {
     fs::path dbPath = settings_.resolvePath("data/vpinmdb.json", settings_.exeDir);
-    
+
     if (mediaDb) {
         mediaDb_ = *mediaDb;
         return;
@@ -134,9 +134,9 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
 
             int playfieldTargetWidth = settings_.playfieldWindowWidth;
             int playfieldTargetHeight = settings_.playfieldWindowHeight;
-            
+
             mediaTypes.push_back({"table", &table.playfieldImage, settings_.customPlayfieldImage, playfieldTargetWidth, playfieldTargetHeight});
-            
+
             if (settings_.showBackglass) {
                 mediaTypes.push_back({"bg", &table.backglassImage, settings_.customBackglassImage, settings_.backglassMediaWidth, settings_.backglassMediaHeight});
             }
@@ -269,7 +269,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
 
     if (progress_) {
         std::lock_guard<std::mutex> lock(progress_->mutex);
-        progress_->numNoMatch = tables.size() - progress_->numMatched;
+    progress_->numNoMatch = static_cast<int>(tables.size() - static_cast<size_t>(progress_->numMatched));
         progress_->currentTask = "Media downloading complete";
     }
     return downloadedCount > 0;
@@ -286,7 +286,7 @@ std::string VpinMdbClient::selectResolution() const {
         LOG_INFO("Selected 4k for high-resolution displays");
         return "4k";
     }
-    LOG_WARN("Selected 1k resolution for your display dimensions: Playfield: " + 
+    LOG_WARN("Selected 1k resolution for your display dimensions: Playfield: " +
              std::to_string(settings_.playfieldWindowWidth) + "x" + std::to_string(settings_.playfieldWindowHeight));
     return "1k";
 }
