@@ -6,11 +6,14 @@ FIX:
 - ffmpeg volume slider has incorrect values (too narrow range)
 - live reload font (along with windows) on dpi changes
 
+ONGOING:
+- "editor mode" - port of vpx gui tools (--editor / -e flags)
+
 QOL:
 - a proper font picker
 - refactor the monoliths...
 - screenshot mode using app size/pos as frame
-- key for metadata toggle?
+- key for metadata panel toggle?
 - key to switch sorting type (joystick oriented)
 - feedback for table launch/failure
 - take overrides in consideration for matchmaking.
@@ -18,13 +21,13 @@ QOL:
 - clean up new panels (vpsdb catalog and metadata editor)
 - save metadata back to .vpx with vpin/vpxtool
 - single table scan (all, selectable) override manager?
-- collapse/expand all widget for config ui
+- basic/advanced toggle for config ui
+- collapse all/expand all widget for config ui
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 - user-pick fields to be shown on metadata panel
 
 On hold:
-- basic/advanced toggle for config ui
 - update header docs and user manual
 - user-configurable options for video quality passed to videoplayer factory
 - multi launchers (other emulators, other versions of vpx w.e.)
