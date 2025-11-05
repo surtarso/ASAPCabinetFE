@@ -107,6 +107,42 @@ struct SDLBootstrap {
  * @return 0 on successful execution or version display, non-zero on failure.
  */
 int main(int argc, char* argv[]) {
+    // Handle --version / -v argument
+    if (argc > 1 && (std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v")) {
+        std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
+        std::cout << "Git Hash: " << ASAPCABINETFE_GIT_HASH << std::endl;
+        std::cout << "Git Branch: " << ASAPCABINETFE_GIT_BRANCH << std::endl;
+        if (std::string(ASAPCABINETFE_GIT_DIRTY) == "+dirty") {
+            std::cout << " (Repository has uncommitted changes)" << std::endl;
+        }
+        return 0;
+    }
+
+    // Handle --help / -h argument
+    if (argc > 1 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
+        std::cout << "\n"
+                << "=========================================================\n"
+                << "          ASAPCabinetFE - Command Line Options\n"
+                << "=========================================================\n"
+                << "Version: " << ASAPCABINETFE_VERSION_STRING << "\n\n"
+                << "Usage:\n"
+                << "  ./ASAPCabinetFE [option]\n\n"
+                << "Options:\n"
+                << "  <no args>              Launch the main Front-End\n"
+                << "  --software-renderer    Launch in software mode (debug)\n"
+                << "  -e, --editor           Launch the Table Editor (not yet implemented)\n"
+                << "  -v, --version          Display version information\n"
+                << "  -h, --help             Show this help message\n\n"
+                << "Example:\n"
+                << "  ./ASAPCabinetFE --editor\n"
+                << "=========================================================\n"
+                << "User's Manual:\n"
+                << "github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md\n"
+                << "=========================================================\n"
+                << std::endl;
+        return 0;
+    }
+
     // Resolve exeDir
     std::string exeDir;
     char path[PATH_MAX];
@@ -144,46 +180,11 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Handle --version / -v argument
-    if (argc > 1 && (std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v")) {
-        std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
-        std::cout << "Git Hash: " << ASAPCABINETFE_GIT_HASH << std::endl;
-        std::cout << "Git Branch: " << ASAPCABINETFE_GIT_BRANCH << std::endl;
-        if (std::string(ASAPCABINETFE_GIT_DIRTY) == "+dirty") {
-            std::cout << " (Repository has uncommitted changes)" << std::endl;
-        }
-        return 0;
-    }
-
-    // Handle --help / -h argument
-    if (argc > 1 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
-        std::cout << "\n"
-                << "=========================================================\n"
-                << "          ASAPCabinetFE - Command Line Options\n"
-                << "=========================================================\n"
-                << "Version: " << ASAPCABINETFE_VERSION_STRING << "\n\n"
-                << "Usage:\n"
-                << "  ./ASAPCabinetFE [option]\n\n"
-                << "Options:\n"
-                << "  <no args>              Launch the main Front-End\n"
-                << "  --software-renderer    Launch in software mode (debug)\n"
-                << "  -e, --editor           Launch the Table Editor (not yet implemented)\n"
-                << "  -v, --version          Display version information\n"
-                << "  -h, --help             Show this help message\n\n"
-                << "Example:\n"
-                << "  ./ASAPCabinetFE --editor\n"
-                << "=========================================================\n"
-                << "User's Manual:\n"
-                << "github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md\n"
-                << "=========================================================\n"
-                << std::endl;
-        return 0;
-    }
-
     // Initialize SDL subsystems
     SDLBootstrap bootstrap;
 
     // Handle --editor / -e argument
+    // Create and run the editor (vpxguitools port)
     if (argc > 1 && (std::string(argv[1]) == "--editor" || std::string(argv[1]) == "-e")) {
         Editor editor(configPath);
         editor.run();
