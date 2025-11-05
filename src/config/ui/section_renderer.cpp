@@ -14,6 +14,95 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
     }
     if (ImGui::CollapsingHeader(displayName.c_str(), flags)) {
         ImGui::Indent();
+
+        if (sectionName == "AudioSettings") {
+            ImGui::Text("Audio Mixer");
+            ImGui::Separator();
+
+            // Draw circular "knobs" for volume levels (master/media/music/interface/ambience)
+            auto knob = [](const char* label, float& value, float min, float max) {
+                ImGui::BeginGroup();
+                ImGui::Text("%s", label);
+                float radius = 25.0f;
+                ImVec2 center = ImGui::GetCursorScreenPos();
+                center.x += radius;
+                center.y += radius;
+
+                // Create knob-like behavior
+                ImGui::InvisibleButton(label, ImVec2(radius * 2, radius * 2));
+                bool active = ImGui::IsItemActive();
+                if (active)
+                    value -= ImGui::GetIO().MouseDelta.y * 0.4f; // vertical drag
+
+                value = std::clamp(value, min, max);
+
+                // Visual feedback
+                ImDrawList* draw = ImGui::GetWindowDrawList();
+                draw->AddCircleFilled(center, radius, IM_COL32(40, 40, 40, 255));
+                draw->AddCircle(center, radius, IM_COL32(180, 180, 180, 255));
+                // Convert degrees to radians manually
+                constexpr float PI = 3.14159265358979323846f;
+                float angleDeg = (value - min) / (max - min) * 270.0f - 135.0f;
+                float angleRad = angleDeg * PI / 180.0f;
+                ImVec2 indicator(center.x + cosf(angleRad) * radius * 0.7f,
+                                center.y + sinf(angleRad) * radius * 0.7f);
+
+                draw->AddLine(center, indicator, IM_COL32(255, 200, 0, 255), 3.0f);
+
+                ImGui::Dummy(ImVec2(radius * 2, radius * 2));
+                ImGui::Text("%.0f", value);
+                ImGui::EndGroup();
+            };
+
+            float masterVol = sectionData["masterVol"];
+            float mediaVol = sectionData["mediaAudioVol"];
+            float musicVol = sectionData["tableMusicVol"];
+            float uiVol = sectionData["interfaceAudioVol"];
+            float ambienceVol = sectionData["interfaceAmbienceVol"];
+
+            ImGui::Columns(5, nullptr, false);
+            knob("Master", masterVol, 0.0f, 100.0f); ImGui::NextColumn();
+            knob("Media", mediaVol, 0.0f, 100.0f); ImGui::NextColumn();
+            knob("Music", musicVol, 0.0f, 100.0f); ImGui::NextColumn();
+            knob("UI", uiVol, 0.0f, 100.0f); ImGui::NextColumn();
+            knob("Ambience", ambienceVol, 0.0f, 100.0f);
+            ImGui::Columns(1);
+
+            sectionData["masterVol"] = masterVol;
+            sectionData["mediaAudioVol"] = mediaVol;
+            sectionData["tableMusicVol"] = musicVol;
+            sectionData["interfaceAudioVol"] = uiVol;
+            sectionData["interfaceAmbienceVol"] = ambienceVol;
+
+            // Toggle mutes below knobs
+            ImGui::Separator();
+            bool masterMute = sectionData["masterMute"];
+            bool mediaMute = sectionData["mediaAudioMute"];
+            bool musicMute = sectionData["tableMusicMute"];
+            bool uiMute = sectionData["interfaceAudioMute"];
+            bool ambienceMute = sectionData["interfaceAmbienceMute"];
+
+            ImGui::Checkbox("Master Mute     ", &masterMute);
+            ImGui::SameLine();
+            ImGui::Checkbox("Media Mute      ", &mediaMute);
+            ImGui::SameLine();
+            ImGui::Checkbox("Music Mute      ", &musicMute);
+            ImGui::SameLine();
+            ImGui::Checkbox("UI Mute        ", &uiMute);
+            ImGui::SameLine();
+            ImGui::Checkbox("Ambience Mute", &ambienceMute);
+
+            sectionData["masterMute"] = masterMute;
+            sectionData["mediaAudioMute"] = mediaMute;
+            sectionData["tableMusicMute"] = musicMute;
+            sectionData["interfaceAudioMute"] = uiMute;
+            sectionData["interfaceAmbienceMute"] = ambienceMute;
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            return; // skip generic rendering for this section
+        }
+
         float singleFieldWidth = ImGui::GetContentRegionAvail().x * 0.5f;
         float pairedFieldWidth = ImGui::GetContentRegionAvail().x * 0.25f;
 
