@@ -44,7 +44,7 @@ struct SDLBootstrap {
      * @throws std::runtime_error If GST, SDL, SDL_ttf, or SDL_image initialization fails.
      */
     SDLBootstrap() {
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
             LOG_ERROR("Failed to initialize SDL: " + std::string(SDL_GetError()));
             throw std::runtime_error("Main: SDL initialization failed");
         }

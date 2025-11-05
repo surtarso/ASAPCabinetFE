@@ -179,20 +179,20 @@ public:
             "Screenshot Key", "Screenshot Quit", "Quit"
         };
         keyDisplayNames_["Keybinds"] = {
-            {"Previous Table", "Prev table"},
-            {"Next Table", "Next table"},
-            {"Fast Previous Table", "Fast prev table"},
-            {"Fast Next Table", "Fast next table"},
-            {"Jump Next Letter", "Jump next letter"},
-            {"Jump Previous Letter", "Jump prev letter"},
-            {"Random Table", "Random table"},
-            {"Launch Table", "Launch table"},
-            {"Screenshot Mode", "Screenshot mode"},
-            {"Screenshot Key", "Screenshot key"},
-            {"Screenshot Quit", "Screenshot quit"},
-            {"Toggle Config", "Open/close config"},
-            {"Toggle Editor", "Open/close editor"},
-            {"Toggle Catalog", "Open/close catalog"},
+            {"Previous Table", "Previous Table"},
+            {"Next Table", "Next Table"},
+            {"Fast Previous Table", "Fast Previous Table"},
+            {"Fast Next Table", "Fast Next Table"},
+            {"Jump Next Letter", "Jump Next Letter"},
+            {"Jump Previous Letter", "Jump Previous Letter"},
+            {"Random Table", "Random Table"},
+            {"Launch Table", "Launch Table"},
+            {"Screenshot Mode", "Screenshot Mode"},
+            {"Screenshot Key", "Screenshot Key"},
+            {"Screenshot Quit", "Screenshot Quit"},
+            {"Toggle Config", "Toggle Config"},
+            {"Toggle Editor", "Toggle Editor"},
+            {"Toggle Catalog", "Toggle Catalog"},
             {"Quit", "Quit"}
         };
 
