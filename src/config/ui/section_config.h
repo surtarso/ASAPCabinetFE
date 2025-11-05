@@ -53,8 +53,7 @@ public:
             "metadataPanelAlpha",
             "useVpxtool",
             "fetchVPSdb",
-            "fetchVpinMediaDb",
-            "resizeToWindows",
+
             "ignoreScanners",
             "forceRebuildMetadata",
             "titleWeight",
@@ -69,8 +68,7 @@ public:
             {"titleSortBy", "Sort By"},
             {"useVpxtool", "Enable VPXTool"},
             {"fetchVPSdb", "Use VPS DB"},
-            {"fetchVpinMediaDb", "Use VPinMedia DB"},
-            {"resizeToWindows", "Resize media to window"},
+
             {"showMetadata", "Display Metadata"},
             {"metadataPanelWidth", "Panel Width"},
             {"metadataPanelHeight", "Panel Height"},
@@ -262,6 +260,8 @@ public:
         };
 
         keyOrders_["MediaDimensions"] = {
+            "fetchVpinMediaDb",
+            "resizeToWindows",
             "forceImagesOnly",
             "wheelMediaWidth",
             "wheelMediaHeight",
@@ -289,6 +289,8 @@ public:
             "topperRotation"
         };
         keyDisplayNames_["MediaDimensions"] = {
+            {"fetchVpinMediaDb", "Use VPinMedia DB"},
+            {"resizeToWindows", "Resize media to window"},
             {"forceImagesOnly", "Force images only"},
             {"wheelMediaWidth", "Wheel width"},
             {"wheelMediaHeight", "Wheel height"},

@@ -94,8 +94,6 @@ struct Settings {
     std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
     bool useVpxtool = false;
-    bool fetchVpinMediaDb = false; // download images from vpinmedia
-    bool resizeToWindows = false; // resize images to windows sizes
     bool ignoreScanners = false;
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
@@ -143,6 +141,8 @@ struct Settings {
     int titleY = 1850;
 
     // [MediaDimensions]
+    bool fetchVpinMediaDb = false; // download images from vpinmedia
+    bool resizeToWindows = false; // resize images to windows sizes
     bool forceImagesOnly = false;
 
     int wheelMediaHeight = 350;
@@ -404,8 +404,6 @@ private:
                 {"titleSource", s.titleSource},
                 {"fetchVPSdb", s.fetchVPSdb},
                 {"useVpxtool", s.useVpxtool},
-                {"fetchVpinMediaDb", s.fetchVpinMediaDb},
-                {"resizeToWindows", s.resizeToWindows},
                 {"ignoreScanners", s.ignoreScanners},
                 {"forceRebuildMetadata", s.forceRebuildMetadata},
                 {"titleSortBy", s.titleSortBy},
@@ -450,6 +448,8 @@ private:
                 {"titleY", s.titleY}
             }},
             {"MediaDimensions", {
+                {"fetchVpinMediaDb", s.fetchVpinMediaDb},
+                {"resizeToWindows", s.resizeToWindows},
                 {"forceImagesOnly", s.forceImagesOnly},
                 {"wheelMediaHeight", s.wheelMediaHeight},
                 {"wheelMediaWidth", s.wheelMediaWidth},
@@ -580,8 +580,6 @@ private:
         s.titleSource = j.value("TableMetadata", nlohmann::json{}).value("titleSource", s.titleSource);
         s.fetchVPSdb = j.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", s.fetchVPSdb);
         s.useVpxtool = j.value("TableMetadata", nlohmann::json{}).value("useVpxtool", s.useVpxtool);
-        s.fetchVpinMediaDb = j.value("TableMetadata", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
-        s.resizeToWindows = j.value("TableMetadata", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
         s.ignoreScanners = j.value("TableMetadata", nlohmann::json{}).value("ignoreScanners", s.ignoreScanners);
         s.titleSortBy = j.value("TableMetadata", nlohmann::json{}).value("titleSortBy", s.titleSortBy);
@@ -662,6 +660,8 @@ private:
         s.titleY = j.value("TitleDisplay", nlohmann::json{}).value("titleY", s.titleY);
 
         // MediaDimensions
+        s.fetchVpinMediaDb = j.value("MediaDimensions", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
+        s.resizeToWindows = j.value("MediaDimensions", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceImagesOnly = j.value("MediaDimensions", nlohmann::json{}).value("forceImagesOnly", s.forceImagesOnly);
         s.wheelMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaHeight", s.wheelMediaHeight);
         s.wheelMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaWidth", s.wheelMediaWidth);
@@ -815,10 +815,8 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleSource", {Settings::ReloadType::Tables, "Choose how table metadata is found:\n\n"
                                                   "filename' - use filename-based heuristics;\n"
                                                   "metadata' - run the scanners to extract embedded metadata."}},
-    {"fetchVPSdb", {Settings::ReloadType::Tables, "Download and use the VPSdb (community database) to improve automatic table matching and metadata accuracy."}},
-    {"useVpxtool",{Settings::ReloadType::Tables, "Use an external vpxtool index (if available) or run vpxtool to extract table metadata instead of built-in VPin scanner."}},
-    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the VPin Media Database (requires VPSdb metadata)."}},
-    {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize downloaded images to match your current window dimensions to save memory and keep layout consistent."}},
+    {"fetchVPSdb", {Settings::ReloadType::Tables, "Download and use the Virtual Pinball Spreadsheet db (community database)\nto improve automatic table matching and metadata accuracy."}},
+    {"useVpxtool",{Settings::ReloadType::Tables, "Use an external vpxtool index (if available) or run vpxtool to extract table metadata\ninstead of built-in VPin scanner."}},
     {"ignoreScanners", {Settings::ReloadType::Tables, "Skip local scanners and read metadata only from the index file.\n\nUseful for when you have a trusted pre-built index."}},
     {"forceRebuildMetadata", {Settings::ReloadType::Tables, "Rebuild all table metadata from scratch.\n\nUse this if metadata is incorrect or you changed scanner settings."}},
     {"titleSortBy", {Settings::ReloadType::Tables, "Choose the field used to sort the table list (requires VPSdb metadata for some options)."}},
@@ -863,6 +861,8 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleY", {Settings::ReloadType::Title, "Vertical position (Y) for the title text."}},
 
     // Media dimensions and behavior
+    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the VPin Media Database (requires VPSdb metadata)."}},
+    {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
     {"forceImagesOnly", {Settings::ReloadType::Tables, "If enabled, the frontend will load images only and skip videos."}},
     {"wheelMediaHeight", {Settings::ReloadType::None, "Wheel image height in pixels."}},
     {"wheelMediaWidth", {Settings::ReloadType::None, "Wheel image width in pixels."}},
