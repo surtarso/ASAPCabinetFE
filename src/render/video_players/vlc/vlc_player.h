@@ -57,6 +57,12 @@ public:
     SDL_Texture* getTexture() const override;
 
     /**
+     * @brief Returns the number of frames received from VLC (diagnostic).
+     */
+    int getFrameCount() const;
+
+
+    /**
      * @brief Checks if the video is currently playing.
      * @return True if playing, false otherwise.
      */
@@ -90,9 +96,11 @@ private:
         SDL_mutex* mutex;
         bool isPlaying;
         bool frameReady; // New: Flag to indicate if a new frame is ready for texture update
+        int frameCount;  // Diagnostic: count frames received from VLC
     };
 
     VideoContext* ctx_; ///< Pointer to the internal video context.
+
 
     /**
      * @brief VLC callback for locking the video buffer.

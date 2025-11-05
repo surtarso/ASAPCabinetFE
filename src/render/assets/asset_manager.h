@@ -60,6 +60,9 @@ public:
     void clearVideoCache();
     void clearTextureCache();
 
+    // Handle a VLC fallback event posted from a monitoring thread (main thread will call this)
+    void processVlcFallbackEvent(void* data);
+
     SDL_Renderer* getPlayfieldRenderer() { return playfieldRenderer; }
     SDL_Renderer* getBackglassRenderer() { return backglassRenderer; }
     SDL_Renderer* getDMDRenderer() { return dmdRenderer; }

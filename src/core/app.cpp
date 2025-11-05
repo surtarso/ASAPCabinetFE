@@ -291,8 +291,14 @@ void App::handleEvents() {
                 joystickManager_->removeJoystick(event.jdevice.which);
             }
             if (event.type == SDL_USEREVENT) {
-                assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
-                LOG_DEBUG("Assets reloaded after table loading");
+                // Distinguish user events: normal reload or VLC fallback
+                if (event.user.code == 0x564C4346) { // 'VLCF' sentinel from monitor
+                    LOG_DEBUG("Received VLC fallback user event, checking for VLC black-screen cases");
+                    assets_->processVlcFallbackEvent(event.user.data1);
+                } else {
+                    assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
+                    LOG_DEBUG("Assets reloaded after table loading");
+                }
             }
         }
     }

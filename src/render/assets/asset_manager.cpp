@@ -8,10 +8,13 @@
 #include "render/assets/video_player_cache.h"
 #include "render/assets/title_renderer.h"
 #include "render/video_players/video_player_factory.h"
+#include "render/video_players/vlc/vlc_player.h"
+#include "render/video_players/ffmpeg/ffmpeg_player.h"
 #include "config/iconfig_service.h"
 #include "log/logging.h"
 #include <SDL_image.h>
 #include <chrono>
+#include <thread>
 #include <algorithm>
 
 AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL_Renderer* dmd, SDL_Renderer* topper, TTF_Font* f, ISoundManager* soundManager)
@@ -400,6 +403,31 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
                     LOG_DEBUG("Created new video player for " + std::string(w.name) + ": " + w.tableVideo);
+
+                    // If this is a VLC player, spawn a short-lived monitor to detect black-screen (no frames)
+                    // We'll post an SDL_USEREVENT after 2 seconds to the main thread so it can safely replace the player
+                    VlcVideoPlayer* vlcPtr = dynamic_cast<VlcVideoPlayer*>(w.videoPlayer.get());
+                    if (vlcPtr) {
+                        // Capture required items by value for the detached thread
+                        SDL_Renderer* monRenderer = w.renderer;
+                        std::string monVideoPath = w.tableVideo;
+                        int monWidth = w.mediaWidth;
+                        int monHeight = w.mediaHeight;
+                        std::weak_ptr<VideoPlayerCache> weakCache; // unused but placeholder
+                        std::thread([this, monRenderer, monVideoPath, monWidth, monHeight]() {
+                            std::this_thread::sleep_for(std::chrono::seconds(2));
+                            // Post an SDL event to trigger fallback check
+                            SDL_Event ev;
+                            ev.type = SDL_USEREVENT;
+                            // store a pointer-sized hash in user.code to indicate fallback and carry nothing dangerous
+                            ev.user.code = 0x564C4346; // 'VLCF'
+                            // fill pointer-sized data with address of renderer (safe-ish) to identify target renderer
+                            ev.user.data1 = reinterpret_cast<void*>(monRenderer);
+                            ev.user.data2 = nullptr;
+                            SDL_PushEvent(&ev);
+                        }).detach();
+                        LOG_DEBUG("Spawned VLC frame-monitor for " + w.tableVideo);
+                    }
                 } else {
                     LOG_WARN("Failed to create video player for " + std::string(w.name) + ": " + w.tableVideo);
                 }
@@ -452,4 +480,33 @@ void AssetManager::cleanupVideoPlayers() {
     videoPlayerCache_->clearCache();
     videoPlayerCache_->clearOldVideoPlayers();
     LOG_DEBUG("All video players and cache entries processed for cleanup.");
+}
+
+void AssetManager::processVlcFallbackEvent(void* data) {
+    // data is unused; we'll inspect our active players and see if any VLC players have zero frames
+    auto checkAndFallback = [this](std::unique_ptr<IVideoPlayer>& player, SDL_Renderer* renderer, const std::string& path, int w, int h, const char* name) {
+        if (!player) return;
+        VlcVideoPlayer* vlcPtr = dynamic_cast<VlcVideoPlayer*>(player.get());
+        if (!vlcPtr) return;
+        int frames = vlcPtr->getFrameCount();
+        LOG_DEBUG(std::string("VLC monitor check for ") + name + ": frameCount=" + std::to_string(frames));
+        if (frames == 0) {
+            LOG_WARN(std::string("No VLC frames detected for ") + name + ", falling back to FFmpeg backend for " + path);
+            // Create an ffmpeg player in-place
+            auto fallback = std::make_unique<FFmpegPlayer>();
+            if (fallback->setup(renderer, path, w, h)) {
+                fallback->play();
+                // Move fallback into the slot
+                player = std::move(fallback);
+                LOG_INFO(std::string("Switched ") + name + " player to FFmpeg fallback for " + path);
+            } else {
+                LOG_ERROR(std::string("FFmpeg fallback setup failed for ") + name + ": " + path);
+            }
+        }
+    };
+
+    checkAndFallback(playfieldVideoPlayer, playfieldRenderer, currentPlayfieldVideoPath_, currentPlayfieldMediaWidth_, currentPlayfieldMediaHeight_, "playfield");
+    checkAndFallback(backglassVideoPlayer, backglassRenderer, currentBackglassVideoPath_, currentBackglassMediaWidth_, currentBackglassMediaHeight_, "backglass");
+    checkAndFallback(dmdVideoPlayer, dmdRenderer, currentDmdVideoPath_, currentDmdMediaWidth_, currentDmdMediaHeight_, "dmd");
+    checkAndFallback(topperVideoPlayer, topperRenderer, currentTopperVideoPath_, currentTopperMediaWidth_, currentTopperMediaHeight_, "topper");
 }

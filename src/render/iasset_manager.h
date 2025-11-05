@@ -39,7 +39,7 @@ public:
      * @brief Virtual destructor to ensure derived classes can clean up properly.
      */
     virtual ~IAssetManager() = default;
-    
+
     // Texture accessors
     /**
      * @brief Retrieves the texture used for the playfield.
@@ -78,7 +78,7 @@ public:
      * @return SDL_Texture* Pointer to the title texture.
      */
     virtual SDL_Texture* getTitleTexture(SDL_Renderer* renderer) = 0;
-    
+
     // Video player accessors
     /**
      * @brief Retrieves the video player associated with the playfield.
@@ -107,7 +107,7 @@ public:
      * @see IVideoPlayer
      */
     virtual IVideoPlayer* getTopperVideoPlayer() = 0;
-    
+
     // Settings and positioning
     /**
      * @brief Retrieves the configuration service that manages application settings.
@@ -128,7 +128,7 @@ public:
      * @param y The new y-coordinate for the title.
      */
     virtual void setTitlePosition(int x, int y) = 0;
-    
+
     // Font management
     /**
      * @brief Sets the current font for text rendering.
@@ -154,26 +154,26 @@ public:
      * @see IWindowManager
      */
     virtual void reloadAssets(IWindowManager* windowManager, TTF_Font* font, const std::vector<TableData>& tables, size_t index) = 0;
-    
+
     /**
      * @brief Sets the configuration service (settings manager) responsible for application settings.
      * @param cm Pointer to the new IConfigService instance.
      * @see IConfigService
      */
     virtual void setSettingsManager(IConfigService* cm) = 0;
-    
+
     /**
      * @brief Loads assets for a specific table based on its index and associated table data.
      * @param index The index of the table to load assets for.
      * @param tables A vector containing table data.
      */
     virtual void loadTableAssets(size_t index, const std::vector<TableData>& tables) = 0;
-    
+
     /**
      * @brief Clears any existing video players to free resources before initializing new ones.
      */
     virtual void clearOldVideoPlayers() = 0;
-    
+
     /**
      * @brief Cleans up video players, releasing allocated resources appropriately.
      */
@@ -200,6 +200,13 @@ public:
      * based on the current mediaAudioVol and mediaAudioMute settings.
      */
     virtual void applyVideoAudioSettings() = 0;
+
+    /**
+     * @brief Process an application-level VLC fallback event posted by a monitor thread.
+     *
+     * Implementations may inspect active video players and swap backends if VLC fails to produce frames.
+     */
+    virtual void processVlcFallbackEvent(void* data) { (void)data; }
 };
 
 #endif // IASSET_MANAGER_H
