@@ -102,7 +102,15 @@ void FFmpegPlayer::stop() {
 
 void FFmpegPlayer::update() {
     if (!isPlaying_) return;
-    videoDecoder_->update();
+
+    // Ensure pending decoded frames are uploaded to texture on the render thread.
+    if (videoDecoder_) {
+        videoDecoder_->applyPendingTextureUpdate(); // main-thread upload
+    }
+
+    // Drive decoders: keep decode logic on whichever thread you run decoders in.
+    // If decoder runs in worker thread, this call might be a no-op or control tick.
+    videoDecoder_->update();   // may run decoding work (keep it thread-safe)
     audioDecoder_->update();
 }
 

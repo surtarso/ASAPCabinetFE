@@ -8,6 +8,8 @@ extern "C" {
 }
 #include <chrono>
 #include <string>
+#include <mutex>
+#include <atomic>
 
 // Forward declarations for FFmpeg structs
 struct AVFormatContext;
@@ -124,6 +126,9 @@ public:
      */
     void resetPlaybackTimes();
 
+    void applyPendingTextureUpdate();   // Uploads queued frame data to the texture (main thread)
+    void queueFrameForTextureUpdate();  // Queues frame data from decoder thread
+
 private:
     friend class FFmpegPlayer; // Allow FFmpegPlayer to access private members
     FFmpegPlayer* player_;              ///< Pointer to the parent FFmpegPlayer instance.
@@ -144,6 +149,12 @@ private:
     bool needsReset_;                   ///< Flag indicating if playback needs to reset.
     AVBufferRef* hwDeviceCtx_ = nullptr;
     AVPixelFormat expectedSwFormat_ = AV_PIX_FMT_NONE;
+    // thread-swap buffer for main thread upload
+    std::mutex pendingMutex_;
+    std::vector<uint8_t> pendingBuffer_;     // contiguous RGB24 data: height * width * 3
+    std::atomic_bool hasPendingFrame_{false};
+    int pendingPitch_{0};                    // bytes per row in pendingBuffer_ (usually width*3)
+
 
     /**
      * @brief Cleans up all allocated resources.

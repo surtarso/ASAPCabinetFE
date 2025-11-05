@@ -83,6 +83,15 @@ public:
     void initialize();
 
     /**
+     * @brief Reinitialize ImGui platform/renderer backends when windows or renderers change.
+     *
+     * If the ImGui context is already created, this will shutdown the SDL/renderer
+     * backends and reinitialize them against the current window/renderer provided
+     * by the `IWindowManager` or the stored config window/renderer.
+     */
+    void reinitialize();
+
+    /**
      * @brief Starts a new ImGui frame.
      *
      * Prepares ImGui for a new rendering frame, updating internal state for UI elements.

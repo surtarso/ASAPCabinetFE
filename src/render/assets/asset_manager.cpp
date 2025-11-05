@@ -87,11 +87,34 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
     }
     LOG_DEBUG("Reloading assets for table index " + std::to_string(index));
 
-    playfieldRenderer = windowManager->getPlayfieldRenderer();
-    backglassRenderer = windowManager->getBackglassRenderer();
-    dmdRenderer = windowManager->getDMDRenderer();
-    topperRenderer = windowManager->getTopperRenderer();
+        // Detect renderer pointer changes. If any renderer was recreated, clear caches
+        SDL_Renderer* oldPlayfield = playfieldRenderer;
+        SDL_Renderer* oldBackglass = backglassRenderer;
+        SDL_Renderer* oldDmd = dmdRenderer;
+        SDL_Renderer* oldTopper = topperRenderer;
+
+        playfieldRenderer = windowManager->getPlayfieldRenderer();
+        backglassRenderer = windowManager->getBackglassRenderer();
+        dmdRenderer = windowManager->getDMDRenderer();
+        topperRenderer = windowManager->getTopperRenderer();
+
+        bool rendererChanged = (oldPlayfield && oldPlayfield != playfieldRenderer) ||
+                               (oldBackglass && oldBackglass != backglassRenderer) ||
+                               (oldDmd && oldDmd != dmdRenderer) ||
+                               (oldTopper && oldTopper != topperRenderer);
+        if (rendererChanged) {
+            LOG_WARN("Renderer pointer changed - clearing texture & video caches to avoid invalid textures");
+            // Stop and clear active video players and cached players referencing old renderers
+            clearVideoCache();
+            // Clear texture cache so textures created on the old renderers are not reused
+            clearTextureCache();
+        }
     titleRenderer_->setFont(font);
+
+        LOG_DEBUG("AssetManager::reloadAssets - playfieldRenderer=" + std::to_string(reinterpret_cast<uintptr_t>(playfieldRenderer)) +
+                  ", backglassRenderer=" + std::to_string(reinterpret_cast<uintptr_t>(backglassRenderer)) +
+                  ", dmdRenderer=" + std::to_string(reinterpret_cast<uintptr_t>(dmdRenderer)) +
+                  ", topperRenderer=" + std::to_string(reinterpret_cast<uintptr_t>(topperRenderer)));
 
     loadTableAssets(index, tables);
     LOG_DEBUG("Completed asset reload for index " + std::to_string(index));

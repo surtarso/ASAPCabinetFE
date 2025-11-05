@@ -30,6 +30,10 @@ VideoDecoder::~VideoDecoder() {
 }
 
 bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer, int width, int height) {
+    if (!renderer) {
+        LOG_ERROR("VideoDecoder::setup: renderer is null");
+        return false;
+    }
     renderer_ = renderer;
     width_ = width;
     height_ = height;
@@ -112,7 +116,7 @@ bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer,
         char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};
         av_make_error_string(err_buf, AV_ERROR_MAX_STRING_SIZE, ret);
         LOG_WARN("Failed to open codec with hardware acceleration (" + std::string(err_buf) + "), attempting software fallback.");
-        
+
         av_buffer_unref(&videoCodecContext_->hw_device_ctx);
         videoCodecContext_->hw_device_ctx = nullptr;
         expectedSwFormat_ = AV_PIX_FMT_NONE;
@@ -189,9 +193,18 @@ bool VideoDecoder::setup(AVFormatContext* formatContext, SDL_Renderer* renderer,
         SDL_DestroyTexture(texture_);
         texture_ = nullptr;
     }
+
+    // Log renderer info to help diagnose platform-specific renderer/texture issues
+    SDL_RendererInfo rinfo;
+    if (SDL_GetRendererInfo(renderer_, &rinfo) == 0) {
+        LOG_DEBUG(std::string("Renderer info: ") + (rinfo.name ? rinfo.name : "<unknown>") + ", flags=" + std::to_string(rinfo.flags));
+    } else {
+        LOG_DEBUG(std::string("SDL_GetRendererInfo failed: ") + SDL_GetError());
+    }
+
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
     if (!texture_) {
-        LOG_ERROR("Failed to create texture: " + std::string(SDL_GetError()));
+        LOG_ERROR(std::string("Failed to create texture: ") + SDL_GetError());
         cleanup();
         return false;
     }
@@ -252,6 +265,56 @@ void VideoDecoder::update() {
 
 SDL_Texture* VideoDecoder::getTexture() const {
     return texture_;
+}
+
+// Must run on the thread that owns renderer_ and texture_
+void VideoDecoder::applyPendingTextureUpdate() {
+    // quick check
+    if (!hasPendingFrame_.load(std::memory_order_acquire))
+        return;
+
+    if (!texture_) {
+        LOG_ERROR("applyPendingTextureUpdate: texture_ is null.");
+        hasPendingFrame_.store(false, std::memory_order_release);
+        return;
+    }
+
+    std::vector<uint8_t> localCopy;
+    int localPitch = 0;
+    {
+        std::lock_guard<std::mutex> lock(pendingMutex_);
+        if (pendingBuffer_.empty()) {
+            hasPendingFrame_.store(false, std::memory_order_release);
+            return;
+        }
+        localCopy.swap(pendingBuffer_); // fast move, pendingBuffer_ becomes empty
+        localPitch = pendingPitch_;
+        pendingPitch_ = 0;
+    }
+
+    void* pixels = nullptr;
+    int pitch = 0;
+    if (SDL_LockTexture(texture_, nullptr, &pixels, &pitch) != 0) {
+        LOG_ERROR("applyPendingTextureUpdate: Failed to lock texture: " + std::string(SDL_GetError()) +
+                  ", texture=" + std::to_string(reinterpret_cast<uintptr_t>(texture_)) +
+                  ", renderer=" + std::to_string(reinterpret_cast<uintptr_t>(renderer_)));
+        hasPendingFrame_.store(false, std::memory_order_release);
+        return;
+    }
+
+    // pitch may be >= localPitch. Copy each row into texture pitch.
+    const uint8_t* src = localCopy.data();
+    uint8_t* dst = static_cast<uint8_t*>(pixels);
+    const int copy_per_row = std::min(pitch, localPitch);
+
+    for (int y = 0; y < height_; ++y) {
+        memcpy(dst, src, copy_per_row);
+        dst += pitch;
+        src += localPitch;
+    }
+
+    SDL_UnlockTexture(texture_);
+    hasPendingFrame_.store(false, std::memory_order_release);
 }
 
 bool VideoDecoder::decodeVideoFrame() {
@@ -343,6 +406,9 @@ bool VideoDecoder::decodeVideoFrame() {
 
                 if (swFrame) av_frame_free(&swFrame);
                 invalidFrameSkipCount = 0;
+
+                // instead of updateTexture();
+                queueFrameForTextureUpdate();
                 return true;
             } else if (ret == AVERROR(EAGAIN)) {
                 continue;
@@ -377,6 +443,38 @@ bool VideoDecoder::decodeVideoFrame() {
     invalidFrameSkipCount = 0;
     badPacketCount = 0;
     return false;
+}
+
+// Called from decoder thread after sws_scale() produced rgbFrame_ (rgbBuffer_)
+void VideoDecoder::queueFrameForTextureUpdate() {
+    if (!rgbFrame_ || !rgbBuffer_) {
+        LOG_ERROR("queueFrameForTextureUpdate: invalid rgb buffer/frame.");
+        return;
+    }
+
+    const int bytes_per_row = width_ * 3;
+    if (rgbFrame_->linesize[0] < bytes_per_row) {
+        LOG_ERROR("queueFrameForTextureUpdate: linesize too small: " + std::to_string(rgbFrame_->linesize[0]));
+        return;
+    }
+
+    size_t requiredSize = static_cast<size_t>(height_) * static_cast<size_t>(bytes_per_row);
+
+    {
+        std::lock_guard<std::mutex> lock(pendingMutex_);
+        pendingBuffer_.resize(requiredSize);
+        pendingPitch_ = bytes_per_row;
+        uint8_t* dst = pendingBuffer_.data();
+        const uint8_t* src = rgbBuffer_;
+        for (int y = 0; y < height_; ++y) {
+            memcpy(dst, src, bytes_per_row);
+            dst += bytes_per_row;
+            src += rgbFrame_->linesize[0];
+        }
+    }
+
+    // publish to main thread
+    hasPendingFrame_.store(true, std::memory_order_release);
 }
 
 void VideoDecoder::updateTexture() {

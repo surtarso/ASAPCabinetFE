@@ -10,6 +10,7 @@ create_codebase.sh
 codebase.txt
 build/
 Doxyfile.bak
+copilot-instructions.md
 
 # Doxygen generated documentation
 docs/

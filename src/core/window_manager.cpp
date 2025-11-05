@@ -120,8 +120,22 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
         renderer.reset(SDL_CreateRenderer(window.get(), -1,
                                          SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
         if (!renderer) {
-            LOG_ERROR("Failed to create renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
-            exit(1);
+            LOG_WARN("Accelerated renderer creation failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
+            // Try a software renderer fallback which can help on some Wayland/Hyprland setups
+            renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
+            if (!renderer) {
+                LOG_ERROR("Failed to create software fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
+                exit(1);
+            } else {
+                LOG_INFO("Created software fallback renderer for " + std::string(title));
+            }
+        }
+        // Log renderer details to help diagnose platform-specific issues
+        SDL_RendererInfo rinfo;
+        if (SDL_GetRendererInfo(renderer.get(), &rinfo) == 0) {
+            LOG_DEBUG(std::string("Created renderer for ") + std::string(title) + ", name=" + (rinfo.name ? rinfo.name : "<unknown>") + ", flags=" + std::to_string(rinfo.flags));
+        } else {
+            LOG_DEBUG(std::string("SDL_GetRendererInfo failed: ") + SDL_GetError());
         }
         SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
     }

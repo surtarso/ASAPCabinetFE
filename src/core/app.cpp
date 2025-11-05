@@ -14,8 +14,8 @@ struct SDL_Surface;
 
 namespace fs = std::filesystem;
 
-App::App(const std::string& configPath) 
-    : configPath_(configPath), 
+App::App(const std::string& configPath)
+    : configPath_(configPath),
       font_(nullptr, TTF_CloseFont),
       joystickManager_(std::make_unique<JoystickManager>()),
       tableLoader_(std::make_unique<TableLoader>()),
@@ -86,6 +86,10 @@ void App::reloadAssetsAndRenderers() {
     reloadWindows();
     assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
     renderer_->setRenderers(windowManager_.get());
+    // Rebind ImGui backends to any newly created windows/renderers so UI remains visible
+    if (imGuiManager_) {
+        imGuiManager_->reinitialize();
+    }
     LOG_DEBUG("Assets and renderers reloaded after config saved");
 }
 
@@ -250,7 +254,7 @@ void App::initializeDependencies() {
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), keybindProvider_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get());
-    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(), 
+    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(),
                                   currentIndex_, tables_, showConfig_, showEditor_, showVpsdb_, exeDir_, screenshotManager_.get(),
                                   windowManager_.get(), isLoadingTables_, tableLauncher_.get(), tableCallbacks_.get());
 
