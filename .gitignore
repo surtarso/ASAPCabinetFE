@@ -1,17 +1,3 @@
-# Custom
-ASAPCabinetFE
-settings.json
-.vscode
-.vscode/*
-.vscode/settings.json
-*.vscode
-imgui.ini
-create_codebase.sh
-codebase.txt
-build/
-Doxyfile.bak
-copilot-instructions.md
-
 # Doxygen generated documentation
 docs/
 
@@ -47,3 +33,17 @@ docs/
 *.exe
 *.out
 *.app
+
+# Custom
+ASAPCabinetFE
+settings.json
+.vscode
+.vscode/*
+.vscode/settings.json
+*.vscode
+imgui.ini
+create_codebase.sh
+codebase.txt
+build/
+Doxyfile.bak
+*instructions.md
