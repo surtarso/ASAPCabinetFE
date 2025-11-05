@@ -202,7 +202,7 @@ bool VpsdbCatalog::render() {
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                ImGui::Text("Click to open: %s", url.c_str());
+                ImGui::Text("Open link in your default browser: %s", url.c_str());
                 ImGui::EndTooltip();
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 ImVec2 p1 = ImGui::GetItemRectMin();
