@@ -108,7 +108,7 @@ private:
      * @param pixels Pointer to the pixel buffer.
      * @return A pointer to the locked buffer.
      */
-    static void* lock(void* data, void** pixels);
+    static void* lock([[maybe_unused]] void* data, void** pixels);
 
     /**
      * @brief VLC callback for unlocking the video buffer.
@@ -116,14 +116,14 @@ private:
      * @param id Buffer ID.
      * @param pixels Pointer to the pixel buffer.
      */
-    static void unlock(void* data, void* id, void* const* pixels);
+    static void unlock([[maybe_unused]] void* data, [[maybe_unused]] void* id, [[maybe_unused]] void* const* pixels);
 
     /**
      * @brief VLC callback for displaying the video frame.
      * @param data User data (VideoContext*).
      * @param id Buffer ID.
      */
-    static void display(void* data, void* id);
+    static void display([[maybe_unused]] void* data, [[maybe_unused]] void* id);
 
     /**
      * @brief Cleans up the internal video context and VLC resources.

@@ -124,22 +124,22 @@ void LoadingScreen::render() {
     ImGui::NextColumn();
 
     // Right Column: Progress Bars
-    float overallProgress = loadingProgress_->totalStages > 0 ? (float)loadingProgress_->currentStage / loadingProgress_->totalStages : 0.0f;
+    float overallProgress = loadingProgress_->totalStages > 0 ? static_cast<float>(loadingProgress_->currentStage) / static_cast<float>(loadingProgress_->totalStages) : 0.0f;
     ImGui::Text("Overall: %.0f%%", overallProgress * 100.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorNeonCyan_);
     ImGui::ProgressBar(overallProgress, ImVec2(-1, 20));
     ImGui::PopStyleColor();
 
-    float tableProgress = loadingProgress_->totalTablesToLoad > 0 ? (float)loadingProgress_->currentTablesLoaded / loadingProgress_->totalTablesToLoad : 0.0f;
-    ImGui::Text("Tables: %d/%d (%.0f%%)", loadingProgress_->currentTablesLoaded, loadingProgress_->totalTablesToLoad, tableProgress * 100.0f);
+    float tableProgress = loadingProgress_->totalTablesToLoad > 0 ? static_cast<float>(loadingProgress_->currentTablesLoaded) / static_cast<float>(loadingProgress_->totalTablesToLoad) : 0.0f;
+    ImGui::Text("Tables: %zu/%zu (%.0f%%)", loadingProgress_->currentTablesLoaded, loadingProgress_->totalTablesToLoad, tableProgress * 100.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorNeonMagenta_);
     ImGui::ProgressBar(tableProgress, ImVec2(-1, 20));
     ImGui::PopStyleColor();
 
     // Use stage-specific denominator for matches
-    int matchDenominator = (loadingProgress_->currentStage == 5) ? loadingProgress_->totalTablesToLoad : loadingProgress_->numMatched + loadingProgress_->numNoMatch;
-    float matchedProgress = matchDenominator > 0 ? (float)loadingProgress_->numMatched / matchDenominator : 0.0f;
-    ImGui::Text("Matches: %d/%d (%.0f%%)", loadingProgress_->numMatched, matchDenominator, matchedProgress * 100.0f);
+    size_t matchDenominator = (loadingProgress_->currentStage == 5) ? loadingProgress_->totalTablesToLoad : static_cast<size_t>(loadingProgress_->numMatched + loadingProgress_->numNoMatch);
+    float matchedProgress = matchDenominator > 0 ? static_cast<float>(loadingProgress_->numMatched) / static_cast<float>(matchDenominator) : 0.0f;
+    ImGui::Text("Matches: %d/%zu (%.0f%%)", loadingProgress_->numMatched, matchDenominator, matchedProgress * 100.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorNeonYellow_);
     ImGui::ProgressBar(matchedProgress, ImVec2(-1, 20));
     ImGui::PopStyleColor();

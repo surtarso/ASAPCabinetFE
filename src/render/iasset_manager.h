@@ -206,7 +206,7 @@ public:
      *
      * Implementations may inspect active video players and swap backends if VLC fails to produce frames.
      */
-    virtual void processVlcFallbackEvent(void* data) { (void)data; }
+    virtual void processVlcFallbackEvent([[maybe_unused]] void* data) { }
 };
 
 #endif // IASSET_MANAGER_H

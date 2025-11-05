@@ -35,60 +35,60 @@ PinballTable loadTableFromJson(const std::string& vpsdbFilePath, size_t index) {
         table.ipdbUrl = entry.value("ipdbUrl", "");
         table.lastCreatedAt = entry.value("lastCreatedAt", 0);
 
-        for (const auto& file : entry.value("tableFiles", nlohmann::json::array())) {
+    for (const auto& entryFile : entry.value("tableFiles", nlohmann::json::array())) {
             TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.tableFormat = file.value("tableFormat", "");
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+            tf.id = entryFile.value("id", "");
+            tf.createdAt = entryFile.value("createdAt", 0);
+            tf.updatedAt = entryFile.value("updatedAt", 0);
+            tf.authors = entryFile.value("authors", std::vector<std::string>{});
+            tf.features = entryFile.value("features", std::vector<std::string>{});
+            tf.tableFormat = entryFile.value("tableFormat", "");
+            tf.comment = entryFile.value("comment", "");
+            tf.version = entryFile.value("version", "");
+            tf.imgUrl = entryFile.value("imgUrl", "");
+            for (const auto& url : entryFile.value("urls", nlohmann::json::array())) {
                 tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
             }
             table.tableFiles.push_back(tf);
         }
 
-        for (const auto& file : entry.value("b2sFiles", nlohmann::json::array())) {
+    for (const auto& entryFile : entry.value("b2sFiles", nlohmann::json::array())) {
             TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.features = file.value("features", std::vector<std::string>{});
-            tf.comment = file.value("comment", "");
-            tf.version = file.value("version", "");
-            tf.imgUrl = file.value("imgUrl", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+            tf.id = entryFile.value("id", "");
+            tf.createdAt = entryFile.value("createdAt", 0);
+            tf.updatedAt = entryFile.value("updatedAt", 0);
+            tf.authors = entryFile.value("authors", std::vector<std::string>{});
+            tf.features = entryFile.value("features", std::vector<std::string>{});
+            tf.comment = entryFile.value("comment", "");
+            tf.version = entryFile.value("version", "");
+            tf.imgUrl = entryFile.value("imgUrl", "");
+            for (const auto& url : entryFile.value("urls", nlohmann::json::array())) {
                 tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
             }
             table.b2sFiles.push_back(tf);
         }
 
-        for (const auto& file : entry.value("wheelArtFiles", nlohmann::json::array())) {
+    for (const auto& entryFile : entry.value("wheelArtFiles", nlohmann::json::array())) {
             TableFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+            tf.id = entryFile.value("id", "");
+            tf.createdAt = entryFile.value("createdAt", 0);
+            tf.updatedAt = entryFile.value("updatedAt", 0);
+            tf.authors = entryFile.value("authors", std::vector<std::string>{});
+            tf.version = entryFile.value("version", "");
+            for (const auto& url : entryFile.value("urls", nlohmann::json::array())) {
                 tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
             }
             table.wheelArtFiles.push_back(tf);
         }
 
-        for (const auto& file : entry.value("topperFiles", nlohmann::json::array())) {
+    for (const auto& entryFile : entry.value("topperFiles", nlohmann::json::array())) {
             TopperFile tf;
-            tf.id = file.value("id", "");
-            tf.createdAt = file.value("createdAt", 0);
-            tf.updatedAt = file.value("updatedAt", 0);
-            tf.authors = file.value("authors", std::vector<std::string>{});
-            tf.version = file.value("version", "");
-            for (const auto& url : file.value("urls", nlohmann::json::array())) {
+            tf.id = entryFile.value("id", "");
+            tf.createdAt = entryFile.value("createdAt", 0);
+            tf.updatedAt = entryFile.value("updatedAt", 0);
+            tf.authors = entryFile.value("authors", std::vector<std::string>{});
+            tf.version = entryFile.value("version", "");
+            for (const auto& url : entryFile.value("urls", nlohmann::json::array())) {
                 tf.urls.push_back({url.value("url", ""), url.value("broken", false)});
             }
             table.topperFiles.push_back(tf);

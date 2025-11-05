@@ -29,19 +29,19 @@ public:
             "Internal"
         };
         sectionDisplayNames_ = {
-            {"TableMetadata", "Table Metadata"},
-            {"TitleDisplay", "Title Display"},
-            {"UIWidgets", "UI Widgets"},
-            {"AudioSettings", "Audio Settings"},
-            {"Keybinds", "Keybinds"},
-            {"DPISettings", "DPI Settings"},
-            {"WindowSettings", "Window Settings"},
-            {"MediaDimensions", "Media Dimensions"},
-            {"CustomMedia", "Custom Media"},
-            {"VPX", "VPX Settings"},
-            {"DefaultMedia", "Default Media"},
-            {"UISounds", "UI Sounds"},
-            {"Internal", "Internal Settings"}
+            {"TableMetadata", "Table matching & metadata (source, indexing)"},
+            {"TitleDisplay", "On-screen titles & wheel (font, position)"},
+            {"UIWidgets", "UI elements (arrows, scrollbars, visuals)"},
+            {"AudioSettings", "Global audio levels and mutes"},
+            {"Keybinds", "Keyboard / Controller shortcuts"},
+            {"DPISettings", "Display scale / DPI behavior"},
+            {"WindowSettings", "Window & placement settings"},
+            {"MediaDimensions", "Media sizing & placement for each window"},
+            {"CustomMedia", "Per-table custom media paths"},
+            {"VPX", "VPX integration paths & launch options"},
+            {"DefaultMedia", "Fallback default media (used when table media missing)"},
+            {"UISounds", "Interface sound effects"},
+            {"Internal", "Advanced / internal settings (indexes, DB paths)"}
         };
         // -------------------- KEYS --------------------
         keyOrders_["TableMetadata"] = {
@@ -65,18 +65,18 @@ public:
             "confidenceThreshold"
         };
         keyDisplayNames_["TableMetadata"] = {
-            {"titleSource", "Table Info"},
+            {"titleSource", "Title Source"},
             {"titleSortBy", "Sort By"},
-            {"useVpxtool", "Use VPXTool"},
-            {"fetchVPSdb", "Use VPS Database"},
-            {"fetchVpinMediaDb", "Use VPinMedia Database"},
-            {"resizeToWindows", "Resize VpinMdb images"},
-            {"showMetadata", "Show Metadata"},
+            {"useVpxtool", "Enable VPXTool"},
+            {"fetchVPSdb", "Use VPS DB"},
+            {"fetchVpinMediaDb", "Use VPinMedia DB"},
+            {"resizeToWindows", "Resize media to window"},
+            {"showMetadata", "Display Metadata"},
             {"metadataPanelWidth", "Panel Width"},
             {"metadataPanelHeight", "Panel Height"},
             {"metadataPanelAlpha", "Panel Opacity"},
-            {"ignoreScanners", "Fast Load"},
-            {"forceRebuildMetadata", "Rebuild Metadata"}
+            {"ignoreScanners", "Fast load (skip scanners)"},
+            {"forceRebuildMetadata", "Force rebuild metadata"}
         };
         keyDropdownOptions_["TableMetadata"] = {
             {"titleSource", {"filename", "metadata"}},
@@ -96,16 +96,16 @@ public:
             "titleY"
         };
         keyDisplayNames_["TitleDisplay"] = {
-            {"showWheel", "Show Wheel"},
-            {"wheelWindow", "Wheel Window"},
-            {"showTitle", "Show Title"},
-            {"titleWindow", "Title Window"},
-            {"fontPath", "Font Path"},
-            {"fontColor", "Font Color"},
-            {"fontBgColor", "Font Background Color"},
-            {"fontSize", "Font Size"},
-            {"titleX", "Title X Position"},
-            {"titleY", "Title Y Position"}
+            {"showWheel", "Show wheel"},
+            {"wheelWindow", "Wheel window"},
+            {"showTitle", "Show title"},
+            {"titleWindow", "Title window"},
+            {"fontPath", "Font path"},
+            {"fontColor", "Font color"},
+            {"fontBgColor", "Font BG color"},
+            {"fontSize", "Font size"},
+            {"titleX", "Title X"},
+            {"titleY", "Title Y"}
         };
         keyDropdownOptions_["TitleDisplay"] = {
             {"wheelWindow", {"playfield", "backglass", "dmd", "topper"}},
@@ -130,21 +130,21 @@ public:
             "scrollbarThumbColor"
         };
         keyDisplayNames_["UIWidgets"] = {
-            {"showArrowHint", "Show Arrow Hint"},
-            {"arrowHintWidth", "Arrow Width"},
-            {"arrowHintHeight", "Arrow Height"},
-            {"arrowThickness", "Arrow Thickness"},
-            {"arrowAlpha", "Arrow Opacity"},
-            {"arrowColorTop", "Arrow Top Color"},
-            {"arrowColorBottom", "Arrow Bottom Color"},
-            {"arrowGlow", "Arrow Glow"},
-            {"arrowGlowColor", "Arrow Glow Color"},
-            {"showScrollbar", "Show Scrollbar"},
-            {"scrollbarWidth", "Scrollbar Width"},
-            {"thumbWidth", "Thumb Width"},
-            {"scrollbarLength", "Scrollbar Length"},
-            {"scrollbarColor", "Scrollbar Color"},
-            {"scrollbarThumbColor", "Scrollbar Thumb Color"}
+            {"showArrowHint", "Show arrow hint"},
+            {"arrowHintWidth", "Arrow width"},
+            {"arrowHintHeight", "Arrow height"},
+            {"arrowThickness", "Arrow thickness"},
+            {"arrowAlpha", "Arrow opacity"},
+            {"arrowColorTop", "Arrow color (top)"},
+            {"arrowColorBottom", "Arrow color (bottom)"},
+            {"arrowGlow", "Arrow glow"},
+            {"arrowGlowColor", "Glow color"},
+            {"showScrollbar", "Show scrollbar"},
+            {"scrollbarWidth", "Scrollbar width"},
+            {"thumbWidth", "Thumb width"},
+            {"scrollbarLength", "Scrollbar length"},
+            {"scrollbarColor", "Scrollbar color"},
+            {"scrollbarThumbColor", "Scrollbar thumb color"}
         };
 
         keyOrders_["AudioSettings"] = {
@@ -160,16 +160,16 @@ public:
             "interfaceAmbienceMute"
         };
         keyDisplayNames_["AudioSettings"] = {
-            {"masterVol", "Master Volume"},
-            {"masterMute", "Master Mute"},
-            {"mediaAudioVol", "Media Volume"},
-            {"mediaAudioMute", "Media Mute"},
-            {"tableMusicVol", "Table Music Volume"},
-            {"tableMusicMute", "Table Music Mute"},
-            {"interfaceAudioVol", "Interface Volume"},
-            {"interfaceAudioMute", "Interface Mute"},
-            {"interfaceAmbienceVol", "Ambience Volume"},
-            {"interfaceAmbienceMute", "Ambience Mute"}
+            {"masterVol", "Master volume"},
+            {"masterMute", "Master mute"},
+            {"mediaAudioVol", "Media volume"},
+            {"mediaAudioMute", "Media mute"},
+            {"tableMusicVol", "Table music vol"},
+            {"tableMusicMute", "Table music mute"},
+            {"interfaceAudioVol", "Interface volume"},
+            {"interfaceAudioMute", "Interface mute"},
+            {"interfaceAmbienceVol", "Ambience volume"},
+            {"interfaceAmbienceMute", "Ambience mute"}
         };
 
         keyOrders_["Keybinds"] = {
@@ -179,20 +179,20 @@ public:
             "Screenshot Key", "Screenshot Quit", "Quit"
         };
         keyDisplayNames_["Keybinds"] = {
-            {"Previous Table", "Previous Table"},
-            {"Next Table", "Next Table"},
-            {"Fast Previous Table", "Fast Previous Table"},
-            {"Fast Next Table", "Fast Next Table"},
-            {"Jump Next Letter", "Jump Next Letter"},
-            {"Jump Previous Letter", "Jump Previous Letter"},
-            {"Random Table", "Random Table"},
-            {"Launch Table", "Launch Table"},
-            {"Screenshot Mode", "Screenshot Mode"},
-            {"Screenshot Key", "Screenshot Key"},
-            {"Screenshot Quit", "Screenshot Quit"},
-            {"Toggle Config", "Toggle Config"},
-            {"Toggle Editor", "Toggle Editor"},
-            {"Toggle Catalog", "Toggle Catalog"},
+            {"Previous Table", "Prev table"},
+            {"Next Table", "Next table"},
+            {"Fast Previous Table", "Fast prev table"},
+            {"Fast Next Table", "Fast next table"},
+            {"Jump Next Letter", "Jump next letter"},
+            {"Jump Previous Letter", "Jump prev letter"},
+            {"Random Table", "Random table"},
+            {"Launch Table", "Launch table"},
+            {"Screenshot Mode", "Screenshot mode"},
+            {"Screenshot Key", "Screenshot key"},
+            {"Screenshot Quit", "Screenshot quit"},
+            {"Toggle Config", "Open/close config"},
+            {"Toggle Editor", "Open/close editor"},
+            {"Toggle Catalog", "Open/close catalog"},
             {"Quit", "Quit"}
         };
 
@@ -201,8 +201,8 @@ public:
             "enableDpiScaling"
         };
         keyDisplayNames_["DPISettings"] = {
-            {"dpiScale", "DPI Scale"},
-            {"enableDpiScaling", "Enable DPI Scaling"}
+            {"dpiScale", "DPI scale"},
+            {"enableDpiScaling", "Enable DPI scaling"}
         };
 
         keyOrders_["WindowSettings"] = {
@@ -229,25 +229,25 @@ public:
             "topperWindowY"
         };
         keyDisplayNames_["WindowSettings"] = {
-            {"videoBackend", "Video Backend"},
+            {"videoBackend", "Video backend"},
             {"useVPinballXIni", "Use VPX INI"},
-            {"playfieldWindowWidth", "Playfield Width"},
-            {"playfieldWindowHeight", "Playfield Height"},
+            {"playfieldWindowWidth", "Playfield width"},
+            {"playfieldWindowHeight", "Playfield height"},
             {"playfieldX", "Playfield X"},
             {"playfieldY", "Playfield Y"},
-            {"showBackglass", "Show Backglass"},
-            {"backglassWindowWidth", "Backglass Width"},
-            {"backglassWindowHeight", "Backglass Height"},
+            {"showBackglass", "Show backglass"},
+            {"backglassWindowWidth", "Backglass width"},
+            {"backglassWindowHeight", "Backglass height"},
             {"backglassX", "Backglass X"},
             {"backglassY", "Backglass Y"},
             {"showDMD", "Show DMD"},
-            {"dmdWindowWidth", "DMD Width"},
-            {"dmdWindowHeight", "DMD Height"},
+            {"dmdWindowWidth", "DMD width"},
+            {"dmdWindowHeight", "DMD height"},
             {"dmdX", "DMD X"},
             {"dmdY", "DMD Y"},
-            {"showTopper", "Show Topper"},
-            {"topperWindowWidth", "Topper Width"},
-            {"topperWindowHeight", "Topper Height"},
+            {"showTopper", "Show topper"},
+            {"topperWindowWidth", "Topper width"},
+            {"topperWindowHeight", "Topper height"},
             {"topperWindowX", "Topper X"},
             {"topperWindowY", "Topper Y"}
         };
@@ -283,31 +283,31 @@ public:
             "topperRotation"
         };
         keyDisplayNames_["MediaDimensions"] = {
-            {"forceImagesOnly", "Force Images Only"},
-            {"wheelMediaWidth", "Wheel Width"},
-            {"wheelMediaHeight", "Wheel Height"},
+            {"forceImagesOnly", "Force images only"},
+            {"wheelMediaWidth", "Wheel width"},
+            {"wheelMediaHeight", "Wheel height"},
             {"wheelMediaX", "Wheel X"},
             {"wheelMediaY", "Wheel Y"},
-            {"playfieldMediaWidth", "Playfield Media Width"},
-            {"playfieldMediaHeight", "Playfield Media Height"},
-            {"playfieldMediaX", "Playfield Media X"},
-            {"playfieldMediaY", "Playfield Media Y"},
-            {"playfieldRotation", "Playfield Rotation"},
-            {"backglassMediaWidth", "Backglass Media Width"},
-            {"backglassMediaHeight", "Backglass Media Height"},
-            {"backglassMediaX", "Backglass Media X"},
-            {"backglassMediaY", "Backglass Media Y"},
-            {"backglassRotation", "Backglass Rotation"},
-            {"dmdMediaWidth", "DMD Media Width"},
-            {"dmdMediaHeight", "DMD Media Height"},
-            {"dmdMediaX", "DMD Media X"},
-            {"dmdMediaY", "DMD Media Y"},
-            {"dmdRotation", "DMD Rotation"},
-            {"topperMediaWidth", "Topper Media Width"},
-            {"topperMediaHeight", "Topper Media Height"},
-            {"topperMediaX", "Topper Media X"},
-            {"topperMediaY", "Topper Media Y"},
-            {"topperRotation", "Topper Rotation"}
+            {"playfieldMediaWidth", "Playfield media width"},
+            {"playfieldMediaHeight", "Playfield media height"},
+            {"playfieldMediaX", "Playfield media X"},
+            {"playfieldMediaY", "Playfield media Y"},
+            {"playfieldRotation", "Playfield rotation"},
+            {"backglassMediaWidth", "Backglass media width"},
+            {"backglassMediaHeight", "Backglass media height"},
+            {"backglassMediaX", "Backglass media X"},
+            {"backglassMediaY", "Backglass media Y"},
+            {"backglassRotation", "Backglass rotation"},
+            {"dmdMediaWidth", "DMD media width"},
+            {"dmdMediaHeight", "DMD media height"},
+            {"dmdMediaX", "DMD media X"},
+            {"dmdMediaY", "DMD media Y"},
+            {"dmdRotation", "DMD rotation"},
+            {"topperMediaWidth", "Topper media width"},
+            {"topperMediaHeight", "Topper media height"},
+            {"topperMediaX", "Topper media X"},
+            {"topperMediaY", "Topper media Y"},
+            {"topperRotation", "Topper rotation"}
         };
 
         keyOrders_["CustomMedia"] = {
@@ -324,17 +324,17 @@ public:
             "customLaunchSound"
         };
         keyDisplayNames_["CustomMedia"] = {
-            {"customWheelImage", "Custom Wheel Image"},
-            {"customPlayfieldImage", "Custom Playfield Image"},
-            {"customBackglassImage", "Custom Backglass Image"},
-            {"customDmdImage", "Custom DMD Image"},
-            {"customTopperImage", "Custom Topper Image"},
-            {"customPlayfieldVideo", "Custom Playfield Video"},
-            {"customBackglassVideo", "Custom Backglass Video"},
-            {"customDmdVideo", "Custom DMD Video"},
-            {"customTopperVideo", "Custom Topper Video"},
-            {"tableMusic", "Table Music"},
-            {"customLaunchSound", "Custom Launch Sound"}
+            {"customWheelImage", "Wheel image"},
+            {"customPlayfieldImage", "Playfield image"},
+            {"customBackglassImage", "Backglass image"},
+            {"customDmdImage", "DMD image"},
+            {"customTopperImage", "Topper image"},
+            {"customPlayfieldVideo", "Playfield video"},
+            {"customBackglassVideo", "Backglass video"},
+            {"customDmdVideo", "DMD video"},
+            {"customTopperVideo", "Topper video"},
+            {"tableMusic", "Table music"},
+            {"customLaunchSound", "Launch sound"}
         };
 
         keyOrders_["VPX"] = {
@@ -366,15 +366,15 @@ public:
             "defaultTopperVideo"
         };
         keyDisplayNames_["DefaultMedia"] = {
-            {"defaultWheelImage", "Default Wheel Image"},
-            {"defaultPlayfieldImage", "Default Playfield Image"},
-            {"defaultBackglassImage", "Default Backglass Image"},
-            {"defaultDmdImage", "Default DMD Image"},
-            {"defaultTopperImage", "Default Topper Image"},
-            {"defaultPlayfieldVideo", "Default Playfield Video"},
-            {"defaultBackglassVideo", "Default Backglass Video"},
-            {"defaultDmdVideo", "Default DMD Video"},
-            {"defaultTopperVideo", "Default Topper Video"}
+            {"defaultWheelImage", "Default wheel image"},
+            {"defaultPlayfieldImage", "Default playfield image"},
+            {"defaultBackglassImage", "Default backglass image"},
+            {"defaultDmdImage", "Default DMD image"},
+            {"defaultTopperImage", "Default topper image"},
+            {"defaultPlayfieldVideo", "Default playfield video"},
+            {"defaultBackglassVideo", "Default backglass video"},
+            {"defaultDmdVideo", "Default DMD video"},
+            {"defaultTopperVideo", "Default topper video"}
         };
 
         keyOrders_["UISounds"] = {
@@ -389,15 +389,15 @@ public:
             "ambienceSound"
         };
         keyDisplayNames_["UISounds"] = {
-            {"scrollNormalSound", "Single Scroll Sound"},
-            {"scrollFastSound", "Fast Scroll Sound"},
-            {"scrollJumpSound", "Jump Scroll Sound"},
-            {"scrollRandomSound", "Random Scroll Sound"},
-            {"launchTableSound", "Launch Table Sound"},
-            {"launchScreenshotSound", "Launch Screenshot Sound"},
-            {"panelToggleSound", "Panel Toggle Sound"},
-            {"screenshotTakeSound", "Screenshot Taken Sound"},
-            {"ambienceSound", "Ambience Sound"}
+            {"scrollNormalSound", "Scroll (normal)"},
+            {"scrollFastSound", "Scroll (fast)"},
+            {"scrollJumpSound", "Scroll (jump)"},
+            {"scrollRandomSound", "Scroll (random)"},
+            {"launchTableSound", "Launch table"},
+            {"launchScreenshotSound", "Launch screenshot"},
+            {"panelToggleSound", "Panel toggle"},
+            {"screenshotTakeSound", "Screenshot take"},
+            {"ambienceSound", "Ambience"}
         };
 
         keyOrders_["Internal"] = {

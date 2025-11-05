@@ -122,9 +122,9 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                             }
                         }
                         if (ImGui::Combo(keyDisplayName.c_str(), &currentIndex, [](void* data, int idx, const char** out_text) {
-                            auto& options = *static_cast<std::vector<std::string>*>(data);
-                            if (idx >= 0 && idx < static_cast<int>(options.size())) {
-                                *out_text = options[idx].c_str();
+                            auto& localOptions = *static_cast<std::vector<std::string>*>(data);
+                            if (idx >= 0 && idx < static_cast<int>(localOptions.size())) {
+                                *out_text = localOptions[idx].c_str();
                                 return true;
                             }
                             return false;
@@ -198,9 +198,9 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                         }
                     }
                     if (ImGui::Combo(keyDisplayName.c_str(), &currentIndex, [](void* data, int idx, const char** out_text) {
-                        auto& options = *static_cast<std::vector<std::string>*>(data);
-                        if (idx >= 0 && idx < static_cast<int>(options.size())) {
-                            *out_text = options[idx].c_str();
+                        auto& localOptions = *static_cast<std::vector<std::string>*>(data);
+                        if (idx >= 0 && idx < static_cast<int>(localOptions.size())) {
+                            *out_text = localOptions[idx].c_str();
                             return true;
                         }
                         return false;

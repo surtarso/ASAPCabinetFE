@@ -33,15 +33,15 @@
 struct LoadingProgress {
     std::mutex mutex; ///< Mutex for thread-safe access to all members, used by loading and rendering threads.
 
-    int currentTablesLoaded = 0; ///< Number of tables currently loaded (used for per-table progress bar).
-    int totalTablesToLoad = 0;   ///< Total number of tables to load (denominator for per-table progress bar).
-    int currentStage = 0;        ///< Current overall progress stage (e.g., fetching VPSDB, scanning, matchmaking).
-    int totalStages = 11;         ///< Total number of stages 
+    size_t currentTablesLoaded = 0; ///< Number of tables currently loaded (used for per-table progress bar).
+    size_t totalTablesToLoad = 0;   ///< Total number of tables to load (denominator for per-table progress bar).
+    int currentStage = 0;           ///< Current overall progress stage (e.g., fetching VPSDB, scanning, matchmaking).
+    int totalStages = 11;           ///< Total number of stages
 
     std::string currentTask = "Initializing..."; ///< Description of the current task (e.g., "Scanning Tables (5)").
 
-    int numMatched = 0;         ///< Number of tables successfully matched with metadata (used for match progress bar).
-    int numNoMatch = 0;         ///< Number of tables with no metadata match (displayed in UI stats).
+    int numMatched = 0;          ///< Number of tables successfully matched with metadata (used for match progress bar).
+    int numNoMatch = 0;          ///< Number of tables with no metadata match (displayed in UI stats).
 
     std::deque<std::string> logMessages; ///< Buffer of recent log messages for display in the loading screen's mini terminal.
     size_t maxLogMessages = 10; ///< Maximum number of log messages to store (keeps last 10, older messages are removed).

@@ -58,9 +58,7 @@ void* VlcVideoPlayer::lock(void* data, void** pixels) {
     return nullptr;
 }
 
-void VlcVideoPlayer::unlock(void* data, void* id, void* const* pixels) {
-    (void)id;
-    (void)pixels;
+void VlcVideoPlayer::unlock([[maybe_unused]] void* data, [[maybe_unused]] void* id, [[maybe_unused]] void* const* pixels) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
     if (!ctx || !ctx->mutex) {
         LOG_ERROR("Unlock callback called with invalid context or mutex.");
@@ -72,8 +70,7 @@ void VlcVideoPlayer::unlock(void* data, void* id, void* const* pixels) {
     }
 }
 
-void VlcVideoPlayer::display(void* data, void* id) {
-    (void)id;
+void VlcVideoPlayer::display([[maybe_unused]] void* data, [[maybe_unused]] void* id) {
     VideoContext* ctx = static_cast<VideoContext*>(data);
     if (!ctx) {
         LOG_ERROR("Display callback called with invalid context.");

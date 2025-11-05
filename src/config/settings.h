@@ -231,13 +231,13 @@ struct Settings {
     };
 
     // Apply post-processing (e.g., DPI scaling, path resolution)
-    void applyPostProcessing(const std::string& exeDir) {
+    void applyPostProcessing(const std::string& exeDirectory) {
         // Store exeDir
-        this->exeDir = exeDir;
+        this->exeDir = exeDirectory;
 
         // Resolve VPX paths
-        VPXTablesPath = resolvePath(VPXTablesPath, exeDir);
-        VPinballXPath = resolvePath(VPinballXPath, exeDir);
+        VPXTablesPath = resolvePath(VPXTablesPath, exeDirectory);
+        VPinballXPath = resolvePath(VPinballXPath, exeDirectory);
 
         // List all paths that need resolution
         std::vector<std::string> pathFields = {
@@ -284,7 +284,7 @@ struct Settings {
 
         // Apply DPI scaling to fontSize if enabled
         if (enableDpiScaling) {
-            fontSize = static_cast<int>(fontSize * dpiScale);
+            fontSize = static_cast<int>(static_cast<float>(fontSize) * dpiScale);
         }
 
         // Resolve font path
@@ -318,7 +318,7 @@ struct Settings {
 
 public:
     // Resolve relative paths and environment variables
-    std::string resolvePath(const std::string& value, const std::string& exeDir) const {
+    std::string resolvePath(const std::string& value, const std::string& exeDirectory) const {
         std::string result = value;
         // Replace $HOME with actual home directory
         const char* home = std::getenv("HOME");
@@ -332,9 +332,9 @@ public:
             }
         }
         // Resolve relative paths
-        if (result.empty()) return exeDir + value;
+        if (result.empty()) return exeDirectory + value;
         if (result[0] == '/' || result[0] == '\\') return result;
-        return exeDir + result;
+        return exeDirectory + result;
     }
 
 private:
