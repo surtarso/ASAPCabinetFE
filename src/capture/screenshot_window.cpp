@@ -31,9 +31,9 @@ bool ScreenshotWindow::initialize(int width, int height) {
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
     const char* videoDriver = SDL_GetCurrentVideoDriver();
-    LOG_DEBUG("SDL Compiled Version: " + std::to_string(compiled.major) + "." + 
+    LOG_DEBUG("SDL Compiled Version: " + std::to_string(compiled.major) + "." +
               std::to_string(compiled.minor) + "." + std::to_string(compiled.patch));
-    LOG_DEBUG("SDL Linked Version: " + std::to_string(linked.major) + "." + 
+    LOG_DEBUG("SDL Linked Version: " + std::to_string(linked.major) + "." +
               std::to_string(linked.minor) + "." + std::to_string(linked.patch));
     LOG_DEBUG("Video Driver: " + std::string(videoDriver ? videoDriver : "unknown"));
 
@@ -65,8 +65,8 @@ bool ScreenshotWindow::initialize(int width, int height) {
         return false;
     }
 
-    SDL_Keycode screenshotKey = keybindProvider_->getKey("ScreenshotKey");
-    SDL_Keycode screenshotQuit = keybindProvider_->getKey("ScreenshotQuit");
+    SDL_Keycode screenshotKey = keybindProvider_->getKey("Screenshot Key");
+    SDL_Keycode screenshotQuit = keybindProvider_->getKey("Screenshot Quit");
     buttonText_ = "'" + std::string(SDL_GetKeyName(screenshotKey)) + "' to Screenshot, '" +
                   std::string(SDL_GetKeyName(screenshotQuit)) + "' to Quit";
 

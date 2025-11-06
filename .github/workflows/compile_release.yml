@@ -26,7 +26,6 @@ on:
 permissions:
   actions: read
   contents: write
-  #pages: write
   id-token: write
   security-events: write
 
@@ -139,7 +138,6 @@ jobs:
         fi
 
 #=============== ARCH BUILD JOB ===============
-
   build_arch:
     runs-on: ubuntu-latest
     container: archlinux/archlinux:latest
@@ -159,17 +157,20 @@ jobs:
       with:
         fetch-depth: 0
         lfs: true
+
     - name: Checkout selected tag
       if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
         git config --global --add safe.directory "${GITHUB_WORKSPACE}"
         git fetch --tags
         git checkout ${{ inputs.tag }}
+
     - name: Install System Dependencies
       run: |
         pacman -S --noconfirm --needed findutils cmake base-devel pkgconf
         git config --global --add safe.directory "${GITHUB_WORKSPACE}"
         cat pacman-packages.txt | xargs pacman -S --noconfirm --needed
+
     - name: Get Library Versions for Release Tag
       if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
       id: get-lib-versions
@@ -184,19 +185,23 @@ jobs:
         echo "vlc_version=$VLC_VER" >> $GITHUB_OUTPUT
         echo "curl_version=$CURL_VER" >> $GITHUB_OUTPUT
         echo "glibc_version=$GLIBC_VER" >> $GITHUB_OUTPUT
+
     - name: Configure with CMake
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/build"
         cd "${GITHUB_WORKSPACE}/build"
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/github/workspace/install_root -S .. -B .
+
     - name: Compile with CMake
       run: |
         cd "${GITHUB_WORKSPACE}/build"
         cmake --build . -j$(nproc)
+
     - name: Run `make install` for packaging
       run: |
         cd "${GITHUB_WORKSPACE}/build"
         cmake --install .
+
     - name: Create distributable archive
       id: create-archive
       run: |
@@ -212,12 +217,14 @@ jobs:
         tar -czvhf "${TARBALL_FULL_PATH}" ./*
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ASAPCabinetFE-archlinux-x64
         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
         retention-days: 7
+
     - name: Test Version Flag
       run: |
         cd "/github/home/ASAPCabinetFE"
@@ -241,11 +248,13 @@ jobs:
       with:
         name: ASAPCabinetFE-ubuntu-x64
         path: artifacts/ubuntu
+
     - name: Download Arch artifact
       uses: actions/download-artifact@v4
       with:
         name: ASAPCabinetFE-archlinux-x64
         path: artifacts/arch
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
