@@ -12,7 +12,8 @@
 LoadingScreen::LoadingScreen(std::shared_ptr<LoadingProgress> progress)
     : loadingProgress_(progress) {
     // Fetch system info once at startup using OSUtils
-    systemInfo_.kernel = OSUtils::getKernelVersion();
+    // systemInfo_.kernel = OSUtils::getKernelVersion();
+    systemInfo_.desktop = OSUtils::getDesktopEnv();
     systemInfo_.cpuModel = OSUtils::getCpuModel();
     systemInfo_.totalRam = OSUtils::getTotalRamMB();
 }
@@ -83,9 +84,10 @@ void LoadingScreen::render() {
 
     centerTextLine(("ASAPCabinetFE " + versionStr).c_str());
     // centerTextLine(("ASAPCabinetFE " + std::string(ASAPCABINETFE_VERSION_STRING)).c_str());
-    centerTextLine(("Kernel: " + systemInfo_.kernel).c_str());
+    // centerTextLine(("Kernel: " + systemInfo_.kernel).c_str());
+    centerTextLine(("Desktop environment: " + systemInfo_.desktop).c_str());
     centerTextLine(("CPU: " + systemInfo_.cpuModel).c_str());
-    centerTextLine(("RAM: " + systemInfo_.totalRam).c_str());
+    centerTextLine(("Total memory: " + systemInfo_.totalRam).c_str());
     ImGui::PopStyleColor();
     ImGui::EndChild();
 

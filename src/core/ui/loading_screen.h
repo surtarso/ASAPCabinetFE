@@ -35,7 +35,8 @@ private:
     static constexpr ImVec4 colorThreadGreen_ = ImVec4(0.2f, 0.8f, 0.2f, 0.8f);
 
     struct SystemInfo {
-        std::string kernel;
+        // std::string kernel;
+        std::string desktop;
         std::string cpuModel;
         std::string totalRam;
     } systemInfo_;
