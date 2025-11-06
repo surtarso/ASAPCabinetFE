@@ -51,6 +51,7 @@ void Editor::initializeImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr; // Prevent loading/saving imgui.ini
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
