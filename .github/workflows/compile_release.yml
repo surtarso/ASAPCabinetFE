@@ -68,15 +68,14 @@ jobs:
         echo "vlc_version=$VLC_VER" >> $GITHUB_OUTPUT
         echo "curl_version=$CURL_VER" >> $GITHUB_OUTPUT
         echo "glibc_version=$GLIBC_VER" >> $GITHUB_OUTPUT
-    - name: Generate Doxygen documentation
-      run: doxygen Doxyfile
-    - name: Create .nojekyll file
-      run: touch docs/html/.nojekyll
-    - uses: actions/upload-pages-artifact@v3
+
+    # Initialize CodeQL before build
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
       with:
-        path: docs/html
-    - id: deployment
-      uses: actions/deploy-pages@v4
+        languages: cpp
+
+    # Configure and build
     - name: Configure with CMake
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/build"
@@ -86,6 +85,13 @@ jobs:
       run: |
         cd "${GITHUB_WORKSPACE}/build"
         cmake --build . -j$(nproc)
+
+    # Run analysis using the same build
+    - name: Run CodeQL analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:cpp"
+
     - name: Run `make install` for packaging
       run: |
         cd "${GITHUB_WORKSPACE}/build"
@@ -121,6 +127,17 @@ jobs:
           echo "Version check failed!"
           exit 1
         fi
+
+    # Doxygen docs
+    - name: Generate Doxygen documentation
+      run: doxygen Doxyfile
+    - name: Create .nojekyll file
+      run: touch docs/html/.nojekyll
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs/html
+    - id: deployment
+      uses: actions/deploy-pages@v4
 
   build_arch:
     runs-on: ubuntu-latest
@@ -278,32 +295,3 @@ jobs:
           artifacts/arch/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-#==========================================================
-  codeql:
-    runs-on: ubuntu-latest
-    needs: [build_ubuntu]  # ensures build completes first, avoids parallel load on free tier
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: cpp
-
-      - name: Configure and build (for analysis)
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -j$(nproc)
-
-      - name: Run CodeQL analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:cpp"
-          upload: true # default
