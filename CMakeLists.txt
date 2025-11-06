@@ -325,6 +325,7 @@ set(SOURCES
     src/tables/vpsdb/vpsdb_catalog_json.cpp
     src/tables/vpsdb/vpsdb_catalog_table.cpp
     # utils
+    src/utils/os_utils.cpp
     src/utils/path_utils.cpp
     src/utils/sha_utils.cpp
     src/utils/string_utils.cpp

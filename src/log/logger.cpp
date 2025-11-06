@@ -8,6 +8,7 @@
  */
 
 #include "log/logger.h"
+#include "utils/os_utils.h"
 #include <iostream>
 #include <ctime>
 #include <sstream>
@@ -42,6 +43,12 @@ void Logger::initialize(const std::string& logFile, bool debugBuild) {
     }
 
     info("Logger Initialized.");
+
+    try {
+        info(OSUtils::getSummary());
+    } catch (...) {
+        warn("Failed to retrieve OS information.");
+    }
 }
 
 void Logger::setLoadingProgress(std::shared_ptr<LoadingProgress> progress) {
