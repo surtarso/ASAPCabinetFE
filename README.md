@@ -70,7 +70,6 @@ cd ~/ASAPCabinetFE
 </details>
 
 ## Features
-ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experience. It might be the frontend you’ve been waiting for, and here is why:
 
 - Full screen multi monitor display of table playfield, backglass, topper and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
@@ -90,8 +89,6 @@ ASAPCabinetFE transforms your virtual pinball cabinet into an immersive experien
 - No need to download artpacks, **generate** your own. (See [tools](#generator-tools))
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
 - Just what it takes to make your cabinet look good!
-
-**_ASAPCab_ isn’t just a frontend**—it’s your gateway to a complete virtual pinball experience for Linux. Join us and make it yours!
 
 ### How it works
 - Scans recursively for `.vpx` files.
