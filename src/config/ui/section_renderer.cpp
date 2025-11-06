@@ -105,6 +105,41 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             return; // skip generic rendering for this section
         }
 
+
+
+        // if (sectionName == "Keybinds") {
+        //     ImGui::Text("Keyboard & Controller Bindings");
+        //     ImGui::Separator();
+
+        //     if (ImGui::BeginTable("KeybindsTable", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable)) {
+        //         ImGui::TableSetupColumn("Action");
+        //         ImGui::TableSetupColumn("Key");
+        //         ImGui::TableSetupColumn("");
+        //         ImGui::TableHeadersRow();
+
+        //         for (auto& [key, value] : sectionData.items()) {
+        //             ImGui::TableNextRow();
+        //             ImGui::TableSetColumnIndex(0);
+        //             ImGui::TextUnformatted(config.getKeyDisplayName(sectionName, key).c_str());
+
+        //             ImGui::TableSetColumnIndex(1);
+        //             ImGui::PushID(key.c_str());
+        //             renderKeybind(key.c_str(), value, sectionName, isCapturing, capturingKeyName);
+        //             ImGui::PopID();
+        //         }
+        //         ImGui::EndTable();
+        //     }
+
+        //     ImGui::Spacing();
+        //     ImGui::Separator();
+        //     ImGui::TextDisabled("Click a field, then press the key or button to rebind.");
+        //     ImGui::Unindent();
+        //     return; // skip generic renderer
+        // }
+
+
+
+
         // ----------------------- Special handling for Window section
         if (sectionName == "WindowSettings") {
             ImGui::Text("Window Layout Preview");

@@ -158,7 +158,8 @@ protected:
             }
         }
         if (isCapturing && capturingKeyName == key) {
-            ImGui::Text("Press a key or joystick input to bind... (Esc to cancel)");
+            // ImGui::Text("Press a key or joystick input to bind... (Esc to cancel)"); //shows under key
+            ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName.c_str());
         }
     }
 

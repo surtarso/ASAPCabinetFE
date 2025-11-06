@@ -141,9 +141,9 @@ void ConfigUI::drawGUI() {
                 auto it = renderers_.find(sectionName);
                 if (it != renderers_.end()) {
                     bool defaultOpen = false;
-                    if (sectionName == "Keybinds" && isCapturingKey_) {
-                        ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
-                    }
+                    // if (sectionName == "Keybinds" && isCapturingKey_) {
+                    //     ImGui::Text("Press a key or joystick input to bind to %s...", capturingKeyName_.c_str());
+                    // }
                     it->second->render(sectionName, jsonData_[sectionName], isCapturingKey_, capturingKeyName_, fileDialog, defaultOpen, isDialogOpen_, dialogKey_);
                 } else {
                     LOG_ERROR("No renderer for section " + sectionName);
