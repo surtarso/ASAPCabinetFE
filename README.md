@@ -52,7 +52,7 @@ cd ~/ASAPCabinetFE
 
 ### TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch (experimental)
 <details>
-<summary>Use Ffmpeg as backend, reloading some configs may cause hangs.</summary>
+<summary>No VLC backend, reloading some configs may cause hangs.</summary>
   
 ```sh
 sudo pacman -Syu --noconfirm git findutils
