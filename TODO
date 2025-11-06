@@ -1,10 +1,10 @@
 TODO
 
 FIX:
-- switching video renderer causes black screen and hangs (Arch only!)
-- make fast start and rebuild exclusive between eachother
+- vlc video renderer not working (Arch only!)
+- make fast start and rebuild exclusive (unclick) between eachother
 - ffmpeg volume slider has incorrect values (too narrow range)
-- live reload font (along with windows) on dpi changes
+- live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING:
 - "editor mode" - port of vpx gui tools (--editor / -e flags)
