@@ -185,7 +185,9 @@ void FFmpegPlayer::cleanup() {
 void FFmpegPlayer::seek(double time_seconds, int stream_index) {
     if (!formatContext_) return;
 
-    int64_t timestamp = time_seconds * AV_TIME_BASE;
+    // Explicit cast to avoid -Wfloat-conversion warning
+    int64_t timestamp = static_cast<int64_t>(time_seconds * static_cast<double>(AV_TIME_BASE));
+
     int ret = av_seek_frame(formatContext_, stream_index, timestamp, AVSEEK_FLAG_BACKWARD);
     if (ret < 0) {
         char err_buf[AV_ERROR_MAX_STRING_SIZE] = {0};

@@ -236,7 +236,11 @@ void VideoDecoder::update() {
     double frameDelay = 1.0 / av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->r_frame_rate);
     if (videoClock_ <= elapsedPlaybackTime) {
         if (decodeVideoFrame()) {
-            double nextVideoClock = videoFrame_->pts * av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+            // Explicit cast avoids -Wconversion
+            double nextVideoClock =
+                static_cast<double>(videoFrame_->pts) *
+                av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+
             if (nextVideoClock < videoClock_ || nextVideoClock < 0) {
                 videoClock_ += frameDelay;
             } else {
@@ -251,7 +255,11 @@ void VideoDecoder::update() {
             needsReset_ = false;
             firstValidFrame = false;
             if (decodeVideoFrame()) {
-                videoClock_ = videoFrame_->pts * av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+                // Same fix here
+                videoClock_ =
+                    static_cast<double>(videoFrame_->pts) *
+                    av_q2d(player_->getFormatContext()->streams[videoStreamIndex_]->time_base);
+
                 if (videoClock_ < 0) videoClock_ = frameDelay;
                 firstValidFrame = true;
                 updateTexture();

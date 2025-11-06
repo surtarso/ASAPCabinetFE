@@ -285,6 +285,7 @@ set(SOURCES
     src/config/ui/config_ui.cpp
     src/config/ui/section_renderer.cpp
     # editor
+    # src/editor/editor_binary.cpp # gets imported later in binary creation
     src/editor/editor.cpp
     src/editor/editor_ui.cpp
     # keybinds
@@ -383,6 +384,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
     COMPILE_FLAGS "-w"
 )
+# Suppress warnings for imgui source files
+file(GLOB_RECURSE IMGUI_SOURCES
+    "${imgui_SOURCE_DIR}/*.cpp"
+)
+set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
 
 
 # --- Dependencies Start ---
@@ -423,9 +429,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 # Compile options
 target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall -Wextra -D_REENTRANT
+    -Wall -Wextra -Wshadow -Wconversion -D_REENTRANT
 )
 
+# -----------------------------------------------------------------------------
+# Primary launcher binary (ASAPCabinetFE)
+# -----------------------------------------------------------------------------
 # Build type-specific flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(${PROJECT_NAME} PRIVATE -g)
@@ -458,7 +467,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
     # Install the executable directly into the root of the install prefix
     install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION ./ # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
+        RUNTIME DESTINATION . # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
     )
 
     # Install resource directories directly into the root of the install prefix
@@ -474,4 +483,23 @@ endif()
 # Set output directory (this is for the build directory, not install)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
+# -----------------------------------------------------------------------------
+# Secondary launcher binary (--editor shortcut)
+# -----------------------------------------------------------------------------
+# Define and import the editor source file
+add_executable(${PROJECT_NAME}-Editor src/editor/editor_binary.cpp)
+
+# Place it in the same build folder as the main binary
+set_target_properties(${PROJECT_NAME}-Editor PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
+# Ensure it builds after the main app so ./ASAPCabinetFE exists
+add_dependencies(${PROJECT_NAME}-Editor ${PROJECT_NAME})
+
+# Install it alongside the main binary
+install(TARGETS ${PROJECT_NAME}-Editor
+    RUNTIME DESTINATION .
 )

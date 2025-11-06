@@ -6,6 +6,8 @@
 EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader)
     : config_(config), tableLoader_(tableLoader) {
     Settings settings = config_->getSettings();
+    // Always read from existing index file when loading editor mode
+    settings.ignoreScanners = true;
     tables_ = tableLoader_->loadTableList(settings, nullptr);
 }
 
@@ -22,13 +24,16 @@ void EditorUI::draw() {
 
     if (tables_.empty()) {
         ImGui::TextDisabled("No tables found. Verify configuration or rescan in main frontend.");
-    } else if (ImGui::BeginTable("tableList", 2, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
+    } else if (ImGui::BeginTable("tableList", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
+        ImGui::TableSetupColumn("Year");
         ImGui::TableSetupColumn("Table Name");
         ImGui::TableSetupColumn("Path");
         ImGui::TableHeadersRow();
 
         for (const auto& table : tables_) {
             ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(table.year.c_str());
             ImGui::TableNextColumn();
             ImGui::TextUnformatted(table.title.c_str());
             ImGui::TableNextColumn();
