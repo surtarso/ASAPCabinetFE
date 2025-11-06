@@ -5,7 +5,7 @@ unset(CMAKE_INSTALL_PREFIX CACHE)
 
 # Set default install prefix to user's home directory if not specified
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/ASAPCabinetFE" CACHE PATH "Installation prefix for ASAPCabinetFE")
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/${PROJECT_NAME}" CACHE PATH "Installation prefix for ASAPCabinetFE")
 endif()
 
 # --- Git Versioning Start ---
