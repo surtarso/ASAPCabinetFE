@@ -16,6 +16,11 @@ namespace OSUtils {
     bool hasCommand(const std::string& cmd);
     std::vector<std::string> getAvailablePackageManagers();
 
+    // System hardware info
+    std::string getKernelVersion();
+    std::string getCpuModel();
+    std::string getTotalRamMB();
+
     // Combined info summary
     std::string getSummary();
 

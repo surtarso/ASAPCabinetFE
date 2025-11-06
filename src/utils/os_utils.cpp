@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <sys/utsname.h>
+#include <sys/sysinfo.h>
 
 namespace OSUtils {
 
@@ -59,23 +60,56 @@ std::vector<std::string> getAvailablePackageManagers() {
     return result;
 }
 
+std::string getKernelVersion() {
+    struct utsname sysinfo{};
+    if (uname(&sysinfo) == 0)
+        return sysinfo.release;
+    return "unknown";
+}
+
+std::string getCpuModel() {
+    std::ifstream cpuinfo("/proc/cpuinfo");
+    if (!cpuinfo.is_open())
+        return "unknown";
+
+    std::string line;
+    while (std::getline(cpuinfo, line)) {
+        if (line.rfind("model name", 0) == 0) {
+            auto pos = line.find(':');
+            if (pos != std::string::npos)
+                return line.substr(pos + 2); // skip ": "
+        }
+    }
+    return "unknown";
+}
+
+std::string getTotalRamMB() {
+    struct sysinfo info{};
+    if (sysinfo(&info) == 0) {
+        long ramMB = info.totalram * info.mem_unit / (1024 * 1024);
+        return std::to_string(ramMB) + " MB";
+    }
+    return "unknown";
+}
+
 std::string getSummary() {
     std::ostringstream ss;
 
-    struct utsname sysinfo{};
-    uname(&sysinfo);
-
     ss << "System Info:\n";
-    ss << "  Kernel: " << sysinfo.sysname << " " << sysinfo.release << "\n";
+    ss << "  Kernel: " << getKernelVersion() << "\n";
+    ss << "  CPU: " << getCpuModel() << "\n";
+    ss << "  RAM: " << getTotalRamMB() << "\n";
+
     ss << "  Distro: " << getDistroId();
     std::string like = getDistroLike();
     if (like != "unknown")
         ss << " (like " << like << ")";
     ss << "\n";
+
     ss << "  Session: " << getSessionType() << "\n";
     ss << "  Desktop: " << getDesktopEnv() << "\n";
-    ss << "  Package managers: ";
 
+    ss << "  Package managers: ";
     auto pms = getAvailablePackageManagers();
     if (pms.empty())
         ss << "none detected";

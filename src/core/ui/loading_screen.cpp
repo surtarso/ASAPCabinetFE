@@ -1,4 +1,6 @@
 #include "loading_screen.h"
+#include "utils/os_utils.h"
+#include "version.h"
 #include "imgui.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
@@ -9,25 +11,10 @@
 
 LoadingScreen::LoadingScreen(std::shared_ptr<LoadingProgress> progress)
     : loadingProgress_(progress) {
-    // Fetch system info once at startup
-    systemInfo_.kernel = getCommandOutput("uname -r");
-    systemInfo_.cpuModel = getCommandOutput("cat /proc/cpuinfo | grep 'model name' | uniq | cut -d ':' -f2");
-    systemInfo_.totalRam = getCommandOutput("free -m | grep Mem: | awk '{print $2}'");
-}
-
-std::string LoadingScreen::getCommandOutput(const std::string& cmd) {
-    std::string result;
-    FILE* pipe = popen(cmd.c_str(), "r");
-    if (!pipe) return "N/A";
-    char buffer[128];
-    while (!feof(pipe)) {
-        if (fgets(buffer, 128, pipe) != nullptr) result += buffer;
-    }
-    pclose(pipe);
-    if (!result.empty() && result.back() == '\n') {
-        result.pop_back();
-    }
-    return result.empty() ? "N/A" : result;
+    // Fetch system info once at startup using OSUtils
+    systemInfo_.kernel = OSUtils::getKernelVersion();
+    systemInfo_.cpuModel = OSUtils::getCpuModel();
+    systemInfo_.totalRam = OSUtils::getTotalRamMB();
 }
 
 void LoadingScreen::render() {
@@ -42,11 +29,11 @@ void LoadingScreen::render() {
     float windowPaddingY = style.WindowPadding.y;
 
     // Calculate dynamic window and section heights
-    float minTopperContentHeight = 3 * textLineHeightWithSpacing;
+    float minTopperContentHeight = 4 * textLineHeightWithSpacing;
     float minTopperHeight = minTopperContentHeight + framePaddingY * 4;
 
     // Backglass: "Pipeline:" label + 10 pipeline stages + 3 sets of (label + progress bar)
-    float minBackglassContentHeight = (1 + 10) * textLineHeightWithSpacing + 3 * textLineHeight + 3 * 20.0f;
+    float minBackglassContentHeight = (1 + 9) * textLineHeightWithSpacing + 3 * textLineHeight + 3 * 20.0f;
     float minBackglassHeight = minBackglassContentHeight + framePaddingY * 4;
 
     float minDmdContentHeight = 3 * textLineHeightWithSpacing;
@@ -88,9 +75,17 @@ void LoadingScreen::render() {
         ImGui::Text("%s", text);
     };
 
+    // Extract clean version (major.minor.patch only)
+    std::string versionStr = ASAPCABINETFE_VERSION_STRING;
+    size_t dashPos = versionStr.find('-');
+    if (dashPos != std::string::npos)
+        versionStr = versionStr.substr(0, dashPos);
+
+    centerTextLine(("ASAPCabinetFE " + versionStr).c_str());
+    // centerTextLine(("ASAPCabinetFE " + std::string(ASAPCABINETFE_VERSION_STRING)).c_str());
     centerTextLine(("Kernel: " + systemInfo_.kernel).c_str());
     centerTextLine(("CPU: " + systemInfo_.cpuModel).c_str());
-    centerTextLine(("RAM: " + systemInfo_.totalRam + " MB").c_str());
+    centerTextLine(("RAM: " + systemInfo_.totalRam).c_str());
     ImGui::PopStyleColor();
     ImGui::EndChild();
 
