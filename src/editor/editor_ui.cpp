@@ -3,13 +3,16 @@
 #include "config/settings.h"
 #include <thread>
 #include <sstream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader)
     : config_(config), tableLoader_(tableLoader) {
     Settings settings = config_->getSettings();
-    settings.ignoreScanners = true; // for now ignore scanners (faster testing)
+    settings.ignoreScanners = true; // ignore scanners on start (not persisted)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
 }
 
@@ -54,16 +57,18 @@ void EditorUI::draw() {
                             ImGuiTableFlags_Hideable |
                             ImGuiTableFlags_Sortable;
 
-    if (ImGui::BeginTable("table_list", 8, flags, tableSize)) {
+    if (ImGui::BeginTable("table_list", 10, flags, tableSize)) {
         ImGui::TableSetupScrollFreeze(0, 1);
-        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-        ImGui::TableSetupColumn("INI/VBS/B2S", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("ROM/Alt/PUP/UDMD", ImGuiTableColumnFlags_WidthFixed, 120.0f);
-        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f);
+        ImGui::TableSetupColumn("ROM", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+        ImGui::TableSetupColumn("Extras", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 55.0f);
+        ImGui::TableSetupColumn("Sounds", ImGuiTableColumnFlags_WidthFixed, 30.0f);
         ImGui::TableHeadersRow();
 
         for (int i = 0; i < (int)tables_.size(); ++i) {
@@ -121,37 +126,52 @@ void EditorUI::draw() {
             ImGui::TableSetColumnIndex(3);
             ImGui::TextUnformatted(displayManufacturer.c_str());
 
-            // Column 4: INI + VBS + B2S existence (TODO: add diff's colors)
+            // Column 4: INI + VBS + B2S existence (TODO: collect these vars (only added in table_data.h))
             ImGui::TableSetColumnIndex(4);
-            bool hasIni = !t.folder.empty();
-            bool hasVbs = !t.hashFromVbs.empty() || t.hasDiffVbs;
-            bool hasB2s = !t.vpsB2SUrl.empty() || !t.vpsB2SImgUrl.empty();
             ImGui::Text("%s%s%s",
-                        hasIni ? "I" : "-",
-                        hasVbs ? "V" : "-",
-                        hasB2s ? "B" : "-");
+                        t.hasINI ? "I " : "- ",  // todo: add check for ini diff and recolor
+                        t.hasVBS ? "V " : "- ",  // todo: color if t.hasDiffVbs
+                        t.hasB2S ? "B " : "- ");
 
-            // Column 5: ROM / Alt / Pup / UltraDMD
+            // Column 5: ROM name (shows name or empty)
             ImGui::TableSetColumnIndex(5);
-            bool hasRom = !t.romName.empty();
-            ImGui::Text("%s%s%s%s%s",
-                        hasRom ? "R" : "-",
-                        t.hasAltSound ? "S" : "-",
-                        t.hasAltColor ? "C" : "-",
-                        t.hasPup ? "P" : "-",
-                        t.hasUltraDMD ? "U" : "-");
+            if (!t.romName.empty())
+                ImGui::TextUnformatted(t.romName.c_str());
+            else
+                ImGui::TextUnformatted("");
 
-            // Column 6: Images (TODO: Check playfield, backglass, dmd, topper)
+            // Column 6: Alt/Color/PUP/UDMD/Music
             ImGui::TableSetColumnIndex(6);
-            bool hasImg = !t.playfieldImage.empty() || !t.backglassImage.empty() ||
-                          !t.dmdImage.empty() || !t.topperImage.empty() || !t.wheelImage.empty();
-            ImGui::TextUnformatted(hasImg ? "X" : "-");
+            ImGui::Text("%s%s%s%s%s",
+                        t.hasAltSound ? "S " : "- ",
+                        t.hasAltColor ? "C " : "- ",
+                        t.hasPup ? "P " : "- ",
+                        t.hasUltraDMD ? "U " : "- ",
+                        t.hasAltMusic ? "M " : "- "
+                    );
 
-            // Column 7: Videos (TODO: Check playfield, backglass, dmd, topper)
+            // Column 7: Images
             ImGui::TableSetColumnIndex(7);
-            bool hasVid = !t.playfieldVideo.empty() || !t.backglassVideo.empty() ||
-                          !t.dmdVideo.empty() || !t.topperVideo.empty();
-            ImGui::TextUnformatted(hasVid ? "X" : "-");
+            ImGui::Text("%s%s%s%s%s",
+                        t.hasPlayfieldImage ? "P " : "- ",
+                        t.hasBackglassImage ? "B " : "- ",
+                        t.hasDmdImage ? "D " : "- ",
+                        t.hasTopperImage ? "T " : "- ",
+                        t.hasWheelImage ? "W " : "- ");
+
+            // Column 8: Videos
+            ImGui::TableSetColumnIndex(8);
+            ImGui::Text("%s%s%s%s",
+                        t.hasPlayfieldVideo ? "P " : "- ",
+                        t.hasBackglassVideo ? "B " : "- ",
+                        t.hasDmdVideo ? "D " : "- ",
+                        t.hasTopperVideo ? "T " : "- ");
+
+            // Column 9: Sounds
+            ImGui::TableSetColumnIndex(9);
+            ImGui::Text("%s%s",
+                        t.hasTableMusic ? "M " : "- ",
+                        t.hasLaunchAudio ? "L " : "- ");
         }
 
         ImGui::EndTable();
@@ -217,7 +237,10 @@ void EditorUI::draw() {
     std::ostringstream ss;
     ss << tables_.size() << " tables";
     if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
-        ss << "  |  Selected: " << tables_[selectedIndex_].vpxFile;
+        const auto& t = tables_[selectedIndex_];
+        fs::path p(t.vpxFile);
+        ss << "  |  Selected: /" << p.parent_path().filename().string()
+        << "/" << p.filename().string();
     }
     ImGui::TextDisabled("%s", ss.str().c_str());
 

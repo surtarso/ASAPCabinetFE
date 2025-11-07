@@ -26,7 +26,7 @@
 
 namespace fs = std::filesystem;
 
-std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress, 
+std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress,
                                          const std::vector<TableData>* existingTables) {
     std::vector<TableData> tables;
     std::mutex tables_mutex;
@@ -68,7 +68,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
     std::regex year_regex(R"(\b(19|20)\d{2}\b)");
 
     for (const auto& vpx_path : vpx_files) {
-        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex, 
+        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex,
                                                          progress, &existingTableMap](const fs::path& path) {
             // Check if file is unchanged based on index
             if (!settings.forceRebuildMetadata && !existingTableMap.empty()) {
@@ -101,8 +101,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     }
 
                     // Skip if unchanged
-                    if (fileLastModified == existingTable.fileLastModified && 
-                        vpxHash == existingTable.hashFromVpx && 
+                    if (fileLastModified == existingTable.fileLastModified &&
+                        vpxHash == existingTable.hashFromVpx &&
                         vbsHash == existingTable.hashFromVbs) {
                         LOG_DEBUG("Skipping unchanged file: " + path.string());
                         if (progress) {
@@ -167,6 +167,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             fs::path vbs_path = path.parent_path() / (path.stem().string() + ".vbs");
             if (fs::exists(vbs_path)) {
+                table.hasVBS = true;
                 table.hashFromVbs = compute_file_sha256(vbs_path.string());
                 if (table.hashFromVbs.empty()) {
                     LOG_ERROR("Failed to compute hash for .vbs file: " + vbs_path.string());
@@ -193,6 +194,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             } else {
                 table.hashFromVbs = "";
                 table.hasDiffVbs = false;
+                table.hasVBS = false;
                 LOG_DEBUG("No .vbs file found for " + table.title);
             }
 
@@ -207,9 +209,36 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
+
+            auto markUserAsset = [&](const std::string& returnedPath,
+                                    const std::string& defaultPath) -> bool {
+                return !returnedPath.empty() && returnedPath != defaultPath;
+            };
+
+            // After assigning all image/video paths, check default vs user:
+            table.hasTableMusic = markUserAsset(table.music, settings.tableMusic);
+            table.hasLaunchAudio = markUserAsset(table.launchAudio, settings.customLaunchSound);
+
+            table.hasPlayfieldImage = markUserAsset(table.playfieldImage, settings.defaultPlayfieldImage);
+            table.hasWheelImage     = markUserAsset(table.wheelImage, settings.defaultWheelImage);
+            table.hasBackglassImage = markUserAsset(table.backglassImage, settings.defaultBackglassImage);
+            table.hasDmdImage       = markUserAsset(table.dmdImage, settings.defaultDmdImage);
+            table.hasTopperImage    = markUserAsset(table.topperImage, settings.defaultTopperImage);
+
+            table.hasPlayfieldVideo = markUserAsset(table.playfieldVideo, settings.defaultPlayfieldVideo);
+            table.hasBackglassVideo = markUserAsset(table.backglassVideo, settings.defaultBackglassVideo);
+            table.hasDmdVideo       = markUserAsset(table.dmdVideo, settings.defaultDmdVideo);
+            table.hasTopperVideo    = markUserAsset(table.topperVideo, settings.defaultTopperVideo);
+
             table.hasPup = PathUtils::getPupPath(table.folder);
             table.hasAltMusic = PathUtils::getAltMusic(table.folder);
             table.hasUltraDMD = PathUtils::getUltraDmdPath(table.folder);
+
+            // TODO: Move these to path utils
+            fs::path ini_path = path.parent_path() / (path.stem().string() + ".ini");
+            table.hasINI = fs::exists(ini_path);
+            fs::path b2s_path = path.parent_path() / (path.stem().string() + ".directb2s");
+            table.hasB2S = fs::exists(b2s_path);
 
             std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
             if (!pinmamePath.empty()) {

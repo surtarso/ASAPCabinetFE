@@ -8,6 +8,20 @@ FIX:
 
 ONGOING:
 - "editor mode" - port of vpx gui tools (--editor / -e flags)
+- smart "renaming" for listing instead of filename (so user dont see "firepower" instead of "aerosmith")
+- open folder functionality
+- extractvbs functionality using settings vpxtool binary (also hook internal vpin)
+- port ini editor + tooltips (keep 10.8.0, create new 10.8.1, switchable)
+- hook up table_launcher to play button
+- add settings (editor related)
+- configurable rescan folders button (file/vpin/vbs)
+- checkbox for vpxtool vs vpin?
+- missing behavior: hover tooltips, selected vs unselect button clicks
+- add the searchbar
+- sorting on tab clicks
+- color letter indicator legends
+- color files with diffs
+- color tables with failed status
 
 QOL:
 - a proper font picker

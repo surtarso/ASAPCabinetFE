@@ -41,7 +41,7 @@ struct TableData {
     // if all fails we should try to extract these from the file name.
     std::string manufacturer;    ///< Manufacturer from title, vpin/vpxtool or vpsdb, used for sorting.
     std::string year;            ///< Year from title, vpin/vpxtool or vpsdb, used for sorting.
-    
+
     std::string vpxFile;         ///< Full path to the .vpx file.
     std::string folder;          ///< Directory containing the .vpx file.
     std::string playfieldImage;  ///< Path to the static playfield image.
@@ -64,7 +64,7 @@ struct TableData {
     bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
 
     // ------------ FILE METADATA (vpin/vpxtool) -----------
-    // we must keep repeated fields if found for better vpsdb matching 
+    // we must keep repeated fields if found for better vpsdb matching
     std::string tableName;       ///< Table name from file metadata (e.g., from vpin's `table_name`).
     std::string tableAuthor;     ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
     std::string tableDescription;///< Description from file metadata (e.g., from vpin's `table_description`).
@@ -72,7 +72,7 @@ struct TableData {
     std::string tableLastModified;///< Last modified date from file metadata (this is usually from file system, not internal metadata).
     std::string tableReleaseDate;///< Release date from file metadata (e.g., from vpin's `release_date`).
     std::string tableVersion;    ///< Table version from file metadata (e.g., from vpin's `table_version`).
-    std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).   
+    std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).
     std::string tableBlurb;      ///< Short blurb/summary from file metadata (from vpin's `table_blurb`).
     std::string tableRules;      ///< Rules from file metadata (from vpin's `table_rules`).
     std::string tableAuthorEmail;///< Author's email from file metadata (from vpin's `author_email`).
@@ -102,7 +102,7 @@ struct TableData {
     std::string vpsB2SImgUrl;    ///< table image from vpsdb (from b2sFiles[].imgUrl, or other media files).
     std::string vpsB2SUrl;       ///< table URL to download (from b2sFiles[].urls[0].url).
     std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
-    
+
     // --------------- OPERATIONAL TAGS ------------------
     float matchConfidence = 0.0f;///< Confidence score of match with vpsdb
     uint64_t fileLastModified;   ///< Timestamp of the last modification of the .vpx file
@@ -115,6 +115,22 @@ struct TableData {
     bool isBroken = false;       ///< true if failed to load, dont increment playCount
     float playTimeLast = 0.0f;   ///< last session play time
     float playTimeTotal = 0.0f;  ///< sums playTimeLast
+
+    bool hasB2S = false;         ///< True if found the *.b2s file alongside the .vpx
+    bool hasINI = false;         ///< True if found the *.b2s file alongside the .vpx
+    bool hasVBS = false;         ///< True if found the *.b2s file alongside the .vpx
+
+    bool hasPlayfieldImage = false;
+    bool hasWheelImage = false;
+    bool hasBackglassImage = false;
+    bool hasDmdImage = false;
+    bool hasTopperImage = false;
+    bool hasPlayfieldVideo = false;
+    bool hasBackglassVideo = false;
+    bool hasDmdVideo = false;
+    bool hasTopperVideo = false;
+    bool hasTableMusic = false;
+    bool hasLaunchAudio = false;
 
     //TODO: use this to control which scanner to use/increment so we dont have to rebuild
     std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner

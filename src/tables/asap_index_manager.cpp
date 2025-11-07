@@ -58,7 +58,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("title") && table["title"].is_string()) tableData.title = table["title"].get<std::string>();
             if (table.contains("manufacturer") && table["manufacturer"].is_string()) tableData.manufacturer = table["manufacturer"].get<std::string>();
             if (table.contains("year") && table["year"].is_string()) tableData.year = table["year"].get<std::string>();
-            
+
             // ------------------ FILE PATHS ------------------
             if (table.contains("vpxFile") && table["vpxFile"].is_string()) tableData.vpxFile = table["vpxFile"].get<std::string>();
             if (table.contains("folder") && table["folder"].is_string()) tableData.folder = table["folder"].get<std::string>();
@@ -75,13 +75,30 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
             if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
             if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
-            
+
             // Boolean flags (ensure they are boolean type in JSON)
             if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
             if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
             if (table.contains("hasPup") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
             if (table.contains("hasAltMusic") && table["hasAltMusic"].is_boolean()) tableData.hasAltMusic = table["hasAltMusic"].get<bool>();
             if (table.contains("hasUltraDMD") && table["hasUltraDMD"].is_boolean()) tableData.hasUltraDMD = table["hasUltraDMD"].get<bool>();
+
+            if (table.contains("hasB2S") && table["hasB2S"].is_boolean()) tableData.hasB2S = table["hasB2S"].get<bool>();
+            if (table.contains("hasINI") && table["hasINI"].is_boolean()) tableData.hasINI = table["hasINI"].get<bool>();
+            if (table.contains("hasVBS") && table["hasVBS"].is_boolean()) tableData.hasVBS = table["hasVBS"].get<bool>();
+
+            if (table.contains("hasPlayfieldImage") && table["hasPlayfieldImage"].is_boolean()) tableData.hasPlayfieldImage = table["hasPlayfieldImage"].get<bool>();
+            if (table.contains("hasWheelImage") && table["hasWheelImage"].is_boolean()) tableData.hasWheelImage = table["hasWheelImage"].get<bool>();
+            if (table.contains("hasBackglassImage") && table["hasBackglassImage"].is_boolean()) tableData.hasBackglassImage = table["hasBackglassImage"].get<bool>();
+            if (table.contains("hasDmdImage") && table["hasDmdImage"].is_boolean()) tableData.hasDmdImage = table["hasDmdImage"].get<bool>();
+            if (table.contains("hasTopperImage") && table["hasTopperImage"].is_boolean()) tableData.hasTopperImage = table["hasTopperImage"].get<bool>();
+            if (table.contains("hasPlayfieldVideo") && table["hasPlayfieldVideo"].is_boolean()) tableData.hasPlayfieldVideo = table["hasPlayfieldVideo"].get<bool>();
+            if (table.contains("hasBackglassVideo") && table["hasBackglassVideo"].is_boolean()) tableData.hasBackglassVideo = table["hasBackglassVideo"].get<bool>();
+            if (table.contains("hasDmdVideo") && table["hasDmdVideo"].is_boolean()) tableData.hasDmdVideo = table["hasDmdVideo"].get<bool>();
+            if (table.contains("hasTopperVideo") && table["hasTopperVideo"].is_boolean()) tableData.hasTopperVideo = table["hasTopperVideo"].get<bool>();
+
+            if (table.contains("hasTableMusic") && table["hasTableMusic"].is_boolean()) tableData.hasTableMusic = table["hasTableMusic"].get<bool>();
+            if (table.contains("hasLaunchAudio") && table["hasLaunchAudio"].is_boolean()) tableData.hasLaunchAudio = table["hasLaunchAudio"].get<bool>();
 
 
             // ------------ FILE METADATA (vpin/vpxtool) -----------
@@ -122,7 +139,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("vpsB2SUrl") && table["vpsB2SUrl"].is_string()) tableData.vpsB2SUrl = table["vpsB2SUrl"].get<std::string>();
             if (table.contains("vpsFormat") && table["vpsFormat"].is_string()) tableData.vpsFormat = table["vpsFormat"].get<std::string>();
 
-            
+
             // --------------- OPERATIONAL TAGS ------------------
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
             if (table.contains("jsonOwner") && table["jsonOwner"].is_string()) tableData.jsonOwner = table["jsonOwner"].get<std::string>();
@@ -171,7 +188,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["title"] = table.title;
         tableJson["manufacturer"] = table.manufacturer;
         tableJson["year"] = table.year;
-        
+
         // ------------------ FILE PATHS ------------------
         tableJson["vpxFile"] = table.vpxFile;
         tableJson["folder"] = table.folder;
@@ -188,14 +205,30 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["topperVideo"] = table.topperVideo;
         tableJson["music"] = table.music;
         tableJson["launchAudio"] = table.launchAudio;
-        
+
         // Boolean flags
         tableJson["hasAltSound"] = table.hasAltSound;
         tableJson["hasAltColor"] = table.hasAltColor;
         tableJson["hasPup"] = table.hasPup;
-        tableJson["hasAltMusic"] = table.hasAltMusic; 
-        tableJson["hasUltraDMD"] = table.hasUltraDMD; 
+        tableJson["hasAltMusic"] = table.hasAltMusic;
+        tableJson["hasUltraDMD"] = table.hasUltraDMD;
 
+        tableJson["hasB2S"] = table.hasB2S;
+        tableJson["hasINI"] = table.hasINI;
+        tableJson["hasVBS"] = table.hasVBS;
+
+        tableJson["hasPlayfieldImage"] = table.hasPlayfieldImage;
+        tableJson["hasWheelImage"] = table.hasWheelImage;
+        tableJson["hasBackglassImage"] = table.hasBackglassImage;
+        tableJson["hasDmdImage"] = table.hasDmdImage;
+        tableJson["hasTopperImage"] = table.hasTopperImage;
+        tableJson["hasPlayfieldVideo"] = table.hasPlayfieldVideo;
+        tableJson["hasBackglassVideo"] = table.hasBackglassVideo;
+        tableJson["hasDmdVideo"] = table.hasDmdVideo;
+        tableJson["hasTopperVideo"] = table.hasTopperVideo;
+
+        tableJson["hasTableMusic"] = table.hasTableMusic;
+        tableJson["hasLaunchAudio"] = table.hasLaunchAudio;
 
         // ------------ FILE METADATA (vpin/vpxtool) -----------
         tableJson["tableName"] = table.tableName;
@@ -210,9 +243,9 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["tableRules"] = table.tableRules;
         tableJson["tableAuthorEmail"] = table.tableAuthorEmail;
         tableJson["tableAuthorWebsite"] = table.tableAuthorWebsite;
-        tableJson["tableType"] = table.tableType; 
+        tableJson["tableType"] = table.tableType;
         tableJson["tableManufacturer"] = table.tableManufacturer;
-        tableJson["tableYear"] = table.tableYear; 
+        tableJson["tableYear"] = table.tableYear;
 
 
         // --------------- VPSDB METADATA -------------
@@ -257,8 +290,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
     try {
         // Ensure parent directories exist before writing the file
         fs::path outputPath = settings.indexPath;
-        fs::create_directories(outputPath.parent_path()); 
-        
+        fs::create_directories(outputPath.parent_path());
+
         std::ofstream out(outputPath);
         if (!out.is_open()) {
             LOG_ERROR("Failed to open " + settings.indexPath + " for writing. Check permissions.");
@@ -289,7 +322,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
 std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, const std::vector<TableData>& newTables, LoadingProgress* progress) {
     std::vector<TableData> existingTables;
     std::unordered_map<std::string, TableData> existingTableMap;
-    
+
     // Load existing index
     if (load(settings, existingTables, progress)) {
         if (progress) {
