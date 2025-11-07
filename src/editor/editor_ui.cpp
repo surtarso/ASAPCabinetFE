@@ -57,10 +57,11 @@ void EditorUI::draw() {
                             ImGuiTableFlags_Hideable |
                             ImGuiTableFlags_Sortable;
 
-    if (ImGui::BeginTable("table_list", 10, flags, tableSize)) {
+    if (ImGui::BeginTable("table_list", 11, flags, tableSize)) {
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthFixed, 75.0f);
         ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f);
         ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f);
         ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f);
@@ -118,30 +119,37 @@ void EditorUI::draw() {
             }
             ImGui::PopID();
 
-            // Column 2: Author
+            // Column 2: Version
             ImGui::TableSetColumnIndex(2);
+            if (!t.tableVersion.empty())
+                ImGui::TextUnformatted(t.tableVersion.c_str());
+            else
+                ImGui::TextUnformatted("");
+
+            // Column 2: Author
+            ImGui::TableSetColumnIndex(3);
             ImGui::TextUnformatted(displayAuthor.c_str());
 
             // Column 3: Manufacturer
-            ImGui::TableSetColumnIndex(3);
+            ImGui::TableSetColumnIndex(4);
             ImGui::TextUnformatted(displayManufacturer.c_str());
 
             // Column 4: INI + VBS + B2S existence (TODO: collect these vars (only added in table_data.h))
-            ImGui::TableSetColumnIndex(4);
+            ImGui::TableSetColumnIndex(5);
             ImGui::Text("%s%s%s",
                         t.hasINI ? "I " : "- ",  // todo: add check for ini diff and recolor
                         t.hasVBS ? "V " : "- ",  // todo: color if t.hasDiffVbs
                         t.hasB2S ? "B " : "- ");
 
             // Column 5: ROM name (shows name or empty)
-            ImGui::TableSetColumnIndex(5);
+            ImGui::TableSetColumnIndex(6);
             if (!t.romName.empty())
                 ImGui::TextUnformatted(t.romName.c_str());
             else
                 ImGui::TextUnformatted("");
 
             // Column 6: Alt/Color/PUP/UDMD/Music
-            ImGui::TableSetColumnIndex(6);
+            ImGui::TableSetColumnIndex(7);
             ImGui::Text("%s%s%s%s%s",
                         t.hasAltSound ? "S " : "- ",
                         t.hasAltColor ? "C " : "- ",
@@ -151,7 +159,7 @@ void EditorUI::draw() {
                     );
 
             // Column 7: Images
-            ImGui::TableSetColumnIndex(7);
+            ImGui::TableSetColumnIndex(8);
             ImGui::Text("%s%s%s%s%s",
                         t.hasPlayfieldImage ? "P " : "- ",
                         t.hasBackglassImage ? "B " : "- ",
@@ -160,7 +168,7 @@ void EditorUI::draw() {
                         t.hasWheelImage ? "W " : "- ");
 
             // Column 8: Videos
-            ImGui::TableSetColumnIndex(8);
+            ImGui::TableSetColumnIndex(9);
             ImGui::Text("%s%s%s%s",
                         t.hasPlayfieldVideo ? "P " : "- ",
                         t.hasBackglassVideo ? "B " : "- ",
@@ -168,7 +176,7 @@ void EditorUI::draw() {
                         t.hasTopperVideo ? "T " : "- ");
 
             // Column 9: Sounds
-            ImGui::TableSetColumnIndex(9);
+            ImGui::TableSetColumnIndex(10);
             ImGui::Text("%s%s",
                         t.hasTableMusic ? "M " : "- ",
                         t.hasLaunchAudio ? "L " : "- ");

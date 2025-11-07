@@ -24,9 +24,7 @@ ONGOING:
 - color tables with failed status
 - select/unselect in table (re-click)
 - check if present rom is correct and recolor
-- add 'table version' column
 - add playcound / success on the right of table scanner display line
-- add a 'view metadata' button
 
 QOL:
 - a proper font picker
