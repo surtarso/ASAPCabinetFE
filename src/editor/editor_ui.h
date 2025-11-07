@@ -1,15 +1,15 @@
 #pragma once
 #include "tables/itable_loader.h"
 #include "config/iconfig_service.h"
+#include "tables/table_data.h"
 #include <imgui.h>
 #include <vector>
 #include <string>
 #include <mutex>
 
 /**
- * @class EditorUI
- * @brief Minimal ImGui-based spreadsheet view for table management.
- *        Uses shared ASAPCabinetFE interfaces for table and config access.
+ * VPXGUITools port editor UI.
+ * - Uses existing tableLoader_ and tables_ loaded from index.
  */
 class EditorUI {
 public:
@@ -27,4 +27,8 @@ private:
     std::mutex tableMutex_;
     bool loading_ = false;
     bool exitRequested_ = false;
+
+    // UI state (kept inside editor only)
+    int selectedIndex_ = -1;
+    bool scrollToSelected_ = false;
 };

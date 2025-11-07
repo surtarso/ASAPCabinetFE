@@ -1,69 +1,242 @@
 #include "editor/editor_ui.h"
-#include "log/logger.h"
+#include "log/logging.h"
 #include "config/settings.h"
 #include <thread>
+#include <sstream>
 
+// Constructor already used the loader to fill tables_ originally.
+// Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader)
     : config_(config), tableLoader_(tableLoader) {
     Settings settings = config_->getSettings();
-    // Always read from existing index file when loading editor mode
-    settings.ignoreScanners = true;
+    settings.ignoreScanners = true; // for now ignore scanners (faster testing)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
 }
 
+// Draw editor UI embedded in the main window
 void EditorUI::draw() {
-    ImGui::Begin("ASAPCabinetFE Table Editor");
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove |
+                                   ImGuiWindowFlags_NoResize |
+                                   ImGuiWindowFlags_NoCollapse |
+                                   ImGuiWindowFlags_NoTitleBar |
+                                   ImGuiWindowFlags_NoSavedSettings;
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+
+    ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
+
+    std::lock_guard<std::mutex> lock(tableMutex_);
 
     if (loading_) {
-        ImGui::Text("Rescanning tables...");
+        ImGui::Text("Rescanning tables... (please wait)");
         ImGui::End();
         return;
     }
 
-    std::lock_guard<std::mutex> lock(tableMutex_);
-
     if (tables_.empty()) {
-        ImGui::TextDisabled("No tables found. Verify configuration or rescan in main frontend.");
-    } else if (ImGui::BeginTable("tableList", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
-        ImGui::TableSetupColumn("Year");
-        ImGui::TableSetupColumn("Table Name");
-        ImGui::TableSetupColumn("Path");
+        ImGui::TextDisabled("No tables found. Verify configuration or run a rescan from the main frontend.");
+        ImGui::End();
+        return;
+    }
+
+        // --------- Spreadsheet region ---------
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    float footerHeight = ImGui::GetFrameHeightWithSpacing() * 3.0f; // room for buttons
+    ImVec2 tableSize(avail.x, avail.y - footerHeight);
+
+    ImGuiTableFlags flags = ImGuiTableFlags_ScrollY |
+                            ImGuiTableFlags_RowBg |
+                            ImGuiTableFlags_BordersOuter |
+                            ImGuiTableFlags_Resizable |
+                            ImGuiTableFlags_Reorderable |
+                            ImGuiTableFlags_Hideable |
+                            ImGuiTableFlags_Sortable;
+
+    if (ImGui::BeginTable("table_list", 8, flags, tableSize)) {
+        ImGui::TableSetupScrollFreeze(0, 1);
+        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+        ImGui::TableSetupColumn("INI/VBS/B2S", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("ROM/Alt/PUP/UDMD", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 80.0f);
         ImGui::TableHeadersRow();
 
-        for (const auto& table : tables_) {
+        for (int i = 0; i < (int)tables_.size(); ++i) {
+            const auto& t = tables_[i];
             ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(table.year.c_str());
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(table.title.c_str());
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(table.vpxFile.c_str());
+
+            // --- Normalized metadata ---
+            // Year: prefer vpsYear, then tableYear, then file-derived year.
+            std::string displayYear =
+                !t.vpsYear.empty() ? t.vpsYear :
+                !t.tableYear.empty() ? t.tableYear :
+                !t.year.empty() ? t.year : "-";
+
+            // Name: prefer vpsName, then tableName, then filename/title.
+            std::string displayName =
+                !t.vpsName.empty() ? t.vpsName :
+                !t.tableName.empty() ? t.tableName :
+                !t.title.empty() ? t.title : "-";
+
+            // Author: prefer vpsAuthors, then tableAuthor.
+            std::string displayAuthor =
+                !t.vpsAuthors.empty() ? t.vpsAuthors :
+                !t.tableAuthor.empty() ? t.tableAuthor : "-";
+
+            // Manufacturer: prefer vpsManufacturer, then tableManufacturer, then manufacturer.
+            std::string displayManufacturer =
+                !t.vpsManufacturer.empty() ? t.vpsManufacturer :
+                !t.tableManufacturer.empty() ? t.tableManufacturer :
+                !t.manufacturer.empty() ? t.manufacturer : "-";
+
+            // Column 0: Year
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextUnformatted(displayYear.c_str());
+
+            // Column 1: Name (main selectable)
+            ImGui::TableSetColumnIndex(1);
+            ImGui::PushID(i);
+            bool isSelected = (selectedIndex_ == i);
+            if (ImGui::Selectable(displayName.c_str(), isSelected,
+                                  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+                selectedIndex_ = i;
+                // remove scroll-to-center behavior
+                scrollToSelected_ = false;
+                if (ImGui::IsMouseDoubleClicked(0)) {
+                    LOG_DEBUG(std::string("Row double-click (placeholder) for: ") + displayName + " -> " + t.vpxFile);
+                }
+            }
+            ImGui::PopID();
+
+            // Column 2: Author
+            ImGui::TableSetColumnIndex(2);
+            ImGui::TextUnformatted(displayAuthor.c_str());
+
+            // Column 3: Manufacturer
+            ImGui::TableSetColumnIndex(3);
+            ImGui::TextUnformatted(displayManufacturer.c_str());
+
+            // Column 4: INI + VBS + B2S existence (TODO: add diff's colors)
+            ImGui::TableSetColumnIndex(4);
+            bool hasIni = !t.folder.empty();
+            bool hasVbs = !t.hashFromVbs.empty() || t.hasDiffVbs;
+            bool hasB2s = !t.vpsB2SUrl.empty() || !t.vpsB2SImgUrl.empty();
+            ImGui::Text("%s%s%s",
+                        hasIni ? "I" : "-",
+                        hasVbs ? "V" : "-",
+                        hasB2s ? "B" : "-");
+
+            // Column 5: ROM / Alt / Pup / UltraDMD
+            ImGui::TableSetColumnIndex(5);
+            bool hasRom = !t.romName.empty();
+            ImGui::Text("%s%s%s%s%s",
+                        hasRom ? "R" : "-",
+                        t.hasAltSound ? "S" : "-",
+                        t.hasAltColor ? "C" : "-",
+                        t.hasPup ? "P" : "-",
+                        t.hasUltraDMD ? "U" : "-");
+
+            // Column 6: Images (TODO: Check playfield, backglass, dmd, topper)
+            ImGui::TableSetColumnIndex(6);
+            bool hasImg = !t.playfieldImage.empty() || !t.backglassImage.empty() ||
+                          !t.dmdImage.empty() || !t.topperImage.empty() || !t.wheelImage.empty();
+            ImGui::TextUnformatted(hasImg ? "X" : "-");
+
+            // Column 7: Videos (TODO: Check playfield, backglass, dmd, topper)
+            ImGui::TableSetColumnIndex(7);
+            bool hasVid = !t.playfieldVideo.empty() || !t.backglassVideo.empty() ||
+                          !t.dmdVideo.empty() || !t.topperVideo.empty();
+            ImGui::TextUnformatted(hasVid ? "X" : "-");
         }
+
         ImGui::EndTable();
     }
+
+    // --------- Footer buttons, inline at bottom ---------
+    ImGui::Separator();
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() * 2.0f);
+    ImGui::BeginGroup();
 
     if (ImGui::Button("Rescan Tables")) {
         rescanAsync();
     }
-
     ImGui::SameLine();
+
+    if (ImGui::Button("Open Folder")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+            const auto& t = tables_[selectedIndex_];
+            LOG_DEBUG(std::string("Open Folder pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+        } else {
+            LOG_DEBUG("Open Folder pressed but no table selected");
+        }
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Extract VBS")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+            const auto& t = tables_[selectedIndex_];
+            LOG_DEBUG(std::string("Extract VBS pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+        } else {
+            LOG_DEBUG("Extract VBS pressed but no table selected");
+        }
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("INI Editor")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+            const auto& t = tables_[selectedIndex_];
+            LOG_DEBUG(std::string("INI Editor pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+        } else {
+            LOG_DEBUG("INI Editor pressed but no table selected");
+        }
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Play Selected")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+            const auto& t = tables_[selectedIndex_];
+            LOG_DEBUG(std::string("Play pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+        } else {
+            LOG_DEBUG("Play pressed but no table selected");
+        }
+    }
+    ImGui::SameLine();
+
     if (ImGui::Button("Exit Editor")) {
         exitRequested_ = true;
     }
 
+    ImGui::EndGroup();
+
+    // --- Footer info ---
+    std::ostringstream ss;
+    ss << tables_.size() << " tables";
+    if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+        ss << "  |  Selected: " << tables_[selectedIndex_].vpxFile;
+    }
+    ImGui::TextDisabled("%s", ss.str().c_str());
+
     ImGui::End();
 }
 
+// Asynchronous rescan helper. Calls the existing tableLoader with same Settings logic.
 void EditorUI::rescanAsync() {
     if (loading_) return;
     loading_ = true;
 
     std::thread([this]() {
         Settings settings = config_->getSettings();
+        settings.ignoreScanners = true;
         auto newTables = tableLoader_->loadTableList(settings, nullptr);
         {
             std::lock_guard<std::mutex> lock(tableMutex_);
             tables_ = std::move(newTables);
+            if (selectedIndex_ >= (int)tables_.size()) selectedIndex_ = -1;
         }
         loading_ = false;
     }).detach();
