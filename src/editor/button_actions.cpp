@@ -1,4 +1,5 @@
 #include "editor/button_actions.h"
+#include "vpin_wrapper.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <cstdlib>
@@ -15,20 +16,34 @@ void ButtonActions::extractVBS(const std::string& filepath) {
     }
     const auto& settings = config_->getSettings();
 
-    // Use vpxtoolBin setting, fallback to PATH
-    std::string vpxtoolPath = "vpxtool";
-    if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
-        vpxtoolPath = settings.vpxtoolBin;
-    } else if (!settings.vpxtoolBin.empty()) {
-        LOG_WARN("vpxtoolBin setting is specified but not found: " + settings.vpxtoolBin + ". Falling back to PATH.");
-    }
+    // Check if the user wants to use the external vpxtool
+    if (settings.useVpxtool) {
+        // --- External vpxtool Logic ---
+        LOG_DEBUG("Using external 'vpxtool' for VBS extraction.");
 
-    std::string cmd = "\"" + vpxtoolPath + "\" " + settings.vpxtoolExtractCmd + " \"" + filepath + "\"";
+        // Use vpxtoolBin setting, fallback to PATH
+        std::string vpxtoolPath = "vpxtool";
+        if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
+            vpxtoolPath = settings.vpxtoolBin;
+        } else if (!settings.vpxtoolBin.empty()) {
+            LOG_WARN("vpxtoolBin setting is specified but not found: " + settings.vpxtoolBin + ". Falling back to PATH.");
+        }
 
-    LOG_DEBUG("Extracting VBS with command: " + cmd);
-    int result = system(cmd.c_str());
-    if (result != 0) {
-        LOG_ERROR("Failed to extract VBS from table: " + filepath + " (command: " + cmd + ")");
+        std::string cmd = "\"" + vpxtoolPath + "\" " + settings.vpxtoolExtractCmd + " \"" + filepath + "\"";
+        LOG_DEBUG("Extracting VBS with command: " + cmd);
+        int result = system(cmd.c_str());
+        if (result != 0) {
+            LOG_ERROR("Failed to extract VBS from table: " + filepath + " (command: " + cmd + ")");
+        }
+    } else {
+        // --- Internal vpin_wrapper Logic (Placeholder) ---
+        LOG_WARN("Placeholder: Internal VBS extraction is not yet implemented in vpin_wrapper.");
+        // Example:
+        //
+        // bool success = extract_vbs_from_vpx(filepath.c_str());
+        // if (!success) {
+        //     LOG_ERROR("Internal VBS extraction failed for: " + filepath);
+        // }
     }
 }
 

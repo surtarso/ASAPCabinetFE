@@ -9,10 +9,8 @@ FIX:
 ONGOING:
 - "editor mode" - port of vpx gui tools (--editor / -e flags)
 - smart "renaming" for listing instead of filename (so user dont see "firepower" instead of "aerosmith")
-- open folder functionality
 - extractvbs functionality recolor on diff
 - port ini editor + tooltips (keep 10.8.0, create new 10.8.1, switchable)
-- hook up table_launcher to play button
 - add settings (editor related)
 - configurable rescan folders button (file/vpin/vbs/refresh[start new])
 - checkbox for vpxtool vs vpin?
