@@ -264,7 +264,11 @@ We’re dreaming big! Help us bring these features to life:
 - Multi-launchers.
 - In-game video recording.
 - Attract Mode.
-- Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management.
+
+## In Development now:
+Check out how the editor is looking using the latest build! Still a work in progress and most functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Suggestions at this early stage are highly appreciated!
+
+- Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management. (--editor)
 
 ## Contribute
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
