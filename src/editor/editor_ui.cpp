@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader)
-    : config_(config), tableLoader_(tableLoader) {
+    : config_(config), tableLoader_(tableLoader), actions_(config) {
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
@@ -205,13 +205,12 @@ void EditorUI::draw() {
     ImGui::SameLine();
 
     if (ImGui::Button("Open Folder")) {
-        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
-            const auto& t = tables_[selectedIndex_];
-            LOG_DEBUG(std::string("Open Folder pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
-        } else {
-            LOG_DEBUG("Open Folder pressed but no table selected");
-        }
+        std::string path;
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size())
+            path = tables_[selectedIndex_].vpxFile;
+        actions_.openFolder(path);
     }
+
     ImGui::SameLine();
 
     if (ImGui::Button("Extract VBS")) {

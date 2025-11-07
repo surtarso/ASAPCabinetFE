@@ -1,4 +1,5 @@
 #pragma once
+#include "editor/button_actions.h"
 #include "tables/itable_loader.h"
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
@@ -31,4 +32,5 @@ private:
     // UI state (kept inside editor only)
     int selectedIndex_ = -1;
     bool scrollToSelected_ = false;
+    ButtonActions actions_;
 };
