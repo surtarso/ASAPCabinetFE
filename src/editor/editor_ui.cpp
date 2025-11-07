@@ -33,13 +33,13 @@ void EditorUI::draw() {
     std::lock_guard<std::mutex> lock(tableMutex_);
 
     if (loading_) {
-        ImGui::Text("Rescanning tables... (please wait)");
+        ImGui::Text("Scanning tables... (please wait)");
         ImGui::End();
         return;
     }
 
     if (tables_.empty()) {
-        ImGui::TextDisabled("No tables found. Verify configuration or run a rescan from the main frontend.");
+        ImGui::TextDisabled("No tables found. Run a rescan from the main frontend.");
         ImGui::End();
         return;
     }

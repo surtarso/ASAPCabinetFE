@@ -165,26 +165,39 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.hashFromVpx = "";
             }
 
-            fs::path vbs_path = path.parent_path() / (path.stem().string() + ".vbs");
-            if (fs::exists(vbs_path)) {
+           // Case-insensitive .vbs search
+            fs::path found_vbs_path;
+            bool foundVbs = false;
+            for (const auto& entry : fs::directory_iterator(path.parent_path())) {
+                if (!entry.is_regular_file()) continue;
+                std::string ext = entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(),
+                            [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+                if (ext == ".vbs" && entry.path().stem() == path.stem()) {
+                    found_vbs_path = entry.path();
+                    foundVbs = true;
+                    break;
+                }
+            }
+
+            if (foundVbs) {
                 table.hasVBS = true;
-                table.hashFromVbs = compute_file_sha256(vbs_path.string());
+                table.hashFromVbs = compute_file_sha256(found_vbs_path.string());
                 if (table.hashFromVbs.empty()) {
-                    LOG_ERROR("Failed to compute hash for .vbs file: " + vbs_path.string());
+                    LOG_ERROR("Failed to compute hash for .vbs file: " + found_vbs_path.string());
                     table.hasDiffVbs = false;
                 } else {
-                    LOG_DEBUG("hashFromVbs for " + vbs_path.string() + ": " + table.hashFromVbs);
+                    LOG_DEBUG("hashFromVbs for " + found_vbs_path.string() + ": " + table.hashFromVbs);
                     if (!vpx_script.empty()) {
-                        std::ifstream vbs_file(vbs_path, std::ios::binary);
+                        std::ifstream vbs_file(found_vbs_path, std::ios::binary);
                         if (vbs_file.is_open()) {
-                            std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
+                            std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)),
+                                                    std::istreambuf_iterator<char>());
                             table.hasDiffVbs = (vpx_script != vbs_content);
-                            if (table.hasDiffVbs) {
+                            if (table.hasDiffVbs)
                                 LOG_DEBUG(".vbs differs from VPX script for " + table.title);
-                            }
-                            vbs_file.close();
                         } else {
-                            LOG_ERROR("Failed to open .vbs file for comparison: " + vbs_path.string());
+                            LOG_ERROR("Failed to open .vbs file for comparison: " + found_vbs_path.string());
                             table.hasDiffVbs = false;
                         }
                     } else {
@@ -197,6 +210,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 table.hasVBS = false;
                 LOG_DEBUG("No .vbs file found for " + table.title);
             }
+
 
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
@@ -234,11 +248,9 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.hasAltMusic = PathUtils::getAltMusic(table.folder);
             table.hasUltraDMD = PathUtils::getUltraDmdPath(table.folder);
 
-            // TODO: Move these to path utils
-            fs::path ini_path = path.parent_path() / (path.stem().string() + ".ini");
-            table.hasINI = fs::exists(ini_path);
-            fs::path b2s_path = path.parent_path() / (path.stem().string() + ".directb2s");
-            table.hasB2S = fs::exists(b2s_path);
+            table.hasINI = PathUtils::hasIniForTable(table.folder, path.stem().string());
+            table.hasB2S = PathUtils::hasB2SForTable(table.folder, path.stem().string());
+
 
             std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
             if (!pinmamePath.empty()) {

@@ -66,6 +66,51 @@ bool PathUtils::getAltMusic(const std::string& tableRoot) {
     return false;
 }
 
+// Check for a file named <tableStem>.ini (case-insensitive)
+bool PathUtils::hasIniForTable(const std::string& tableFolder, const std::string& tableStem) {
+    if (tableFolder.empty() || tableStem.empty()) return false;
+    try {
+        for (const auto& e : fs::directory_iterator(tableFolder)) {
+            if (!e.is_regular_file()) continue;
+            std::string fname = e.path().filename().string();
+            std::string stem = e.path().stem().string();
+            std::string ext  = e.path().extension().string();
+
+            // case-insensitive compare extension and stem
+            std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+            std::transform(stem.begin(), stem.end(), stem.begin(), [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+            std::string wantedStem = tableStem;
+            std::transform(wantedStem.begin(), wantedStem.end(), wantedStem.begin(), [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+
+            if (ext == ".ini" && stem == wantedStem) return true;
+        }
+    } catch (...) {
+        return false;
+    }
+    return false;
+}
+
+// Check for .b2s or .directb2s next to the table (case-insensitive)
+bool PathUtils::hasB2SForTable(const std::string& tableFolder, const std::string& tableStem) {
+    if (tableFolder.empty() || tableStem.empty()) return false;
+    try {
+        for (const auto& e : fs::directory_iterator(tableFolder)) {
+            if (!e.is_regular_file()) continue;
+            std::string ext = e.path().extension().string();
+            std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+            if (ext == ".b2s" || ext == ".directb2s") {
+                // match by stem too:
+                // std::string stem = e.path().stem().string(); std::transform(stem.begin(), stem.end(), stem.begin(), ::tolower);
+                // if (stem == wantedStem) return true;
+                return true;
+            }
+        }
+    } catch (...) {
+        return false;
+    }
+    return false;
+}
+
 // PathUtils::getUltraDmdPath - Checks for any folder ending with '.ultradmd'
 bool PathUtils::getUltraDmdPath(const std::string& tableRoot) {
     std::string ultraDmdFolderActualPath = findSubfolderBySuffixCaseInsensitive(tableRoot, ".ultradmd");
@@ -211,7 +256,3 @@ std::string PathUtils::findSubfolderBySuffixCaseInsensitive(const std::string& p
     }
     return "";
 }
-
-
-
-

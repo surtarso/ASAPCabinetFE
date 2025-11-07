@@ -73,17 +73,19 @@ public:
      * @return The resolved path as a string (valid path if exists, empty otherwise).
      */
     static std::string getAudioPath(const std::string& root, const std::string& musicPath);
-    
+
     // Directory finders
-    static bool getPupPath(const std::string& root); 
-    static std::string getPinmamePath(const std::string& root); 
-    static bool getAltcolorPath(const std::string& pinmamePath); 
+    static bool getPupPath(const std::string& root);
+    static std::string getPinmamePath(const std::string& root);
+    static bool getAltcolorPath(const std::string& pinmamePath);
     static bool getAltsoundPath(const std::string& pinmamePath);
     static bool getAltMusic(const std::string& tableRoot);
     static bool getUltraDmdPath(const std::string& tableRoot);
+    static bool hasIniForTable(const std::string& tableFolder, const std::string& tableStem);
+    static bool hasB2SForTable(const std::string& tableFolder, const std::string& tableStem);
     static std::string getRomPath(const std::string& pinmamePath, std::string& outRomName);
-    
-    
+
+
 private:
     // Self helpers
     static bool containsRegularFiles(const std::string& directoryPath);
