@@ -216,6 +216,16 @@ void EditorUI::draw() {
     }
     ImGui::SameLine();
 
+    if (ImGui::Button("View Metadata")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+            const auto& t = tables_[selectedIndex_];
+            LOG_DEBUG(std::string("View Metadata pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+        } else {
+            LOG_DEBUG("View Metadata pressed but no table selected");
+        }
+    }
+    ImGui::SameLine();
+
     if (ImGui::Button("INI Editor")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
             const auto& t = tables_[selectedIndex_];
@@ -244,7 +254,7 @@ void EditorUI::draw() {
 
     // --- Footer info ---
     std::ostringstream ss;
-    ss << tables_.size() << " tables";
+    ss << tables_.size() << " tables found";
     if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
         const auto& t = tables_[selectedIndex_];
         fs::path p(t.vpxFile);
