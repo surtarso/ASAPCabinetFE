@@ -44,6 +44,7 @@ settings.json
 imgui.ini
 create_codebase.sh
 codebase.txt
+codebase-*.txt
 build/
 Doxyfile.bak
 *instructions.md
