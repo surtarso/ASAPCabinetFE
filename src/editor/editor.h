@@ -2,6 +2,7 @@
 #include "editor/editor_ui.h"
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
+#include "launcher/itable_launcher.h"
 #include <SDL2/SDL.h>
 #include <thread>
 #include <string>
@@ -39,5 +40,10 @@ private:
     std::unique_ptr<IConfigService> config_;
     std::unique_ptr<IKeybindProvider> keybindProvider_;
     std::unique_ptr<ITableLoader> tableLoader_;
+    std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
+
+    // States for sub-editors (will be used later)
+    bool showMetadataEditor_ = false;
+    bool showIniEditor_ = false;
 };

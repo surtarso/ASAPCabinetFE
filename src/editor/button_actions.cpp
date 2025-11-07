@@ -8,6 +8,40 @@ namespace fs = std::filesystem;
 ButtonActions::ButtonActions(IConfigService* config)
     : config_(config) {}
 
+void ButtonActions::extractVBS(const std::string& filepath) {
+    if (!config_) {
+        LOG_ERROR("Config service is null, cannot extract VBS.");
+        return;
+    }
+    const auto& settings = config_->getSettings();
+
+    // Use vpxtoolBin setting, fallback to PATH
+    std::string vpxtoolPath = "vpxtool";
+    if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
+        vpxtoolPath = settings.vpxtoolBin;
+    } else if (!settings.vpxtoolBin.empty()) {
+        LOG_WARN("vpxtoolBin setting is specified but not found: " + settings.vpxtoolBin + ". Falling back to PATH.");
+    }
+
+    std::string cmd = "\"" + vpxtoolPath + "\" " + settings.vpxtoolExtractCmd + " \"" + filepath + "\"";
+
+    LOG_DEBUG("Extracting VBS with command: " + cmd);
+    int result = system(cmd.c_str());
+    if (result != 0) {
+        LOG_ERROR("Failed to extract VBS from table: " + filepath + " (command: " + cmd + ")");
+    }
+}
+
+bool ButtonActions::openInExternalEditor(const std::string& filepath) {
+    std::string cmd = "xdg-open \"" + filepath + "\"";
+    LOG_DEBUG("Attempting to open in external editor with: " + cmd);
+    if (system(cmd.c_str()) != 0) {
+        LOG_WARN("xdg-open failed. (You could add a 'fallbackEditor' to your Settings struct like in the old app).");
+        return false;
+    }
+    return true;
+}
+
 void ButtonActions::openFolder(const std::string& filepath) {
     std::string folder;
     if (filepath.empty()) {

@@ -204,6 +204,7 @@ struct Settings {
     std::string vpsDbUpdateFrequency = "startup";
     std::string vpsDbLastUpdated = "data/lastUpdated.json";
     std::string vpxtoolBin = "";
+    std::string vpxtoolExtractCmd = "extractvbs";
     std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapcab_index.json";
     int screenshotWait = 4; // 0-60
@@ -506,6 +507,7 @@ private:
                 {"vpsDbUpdateFrequency", s.vpsDbUpdateFrequency},
                 {"vpsDbLastUpdated", s.vpsDbLastUpdated},
                 {"vpxtoolBin", s.vpxtoolBin},
+                {"vpxtoolExtractCmd", s.vpxtoolExtractCmd},
                 {"vpxtoolIndex", s.vpxtoolIndex},
                 {"indexPath", s.indexPath},
                 {"screenshotWait", s.screenshotWait},
@@ -719,6 +721,7 @@ private:
         s.vpsDbLastUpdated = j.value("Internal", nlohmann::json{}).value("vpsDbLastUpdated", s.vpsDbLastUpdated);
         s.vpxtoolIndex = j.value("Internal", nlohmann::json{}).value("vpxtoolIndex", s.vpxtoolIndex);
         s.vpxtoolBin = j.value("Internal", nlohmann::json{}).value("vpxtoolBin", s.vpxtoolBin);
+        s.vpxtoolExtractCmd = j.value("Internal", nlohmann::json{}).value("vpxtoolExtractCmd", s.vpxtoolExtractCmd);
         s.indexPath = j.value("Internal", nlohmann::json{}).value("indexPath", s.indexPath);
         s.configUIWidth = j.value("Internal", nlohmann::json{}).value("configUIWidth", s.configUIWidth);
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
@@ -920,6 +923,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"vpsDbLastUpdated", {Settings::ReloadType::None, "Path to the VPS database timestamp file (relative to executable)."}},
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file (defaults to vpxtool_index.json)."}},
     {"vpxtoolBin", {Settings::ReloadType::None, "Path to the vpxtool binary, if it is not on your PATH."}},
+    {"vpxtoolExtractCmd", {Settings::ReloadType::None, "The vpxtool subcommand for extracting VBScripts."}},
     {"indexPath", {Settings::ReloadType::None, "Path to the main table index file (relative to the executable)."}},
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},

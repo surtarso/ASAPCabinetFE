@@ -9,8 +9,15 @@ namespace fs = std::filesystem;
 
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
-EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader)
-    : config_(config), tableLoader_(tableLoader), actions_(config) {
+EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader, ITableLauncher* launcher,
+                   bool& showMeta, bool& showIni)
+    : config_(config),
+      tableLoader_(tableLoader),
+      tableLauncher_(launcher), // <-- ADD THIS
+      actions_(config),
+      showMetadataEditor_(showMeta), // <-- ADD THIS
+      showIniEditor_(showIni) {      // <-- ADD THIS
+
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
@@ -216,7 +223,19 @@ void EditorUI::draw() {
     if (ImGui::Button("Extract VBS")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
             const auto& t = tables_[selectedIndex_];
-            LOG_DEBUG(std::string("Extract VBS pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+            // 1. Extract the VBS
+            actions_.extractVBS(t.vpxFile); // <-- USE ACTION
+
+            // 2. Build the path to the new .vbs file
+            fs::path vpxPath(t.vpxFile);
+            std::string vbsPath = (vpxPath.parent_path() / (vpxPath.stem().string() + ".vbs")).string();
+
+            // 3. Open it
+            if (fs::exists(vbsPath)) {
+                actions_.openInExternalEditor(vbsPath); // <-- USE ACTION
+            } else {
+                LOG_ERROR("Tried to open VBS, but extraction failed or file not found at: " + vbsPath);
+            }
         } else {
             LOG_DEBUG("Extract VBS pressed but no table selected");
         }
@@ -225,8 +244,9 @@ void EditorUI::draw() {
 
     if (ImGui::Button("View Metadata")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
-            const auto& t = tables_[selectedIndex_];
-            LOG_DEBUG(std::string("View Metadata pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+            // This will now be handled by the main editor loop
+            showMetadataEditor_ = true; // <-- TOGGLE STATE
+            LOG_DEBUG("Toggling metadata editor ON");
         } else {
             LOG_DEBUG("View Metadata pressed but no table selected");
         }
@@ -235,8 +255,9 @@ void EditorUI::draw() {
 
     if (ImGui::Button("INI Editor")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
-            const auto& t = tables_[selectedIndex_];
-            LOG_DEBUG(std::string("INI Editor pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+            // This will now be handled by the main editor loop
+            showIniEditor_ = true; // <-- TOGGLE STATE
+            LOG_DEBUG("Toggling INI editor ON");
         } else {
             LOG_DEBUG("INI Editor pressed but no table selected");
         }
@@ -246,7 +267,8 @@ void EditorUI::draw() {
     if (ImGui::Button("Play Selected")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
             const auto& t = tables_[selectedIndex_];
-            LOG_DEBUG(std::string("Play pressed (placeholder) for: ") + t.title + " -> " + t.vpxFile);
+            // --- USE THE LAUNCHER ---
+            tableLauncher_->launchTable(t);
         } else {
             LOG_DEBUG("Play pressed but no table selected");
         }

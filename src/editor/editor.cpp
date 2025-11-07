@@ -18,8 +18,16 @@ Editor::Editor(const std::string& configPath)
     config_ = DependencyFactory::createConfigService(configPath_, keybindProvider.get());
     keybindProvider_ = std::move(keybindProvider);
     tableLoader_ = std::make_unique<TableLoader>();
+    tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
 
-    editorUI_ = std::make_unique<EditorUI>(config_.get(), tableLoader_.get());
+    // Pass the launcher and state booleans to the UI
+    editorUI_ = std::make_unique<EditorUI>(
+        config_.get(),
+        tableLoader_.get(),
+        tableLauncher_.get(),
+        showMetadataEditor_,
+        showIniEditor_
+    );
     LOG_INFO("Editor initialized using shared configuration");
 }
 
@@ -72,7 +80,17 @@ void Editor::mainLoop() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        editorUI_->draw();
+        if (showMetadataEditor_) {
+            // Placeholder for Metadata Editor
+            ImGui::Text("Metadata Editor would be here");
+            if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
+        } else if (showIniEditor_) {
+            // Placeholder for INI Editor
+            ImGui::Text("INI Editor would be here");
+            if (ImGui::Button("Close INI")) showIniEditor_ = false;
+        } else {
+            editorUI_->draw();
+        }
 
         ImGui::Render();
         SDL_SetRenderDrawColor(renderer_, 30, 30, 30, 255);

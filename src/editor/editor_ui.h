@@ -3,6 +3,7 @@
 #include "tables/itable_loader.h"
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
+#include "launcher/itable_launcher.h"
 #include <imgui.h>
 #include <vector>
 #include <string>
@@ -14,7 +15,8 @@
  */
 class EditorUI {
 public:
-    EditorUI(IConfigService* config, ITableLoader* tableLoader);
+    EditorUI(IConfigService* config, ITableLoader* tableLoader, ITableLauncher* launcher,
+             bool& showMeta, bool& showIni);
     void draw();
     bool shouldExit() const { return exitRequested_; }
 
@@ -23,6 +25,7 @@ private:
 
     IConfigService* config_;       // Shared configuration interface
     ITableLoader* tableLoader_;    // Shared table loader
+    ITableLauncher* tableLauncher_;
 
     std::vector<TableData> tables_;
     std::mutex tableMutex_;
@@ -33,4 +36,8 @@ private:
     int selectedIndex_ = -1;
     bool scrollToSelected_ = false;
     ButtonActions actions_;
+
+    // Booleans to control sub-editors (will be used later)
+    bool& showMetadataEditor_;
+    bool& showIniEditor_;
 };

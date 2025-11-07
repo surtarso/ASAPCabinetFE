@@ -13,6 +13,19 @@ public:
     explicit ButtonActions(IConfigService* config);
 
     /**
+     * @brief Extracts the VBScript from a .vpx file using vpxtool.
+     * @param filepath Full path to the .vpx table.
+     */
+    void extractVBS(const std::string& filepath); // Ported from old TableActions
+
+    /**
+     * @brief Opens a file (like a .vbs script) in the user's default external editor.
+     * @param filepath Full path to the file to open.
+     * @return True if the command succeeded.
+     */
+    bool openInExternalEditor(const std::string& filepath); // Ported from old TableActions
+
+    /**
      * @brief Opens the containing folder for the given file path.
      * @param filepath Full path to a VPX table or other asset file.
      */
