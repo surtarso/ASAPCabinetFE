@@ -14,7 +14,7 @@ ONGOING:
 - port ini editor + tooltips (keep 10.8.0, create new 10.8.1, switchable)
 - hook up table_launcher to play button
 - add settings (editor related)
-- configurable rescan folders button (file/vpin/vbs)
+- configurable rescan folders button (file/vpin/vbs/refresh[start new])
 - checkbox for vpxtool vs vpin?
 - missing behavior: hover tooltips, selected vs unselect button clicks
 - add the searchbar
@@ -22,6 +22,10 @@ ONGOING:
 - color letter indicator legends
 - color files with diffs
 - color tables with failed status
+- select/unselect in table (re-click)
+- check if present rom is correct and recolor
+- add 'table version' column
+- add playcound / success on the right of table scanner display line
 
 QOL:
 - a proper font picker

@@ -177,9 +177,18 @@ void EditorUI::draw() {
         ImGui::EndTable();
     }
 
-    // --------- Footer buttons, inline at bottom ---------
     ImGui::Separator();
+
+    // --- Last scan info (above buttons) ---
+    if (selectedIndex_ >= 0 && selectedIndex_ < (int)tables_.size()) {
+        const auto& t = tables_[selectedIndex_];
+        if (!t.jsonOwner.empty()) {
+            ImGui::TextDisabled("Last table scanner: %s", t.jsonOwner.c_str());
+        }
+    }
+    // --------- Footer buttons, inline at bottom ---------
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() * 2.0f);
+
     ImGui::BeginGroup();
 
     if (ImGui::Button("Rescan Tables")) {
