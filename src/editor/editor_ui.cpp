@@ -4,8 +4,23 @@
 #include <filesystem>
 #include <sstream>
 #include <thread>
+#include <unordered_map>
 
 namespace fs = std::filesystem;
+
+namespace Tooltips {
+    // Define the static constant map to hold button tooltips
+    // Use std::string_view for keys and values for better performance and memory management
+    static const std::unordered_map<std::string, std::string> BUTTON_TOOLTIPS = {
+        {"Exit Editor", "Close the Editor"},
+        {"Rescan Tables", "Rescan the table folder and refresh the list."},
+        {"Play Selected", "Launch the current selection in VPinballX."},
+        {"Extract VBS", "Extract the VBS script from the selected table.\nOpen the script in external editor if already extracted."},
+        {"Open Folder", "Open the table folder.\nOpen tables root folder if no table selected."},
+        {"INI Editor", "Create or open selected table configuration files.\nOpen vpinballx.ini if no table selected."},
+        {"View Metadata", "View detailed selected table metadata."}
+    };
+}
 
 void EditorUI::filterAndSortTables() {
     // Delegate the complex filtering, sorting, and selection logic
@@ -246,6 +261,9 @@ void EditorUI::draw() {
     if (ImGui::Button("Rescan Tables")) {
         rescanAsync();
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Rescan Tables").c_str());
+    }
     ImGui::SameLine();
 
     if (ImGui::Button("Open Folder")) {
@@ -254,7 +272,9 @@ void EditorUI::draw() {
             path = filteredTables_[selectedIndex_].vpxFile;
         actions_.openFolder(path);
     }
-
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Open Folder").c_str());
+    }
     ImGui::SameLine();
 
     if (ImGui::Button("Extract VBS")) {
@@ -277,6 +297,9 @@ void EditorUI::draw() {
             LOG_DEBUG("Extract VBS pressed but no table selected");
         }
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Extract VBS").c_str());
+    }
     ImGui::SameLine();
 
     if (ImGui::Button("View Metadata")) {
@@ -287,6 +310,9 @@ void EditorUI::draw() {
         } else {
             LOG_DEBUG("View Metadata pressed but no table selected");
         }
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("View Metadata").c_str());
     }
     ImGui::SameLine();
 
@@ -299,6 +325,9 @@ void EditorUI::draw() {
             LOG_DEBUG("INI Editor pressed but no table selected");
         }
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("INI Editor").c_str());
+    }
     ImGui::SameLine();
 
     if (ImGui::Button("Play Selected")) {
@@ -310,10 +339,16 @@ void EditorUI::draw() {
             LOG_DEBUG("Play pressed but no table selected");
         }
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Play Selected").c_str());
+    }
     ImGui::SameLine();
 
     if (ImGui::Button("Exit Editor")) {
         exitRequested_ = true;
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Exit Editor").c_str());
     }
 
     // --- SEARCH BAR WIDGET: PLACED HERE (Right side of buttons) ---
