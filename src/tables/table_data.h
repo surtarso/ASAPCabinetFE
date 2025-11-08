@@ -57,11 +57,6 @@ struct TableData {
     std::string launchAudio;     ///< Path to the custom launch audio, if available.
     std::string romPath;         ///< Path to the pinmame/roms/'romname'.zip
     std::string romName;         ///< file found in romPath without extension.
-    bool hasAltSound = false;    ///< True if found the pinmame/altsound folder (non-empty)
-    bool hasAltColor = false;    ///< True if found the pinmame/AltColor folder (non-empty)
-    bool hasPup = false;         ///< True if found the pupvideos/ folder (non-empty)
-    bool hasAltMusic = false;    ///< True if found the music/ folder (non-empty)
-    bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
 
     // ------------ FILE METADATA (vpin/vpxtool) -----------
     // we must keep repeated fields if found for better vpsdb matching
@@ -115,22 +110,27 @@ struct TableData {
     bool isBroken = false;       ///< true if failed to load, dont increment playCount
     float playTimeLast = 0.0f;   ///< last session play time
     float playTimeTotal = 0.0f;  ///< sums playTimeLast
-
+    // extra files scan
+    bool hasAltSound = false;    ///< True if found the pinmame/altsound folder (non-empty)
+    bool hasAltColor = false;    ///< True if found the pinmame/AltColor folder (non-empty)
+    bool hasPup = false;         ///< True if found the pupvideos/ folder (non-empty)
+    bool hasAltMusic = false;    ///< True if found the music/ folder (non-empty)
+    bool hasUltraDMD = false;    ///< True if found the *.UltraDMD folder (non-empty)
     bool hasB2S = false;         ///< True if found the *.b2s file alongside the .vpx
-    bool hasINI = false;         ///< True if found the *.b2s file alongside the .vpx
-    bool hasVBS = false;         ///< True if found the *.b2s file alongside the .vpx
-
-    bool hasPlayfieldImage = false;
-    bool hasWheelImage = false;
-    bool hasBackglassImage = false;
-    bool hasDmdImage = false;
-    bool hasTopperImage = false;
-    bool hasPlayfieldVideo = false;
-    bool hasBackglassVideo = false;
-    bool hasDmdVideo = false;
-    bool hasTopperVideo = false;
-    bool hasTableMusic = false;
-    bool hasLaunchAudio = false;
+    bool hasINI = false;         ///< True if found the *.ini file alongside the .vpx
+    bool hasVBS = false;         ///< True if found the *.vbs file alongside the .vpx
+    // media scan
+    bool hasPlayfieldImage = false;  ///< True if found a custom playfield image
+    bool hasWheelImage = false;      ///< True if found a custom wheel image
+    bool hasBackglassImage = false;  ///< True if found a custom backglass image
+    bool hasDmdImage = false;        ///< True if found a custom DMD image
+    bool hasTopperImage = false;     ///< True if found a custom topper image
+    bool hasPlayfieldVideo = false;  ///< True if found a custom playfield video
+    bool hasBackglassVideo = false;  ///< True if found a custom backglass video
+    bool hasDmdVideo = false;        ///< True if found a custom DMD video
+    bool hasTopperVideo = false;     ///< True if found a custom topper video
+    bool hasTableMusic = false;      ///< True if found a custom table music file
+    bool hasLaunchAudio = false;     ///< True if found a custom launch audio file
 
     //TODO: use this to control which scanner to use/increment so we dont have to rebuild
     std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
