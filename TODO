@@ -7,24 +7,25 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- hook to 1st run or keep no-index warning?
+- hook to 1st run or keep no-index warning? use current loading screen?
 - initial loading screen or keep fastload as default?
-- hook vpin's extract vbs to wrapper
+- hook vpin's extract vbs to wrapper!
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
+- color files with diffs
 - port ini editor w/ tooltips (keep 10.8.0, create new 10.8.1, switchable)
 - add settings panel (editor related) + button
 - spreadsheet column hover dynamic tooltips
 - collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
-- color files with diffs
-- color tables with failed status
-- check if present rom is correct and recolor
-- hook double click to launcher
+- check if present rom is correct and recolor (vpin/vpxtool hook!)
+- hook double click to launcher?
 - add playcound / success on status bar
+- color tables with failed status
 - columns for release date, last modified and confidence match?
 - column for script patch status? status bar or files column instead?
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
+- hook vpsdb browser (or remake = bad)
 
 QOL:
 - a proper font picker
