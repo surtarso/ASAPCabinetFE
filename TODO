@@ -18,6 +18,7 @@ ONGOING:
 - color tables with failed status
 - check if present rom is correct and recolor
 - add playcound / success on the right of table scanner display line
+- hook double click to launcher
 
 QOL:
 - a proper font picker
