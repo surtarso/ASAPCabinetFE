@@ -44,6 +44,8 @@ QOL:
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 - user-pick fields to be shown on metadata panel
+- flag to force --first-run (only breaking fields to default, preserve user conf)
+- flag to --reset to defaults (move data/* to .old)
 
 On hold:
 - refactor the monoliths...
@@ -57,3 +59,4 @@ On hold:
 - support animated png for wheel/marquee
 - some way to download tables straight from the app?
 - incorporate generate_media.sh?
+- flag to open --config only?
