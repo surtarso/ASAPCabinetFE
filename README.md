@@ -238,7 +238,7 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | VPSdb Catalog      | n                | Toggle VPSdb catalog for browsing tables. |
 | Quit               | q                | Exit the application.                     |
 
-## Generator Tools
+## Generator Tools (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
 > [!IMPORTANT]
 > Make sure your paths are properly configured before generating media.
 
