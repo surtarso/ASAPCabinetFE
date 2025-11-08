@@ -12,7 +12,7 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - add settings panel (editor related)
 - configurable rescan folders button (file/vpin/vbs/force refresh)
 - checkbox for vpxtool vs vpin?
-- hover tooltips
+- spreadsheet column hover dynamic tooltips
 - color files with diffs
 - color tables with failed status
 - check if present rom is correct and recolor
@@ -20,6 +20,7 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook double click to launcher
 - focus search on typing, enter to launch.
 - columns for release date and confidence match?
+- main button tooltips positioning above buttons
 
 QOL:
 - a proper font picker
