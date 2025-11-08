@@ -43,6 +43,7 @@ QOL:
 - user-pick fields to be shown on metadata panel
 
 On hold:
+- move editor_binary.cpp to utils (and update cmakelist)
 - add some of editor's new scraped data to main metadata panel
 - update header docs and user manual
 - user-configurable options for video quality passed to videoplayer factory
