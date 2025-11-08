@@ -19,3 +19,19 @@ int main() {
     std::cerr << "\nFailed to launch editor-mode shortcut.\nNavigate to the main folder and use `./ASAPCabinetFE --editor` instead." << std::endl;
     return 1;
 }
+
+// TODO:
+// - add flags to editor binary to open in specific panels
+// - e.g.: ASAPCabinetFE-Editor --browser
+// --browser|-b (to open vpsdb browser directly)
+// --ini|-i (to open ini editor directly in vpinballx.ini)
+//
+// - add operational flags for automation
+// - e.g.: ASAPCabinetFE-Editor --patch-table "/path/to/MyTable.vpx"
+// --rescan|-r (to rescan tables with current settings)
+// --rescan-table|-rt <tablefile> (to rescan a single table)
+// --rescan-refresh|-rr (to force rescan using all scanners)
+// --rescan-table-refresh|-rtr <tablefile> (to force rescan of a single table)
+// --patch|-p (to apply patches to all tables)
+// --patch-table|-pt <tablefile> (to apply patches to a single table)
+// --script|-s <tablefile> (to extract vbs script from a single table)
