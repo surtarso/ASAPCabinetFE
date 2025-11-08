@@ -25,7 +25,6 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - add playcound / success on status bar
 - columns for release date, last modified and confidence match?
 - column for script patch status? status bar or files column instead?
-- focus search on typing, enter to launch.
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "editor/editor_ui.h"
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
@@ -12,6 +13,8 @@
  * @class Editor
  * @brief Standalone editor for table and INI management inside ASAPCabinetFE (--editor mode)
  */
+class ImGuiManager; // forward declaration
+
 class Editor : public IApp {
 public:
     explicit Editor(const std::string& configPath);
@@ -21,29 +24,31 @@ public:
 
 private:
     void initializeSDL();
-    void initializeImGui();
     void mainLoop();
     void cleanup();
 
-    // Core paths and state
+    // --- Core state ---
     std::string configPath_;
     bool exitRequested_ = false;
 
-    // SDL + ImGui
+    // --- SDL window + renderer ---
     SDL_Window* window_ = nullptr;
     SDL_Renderer* renderer_ = nullptr;
 
-    // Async loading
+    // --- ImGui Manager (shared with ASAPCabinetFE) ---
+    std::unique_ptr<ImGuiManager> imguiManager_;
+
+    // --- Async loading thread ---
     std::thread loadingThread_;
 
-    // ASAPCabinetFE dependencies (shared resources)
+    // --- ASAPCabinetFE dependencies ---
     std::unique_ptr<IConfigService> config_;
     std::unique_ptr<IKeybindProvider> keybindProvider_;
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
 
-    // States for sub-editors
+    // --- Sub-editor state flags ---
     bool showMetadataEditor_ = false;
     bool showIniEditor_ = false;
     bool showVpsdbBrowser_ = false;

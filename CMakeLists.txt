@@ -386,12 +386,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
     COMPILE_FLAGS "-w"
 )
-# Suppress warnings for imgui source files
-file(GLOB_RECURSE IMGUI_SOURCES
-    "${imgui_SOURCE_DIR}/*.cpp"
-)
+# Suppress warnings for ImGui sources and headers
+file(GLOB_RECURSE IMGUI_SOURCES "${imgui_SOURCE_DIR}/*.cpp")
 set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
 
+# Treat ImGui include path as a system include (silences header warnings)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 
 # --- Dependencies Start ---
 find_package(OpenSSL REQUIRED)

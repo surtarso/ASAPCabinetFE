@@ -1,8 +1,11 @@
 #include "editor/button_actions.h"
 #include "vpin_wrapper.h"
 #include "log/logging.h"
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <filesystem>
 #include <cstdlib>
+#include <cctype>
 
 namespace fs = std::filesystem;
 
@@ -77,5 +80,69 @@ void ButtonActions::openFolder(const std::string& filepath) {
         LOG_ERROR("Failed to open folder: " + folder + " (exit code " + std::to_string(result) + ")");
     } else {
         LOG_DEBUG("Opened folder: " + folder);
+    }
+}
+
+void ButtonActions::handleKeyboardSearchFocus(char* searchBuffer,
+    std::string& searchQuery,
+    std::function<void()> filterAndSort,
+    std::function<void()> onEnter)
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    // --- Global ENTER trigger (always works, no matter what is focused) ---
+    if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)) {
+        if (onEnter) onEnter();
+        return;
+    }
+
+    if (io.WantCaptureKeyboard) return;
+    if (ImGui::IsAnyItemActive()) return;
+
+    static bool pendingFocus = false;
+
+    // Cancel pending focus if ESC
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+    pendingFocus = false;
+
+        // If user has text in the buffer, clear it no matter what
+        if (searchBuffer[0] != '\0') {
+            searchBuffer[0] = '\0';
+            searchQuery.clear();
+            if (filterAndSort) filterAndSort();
+            // ImGui::ClearActiveID(); // defocus after clearing
+            ImGuiContext* ctx = ImGui::GetCurrentContext();
+            ctx->ActiveId = 0;
+        } else {
+            // If already empty, just unfocus input
+            // ImGui::ClearActiveID();
+            ImGuiContext* ctx = ImGui::GetCurrentContext();
+            ctx->ActiveId = 0;
+        }
+        return;
+    }
+
+    // If we’re waiting to focus next frame
+    if (pendingFocus) {
+        ImGui::SetKeyboardFocusHere(-1); // Focus InputText on next draw
+        pendingFocus = false;
+        return;
+    }
+
+    // Detect first character typed
+    for (int n = 0; n < io.InputQueueCharacters.Size; n++) {
+        ImWchar c = io.InputQueueCharacters[n];
+        if (std::isalnum(static_cast<unsigned int>(c)) || std::isspace(static_cast<unsigned int>(c))) {
+            // Set focus to search bar next frame
+            ImGui::SetKeyboardFocusHere(); // immediate focus this frame
+            io.AddInputCharacter(c);       // forward first typed key into focused widget
+            io.InputQueueCharacters.clear();
+            pendingFocus = false;
+
+            // Reflect new buffer into string (for external filtering)
+            searchQuery = searchBuffer;
+            if (filterAndSort) filterAndSort();
+            break;
+        }
     }
 }

@@ -67,6 +67,22 @@ void EditorUI::draw() {
     ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
 
     // --------------------------- Top search bar ---------------------------
+    // Detect typing and auto-focus search field
+    actions_.handleKeyboardSearchFocus(
+    searchBuffer_,
+    searchQuery_,
+    [this]() { filterAndSortTables(); },
+    [this]() {
+        // Only launch if a table is actually selected
+        if (selectedIndex_ >= 0 && selectedIndex_ < static_cast<int>(filteredTables_.size())) {
+            const auto& t = filteredTables_[selectedIndex_];
+            tableLauncher_->launchTable(t);
+        } else {
+            LOG_DEBUG("Enter pressed but no table selected");
+        }
+    });
+
+
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 2.5f);
     if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
                                 searchBuffer_, sizeof(searchBuffer_))) {

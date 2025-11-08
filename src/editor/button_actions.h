@@ -5,8 +5,8 @@
 #include "config/iconfig_service.h" // for IConfigService interface
 
 /**
- * @brief ButtonActions replicates simple table management operations (e.g. open folder, extract VBS)
- *        similar to vpxguitools/TableActions but scoped for EditorUI.
+ * @brief Handles simple table-related operations for EditorUI,
+ *        similar to vpxguitools/TableActions.
  */
 class ButtonActions {
 public:
@@ -31,8 +31,18 @@ public:
      */
     void openFolder(const std::string& filepath);
 
+    /**
+     * @brief Detects if the user started typing alphanumeric keys and auto-focuses the search input.
+     * @param searchInputId The ImGui ID of the search field (e.g. "##SearchInputTop").
+     */
+    void handleKeyboardSearchFocus(char* searchBuffer,
+    std::string& searchQuery,
+    std::function<void()> filterAndSort,
+    std::function<void()> onEnter);
+
 private:
     IConfigService* config_; // Non-owning pointer
+    bool pendingSearchFocus_ = false; // Deferred focus flag
 };
 
 #endif // BUTTON_ACTIONS_H

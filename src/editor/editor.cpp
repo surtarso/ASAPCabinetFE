@@ -3,24 +3,32 @@
 #include "log/logger.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
-#include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_sdlrenderer2.h>
-#include <filesystem>
-#include <iostream>
+#include "core/dependency_factory.h"
+#include <SDL.h>
+#include <stdexcept>
 
 Editor::Editor(const std::string& configPath)
-    : configPath_(configPath) {
+    : configPath_(configPath),
+      window_(nullptr),
+      renderer_(nullptr),
+      imguiManager_(nullptr),
+      showMetadataEditor_(false),
+      showIniEditor_(false),
+      showVpsdbBrowser_(false) {
     initializeSDL();
-    initializeImGui();
 
-    // Load ASAPCabinetFE config through shared interface
+    // Load ASAPCabinetFE configuration through shared interfaces
     auto keybindProvider = DependencyFactory::createKeybindProvider();
     config_ = DependencyFactory::createConfigService(configPath_, keybindProvider.get());
     keybindProvider_ = std::move(keybindProvider);
     tableLoader_ = std::make_unique<TableLoader>();
     tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
 
-    // Pass the launcher and state booleans to the UI
+    // Initialize ImGui using the shared manager (no manual backend calls)
+    imguiManager_ = std::make_unique<ImGuiManager>(window_, renderer_, config_.get());
+    imguiManager_->initialize();
+
+    // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
         config_.get(),
         tableLoader_.get(),
@@ -29,7 +37,8 @@ Editor::Editor(const std::string& configPath)
         showIniEditor_,
         showVpsdbBrowser_
     );
-    LOG_INFO("Editor initialized using shared configuration");
+
+    LOG_INFO("Editor initialized successfully.");
 }
 
 Editor::~Editor() {
@@ -42,65 +51,56 @@ void Editor::initializeSDL() {
         throw std::runtime_error("Editor SDL initialization failed");
     }
 
-    window_ = SDL_CreateWindow("ASAPCabinetFE Editor",
-                               SDL_WINDOWPOS_CENTERED,
-                               SDL_WINDOWPOS_CENTERED,
-                               1280, 720,
-                               SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    if (!window_) throw std::runtime_error("Failed to create SDL window");
+    window_ = SDL_CreateWindow(
+        "ASAPCabinetFE Editor",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        1280,
+        720,
+        SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+    );
 
-    renderer_ = SDL_CreateRenderer(window_, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer_) throw std::runtime_error("Failed to create SDL renderer");
+    if (!window_) {
+        throw std::runtime_error("Failed to create SDL window");
+    }
 
-    LOG_INFO("SDL initialized for Editor");
-}
+    renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer_) {
+        throw std::runtime_error("Failed to create SDL renderer");
+    }
 
-void Editor::initializeImGui() {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr; // Prevent loading/saving imgui.ini
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-    ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
-    ImGui_ImplSDLRenderer2_Init(renderer_);
-    LOG_DEBUG("ImGui initialized for Editor");
+    SDL_StartTextInput(); // Enables text input events
+    LOG_INFO("SDL initialized for Editor.");
 }
 
 void Editor::mainLoop() {
     while (!editorUI_->shouldExit()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            imguiManager_->processEvent(event);
             if (event.type == SDL_QUIT)
                 return;
         }
 
-        ImGui_ImplSDLRenderer2_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
+        imguiManager_->newFrame();
 
+        // Choose which panel to render
         if (showMetadataEditor_) {
-            // Placeholder for Metadata Editor
             ImGui::Text("Metadata Editor would be here");
             if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
         } else if (showIniEditor_) {
-            // Placeholder for INI Editor
             ImGui::Text("INI Editor would be here");
             if (ImGui::Button("Close INI")) showIniEditor_ = false;
         } else if (showVpsdbBrowser_) {
-            // Placeholder for VPSDB Browser
             ImGui::Text("VPSDB Browser would be here");
             if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
         } else {
             editorUI_->draw();
         }
 
-        ImGui::Render();
         SDL_SetRenderDrawColor(renderer_, 30, 30, 30, 255);
         SDL_RenderClear(renderer_);
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
+        imguiManager_->render(renderer_);
         SDL_RenderPresent(renderer_);
     }
 }
@@ -109,15 +109,20 @@ void Editor::cleanup() {
     if (loadingThread_.joinable())
         loadingThread_.join();
 
-    ImGui_ImplSDLRenderer2_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    imguiManager_.reset();
 
-    if (renderer_) SDL_DestroyRenderer(renderer_);
-    if (window_) SDL_DestroyWindow(window_);
+    if (renderer_) {
+        SDL_DestroyRenderer(renderer_);
+        renderer_ = nullptr;
+    }
+
+    if (window_) {
+        SDL_DestroyWindow(window_);
+        window_ = nullptr;
+    }
+
     SDL_Quit();
-
-    LOG_INFO("Editor cleaned up");
+    LOG_INFO("Editor cleaned up successfully.");
 }
 
 void Editor::run() {
