@@ -67,6 +67,9 @@ cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
+
+ASAN detects leaks in Mesa (libgallium, libGLX_mesa) during OpenGL init via SDL3, used under sdl2-compat on Arch for SDL2 apps. It's a known false positive in graphics drivers.
+
 </details>
 
 ## Features
