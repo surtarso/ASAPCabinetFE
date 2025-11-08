@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace Tooltips {
     // Define the static constant map to hold button tooltips
-    // Use std::string_view for keys and values for better performance and memory management
+    // std::string_view for keys and values for better performance and memory management
     static const std::unordered_map<std::string, std::string> BUTTON_TOOLTIPS = {
         {"Exit Editor", "Close the Editor"},
         {"Rescan Tables", "Rescan the table folder and refresh the list."},
@@ -22,13 +22,12 @@ namespace Tooltips {
         {"Apply Patch", "Apply community patches to the selected table.\nApply to all tables if none selected."},
         {"Download Media", "Download images for selected table.\nDownloads for all tables if none selected."},
         {"Screenshot", "Take a screenshot of the selected table.\nTakes screenshots for all tables if none selected."},
-        {"Browse Tables", "Open VPS database browser."}
+        {"Browse Tables", "Open Virtual Pinball Spreadsheet database browser.\nBrowse and download tables from VPSDB."}
     };
 }
 
 void EditorUI::filterAndSortTables() {
-    // Delegate the complex filtering, sorting, and selection logic
-    // to the dedicated utility class.
+    // Filtering, sorting, and selection logic
     tableFilter_.filterAndSort(tables_, filteredTables_, searchQuery_,
                                sortColumn_, sortAscending_, selectedIndex_);
 }
@@ -49,8 +48,8 @@ EditorUI::EditorUI(IConfigService *config, ITableLoader *tableLoader, ITableLaun
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
-    // Apply default sort on load
-    filterAndSortTables();
+
+    filterAndSortTables(); // Apply default sort on load
 }
 
 // Draw editor UI embedded in the main window
@@ -67,7 +66,7 @@ void EditorUI::draw() {
 
     ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
 
-    // --------- Top search bar ---------
+    // --------------------------- Top search bar ---------------------------
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 2.5f);
     if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
                                 searchBuffer_, sizeof(searchBuffer_))) {
@@ -81,7 +80,6 @@ void EditorUI::draw() {
         searchQuery_.clear();
         filterAndSortTables();
     }
-    // ImGui::Separator(); // visual divider before table
 
     std::lock_guard<std::mutex> lock(tableMutex_);
 
@@ -97,7 +95,7 @@ void EditorUI::draw() {
         return;
     }
 
-    // --------- Spreadsheet region ---------
+    // --------------------------- Spreadsheet region ---------------------------
     ImVec2 avail = ImGui::GetContentRegionAvail();
     float footerHeight = ImGui::GetFrameHeightWithSpacing() * 3.0f; // room for buttons
     ImVec2 tableSize(avail.x, avail.y - footerHeight);
@@ -274,7 +272,7 @@ void EditorUI::draw() {
         }
     }
 
-    // --------- Footer buttons and Search Bar (inline at bottom) ---------
+    // --------------------------- Footer buttons ---------------------------
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() * 2.0f);
 
     ImGui::BeginGroup(); // Start Button Group
@@ -397,14 +395,10 @@ void EditorUI::draw() {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Play Selected").c_str());
     }
 
-    // --- Exit button always on far right, red colored ---
+    // Exit button always on far right, red colored
     float exitWidth = ImGui::CalcTextSize("Exit Editor").x + ImGui::GetStyle().FramePadding.x * 2.0f;
     float rightAlignPos = ImGui::GetContentRegionAvail().x - exitWidth;
     ImGui::SameLine(rightAlignPos);
-
-    ImVec4 normal = ImGui::GetStyleColorVec4(ImGuiCol_Button);
-    ImVec4 hovered = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-    ImVec4 active = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
 
     // push red shades
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.15f, 0.15f, 1.0f));
@@ -422,7 +416,7 @@ void EditorUI::draw() {
 
     ImGui::EndGroup(); // End Button Group
 
-    // --- Footer info ---
+    // --------------------------- Footer info ---------------------------
     std::ostringstream ss;
     ss << filteredTables_.size() << " tables found";
     if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
