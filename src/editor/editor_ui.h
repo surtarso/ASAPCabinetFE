@@ -26,6 +26,7 @@ private:
     IConfigService* config_;       // Shared configuration interface
     ITableLoader* tableLoader_;    // Shared table loader
     ITableLauncher* tableLauncher_;
+    ButtonActions actions_;
 
     std::vector<TableData> tables_;
     std::mutex tableMutex_;
@@ -35,7 +36,9 @@ private:
     // UI state (kept inside editor only)
     int selectedIndex_ = -1;
     bool scrollToSelected_ = false;
-    ButtonActions actions_;
+
+    int sortColumn_ = 1;     // Default sort column (1 = Name)
+    bool sortAscending_ = true;
 
     // Booleans to control sub-editors (will be used later)
     bool& showMetadataEditor_;

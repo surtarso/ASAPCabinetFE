@@ -7,6 +7,53 @@
 
 namespace fs = std::filesystem;
 
+namespace {
+    // Helper to compare two values with direction and a unique tie-breaker
+    template <typename T>
+    bool compareWithTieBreaker(const T& val_a, const T& val_b, bool ascending, const TableData& a, const TableData& b) {
+        if (val_a == val_b) {
+            // CRITICAL: Stable sort tie-breaker on unique file path
+            return a.vpxFile < b.vpxFile;
+        }
+        return ascending ? (val_a < val_b) : (val_a > val_b);
+    }
+
+    // The actual sort logic wrapped in a function for clarity
+    void performSort(std::vector<TableData>& tables, int sortColumn, bool sortAscending) {
+        std::sort(tables.begin(), tables.end(), [sortColumn, sortAscending](const TableData& a, const TableData& b) {
+
+            // Check if the current sort column is one of the complex text fields
+            if (sortColumn == 1 || sortColumn == 3 || sortColumn == 4 || sortColumn == 6) {
+                // Name (ID 1) should use 'title'
+                if (sortColumn == 1)
+                    return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
+
+                // Author (ID 3) should use 'tableAuthor'
+                if (sortColumn == 3)
+                    return compareWithTieBreaker(a.tableAuthor, b.tableAuthor, sortAscending, a, b);
+
+                // Manufacturer (ID 4) should use 'manufacturer'
+                if (sortColumn == 4)
+                    return compareWithTieBreaker(a.manufacturer, b.manufacturer, sortAscending, a, b);
+
+                // ROM (ID 6) should use 'romName'
+                if (sortColumn == 6)
+                    return compareWithTieBreaker(a.romName, b.romName, sortAscending, a, b);
+            }
+
+            // Handle integer and simple string fields
+            switch (sortColumn) {
+                case 0: return compareWithTieBreaker(a.year, b.year, sortAscending, a, b);
+                case 2: return compareWithTieBreaker(a.tableVersion, b.tableVersion, sortAscending, a, b);
+
+                // If the sort column is not a dedicated data field (e.g., Files, Images, Videos),
+                // default the primary sort to the Name (title).
+                default: return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
+            }
+        });
+    }
+} // namespace
+
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader, ITableLauncher* launcher,
@@ -21,6 +68,8 @@ EditorUI::EditorUI(IConfigService* config, ITableLoader* tableLoader, ITableLaun
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
     tables_ = tableLoader_->loadTableList(settings, nullptr);
+    // Apply default sort on load
+    performSort(tables_, sortColumn_, sortAscending_);
 }
 
 // Draw editor UI embedded in the main window
@@ -66,18 +115,38 @@ void EditorUI::draw() {
 
     if (ImGui::BeginTable("table_list", 11, flags, tableSize)) {
         ImGui::TableSetupScrollFreeze(0, 1);
-        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthFixed, 75.0f);
-        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f);
-        ImGui::TableSetupColumn("ROM", ImGuiTableColumnFlags_WidthFixed, 75.0f);
-        ImGui::TableSetupColumn("Extras", ImGuiTableColumnFlags_WidthFixed, 75.0f);
-        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 75.0f);
-        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 55.0f);
-        ImGui::TableSetupColumn("Sounds", ImGuiTableColumnFlags_WidthFixed, 30.0f);
+
+        // CRUCIAL: The 4th argument is the unique ID (user_id) used by the sorting logic (case 0, case 1, etc.)
+        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f, 0);       // ID 0
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.0f, 1);     // ID 1
+        ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthFixed, 75.0f, 2);  // ID 2
+        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f, 3);   // ID 3
+        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f, 4); // ID 4
+        ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f, 5);      // ID 5
+        ImGui::TableSetupColumn("ROM", ImGuiTableColumnFlags_WidthFixed, 75.0f, 6);       // ID 6
+        ImGui::TableSetupColumn("Extras", ImGuiTableColumnFlags_WidthFixed, 75.0f, 7);     // ID 7
+        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 75.0f, 8);     // ID 8
+        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 55.0f, 9);     // ID 9
+        ImGui::TableSetupColumn("Sounds", ImGuiTableColumnFlags_WidthFixed, 30.0f, 10);    // ID 10
+
         ImGui::TableHeadersRow();
+
+        // --- INLINE SORT HOOK: This is the standard ImGui pattern ---
+        if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs()) {
+            if (sortSpecs->SpecsDirty) {
+                const ImGuiTableColumnSortSpecs* spec = sortSpecs->Specs;
+
+                // 1. Update internal state
+                sortColumn_ = spec->ColumnUserID;
+                sortAscending_ = (spec->SortDirection == ImGuiSortDirection_Ascending);
+
+                // 2. Perform the sort immediately
+                performSort(tables_, sortColumn_, sortAscending_);
+
+                // 3. Reset the flag
+                sortSpecs->SpecsDirty = false;
+            }
+        }
 
         for (int i = 0; i < (int)tables_.size(); ++i) {
             const auto& t = tables_[i];
