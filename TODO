@@ -14,12 +14,10 @@ ONGOING:
 - add settings (editor related)
 - configurable rescan folders button (file/vpin/vbs/refresh[start new])
 - checkbox for vpxtool vs vpin?
-- missing behavior: hover tooltips, selected vs unselect button clicks
-- add the searchbar
+- missing behavior: hover tooltips
 - color letter indicator legends
 - color files with diffs
 - color tables with failed status
-- select/unselect in table (re-click)
 - check if present rom is correct and recolor
 - add playcound / success on the right of table scanner display line
 
