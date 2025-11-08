@@ -43,7 +43,8 @@ private:
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
 
-    // States for sub-editors (will be used later)
+    // States for sub-editors
     bool showMetadataEditor_ = false;
     bool showIniEditor_ = false;
+    bool showVpsdbBrowser_ = false;
 };

@@ -17,7 +17,7 @@
 class EditorUI {
 public:
     EditorUI(IConfigService* config, ITableLoader* tableLoader, ITableLauncher* launcher,
-             bool& showMeta, bool& showIni);
+             bool& showMeta, bool& showIni, bool& showBrowser);
     void draw();
     bool shouldExit() const { return exitRequested_; }
 
@@ -50,4 +50,5 @@ private:
     // Booleans to control sub-editors
     bool& showMetadataEditor_;
     bool& showIniEditor_;
+    bool& showVpsdbBrowser_;
 };

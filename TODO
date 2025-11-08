@@ -7,6 +7,8 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
+- hook to 1st run or keep no-index warning?
+- initial loading screen or keep fastload as default?
 - hook vpin's extract vbs to wrapper
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
 - checkbox for vpxtool vs vpin?
@@ -14,17 +16,16 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - port ini editor w/ tooltips (keep 10.8.0, create new 10.8.1, switchable)
 - add settings panel (editor related) + button
 - spreadsheet column hover dynamic tooltips
+- collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
 - color files with diffs
 - color tables with failed status
 - check if present rom is correct and recolor
 - hook double click to launcher
 - add playcound / success on status bar
-- columns for release date and confidence match?
-- column for script patch status? add patch status to files column instead?
+- columns for release date, last modified and confidence match?
+- column for script patch status? status bar or files column instead?
 - focus search on typing, enter to launch.
-- move search bar to the top to fit more buttons
-- add screenshot button (automatic screenshot single table) + all too maybe?
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
 
@@ -60,3 +61,5 @@ On hold:
 - some way to download tables straight from the app?
 - incorporate generate_media.sh?
 - flag to open --config only?
+- make both ui's switchable between them?
+- splashscreen?

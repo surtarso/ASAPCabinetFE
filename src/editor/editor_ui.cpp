@@ -18,7 +18,11 @@ namespace Tooltips {
         {"Extract VBS", "Extract the VBS script from the selected table.\nOpen the script in external editor if already extracted."},
         {"Open Folder", "Open the table folder.\nOpen tables root folder if no table selected."},
         {"INI Editor", "Create or open selected table configuration files.\nOpen vpinballx.ini if no table selected."},
-        {"View Metadata", "View detailed selected table metadata."}
+        {"View Metadata", "View detailed metadata for the selected table."},
+        {"Apply Patch", "Apply community patches to the selected table.\nApply to all tables if none selected."},
+        {"Download Media", "Download images for selected table.\nDownloads for all tables if none selected."},
+        {"Screenshot", "Take a screenshot of the selected table.\nTakes screenshots for all tables if none selected."},
+        {"Browse Tables", "Open VPS database browser."}
     };
 }
 
@@ -32,14 +36,15 @@ void EditorUI::filterAndSortTables() {
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService *config, ITableLoader *tableLoader, ITableLauncher *launcher,
-                   bool &showMeta, bool &showIni)
+                   bool &showMeta, bool &showIni, bool &showBrowser)
     : config_(config),
       tableLoader_(tableLoader),
       tableLauncher_(launcher),
       actions_(config),
       selectedIndex_(-1),
       showMetadataEditor_(showMeta),
-      showIniEditor_(showIni) {
+      showIniEditor_(showIni),
+      showVpsdbBrowser_(showBrowser) {
 
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
@@ -61,6 +66,22 @@ void EditorUI::draw() {
     ImGui::SetNextWindowSize(viewport->WorkSize);
 
     ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
+
+    // --------- Top search bar ---------
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 2.5f);
+    if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
+                                searchBuffer_, sizeof(searchBuffer_))) {
+        searchQuery_ = searchBuffer_;
+        filterAndSortTables();
+    }
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if (ImGui::Button("Clear##TopSearch")) {
+        searchBuffer_[0] = '\0';
+        searchQuery_.clear();
+        filterAndSortTables();
+    }
+    // ImGui::Separator(); // visual divider before table
 
     std::lock_guard<std::mutex> lock(tableMutex_);
 
@@ -330,10 +351,43 @@ void EditorUI::draw() {
     }
     ImGui::SameLine();
 
+    if (ImGui::Button("Apply Patch")) {
+        LOG_DEBUG("Apply Patch pressed (placeholder)");
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Apply Patch").c_str());
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Download Media")) {
+        LOG_DEBUG("Download Media pressed (placeholder)");
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Download Media").c_str());
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Screenshot")) {
+        LOG_DEBUG("Screenshot pressed (placeholder)");
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Screenshot").c_str());
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Browse Tables")) {
+        // This will now be handled by the main editor loop
+        showVpsdbBrowser_ = true; // <-- TOGGLE STATE
+        LOG_DEBUG("Browse Tables pressed (placeholder)");
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Browse Tables").c_str());
+    }
+    ImGui::SameLine();
+
     if (ImGui::Button("Play Selected")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
             const auto &t = filteredTables_[selectedIndex_];
-            // --- USE THE LAUNCHER ---
             tableLauncher_->launchTable(t);
         } else {
             LOG_DEBUG("Play pressed but no table selected");
@@ -342,7 +396,20 @@ void EditorUI::draw() {
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Play Selected").c_str());
     }
-    ImGui::SameLine();
+
+    // --- Exit button always on far right, red colored ---
+    float exitWidth = ImGui::CalcTextSize("Exit Editor").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+    float rightAlignPos = ImGui::GetContentRegionAvail().x - exitWidth;
+    ImGui::SameLine(rightAlignPos);
+
+    ImVec4 normal = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+    ImVec4 hovered = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+    ImVec4 active = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+
+    // push red shades
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
 
     if (ImGui::Button("Exit Editor")) {
         exitRequested_ = true;
@@ -351,30 +418,7 @@ void EditorUI::draw() {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Exit Editor").c_str());
     }
 
-    // --- SEARCH BAR WIDGET: PLACED HERE (Right side of buttons) ---
-    ImGui::SameLine(0.0f, 15.0f); // Add a small separator space after the last button
-
-    // Calculate the width for the search bar, ensuring it fits the remaining space
-    float searchWidth = ImGui::GetContentRegionMax().x - ImGui::GetCursorPosX() - (ImGui::GetFrameHeight() * 1.5f) - ImGui::GetStyle().ItemSpacing.x * 2;
-    if (searchWidth < 100.0f)
-        searchWidth = 100.0f;
-
-    ImGui::PushItemWidth(searchWidth);
-    if (ImGui::InputTextWithHint("##SearchInput", "Search by Name, File, or ROM",
-                                 searchBuffer_, sizeof(searchBuffer_))) {
-        searchQuery_ = searchBuffer_;
-        filterAndSortTables(); // Live filter on change (safe inside draw()'s lock)
-    }
-    ImGui::PopItemWidth();
-
-    // Draw Clear Button
-    ImGui::SameLine();
-    if (ImGui::Button("X")) {
-        searchBuffer_[0] = '\0'; // Clear buffer immediately
-        searchQuery_ = "";
-        filterAndSortTables(); // Clear filter and re-populate (safe inside draw()'s lock)
-    }
-    // --- END SEARCH BAR WIDGET ---
+    ImGui::PopStyleColor(3); // restore original colors
 
     ImGui::EndGroup(); // End Button Group
 
@@ -384,7 +428,7 @@ void EditorUI::draw() {
     if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
         const auto &t = filteredTables_[selectedIndex_];
         fs::path p(t.vpxFile);
-        ss << "    |    Selected: /" << p.parent_path().filename().string()
+        ss << "  |  Selected: /" << p.parent_path().filename().string()
            << "/" << p.filename().string();
     }
     ImGui::TextDisabled("%s", ss.str().c_str());

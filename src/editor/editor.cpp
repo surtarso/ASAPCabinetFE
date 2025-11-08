@@ -26,7 +26,8 @@ Editor::Editor(const std::string& configPath)
         tableLoader_.get(),
         tableLauncher_.get(),
         showMetadataEditor_,
-        showIniEditor_
+        showIniEditor_,
+        showVpsdbBrowser_
     );
     LOG_INFO("Editor initialized using shared configuration");
 }
@@ -88,6 +89,10 @@ void Editor::mainLoop() {
             // Placeholder for INI Editor
             ImGui::Text("INI Editor would be here");
             if (ImGui::Button("Close INI")) showIniEditor_ = false;
+        } else if (showVpsdbBrowser_) {
+            // Placeholder for VPSDB Browser
+            ImGui::Text("VPSDB Browser would be here");
+            if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
         } else {
             editorUI_->draw();
         }
