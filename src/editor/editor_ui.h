@@ -1,5 +1,6 @@
 #pragma once
 #include "editor/button_actions.h"
+#include "editor/sorting_filters.h"
 #include "tables/itable_loader.h"
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
@@ -28,6 +29,7 @@ private:
     ITableLoader* tableLoader_;    // Shared table loader
     ITableLauncher* tableLauncher_;
     ButtonActions actions_;
+    EditorTableFilter tableFilter_;
 
     std::vector<TableData> tables_;
     std::vector<TableData> filteredTables_; // The list actually displayed

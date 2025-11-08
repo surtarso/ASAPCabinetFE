@@ -289,6 +289,7 @@ set(SOURCES
     src/editor/button_actions.cpp
     src/editor/editor.cpp
     src/editor/editor_ui.cpp
+    src/editor/sorting_filters.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
