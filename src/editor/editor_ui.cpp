@@ -293,12 +293,53 @@ void EditorUI::draw() {
 
     ImGui::BeginGroup(); // Start Button Group
 
-    if (ImGui::Button("Rescan Tables")) {
-        rescanAsync();
+    {
+        // Build label showing current mode
+        const char* modeLabel = (selectedScanner_ == ScannerMode::File) ? "File" :
+                                (selectedScanner_ == ScannerMode::VPin) ? "VPin" : "VPSDb";
+        std::string comboLabel = std::string("Rescan (") + modeLabel + ")";
+
+        // Define the custom color (e.g., Orange, represented as R, G, B, A floats 0.0 to 1.0)
+        // Base Purple/Indigo
+        ImVec4 customColor = ImVec4(0.35f, 0.20f, 0.55f, 1.0f);
+        // Lighter for hover
+        ImVec4 hoveredColor = ImVec4(0.45f, 0.30f, 0.65f, 1.0f);
+        // Darker for active click
+        ImVec4 activeColor = ImVec4(0.25f, 0.15f, 0.40f, 1.0f);
+
+        // 1. Push the new colors onto the style stack
+        ImGui::PushStyleColor(ImGuiCol_Button, customColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoveredColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+
+        // Use a combo so it behaves like a single control and shows the selection
+        if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview)) {
+            ImGui::TextDisabled("Scanner Mode");
+            if (ImGui::Selectable("File Scanner", selectedScanner_ == ScannerMode::File))
+                selectedScanner_ = ScannerMode::File;
+            if (ImGui::Selectable("VPin Scanner", selectedScanner_ == ScannerMode::VPin))
+                selectedScanner_ = ScannerMode::VPin;
+            if (ImGui::Selectable("VPSDb Scanner", selectedScanner_ == ScannerMode::VPSDb))
+                selectedScanner_ = ScannerMode::VPSDb;
+
+            ImGui::TextDisabled("Options");
+            // Clear labels, use standard checkboxes for clarity
+            ImGui::Checkbox("Force Rebuild Metadata", &forceRebuildMetadata_);
+            ImGui::Checkbox("Use External VPXTool", &useVpxtool_);
+
+            ImGui::EndCombo();
+        }
+        // Keep a standalone action button
+        ImGui::SameLine();
+        if (ImGui::Button("Rescan Tables")) {
+            rescanAsync(selectedScanner_);
+        }
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+            ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Rescan Tables").c_str());
+        }
+        ImGui::PopStyleColor(3); // Pop the 3 colors
     }
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
-        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Rescan Tables").c_str());
-    }
+
     ImGui::SameLine();
 
     if (ImGui::Button("Open Folder")) {
@@ -311,6 +352,15 @@ void EditorUI::draw() {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Open Folder").c_str());
     }
     ImGui::SameLine();
+
+    // color next buttons in yellow theme (operational actions)
+    ImVec4 yellow = ImVec4(0.8f, 0.7f, 0.3f, 0.85f);     // Soft Golden Yellow
+    ImVec4 yellowHover = ImVec4(0.9f, 0.8f, 0.4f, 0.85f); // Lighter for hover
+    ImVec4 yellowActive = ImVec4(0.7f, 0.6f, 0.2f, 0.85f); // Darker for active
+
+    ImGui::PushStyleColor(ImGuiCol_Button, yellow);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, yellowHover);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, yellowActive);
 
     if (ImGui::Button("Extract VBS")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
@@ -337,20 +387,6 @@ void EditorUI::draw() {
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("View Metadata")) {
-        if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
-            // This will now be handled by the main editor loop
-            showMetadataEditor_ = true; // <-- TOGGLE STATE
-            LOG_DEBUG("Toggling metadata editor ON");
-        } else {
-            LOG_DEBUG("View Metadata pressed but no table selected");
-        }
-    }
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
-        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("View Metadata").c_str());
-    }
-    ImGui::SameLine();
-
     if (ImGui::Button("INI Editor")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
             // This will now be handled by the main editor loop
@@ -373,6 +409,9 @@ void EditorUI::draw() {
     }
     ImGui::SameLine();
 
+    // pop yellow colors (operational actions end)
+    ImGui::PopStyleColor(3); // Pop 3 colors (Button, Hovered, Active)
+
     if (ImGui::Button("Download Media")) {
         LOG_DEBUG("Download Media pressed (placeholder)");
     }
@@ -389,6 +428,20 @@ void EditorUI::draw() {
     }
     ImGui::SameLine();
 
+    if (ImGui::Button("View Metadata")) {
+        if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
+            // This will now be handled by the main editor loop
+            showMetadataEditor_ = true; // <-- TOGGLE STATE
+            LOG_DEBUG("Toggling metadata editor ON");
+        } else {
+            LOG_DEBUG("View Metadata pressed but no table selected");
+        }
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("View Metadata").c_str());
+    }
+    ImGui::SameLine();
+
     if (ImGui::Button("Browse Tables")) {
         // This will now be handled by the main editor loop
         showVpsdbBrowser_ = true; // <-- TOGGLE STATE
@@ -398,6 +451,15 @@ void EditorUI::draw() {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Browse Tables").c_str());
     }
     ImGui::SameLine();
+
+    // color play button green
+    ImVec4 green = ImVec4(0.2f, 0.7f, 0.2f, 1.0f); // Standard Green
+    ImVec4 greenHover = ImVec4(0.3f, 0.8f, 0.3f, 1.0f); // Lighter for hover
+    ImVec4 greenActive = ImVec4(0.1f, 0.6f, 0.1f, 1.0f); // Darker for active
+
+    ImGui::PushStyleColor(ImGuiCol_Button, green);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, greenActive);
 
     if (ImGui::Button("Play Selected")) {
         if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
@@ -410,6 +472,7 @@ void EditorUI::draw() {
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Play Selected").c_str());
     }
+    ImGui::PopStyleColor(3); // Pop 3 colors (Button, Hovered, Active)
 
     // Exit button always on far right, red colored
     float exitWidth = ImGui::CalcTextSize("Exit Editor").x + ImGui::GetStyle().FramePadding.x * 2.0f;
@@ -446,23 +509,37 @@ void EditorUI::draw() {
     ImGui::End();
 }
 
-// Asynchronous rescan helper. Calls the existing tableLoader with same Settings logic.
-void EditorUI::rescanAsync() {
-    if (loading_) {
-        return;
-    }
+void EditorUI::rescanAsync(ScannerMode mode) {
+    if (loading_) return;
     loading_ = true;
 
-    std::thread([this]()
-                {
+    std::thread([this, mode]() {
         Settings settings = config_->getSettings();
-        settings.ignoreScanners = true;
-        auto newTables = tableLoader_->loadTableList(settings, nullptr); {
+        settings.ignoreScanners = false;
+        settings.forceRebuildMetadata = forceRebuildMetadata_;
+        settings.useVpxtool = useVpxtool_;
+
+        switch (mode) {
+            case ScannerMode::File:
+                settings.titleSource = "filename";
+                settings.fetchVPSdb = false;
+                break;
+            case ScannerMode::VPin:
+                settings.titleSource = "metadata";
+                settings.fetchVPSdb = false;
+                break;
+            case ScannerMode::VPSDb:
+                settings.titleSource = "metadata";
+                settings.fetchVPSdb = true;
+                break;
+        }
+
+        auto newTables = tableLoader_->loadTableList(settings, nullptr);
+        {
             std::lock_guard<std::mutex> lock(tableMutex_);
             tables_ = std::move(newTables);
             filterAndSortTables();
-            // if (selectedIndex_ >= (int)tables_.size()) selectedIndex_ = -1;
         }
-        loading_ = false; })
-        .detach();
+        loading_ = false;
+    }).detach();
 }

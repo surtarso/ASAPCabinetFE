@@ -11,8 +11,6 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - initial loading screen or keep fastload as default?
 - hook vpin's extract vbs to wrapper
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
-- checkbox for vpxtool vs vpin?
-- configurable rescan folders button (file/vpin/vbs/force refresh)
 - port ini editor w/ tooltips (keep 10.8.0, create new 10.8.1, switchable)
 - add settings panel (editor related) + button
 - spreadsheet column hover dynamic tooltips

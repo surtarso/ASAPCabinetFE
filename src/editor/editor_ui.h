@@ -10,6 +10,8 @@
 #include <string>
 #include <mutex>
 
+enum class ScannerMode { File, VPin, VPSDb };
+
 /**
  * VPXGUITools port editor UI.
  * - Uses existing tableLoader_ and tables_ loaded from index.
@@ -22,7 +24,7 @@ public:
     bool shouldExit() const { return exitRequested_; }
 
 private:
-    void rescanAsync();
+    void rescanAsync(ScannerMode mode);
     void filterAndSortTables();
 
     IConfigService* config_;       // Shared configuration interface
@@ -30,6 +32,10 @@ private:
     ITableLauncher* tableLauncher_;
     ButtonActions actions_;
     EditorTableFilter tableFilter_;
+
+    ScannerMode selectedScanner_ = ScannerMode::File; // default mode
+    bool forceRebuildMetadata_ = false;
+    bool useVpxtool_ = false;
 
     std::vector<TableData> tables_;
     std::vector<TableData> filteredTables_; // The list actually displayed
