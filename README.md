@@ -267,6 +267,8 @@ We’re dreaming big! Help us bring these features to life:
 - Multi-launchers.
 - In-game video recording.
 - Attract Mode.
+- CLI helpers.
+- Highscore tracking.
 
 ## In Development now:
 Check out how the editor is looking using the latest build! Still a work in progress and most functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Suggestions at this early stage are highly appreciated!
@@ -283,11 +285,11 @@ You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/)
 - [Virtual Pinball Database](https://github.com/vpdb) team.
 - [Vpin Media Database](https://github.com/superhac/vpinmediadb) team.
 - [VPForums](https://www.vpforums.org/)/[VPUniverse](https://vpuniverse.com/) team.
-- A BIG THANK YOU for [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc).
+- A BIG THANK YOU to [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc).
 - And a special thanks to _Snortt_ for bearing with me thru all of this.
 - Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock!
 
 ## Footnote
-If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux), also check out [VPXGUITools](https://github.com/surtarso/vpx-gui-tools/) to help ease the process of settings tables up.
+If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux).
 
 Join the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions) page for questions and ideas!
