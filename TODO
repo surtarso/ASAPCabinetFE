@@ -7,9 +7,9 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- self-note: unf*ck the mess before continuing!!!
-- self-note ps: plz, unf*ck the mess before continuing!! refactor editor_ui 1st!!!!!!!!!!
-- add settings panel (editor related) + button
+- 1st run gets laggy after finding correct folder
+- sorting may be happening twice (table_loader and editor sorting)
+- add settings panel (editor related)
 - add minimal loading screen? or port?
 - hook vpin's extract vbs to wrapper!
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
