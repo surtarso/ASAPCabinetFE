@@ -7,7 +7,6 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- add some way for users to change and persist critical info (table/vpx/ini paths - 1st run)
 - add settings panel (editor related) + button
 - add minimal loading screen? or port?
 - hook vpin's extract vbs to wrapper!

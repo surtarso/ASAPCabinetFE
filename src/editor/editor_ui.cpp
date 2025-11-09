@@ -47,9 +47,42 @@ EditorUI::EditorUI(IConfigService *config, ITableLoader *tableLoader, ITableLaun
 
     Settings settings = config_->getSettings();
     settings.ignoreScanners = true; // ignore scanners on start (not persisted)
-    tables_ = tableLoader_->loadTableList(settings, nullptr);
 
-    filterAndSortTables(); // Apply default sort on load
+    // Validate critical paths first (TODO: hook to isConfigValid later!!!)
+    bool pathsValid = true;
+
+    // Tables folder
+    if (!std::filesystem::exists(settings.VPXTablesPath) || !std::filesystem::is_directory(settings.VPXTablesPath)) {
+        pathsValid = false;
+    } else {
+        bool hasVpx = false;
+        for (auto& p : std::filesystem::recursive_directory_iterator(settings.VPXTablesPath)) {
+            if (p.path().extension() == ".vpx") { hasVpx = true; break; }
+        }
+        if (!hasVpx) pathsValid = false;
+    }
+
+    // VPX executable
+    if (!std::filesystem::exists(settings.VPinballXPath) || !std::filesystem::is_regular_file(settings.VPinballXPath) ||
+        (std::filesystem::status(settings.VPinballXPath).permissions() & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
+        pathsValid = false;
+    }
+
+    // VPinballX.ini
+    std::string home = std::getenv("HOME") ? std::getenv("HOME") : "~";
+    std::string defaultIni = home + "/.vpinball/VPinballX.ini";
+    if (!std::filesystem::exists(defaultIni) && !std::filesystem::exists(settings.vpxIniPath)) {
+        pathsValid = false;
+    }
+
+    // Only load tables if paths are valid
+    if (pathsValid) {
+        tables_ = tableLoader_->loadTableList(settings, nullptr);
+        filterAndSortTables(); // Apply default sort on load
+    } else {
+        tables_.clear(); // ensure no stale tables show
+        LOG_WARN("Critical paths invalid — skipping table load. User must correct paths first.");
+    }
 }
 
 // Draw editor UI embedded in the main window
@@ -104,12 +137,6 @@ void EditorUI::draw() {
         ImGui::End();
         return;
     }
-
-    // if (tables_.empty()) {
-    //     ImGui::TextDisabled("No tables found. Run a rescan from the main frontend.");
-    //     ImGui::End();
-    //     return;
-    // }
 
     // --------------------------- Spreadsheet region ---------------------------
     ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -174,6 +201,83 @@ void EditorUI::draw() {
             ImGui::TextDisabled("Tried default path: %s\nConfigured path: %s\nPlease ensure the file exists in one of these locations.",
                                 defaultIniPath.c_str(), configuredIniPath.c_str());
         }
+
+        // --------------------------- First-run fix form ---------------------------
+        ImGui::Separator();
+        ImGui::Text("Quick Setup: Correct missing paths");
+
+        // Get mutable settings
+        Settings& mutableSettings = config_->getMutableSettings();
+
+        // Initialize static buffers only once
+        static char tablesPathBuf[1024];
+        static char vpxPathBuf[1024];
+        static char iniPathBuf[1024];
+        static bool initialized = false;
+        static bool pathsValid = false;
+
+        if (!initialized) {
+            strncpy(tablesPathBuf, mutableSettings.VPXTablesPath.c_str(), sizeof(tablesPathBuf));
+            strncpy(vpxPathBuf, mutableSettings.VPinballXPath.c_str(), sizeof(vpxPathBuf));
+            strncpy(iniPathBuf, mutableSettings.vpxIniPath.c_str(), sizeof(iniPathBuf));
+            initialized = true;
+        }
+
+        // --------------------------- Tables Folder ---------------------------
+        ImGui::InputText("Tables Folder", tablesPathBuf, sizeof(tablesPathBuf));
+
+        // --------------------------- VPX Executable ---------------------------
+        ImGui::InputText("VPX Executable", vpxPathBuf, sizeof(vpxPathBuf));
+
+        // --------------------------- VPinballX.ini ---------------------------
+        ImGui::InputText("VPinballX.ini", iniPathBuf, sizeof(iniPathBuf));
+
+        // --------------------------- Save Button ---------------------------
+        if (ImGui::Button("Save Paths##FirstRun")) {
+            // Update mutable settings
+            mutableSettings.VPXTablesPath = tablesPathBuf;
+            mutableSettings.VPinballXPath = vpxPathBuf;
+            mutableSettings.vpxIniPath = iniPathBuf;
+
+            // Persist to settings.json
+            config_->saveConfig();
+            LOG_INFO("First-run paths updated by user.");
+
+            // ---------------- Check paths validity ----------------
+            pathsValid = true;
+
+            // 1. Tables folder check
+            if (!std::filesystem::exists(tablesPathBuf) || !std::filesystem::is_directory(tablesPathBuf)) {
+                pathsValid = false;
+            } else {
+                bool hasVpx = false;
+                for (auto& p : std::filesystem::recursive_directory_iterator(tablesPathBuf)) {
+                    if (p.path().extension() == ".vpx") {
+                        hasVpx = true;
+                        break;
+                    }
+                }
+                if (!hasVpx) pathsValid = false;
+            }
+
+            // 2. VPX executable check
+            if (!std::filesystem::exists(vpxPathBuf) || !std::filesystem::is_regular_file(vpxPathBuf) ||
+                (std::filesystem::status(vpxPathBuf).permissions() & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
+                pathsValid = false;
+            }
+
+            // 3. VPinballX.ini check
+            std::string defaultIni = home + "/.vpinball/VPinballX.ini";
+            if (!std::filesystem::exists(defaultIni) && !std::filesystem::exists(iniPathBuf)) {
+                pathsValid = false;
+            }
+        }
+        // --------------------------- Confirmation Message ---------------------------
+        if (pathsValid) {
+            ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f),
+                            "Paths saved and valid. Please pick a scanner and run a rescan.\nIf you already have an index, exit and re-open the editor.");
+        }
+
     } else {
         ImGui::BeginChild("TableContainer", tableSize, false, ImGuiWindowFlags_NoScrollbar);
 
