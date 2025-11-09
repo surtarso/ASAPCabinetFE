@@ -11,7 +11,7 @@
 
 /**
  * @class Editor
- * @brief Standalone editor for table and INI management inside ASAPCabinetFE (--editor mode)
+ * @brief Standalone editor for table management inside ASAPCabinetFE (--editor mode)
  */
 class ImGuiManager; // forward declaration
 
@@ -50,6 +50,5 @@ private:
 
     // --- Sub-editor state flags ---
     bool showMetadataEditor_ = false;
-    bool showIniEditor_ = false;
     bool showVpsdbBrowser_ = false;
 };

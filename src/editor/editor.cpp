@@ -13,7 +13,7 @@ Editor::Editor(const std::string& configPath)
       renderer_(nullptr),
       imguiManager_(nullptr),
       showMetadataEditor_(false),
-      showIniEditor_(false),
+    //   showIniEditor_(false),
       showVpsdbBrowser_(false) {
     initializeSDL();
 
@@ -36,7 +36,6 @@ Editor::Editor(const std::string& configPath)
         tableLoader_.get(),
         tableLauncher_.get(),
         showMetadataEditor_,
-        showIniEditor_,
         showVpsdbBrowser_
     );
 
@@ -90,9 +89,6 @@ void Editor::mainLoop() {
         if (showMetadataEditor_) {
             ImGui::Text("Metadata Editor would be here");
             if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
-        } else if (showIniEditor_) {
-            ImGui::Text("INI Editor would be here");
-            if (ImGui::Button("Close INI")) showIniEditor_ = false;
         } else if (showVpsdbBrowser_) {
             ImGui::Text("VPSDB Browser would be here");
             if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;

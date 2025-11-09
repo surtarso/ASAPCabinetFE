@@ -17,7 +17,6 @@ namespace Tooltips {
         {"Play Selected", "Launch the current selection in VPinballX."},
         {"Extract VBS", "Extract the VBS script from the selected table.\nOpen the script in external editor if already extracted."},
         {"Open Folder", "Open the table folder.\nOpen tables root folder if no table selected."},
-        {"INI Editor", "Create or open selected table configuration files.\nOpen vpinballx.ini if no table selected."},
         {"View Metadata", "View detailed metadata for the selected table."},
         {"Apply Patch", "Apply community patches to the selected table.\nApply to all tables if none selected."},
         {"Download Media", "Download images for selected table.\nDownloads for all tables if none selected."},
@@ -35,14 +34,13 @@ void EditorUI::filterAndSortTables() {
 // Constructor already used the loader to fill tables_ originally.
 // Keep same behavior: read index once and store.
 EditorUI::EditorUI(IConfigService *config, ITableLoader *tableLoader, ITableLauncher *launcher,
-                   bool &showMeta, bool &showIni, bool &showBrowser)
+                   bool &showMeta, bool &showBrowser)
     : config_(config),
       tableLoader_(tableLoader),
       tableLauncher_(launcher),
       actions_(config),
       selectedIndex_(-1),
       showMetadataEditor_(showMeta),
-      showIniEditor_(showIni),
       showVpsdbBrowser_(showBrowser) {
 
     Settings settings = config_->getSettings();
@@ -65,13 +63,6 @@ EditorUI::EditorUI(IConfigService *config, ITableLoader *tableLoader, ITableLaun
     // VPX executable
     if (!std::filesystem::exists(settings.VPinballXPath) || !std::filesystem::is_regular_file(settings.VPinballXPath) ||
         (std::filesystem::status(settings.VPinballXPath).permissions() & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
-        pathsValid = false;
-    }
-
-    // VPinballX.ini
-    std::string home = std::getenv("HOME") ? std::getenv("HOME") : "~";
-    std::string defaultIni = home + "/.vpinball/VPinballX.ini";
-    if (!std::filesystem::exists(defaultIni) && !std::filesystem::exists(settings.vpxIniPath)) {
         pathsValid = false;
     }
 
@@ -188,20 +179,6 @@ void EditorUI::draw() {
             ImGui::TextDisabled("Please make the file executable (chmod +x).");
         }
 
-        // --------------------------- VPinballX.ini check ---------------------------
-        std::string home = std::getenv("HOME") ? std::getenv("HOME") : "~";
-        std::string defaultIniPath = home + "/.vpinball/VPinballX.ini";
-        std::string configuredIniPath = settings.vpxIniPath;
-
-        // Check both locations
-        bool iniExists = std::filesystem::exists(defaultIniPath) || std::filesystem::exists(configuredIniPath);
-
-        if (!iniExists) {
-            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), "VPinballX.ini not found!");
-            ImGui::TextDisabled("Tried default path: %s\nConfigured path: %s\nPlease ensure the file exists in one of these locations.",
-                                defaultIniPath.c_str(), configuredIniPath.c_str());
-        }
-
         // --------------------------- First-run fix form ---------------------------
         ImGui::Separator();
         ImGui::Text("Quick Setup: Correct missing paths");
@@ -212,14 +189,14 @@ void EditorUI::draw() {
         // Initialize static buffers only once
         static char tablesPathBuf[1024];
         static char vpxPathBuf[1024];
-        static char iniPathBuf[1024];
+        // static char iniPathBuf[1024];
         static bool initialized = false;
         static bool pathsValid = false;
 
         if (!initialized) {
             strncpy(tablesPathBuf, mutableSettings.VPXTablesPath.c_str(), sizeof(tablesPathBuf));
             strncpy(vpxPathBuf, mutableSettings.VPinballXPath.c_str(), sizeof(vpxPathBuf));
-            strncpy(iniPathBuf, mutableSettings.vpxIniPath.c_str(), sizeof(iniPathBuf));
+            // strncpy(iniPathBuf, mutableSettings.vpxIniPath.c_str(), sizeof(iniPathBuf));
             initialized = true;
         }
 
@@ -229,15 +206,11 @@ void EditorUI::draw() {
         // --------------------------- VPX Executable ---------------------------
         ImGui::InputText("VPX Executable", vpxPathBuf, sizeof(vpxPathBuf));
 
-        // --------------------------- VPinballX.ini ---------------------------
-        ImGui::InputText("VPinballX.ini", iniPathBuf, sizeof(iniPathBuf));
-
         // --------------------------- Save Button ---------------------------
         if (ImGui::Button("Save Paths##FirstRun")) {
             // Update mutable settings
             mutableSettings.VPXTablesPath = tablesPathBuf;
             mutableSettings.VPinballXPath = vpxPathBuf;
-            mutableSettings.vpxIniPath = iniPathBuf;
 
             // Persist to settings.json
             config_->saveConfig();
@@ -263,12 +236,6 @@ void EditorUI::draw() {
             // 2. VPX executable check
             if (!std::filesystem::exists(vpxPathBuf) || !std::filesystem::is_regular_file(vpxPathBuf) ||
                 (std::filesystem::status(vpxPathBuf).permissions() & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
-                pathsValid = false;
-            }
-
-            // 3. VPinballX.ini check
-            std::string defaultIni = home + "/.vpinball/VPinballX.ini";
-            if (!std::filesystem::exists(defaultIni) && !std::filesystem::exists(iniPathBuf)) {
                 pathsValid = false;
             }
         }
@@ -358,15 +325,10 @@ void EditorUI::draw() {
                 ImGui::PushID(i);
                 bool isSelected = (selectedIndex_ == i);
                 if (ImGui::Selectable(displayName.c_str(), isSelected,
-                                    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+                                    ImGuiSelectableFlags_SpanAllColumns)) {
                     selectedIndex_ = isSelected ? -1 : i;
                     // remove scroll-to-center behavior
                     scrollToSelected_ = false;
-                    if (ImGui::IsMouseDoubleClicked(0)) {
-                        LOG_DEBUG(std::string("Double-click detected for: ") + displayName + " -> " + t.vpxFile);
-                        const auto &t = filteredTables_[selectedIndex_];
-                        tableLauncher_->launchTable(t);
-                    }
                 }
                 ImGui::PopID();
 
@@ -542,20 +504,6 @@ void EditorUI::draw() {
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Extract VBS").c_str());
-    }
-    ImGui::SameLine();
-
-    if (ImGui::Button("INI Editor")) {
-        if (selectedIndex_ >= 0 && selectedIndex_ < (int)filteredTables_.size()) {
-            // This will now be handled by the main editor loop
-            showIniEditor_ = true; // <-- TOGGLE STATE
-            LOG_DEBUG("Toggling INI editor ON");
-        } else {
-            LOG_DEBUG("INI Editor pressed but no table selected");
-        }
-    }
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
-        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("INI Editor").c_str());
     }
     ImGui::SameLine();
 
