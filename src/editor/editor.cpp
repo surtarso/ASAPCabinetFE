@@ -1,6 +1,5 @@
 #include "editor/editor.h"
-#include "editor/editor_ui.h"
-#include "log/logger.h"
+#include "log/logging.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
 #include "core/dependency_factory.h"
@@ -8,13 +7,13 @@
 #include <stdexcept>
 
 Editor::Editor(const std::string& configPath)
-    : configPath_(configPath),
+    : showMetadataEditor_(false),
+      showVpsdbBrowser_(false),
+      configPath_(configPath),
       window_(nullptr),
       renderer_(nullptr),
-      imguiManager_(nullptr),
-      showMetadataEditor_(false),
-    //   showIniEditor_(false),
-      showVpsdbBrowser_(false) {
+      imguiManager_(nullptr)
+    {
     initializeSDL();
 
     // Load ASAPCabinetFE configuration through shared interfaces
@@ -32,11 +31,11 @@ Editor::Editor(const std::string& configPath)
 
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
+        showMetadataEditor_,
+        showVpsdbBrowser_,
         config_.get(),
         tableLoader_.get(),
-        tableLauncher_.get(),
-        showMetadataEditor_,
-        showVpsdbBrowser_
+        tableLauncher_.get()
     );
 
     LOG_INFO("Editor initialized successfully.");

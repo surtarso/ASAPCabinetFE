@@ -1,6 +1,6 @@
 #pragma once
 
-#include "editor/editor_ui.h"
+#include "editor/ui/editor_ui.h"
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
 #include "launcher/itable_launcher.h"
@@ -27,6 +27,10 @@ private:
     void mainLoop();
     void cleanup();
 
+    // --- Sub-editor state flags ---
+    bool showMetadataEditor_ = false;
+    bool showVpsdbBrowser_ = false;
+
     // --- Core state ---
     std::string configPath_;
     bool exitRequested_ = false;
@@ -47,8 +51,4 @@ private:
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
-
-    // --- Sub-editor state flags ---
-    bool showMetadataEditor_ = false;
-    bool showVpsdbBrowser_ = false;
 };

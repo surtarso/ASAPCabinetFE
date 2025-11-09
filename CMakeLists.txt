@@ -288,8 +288,12 @@ set(SOURCES
     # src/editor/editor_binary.cpp # gets imported later in binary creation
     src/editor/button_actions.cpp
     src/editor/editor.cpp
-    src/editor/editor_ui.cpp
+    src/editor/editor_first_run.cpp
     src/editor/sorting_filters.cpp
+    src/editor/ui/editor_ui.cpp
+    src/editor/ui/editor_header.cpp
+    src/editor/ui/editor_body.cpp
+    src/editor/ui/editor_footer.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
