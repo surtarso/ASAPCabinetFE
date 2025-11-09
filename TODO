@@ -7,8 +7,8 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- unf*ck the mess before continuing!!!
-- plz, unf*ck the mess before continuing!! refactor editor_ui 1st!!!!!!!!!!
+- self-note: unf*ck the mess before continuing!!!
+- self-note ps: plz, unf*ck the mess before continuing!! refactor editor_ui 1st!!!!!!!!!!
 - add settings panel (editor related) + button
 - add minimal loading screen? or port?
 - hook vpin's extract vbs to wrapper!
@@ -64,3 +64,5 @@ On hold:
 - flag to open --config only?
 - make both ui's switchable between them?
 - splashscreen?
+- highscore tracking
+- cli helpers (see editor_binary.cpp for details)
