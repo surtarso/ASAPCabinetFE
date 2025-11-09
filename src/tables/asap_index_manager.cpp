@@ -76,31 +76,6 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
             if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
 
-            // Boolean flags (ensure they are boolean type in JSON)
-            if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
-            if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
-            if (table.contains("hasPup") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
-            if (table.contains("hasAltMusic") && table["hasAltMusic"].is_boolean()) tableData.hasAltMusic = table["hasAltMusic"].get<bool>();
-            if (table.contains("hasUltraDMD") && table["hasUltraDMD"].is_boolean()) tableData.hasUltraDMD = table["hasUltraDMD"].get<bool>();
-
-            if (table.contains("hasB2S") && table["hasB2S"].is_boolean()) tableData.hasB2S = table["hasB2S"].get<bool>();
-            if (table.contains("hasINI") && table["hasINI"].is_boolean()) tableData.hasINI = table["hasINI"].get<bool>();
-            if (table.contains("hasVBS") && table["hasVBS"].is_boolean()) tableData.hasVBS = table["hasVBS"].get<bool>();
-
-            if (table.contains("hasPlayfieldImage") && table["hasPlayfieldImage"].is_boolean()) tableData.hasPlayfieldImage = table["hasPlayfieldImage"].get<bool>();
-            if (table.contains("hasWheelImage") && table["hasWheelImage"].is_boolean()) tableData.hasWheelImage = table["hasWheelImage"].get<bool>();
-            if (table.contains("hasBackglassImage") && table["hasBackglassImage"].is_boolean()) tableData.hasBackglassImage = table["hasBackglassImage"].get<bool>();
-            if (table.contains("hasDmdImage") && table["hasDmdImage"].is_boolean()) tableData.hasDmdImage = table["hasDmdImage"].get<bool>();
-            if (table.contains("hasTopperImage") && table["hasTopperImage"].is_boolean()) tableData.hasTopperImage = table["hasTopperImage"].get<bool>();
-            if (table.contains("hasPlayfieldVideo") && table["hasPlayfieldVideo"].is_boolean()) tableData.hasPlayfieldVideo = table["hasPlayfieldVideo"].get<bool>();
-            if (table.contains("hasBackglassVideo") && table["hasBackglassVideo"].is_boolean()) tableData.hasBackglassVideo = table["hasBackglassVideo"].get<bool>();
-            if (table.contains("hasDmdVideo") && table["hasDmdVideo"].is_boolean()) tableData.hasDmdVideo = table["hasDmdVideo"].get<bool>();
-            if (table.contains("hasTopperVideo") && table["hasTopperVideo"].is_boolean()) tableData.hasTopperVideo = table["hasTopperVideo"].get<bool>();
-
-            if (table.contains("hasTableMusic") && table["hasTableMusic"].is_boolean()) tableData.hasTableMusic = table["hasTableMusic"].get<bool>();
-            if (table.contains("hasLaunchAudio") && table["hasLaunchAudio"].is_boolean()) tableData.hasLaunchAudio = table["hasLaunchAudio"].get<bool>();
-
-
             // ------------ FILE METADATA (vpin/vpxtool) -----------
             if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
             if (table.contains("tableAuthor") && table["tableAuthor"].is_string()) tableData.tableAuthor = table["tableAuthor"].get<std::string>();
@@ -151,6 +126,27 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("hashFromVpx") && table["hashFromVpx"].is_string()) tableData.hashFromVpx = table["hashFromVpx"].get<std::string>();
             if (table.contains("hashFromVbs") && table["hashFromVbs"].is_string()) tableData.hashFromVbs = table["hashFromVbs"].get<std::string>();
             if (table.contains("hasDiffVbs") && table["hasDiffVbs"].is_boolean()) tableData.hasDiffVbs = table["hasDiffVbs"].get<bool>();
+            // EXTRA FILES SCAN Boolean flags (ensure they are boolean type in JSON)
+            if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
+            if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
+            if (table.contains("hasPup") && table["hasPup"].is_boolean()) tableData.hasPup = table["hasPup"].get<bool>();
+            if (table.contains("hasAltMusic") && table["hasAltMusic"].is_boolean()) tableData.hasAltMusic = table["hasAltMusic"].get<bool>();
+            if (table.contains("hasUltraDMD") && table["hasUltraDMD"].is_boolean()) tableData.hasUltraDMD = table["hasUltraDMD"].get<bool>();
+            if (table.contains("hasB2S") && table["hasB2S"].is_boolean()) tableData.hasB2S = table["hasB2S"].get<bool>();
+            if (table.contains("hasINI") && table["hasINI"].is_boolean()) tableData.hasINI = table["hasINI"].get<bool>();
+            if (table.contains("hasVBS") && table["hasVBS"].is_boolean()) tableData.hasVBS = table["hasVBS"].get<bool>();
+            // MEDIA SCAN (Boolean flags)
+            if (table.contains("hasPlayfieldImage") && table["hasPlayfieldImage"].is_boolean()) tableData.hasPlayfieldImage = table["hasPlayfieldImage"].get<bool>();
+            if (table.contains("hasWheelImage") && table["hasWheelImage"].is_boolean()) tableData.hasWheelImage = table["hasWheelImage"].get<bool>();
+            if (table.contains("hasBackglassImage") && table["hasBackglassImage"].is_boolean()) tableData.hasBackglassImage = table["hasBackglassImage"].get<bool>();
+            if (table.contains("hasDmdImage") && table["hasDmdImage"].is_boolean()) tableData.hasDmdImage = table["hasDmdImage"].get<bool>();
+            if (table.contains("hasTopperImage") && table["hasTopperImage"].is_boolean()) tableData.hasTopperImage = table["hasTopperImage"].get<bool>();
+            if (table.contains("hasPlayfieldVideo") && table["hasPlayfieldVideo"].is_boolean()) tableData.hasPlayfieldVideo = table["hasPlayfieldVideo"].get<bool>();
+            if (table.contains("hasBackglassVideo") && table["hasBackglassVideo"].is_boolean()) tableData.hasBackglassVideo = table["hasBackglassVideo"].get<bool>();
+            if (table.contains("hasDmdVideo") && table["hasDmdVideo"].is_boolean()) tableData.hasDmdVideo = table["hasDmdVideo"].get<bool>();
+            if (table.contains("hasTopperVideo") && table["hasTopperVideo"].is_boolean()) tableData.hasTopperVideo = table["hasTopperVideo"].get<bool>();
+            if (table.contains("hasTableMusic") && table["hasTableMusic"].is_boolean()) tableData.hasTableMusic = table["hasTableMusic"].get<bool>();
+            if (table.contains("hasLaunchAudio") && table["hasLaunchAudio"].is_boolean()) tableData.hasLaunchAudio = table["hasLaunchAudio"].get<bool>();
 
 
             tables.push_back(tableData);
@@ -206,30 +202,6 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["music"] = table.music;
         tableJson["launchAudio"] = table.launchAudio;
 
-        // Boolean flags
-        tableJson["hasAltSound"] = table.hasAltSound;
-        tableJson["hasAltColor"] = table.hasAltColor;
-        tableJson["hasPup"] = table.hasPup;
-        tableJson["hasAltMusic"] = table.hasAltMusic;
-        tableJson["hasUltraDMD"] = table.hasUltraDMD;
-
-        tableJson["hasB2S"] = table.hasB2S;
-        tableJson["hasINI"] = table.hasINI;
-        tableJson["hasVBS"] = table.hasVBS;
-
-        tableJson["hasPlayfieldImage"] = table.hasPlayfieldImage;
-        tableJson["hasWheelImage"] = table.hasWheelImage;
-        tableJson["hasBackglassImage"] = table.hasBackglassImage;
-        tableJson["hasDmdImage"] = table.hasDmdImage;
-        tableJson["hasTopperImage"] = table.hasTopperImage;
-        tableJson["hasPlayfieldVideo"] = table.hasPlayfieldVideo;
-        tableJson["hasBackglassVideo"] = table.hasBackglassVideo;
-        tableJson["hasDmdVideo"] = table.hasDmdVideo;
-        tableJson["hasTopperVideo"] = table.hasTopperVideo;
-
-        tableJson["hasTableMusic"] = table.hasTableMusic;
-        tableJson["hasLaunchAudio"] = table.hasLaunchAudio;
-
         // ------------ FILE METADATA (vpin/vpxtool) -----------
         tableJson["tableName"] = table.tableName;
         tableJson["tableAuthor"] = table.tableAuthor;
@@ -279,6 +251,27 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["hashFromVpx"] = table.hashFromVpx;
         tableJson["hashFromVbs"] = table.hashFromVbs;
         tableJson["hasDiffVbs"] = table.hasDiffVbs;
+        // EXTRA FILE SCAN (Boolean flags)
+        tableJson["hasAltSound"] = table.hasAltSound;
+        tableJson["hasAltColor"] = table.hasAltColor;
+        tableJson["hasPup"] = table.hasPup;
+        tableJson["hasAltMusic"] = table.hasAltMusic;
+        tableJson["hasUltraDMD"] = table.hasUltraDMD;
+        tableJson["hasB2S"] = table.hasB2S;
+        tableJson["hasINI"] = table.hasINI;
+        tableJson["hasVBS"] = table.hasVBS;
+        // MEDIA SCAN (Boolean flags)
+        tableJson["hasPlayfieldImage"] = table.hasPlayfieldImage;
+        tableJson["hasWheelImage"] = table.hasWheelImage;
+        tableJson["hasBackglassImage"] = table.hasBackglassImage;
+        tableJson["hasDmdImage"] = table.hasDmdImage;
+        tableJson["hasTopperImage"] = table.hasTopperImage;
+        tableJson["hasPlayfieldVideo"] = table.hasPlayfieldVideo;
+        tableJson["hasBackglassVideo"] = table.hasBackglassVideo;
+        tableJson["hasDmdVideo"] = table.hasDmdVideo;
+        tableJson["hasTopperVideo"] = table.hasTopperVideo;
+        tableJson["hasTableMusic"] = table.hasTableMusic;
+        tableJson["hasLaunchAudio"] = table.hasLaunchAudio;
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {
