@@ -81,19 +81,6 @@ void ImGuiManager::initialize() {
     LOG_INFO("ImGui Initialized.");
 }
 
-// void ImGuiManager::newFrame() {
-//     ImGui_ImplSDLRenderer2_NewFrame();
-//     ImGui_ImplSDL2_NewFrame();
-//     ImGui::NewFrame();
-// }
-
-// void ImGuiManager::render(SDL_Renderer* renderer) {
-//     ImGui::Render();
-//     if (ImGui::GetDrawData()) {
-//         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-//     }
-// }
-
 void ImGuiManager::newFrame() {
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();

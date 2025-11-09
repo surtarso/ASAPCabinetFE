@@ -21,12 +21,14 @@ Editor::Editor(const std::string& configPath)
     auto keybindProvider = DependencyFactory::createKeybindProvider();
     config_ = DependencyFactory::createConfigService(configPath_, keybindProvider.get());
     keybindProvider_ = std::move(keybindProvider);
-    tableLoader_ = std::make_unique<TableLoader>();
-    tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
 
     // Initialize ImGui using the shared manager (no manual backend calls)
     imguiManager_ = std::make_unique<ImGuiManager>(window_, renderer_, config_.get());
     imguiManager_->initialize();
+
+    // Create Table Loader and Launcher after GUI is ready
+    tableLoader_ = std::make_unique<TableLoader>();
+    tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
 
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
