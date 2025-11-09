@@ -2,7 +2,7 @@
 #include "editor/ui/editor_header.h"
 #include "editor/ui/editor_body.h"
 #include "editor/ui/editor_footer.h"
-// #include "editor/editor_first_run.h"
+#include "editor/editor_first_run.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <filesystem>
@@ -25,6 +25,7 @@ EditorUI::EditorUI(bool& showMeta,
 {
     Settings settings = config_->getSettings();
 
+    // maybe this should be in editor_body or first_run?
     if (config_->isConfigValid()) {
         LOG_INFO("Paths valid. Starting asynchronous load.");
         if (!settings.indexPath.empty()) {
@@ -36,7 +37,6 @@ EditorUI::EditorUI(bool& showMeta,
         }
 
     } else {
-        tables_.clear();
         LOG_WARN("Critical paths invalid — skipping table load. User must correct paths first.");
     }
 }
