@@ -2,7 +2,7 @@
 #include "editor/ui/editor_header.h"
 #include "editor/ui/editor_body.h"
 #include "editor/ui/editor_footer.h"
-#include "editor/editor_first_run.h"
+// #include "editor/editor_first_run.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <filesystem>
@@ -24,34 +24,17 @@ EditorUI::EditorUI(bool& showMeta,
       showVpsdbBrowser_(showBrowser)
 {
     Settings settings = config_->getSettings();
-    settings.ignoreScanners = true;
 
-    bool pathsValid = true;
-
-    if (!fs::exists(settings.VPXTablesPath) ||
-        !fs::is_directory(settings.VPXTablesPath)) {
-        pathsValid = false;
-    } else {
-        bool hasVpx = false;
-        for (auto& p : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
-            if (p.path().extension() == ".vpx") {
-                hasVpx = true;
-                break;
-            }
+    if (config_->isConfigValid()) {
+        LOG_INFO("Paths valid. Starting asynchronous load.");
+        if (!settings.indexPath.empty()) {
+            // Start with fast path (index load only)
+            rescanAsync(ScannerMode::HasIndex);
+        } else {
+            // Index doesn't exist (first run on new machine/folder), perform a full file scan
+            rescanAsync(ScannerMode::File);
         }
-        if (!hasVpx) pathsValid = false;
-    }
 
-    if (!fs::exists(settings.VPinballXPath) ||
-        !fs::is_regular_file(settings.VPinballXPath) ||
-        ((fs::status(settings.VPinballXPath).permissions() & fs::perms::owner_exec)
-         == fs::perms::none)) {
-        pathsValid = false;
-    }
-
-    if (pathsValid) {
-        tables_ = tableLoader_->loadTableList(settings, nullptr);
-        filterAndSortTables();
     } else {
         tables_.clear();
         LOG_WARN("Critical paths invalid — skipping table load. User must correct paths first.");
@@ -109,6 +92,11 @@ void EditorUI::rescanAsync(ScannerMode mode) {
             case ScannerMode::VPSDb:
                 settings.titleSource = "metadata";
                 settings.fetchVPSdb = true;
+                break;
+            case ScannerMode::HasIndex:
+                settings.ignoreScanners = true;
+                settings.titleSource = "filename";
+                settings.fetchVPSdb = false;
                 break;
         }
 
