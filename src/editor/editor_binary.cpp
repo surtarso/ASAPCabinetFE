@@ -35,3 +35,7 @@ int main() {
 // --patch|-p (to apply patches to all tables)
 // --patch-table|-pt <tablefile> (to apply patches to a single table)
 // --script|-s <tablefile> (to extract vbs script from a single table)
+//
+// - config/query helper flags
+// --list-monitors|-lm (to list available monitor IDs/screen/resolutions)
+// --list-unmatched |-lu (to list tables without vpsdb IDs)

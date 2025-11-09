@@ -27,8 +27,10 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
 - hook vpsdb browser (or remake = bad)
+- mark tables unmatched in vpsdb (no vpsdb ID)
 
 QOL:
+- 'feedback' /util/ to receive a string and print as a message window universally!
 - a proper font picker
 - screenshot mode using app size/pos as frame
 - key for metadata panel toggle?
