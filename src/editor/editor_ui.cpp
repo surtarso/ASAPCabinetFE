@@ -105,11 +105,11 @@ void EditorUI::draw() {
         return;
     }
 
-    if (tables_.empty()) {
-        ImGui::TextDisabled("No tables found. Run a rescan from the main frontend.");
-        ImGui::End();
-        return;
-    }
+    // if (tables_.empty()) {
+    //     ImGui::TextDisabled("No tables found. Run a rescan from the main frontend.");
+    //     ImGui::End();
+    //     return;
+    // }
 
     // --------------------------- Spreadsheet region ---------------------------
     ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -124,160 +124,212 @@ void EditorUI::draw() {
                             ImGuiTableFlags_Hideable |
                             ImGuiTableFlags_Sortable;
 
-    ImGui::BeginChild("TableContainer", tableSize, false, ImGuiWindowFlags_NoScrollbar);
+    if (tables_.empty()) {
+        Settings settings = config_->getSettings();
 
-    // Check for no results: display message instead of table, but DON'T return.
-    if (filteredTables_.empty() && !tables_.empty()) {
-        ImGui::TextDisabled("No tables match the current filter: '%s'", searchQuery_.c_str());
-    } else if (!filteredTables_.empty() && ImGui::BeginTable("table_list", 11, flags, tableSize)) {
-
-        ImGui::TableSetupScrollFreeze(0, 1);
-
-        // CRUCIAL: The 4th argument is the unique ID (user_id) used by the sorting logic (case 0, case 1, etc.)
-        ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f, 0); // ID 0
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.0f, 1); // ID 1
-        ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthFixed, 75.0f, 2); // ID 2
-        ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f, 3); // ID 3
-        ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f, 4); // ID 4
-        ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f, 5);            // ID 5
-        ImGui::TableSetupColumn("ROM", ImGuiTableColumnFlags_WidthFixed, 75.0f, 6); // ID 6
-        ImGui::TableSetupColumn("Extras", ImGuiTableColumnFlags_WidthFixed, 75.0f, 7); // ID 7
-        ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 75.0f, 8); // ID 8
-        ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 55.0f, 9); // ID 9
-        ImGui::TableSetupColumn("Sounds", ImGuiTableColumnFlags_WidthFixed, 30.0f, 10); // ID 10
-
-        ImGui::TableHeadersRow();
-
-        // --- INLINE SORT HOOK: This is the standard ImGui pattern ---
-        if (ImGuiTableSortSpecs *sortSpecs = ImGui::TableGetSortSpecs()) {
-            if (sortSpecs->SpecsDirty) {
-                const ImGuiTableColumnSortSpecs *spec = sortSpecs->Specs;
-
-                // 1. Update internal state
-                sortColumn_ = spec->ColumnUserID;
-                sortAscending_ = (spec->SortDirection == ImGuiSortDirection_Ascending);
-                sortSpecs->SpecsDirty = false;
-
-                // 2. Perform the filtering and sorting again.
-                // Since the sortColumn_ and sortAscending_ members have just been updated,
-                // calling filterAndSortTables() will re-sort the currently filtered list
-                // based on the new criteria (while maintaining the existing search filter).
-                filterAndSortTables();
-            }
-        }
-
-        for (int i = 0; i < (int)filteredTables_.size(); ++i) {
-            const auto &t = filteredTables_[i];
-            ImGui::TableNextRow();
-
-            // --- Normalized metadata ---
-            // Year: prefer vpsYear, then tableYear, then file-derived year.
-            std::string displayYear =
-                !t.vpsYear.empty() ? t.vpsYear : !t.tableYear.empty() ? t.tableYear
-                                             : !t.year.empty()        ? t.year
-                                                                      : "-";
-
-            // Name: prefer vpsName, then tableName, then filename/title.
-            std::string displayName =
-                !t.vpsName.empty() ? t.vpsName : !t.tableName.empty() ? t.tableName
-                                             : !t.title.empty()       ? t.title
-                                                                      : "-";
-
-            // Author: prefer vpsAuthors, then tableAuthor.
-            std::string displayAuthor =
-                !t.vpsAuthors.empty() ? t.vpsAuthors : !t.tableAuthor.empty() ? t.tableAuthor
-                                                                              : "-";
-
-            // Manufacturer: prefer vpsManufacturer, then tableManufacturer, then manufacturer.
-            std::string displayManufacturer =
-                !t.vpsManufacturer.empty() ? t.vpsManufacturer : !t.tableManufacturer.empty() ? t.tableManufacturer
-                                                             : !t.manufacturer.empty()        ? t.manufacturer
-                                                                                              : "-";
-
-            // Column 0: Year
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted(displayYear.c_str());
-
-            // Column 1: Name (main selectable)
-            ImGui::TableSetColumnIndex(1);
-            ImGui::PushID(i);
-            bool isSelected = (selectedIndex_ == i);
-            if (ImGui::Selectable(displayName.c_str(), isSelected,
-                                  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
-                selectedIndex_ = isSelected ? -1 : i;
-                // remove scroll-to-center behavior
-                scrollToSelected_ = false;
-                if (ImGui::IsMouseDoubleClicked(0)) {
-                    LOG_DEBUG(std::string("Row double-click (placeholder) for: ") + displayName + " -> " + t.vpxFile);
+        // --------------------------- Tables folder check ---------------------------
+        std::string tablesPath = settings.VPXTablesPath;
+        if (!std::filesystem::exists(tablesPath)) {
+            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), "Tables path does not exist:\n%s", tablesPath.c_str());
+            ImGui::TextDisabled("Please set a valid tables folder in settings.");
+        } else {
+            bool hasAnyFiles = false;
+            for (auto& p : std::filesystem::recursive_directory_iterator(tablesPath)) {
+                if (p.path().extension() == ".vpx") {
+                    hasAnyFiles = true;
+                    break;
                 }
             }
-            ImGui::PopID();
-
-            // Column 2: Version
-            ImGui::TableSetColumnIndex(2);
-            if (!t.tableVersion.empty()) {
-                ImGui::TextUnformatted(t.tableVersion.c_str());
+            if (!hasAnyFiles) {
+                ImGui::TextColored(ImVec4(1,0.8f,0.2f,1), "No .vpx tables found in:\n%s", tablesPath.c_str());
+                ImGui::TextDisabled("Please point to a folder containing .vpx tables.");
             } else {
-                ImGui::TextUnformatted("");
+                ImGui::TextDisabled("No table index found, first run?\nPlease pick a scanner and rescan tables.");
             }
-            // Column 2: Author
-            ImGui::TableSetColumnIndex(3);
-            ImGui::TextUnformatted(displayAuthor.c_str());
-
-            // Column 3: Manufacturer
-            ImGui::TableSetColumnIndex(4);
-            ImGui::TextUnformatted(displayManufacturer.c_str());
-
-            // Column 4: INI + VBS + B2S existence (TODO: collect these vars (only added in table_data.h))
-            ImGui::TableSetColumnIndex(5);
-            ImGui::Text("%s%s%s",
-                        t.hasINI ? "I " : "- ", // todo: add check for ini diff and recolor
-                        t.hasVBS ? "V " : "- ", // todo: color if t.hasDiffVbs
-                        t.hasB2S ? "B " : "- ");
-
-            // Column 5: ROM name (shows name or empty)
-            ImGui::TableSetColumnIndex(6);
-            if (!t.romName.empty()) {
-                ImGui::TextUnformatted(t.romName.c_str());
-            } else {
-                ImGui::TextUnformatted("");
-            }
-            // Column 6: Alt/Color/PUP/UDMD/Music
-            ImGui::TableSetColumnIndex(7);
-            ImGui::Text("%s%s%s%s%s",
-                        t.hasAltSound ? "S " : "- ",
-                        t.hasAltColor ? "C " : "- ",
-                        t.hasPup ? "P " : "- ",
-                        t.hasUltraDMD ? "U " : "- ",
-                        t.hasAltMusic ? "M " : "- ");
-
-            // Column 7: Images
-            ImGui::TableSetColumnIndex(8);
-            ImGui::Text("%s%s%s%s%s",
-                        t.hasPlayfieldImage ? "P " : "- ",
-                        t.hasBackglassImage ? "B " : "- ",
-                        t.hasDmdImage ? "D " : "- ",
-                        t.hasTopperImage ? "T " : "- ",
-                        t.hasWheelImage ? "W " : "- ");
-
-            // Column 8: Videos
-            ImGui::TableSetColumnIndex(9);
-            ImGui::Text("%s%s%s%s",
-                        t.hasPlayfieldVideo ? "P " : "- ",
-                        t.hasBackglassVideo ? "B " : "- ",
-                        t.hasDmdVideo ? "D " : "- ",
-                        t.hasTopperVideo ? "T " : "- ");
-
-            // Column 9: Sounds
-            ImGui::TableSetColumnIndex(10);
-            ImGui::Text("%s%s",
-                        t.hasTableMusic ? "M " : "- ",
-                        t.hasLaunchAudio ? "L " : "- ");
         }
 
-        ImGui::EndTable();
+        // --------------------------- VPX executable check ---------------------------
+        std::string vpxPath = settings.VPinballXPath;
+        if (!std::filesystem::exists(vpxPath)) {
+            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), "VPX executable not found:\n%s", vpxPath.c_str());
+            ImGui::TextDisabled("Please set the correct path to VPinballX executable in settings.");
+        } else if (!std::filesystem::is_regular_file(vpxPath)) {
+            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), "VPX path is not a file:\n%s", vpxPath.c_str());
+            ImGui::TextDisabled("Please point to the actual VPinballX executable binary.");
+        } else if ((std::filesystem::status(vpxPath).permissions() & std::filesystem::perms::owner_exec) == std::filesystem::perms::none) {
+            ImGui::TextColored(ImVec4(1,0.8f,0.2f,1), "VPX file is not executable:\n%s", vpxPath.c_str());
+            ImGui::TextDisabled("Please make the file executable (chmod +x).");
+        }
+
+        // --------------------------- VPinballX.ini check ---------------------------
+        std::string home = std::getenv("HOME") ? std::getenv("HOME") : "~";
+        std::string defaultIniPath = home + "/.vpinball/VPinballX.ini";
+        std::string configuredIniPath = settings.vpxIniPath;
+
+        // Check both locations
+        bool iniExists = std::filesystem::exists(defaultIniPath) || std::filesystem::exists(configuredIniPath);
+
+        if (!iniExists) {
+            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), "VPinballX.ini not found!");
+            ImGui::TextDisabled("Tried default path: %s\nConfigured path: %s\nPlease ensure the file exists in one of these locations.",
+                                defaultIniPath.c_str(), configuredIniPath.c_str());
+        }
+    } else {
+        ImGui::BeginChild("TableContainer", tableSize, false, ImGuiWindowFlags_NoScrollbar);
+
+        // Check for no results: display message instead of table, but DON'T return.
+        if (filteredTables_.empty() && !tables_.empty()) {
+            ImGui::TextDisabled("No tables match the current filter: '%s'", searchQuery_.c_str());
+        } else if (!filteredTables_.empty() && ImGui::BeginTable("table_list", 11, flags, tableSize)) {
+
+            ImGui::TableSetupScrollFreeze(0, 1);
+
+            // CRUCIAL: The 4th argument is the unique ID (user_id) used by the sorting logic (case 0, case 1, etc.)
+            ImGui::TableSetupColumn("Year", ImGuiTableColumnFlags_WidthFixed, 30.0f, 0); // ID 0
+            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.0f, 1); // ID 1
+            ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthFixed, 75.0f, 2); // ID 2
+            ImGui::TableSetupColumn("Author", ImGuiTableColumnFlags_WidthFixed, 100.0f, 3); // ID 3
+            ImGui::TableSetupColumn("Manufacturer", ImGuiTableColumnFlags_WidthFixed, 80.0f, 4); // ID 4
+            ImGui::TableSetupColumn("Files", ImGuiTableColumnFlags_WidthFixed, 45.0f, 5);            // ID 5
+            ImGui::TableSetupColumn("ROM", ImGuiTableColumnFlags_WidthFixed, 75.0f, 6); // ID 6
+            ImGui::TableSetupColumn("Extras", ImGuiTableColumnFlags_WidthFixed, 75.0f, 7); // ID 7
+            ImGui::TableSetupColumn("Images", ImGuiTableColumnFlags_WidthFixed, 75.0f, 8); // ID 8
+            ImGui::TableSetupColumn("Videos", ImGuiTableColumnFlags_WidthFixed, 55.0f, 9); // ID 9
+            ImGui::TableSetupColumn("Sounds", ImGuiTableColumnFlags_WidthFixed, 30.0f, 10); // ID 10
+
+            ImGui::TableHeadersRow();
+
+            // --- INLINE SORT HOOK: This is the standard ImGui pattern ---
+            if (ImGuiTableSortSpecs *sortSpecs = ImGui::TableGetSortSpecs()) {
+                if (sortSpecs->SpecsDirty) {
+                    const ImGuiTableColumnSortSpecs *spec = sortSpecs->Specs;
+
+                    // 1. Update internal state
+                    sortColumn_ = spec->ColumnUserID;
+                    sortAscending_ = (spec->SortDirection == ImGuiSortDirection_Ascending);
+                    sortSpecs->SpecsDirty = false;
+
+                    // 2. Perform the filtering and sorting again.
+                    // Since the sortColumn_ and sortAscending_ members have just been updated,
+                    // calling filterAndSortTables() will re-sort the currently filtered list
+                    // based on the new criteria (while maintaining the existing search filter).
+                    filterAndSortTables();
+                }
+            }
+
+            for (int i = 0; i < (int)filteredTables_.size(); ++i) {
+                const auto &t = filteredTables_[i];
+                ImGui::TableNextRow();
+
+                // --- Normalized metadata ---
+                // Year: prefer vpsYear, then tableYear, then file-derived year.
+                std::string displayYear =
+                    !t.vpsYear.empty() ? t.vpsYear : !t.tableYear.empty() ? t.tableYear
+                                                : !t.year.empty()        ? t.year
+                                                                        : "-";
+
+                // Name: prefer vpsName, then tableName, then filename/title.
+                std::string displayName =
+                    !t.vpsName.empty() ? t.vpsName : !t.tableName.empty() ? t.tableName
+                                                : !t.title.empty()       ? t.title
+                                                                        : "-";
+
+                // Author: prefer vpsAuthors, then tableAuthor.
+                std::string displayAuthor =
+                    !t.vpsAuthors.empty() ? t.vpsAuthors : !t.tableAuthor.empty() ? t.tableAuthor
+                                                                                : "-";
+
+                // Manufacturer: prefer vpsManufacturer, then tableManufacturer, then manufacturer.
+                std::string displayManufacturer =
+                    !t.vpsManufacturer.empty() ? t.vpsManufacturer : !t.tableManufacturer.empty() ? t.tableManufacturer
+                                                                : !t.manufacturer.empty()        ? t.manufacturer
+                                                                                                : "-";
+
+                // Column 0: Year
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted(displayYear.c_str());
+
+                // Column 1: Name (main selectable)
+                ImGui::TableSetColumnIndex(1);
+                ImGui::PushID(i);
+                bool isSelected = (selectedIndex_ == i);
+                if (ImGui::Selectable(displayName.c_str(), isSelected,
+                                    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+                    selectedIndex_ = isSelected ? -1 : i;
+                    // remove scroll-to-center behavior
+                    scrollToSelected_ = false;
+                    if (ImGui::IsMouseDoubleClicked(0)) {
+                        LOG_DEBUG(std::string("Row double-click (placeholder) for: ") + displayName + " -> " + t.vpxFile);
+                    }
+                }
+                ImGui::PopID();
+
+                // Column 2: Version
+                ImGui::TableSetColumnIndex(2);
+                if (!t.tableVersion.empty()) {
+                    ImGui::TextUnformatted(t.tableVersion.c_str());
+                } else {
+                    ImGui::TextUnformatted("");
+                }
+                // Column 2: Author
+                ImGui::TableSetColumnIndex(3);
+                ImGui::TextUnformatted(displayAuthor.c_str());
+
+                // Column 3: Manufacturer
+                ImGui::TableSetColumnIndex(4);
+                ImGui::TextUnformatted(displayManufacturer.c_str());
+
+                // Column 4: INI + VBS + B2S existence (TODO: collect these vars (only added in table_data.h))
+                ImGui::TableSetColumnIndex(5);
+                ImGui::Text("%s%s%s",
+                            t.hasINI ? "I " : "- ", // todo: add check for ini diff and recolor
+                            t.hasVBS ? "V " : "- ", // todo: color if t.hasDiffVbs
+                            t.hasB2S ? "B " : "- ");
+
+                // Column 5: ROM name (shows name or empty)
+                ImGui::TableSetColumnIndex(6);
+                if (!t.romName.empty()) {
+                    ImGui::TextUnformatted(t.romName.c_str());
+                } else {
+                    ImGui::TextUnformatted("");
+                }
+                // Column 6: Alt/Color/PUP/UDMD/Music
+                ImGui::TableSetColumnIndex(7);
+                ImGui::Text("%s%s%s%s%s",
+                            t.hasAltSound ? "S " : "- ",
+                            t.hasAltColor ? "C " : "- ",
+                            t.hasPup ? "P " : "- ",
+                            t.hasUltraDMD ? "U " : "- ",
+                            t.hasAltMusic ? "M " : "- ");
+
+                // Column 7: Images
+                ImGui::TableSetColumnIndex(8);
+                ImGui::Text("%s%s%s%s%s",
+                            t.hasPlayfieldImage ? "P " : "- ",
+                            t.hasBackglassImage ? "B " : "- ",
+                            t.hasDmdImage ? "D " : "- ",
+                            t.hasTopperImage ? "T " : "- ",
+                            t.hasWheelImage ? "W " : "- ");
+
+                // Column 8: Videos
+                ImGui::TableSetColumnIndex(9);
+                ImGui::Text("%s%s%s%s",
+                            t.hasPlayfieldVideo ? "P " : "- ",
+                            t.hasBackglassVideo ? "B " : "- ",
+                            t.hasDmdVideo ? "D " : "- ",
+                            t.hasTopperVideo ? "T " : "- ");
+
+                // Column 9: Sounds
+                ImGui::TableSetColumnIndex(10);
+                ImGui::Text("%s%s",
+                            t.hasTableMusic ? "M " : "- ",
+                            t.hasLaunchAudio ? "L " : "- ");
+            }
+
+            ImGui::EndTable();
+        }
+        ImGui::EndChild();
     }
-    ImGui::EndChild();
     ImGui::Separator();
 
     // --- Last scan info (above buttons) ---

@@ -7,13 +7,13 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- hook to 1st run or keep no-index warning? use current loading screen?
-- initial loading screen or keep fastload as default?
+- add some way for users to change and persist critical info (table/vpx/ini paths - 1st run)
+- add settings panel (editor related) + button
+- add minimal loading screen? or port?
 - hook vpin's extract vbs to wrapper!
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
 - color files with diffs
 - port ini editor w/ tooltips (keep 10.8.0, create new 10.8.1, switchable)
-- add settings panel (editor related) + button
 - spreadsheet column hover dynamic tooltips
 - collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
