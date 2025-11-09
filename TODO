@@ -19,7 +19,6 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
 - check if present rom is correct and recolor (vpin/vpxtool hook!)
-- hook double click to launcher?
 - add playcound / success on status bar
 - color tables with failed status
 - columns for release date, last modified and confidence match?

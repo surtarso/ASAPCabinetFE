@@ -363,7 +363,9 @@ void EditorUI::draw() {
                     // remove scroll-to-center behavior
                     scrollToSelected_ = false;
                     if (ImGui::IsMouseDoubleClicked(0)) {
-                        LOG_DEBUG(std::string("Row double-click (placeholder) for: ") + displayName + " -> " + t.vpxFile);
+                        LOG_DEBUG(std::string("Double-click detected for: ") + displayName + " -> " + t.vpxFile);
+                        const auto &t = filteredTables_[selectedIndex_];
+                        tableLauncher_->launchTable(t);
                     }
                 }
                 ImGui::PopID();
