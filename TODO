@@ -11,7 +11,6 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook the loading screen
 - hook vpin's extract vbs to wrapper!
 - extractvbs functionality recolor on diff (use bool hasDiffVbs)
-- color files with diffs
 - spreadsheet column hover dynamic tooltips
 - collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
@@ -42,8 +41,6 @@ QOL:
 - make windows naturally draggable with mouse hold
 - make windows resizeable with mouse and pass to config
 - user-pick fields to be shown on metadata panel
-- flag to force --first-run (only breaking fields to default, preserve user conf)
-- flag to --reset to defaults (move data/* to .old)
 
 On hold:
 - refactor the monoliths...
@@ -61,4 +58,4 @@ On hold:
 - make both ui's switchable between them?
 - splashscreen?
 - highscore tracking
-- cli helpers (see editor_binary.cpp for details)
+- editor cli helpers (see editor_binary.cpp for details)

@@ -131,6 +131,7 @@ int main(int argc, char* argv[]) {
                 << "  <no args>              Launch the main front-end\n"
                 << "  -e, --editor           Launch the Table Editor (not yet implemented)\n\n"
                 << "  --software-renderer    Launch in software mode (debug only)\n"
+                << "  -r, --reset            Reset all configurations to default values\n"
                 << "  -v, --version          Display version information\n"
                 << "  -h, --help             Show this help message\n\n"
                 << "Example:\n"
@@ -153,6 +154,18 @@ int main(int argc, char* argv[]) {
     } else {
         exeDir = std::filesystem::current_path().string() + "/";
         LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
+    }
+
+    // Handle --reset / -r argument
+    if (argc > 1 && (std::string(argv[1]) == "--reset" || std::string(argv[1]) == "-r")) {
+        std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
+        std::cout << "Resetting to defaults." << std::endl;
+        // move data/* to data/*.old
+        std::string dataDir = exeDir + "data";
+        std::filesystem::rename(dataDir, dataDir + ".old");
+        std::cout << "Your old settings have been moved to " << dataDir + ".old" << std::endl;
+        std::cout << "You will need to reconfigure ASAPCabinetFE on next launch." << std::endl;
+        return 0;
     }
 
     // Initialize logger
