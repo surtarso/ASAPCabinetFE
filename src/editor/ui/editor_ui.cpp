@@ -12,16 +12,18 @@ namespace fs = std::filesystem;
 
 EditorUI::EditorUI(bool& showMeta,
                    bool& showBrowser,
+                   bool& showSettings,
                    IConfigService* config,
                    ITableLoader* tableLoader,
                    ITableLauncher* launcher
                    )
-    : config_(config),
+    : showMetadataEditor_(showMeta),
+      showVpsdbBrowser_(showBrowser),
+      showEditorSettings_(showSettings),
+      config_(config),
       tableLoader_(tableLoader),
       tableLauncher_(launcher),
-      actions_(config),
-      showMetadataEditor_(showMeta),
-      showVpsdbBrowser_(showBrowser)
+      actions_(config)
 {
     Settings settings = config_->getSettings();
 

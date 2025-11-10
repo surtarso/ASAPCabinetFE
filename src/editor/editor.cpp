@@ -9,6 +9,7 @@
 Editor::Editor(const std::string& configPath)
     : showMetadataEditor_(false),
       showVpsdbBrowser_(false),
+      showEditorSettings_(false),
       configPath_(configPath),
       window_(nullptr),
       renderer_(nullptr),
@@ -35,6 +36,7 @@ Editor::Editor(const std::string& configPath)
     editorUI_ = std::make_unique<EditorUI>(
         showMetadataEditor_,
         showVpsdbBrowser_,
+        showEditorSettings_,
         config_.get(),
         tableLoader_.get(),
         tableLauncher_.get()
@@ -93,6 +95,9 @@ void Editor::mainLoop() {
         } else if (showVpsdbBrowser_) {
             ImGui::Text("VPSDB Browser would be here");
             if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
+        } else if (showEditorSettings_) {
+            ImGui::Text("Editor Settings would be here");
+            if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
         } else {
             editorUI_->draw();
         }

@@ -21,6 +21,7 @@ class EditorUI {
 public:
     EditorUI(bool& showMeta,
              bool& showBrowser,
+             bool& showSettings,
              IConfigService* config,
              ITableLoader* tableLoader,
              ITableLauncher* launcher
@@ -76,6 +77,7 @@ public:
 
     bool& showMetadataEditor_;
     bool& showVpsdbBrowser_;
+    bool& showEditorSettings_;
 
 private:
     // helper methods

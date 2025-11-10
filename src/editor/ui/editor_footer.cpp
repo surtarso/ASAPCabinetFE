@@ -201,6 +201,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::SameLine(rightAlignPos);
 
     if (ImGui::Button("Settings")) {
+        ui.showEditorSettings_ = true;
         LOG_DEBUG("Settings pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

@@ -33,6 +33,7 @@ private:
     // --- Sub-editor state flags ---
     bool showMetadataEditor_ = false;
     bool showVpsdbBrowser_ = false;
+    bool showEditorSettings_ = false;
 
     // --- Core state ---
     std::string configPath_;
