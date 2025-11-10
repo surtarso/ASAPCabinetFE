@@ -51,10 +51,12 @@ private:
 
     // --- ASAPCabinetFE dependencies ---
     std::unique_ptr<IConfigService> config_;
-    std::unique_ptr<IKeybindProvider> keybindProvider_;
+    std::unique_ptr<IKeybindProvider> keybindProvider_; /// To listen to keystrokes
+    std::unique_ptr<IInputManager> inputManager_;       /// Input manager for handling actions
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
+
     std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
     std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI

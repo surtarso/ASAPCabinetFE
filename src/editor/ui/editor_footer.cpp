@@ -76,6 +76,8 @@ void drawFooter(EditorUI& ui) {
             ui.rescanAsyncPublic(ui.scannerMode());
         }
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+            ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+            ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
             ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Rescan Tables").c_str());
         }
         ImGui::PopStyleColor(3);
@@ -95,6 +97,8 @@ void drawFooter(EditorUI& ui) {
         ui.rescanAsyncPublic(ui.scannerMode());
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
     }
     ImGui::PopStyleColor(3);
@@ -107,6 +111,8 @@ void drawFooter(EditorUI& ui) {
         ui.actions().openFolder(path);
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Open Folder").c_str());
     }
     ImGui::SameLine();
@@ -135,6 +141,8 @@ void drawFooter(EditorUI& ui) {
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Extract VBS").c_str());
     }
     ImGui::SameLine();
@@ -143,6 +151,8 @@ void drawFooter(EditorUI& ui) {
         LOG_DEBUG("Apply Patch pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Apply Patch").c_str());
     }
     ImGui::SameLine();
@@ -153,6 +163,8 @@ void drawFooter(EditorUI& ui) {
         LOG_DEBUG("Download Media pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Download Media").c_str());
     }
     ImGui::SameLine();
@@ -161,6 +173,8 @@ void drawFooter(EditorUI& ui) {
         LOG_DEBUG("Screenshot pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Screenshot").c_str());
     }
     ImGui::SameLine();
@@ -182,6 +196,8 @@ void drawFooter(EditorUI& ui) {
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("View Metadata").c_str());
     }
     ImGui::SameLine();
@@ -191,6 +207,8 @@ void drawFooter(EditorUI& ui) {
         LOG_DEBUG("Browse Tables pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Browse Tables").c_str());
     }
     ImGui::SameLine();
@@ -204,6 +222,8 @@ void drawFooter(EditorUI& ui) {
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Play Selected").c_str());
     }
     ImGui::PopStyleColor(3);
@@ -217,6 +237,10 @@ void drawFooter(EditorUI& ui) {
         LOG_DEBUG("Settings pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 buttonMin = ImGui::GetItemRectMin(); // Top-left corner of the button
+        ImVec2 buttonMax = ImGui::GetItemRectMax(); // Bottom-right corner of the button
+        ImVec2 pos = ImVec2(buttonMax.x, buttonMin.y);
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f)); // bottom-right corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Settings").c_str());
     }
     ImGui::SameLine();
@@ -229,6 +253,10 @@ void drawFooter(EditorUI& ui) {
         ui.requestExit();
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 buttonMin = ImGui::GetItemRectMin(); // Top-left corner of the button
+        ImVec2 buttonMax = ImGui::GetItemRectMax(); // Bottom-right corner of the button
+        ImVec2 pos = ImVec2(buttonMax.x, buttonMin.y);
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f)); // bottom-right corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Exit Editor").c_str());
     }
 

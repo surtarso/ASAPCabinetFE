@@ -43,16 +43,6 @@ void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, 
     isLoadingTables_ = &isLoadingTables;
     tableLauncher_ = tableLauncher;
     tableCallbacks_ = tableCallbacks;
-
-    // for (size_t i = 0; i < tables_->size(); ++i) {
-    //     if (!tables_->at(i).title.empty()) {
-    //         char firstChar = tables_->at(i).title[0];
-    //         char key = std::isalpha(firstChar) ? std::toupper(firstChar) : firstChar;
-    //         if (letterIndex_.find(key) == letterIndex_.end()) {
-    //             letterIndex_[key] = i;
-    //         }
-    //     }
-    // }
     LOG_DEBUG("InputManager dependencies set, table count: " + std::to_string(tables_->size()));
 }
 

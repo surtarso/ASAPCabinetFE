@@ -9,10 +9,10 @@ FIX:
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] create settings panel (editor related)
 - [!] hook the loading screen
-- spreadsheet column hover dynamic tooltips
-- main button tooltips positioning above buttons
 - [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- increment launch stats (playcount etc) when launching from editor too
+- [!][fix] increment launch stats (playcount etc) when launching from editor too 
+-       (gotta switch table launcher for input manager action instead)
+- spreadsheet column hover dynamic tooltips
 - color tables with failed status
 - columns for release date, last modified and confidence match?
 - column for script patch status? status bar or files column instead?
@@ -21,6 +21,7 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook vpsdb browser (or remake = bad)
 - mark tables unmatched in vpsdb (no vpsdb ID)
 - hook refresh button to sort of "fast path/ignorescanners" to reload detections (ini vbs etc)
+- add data/imgui.ini to editor only
 
 QOL:
 - 'feedback' /util/ to receive a string and print as a message window universally!
