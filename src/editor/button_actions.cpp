@@ -111,7 +111,7 @@ void ButtonActions::handleKeyboardSearchFocus(char* searchBuffer,
         if (searchBuffer[0] != '\0') {
             searchBuffer[0] = '\0';
             searchQuery.clear();
-            if (filterAndSort) filterAndSort();
+            // if (filterAndSort) filterAndSort();
             // ImGui::ClearActiveID(); // defocus after clearing
             ImGuiContext* ctx = ImGui::GetCurrentContext();
             ctx->ActiveId = 0;
@@ -138,7 +138,7 @@ void ButtonActions::handleKeyboardSearchFocus(char* searchBuffer,
             // Set focus to search bar next frame
             ImGui::SetKeyboardFocusHere(); // immediate focus this frame
             io.AddInputCharacter(c);       // forward first typed key into focused widget
-            io.InputQueueCharacters.clear();
+            // io.InputQueueCharacters.clear();
             pendingFocus = false;
 
             // Reflect new buffer into string (for external filtering)

@@ -5,25 +5,34 @@ namespace editor_header {
 
 void drawHeader(EditorUI& ui) {
     // Detect typing and auto-focus search field
-    ui.actions().handleKeyboardSearchFocus(
-        ui.searchBuffer(),
-        ui.searchQuery(),
-        [&ui]() { ui.filterAndSortTablesPublic(); },
-        [&ui]() {
-            if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-                const auto& t = ui.filteredTables()[ui.selectedIndex()];
-                ui.tableLauncher()->launchTable(t);
-            } else {
-                LOG_DEBUG("Enter pressed but no table selected");
+    if (!ImGui::IsItemActive()) {
+        ui.actions().handleKeyboardSearchFocus(
+            ui.searchBuffer(),
+            ui.searchQuery(),
+            [&ui]() { ui.filterAndSortTablesPublic(); },
+            [&ui]() {
+                if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
+                    const auto& t = ui.filteredTables()[ui.selectedIndex()];
+                    ui.tableLauncher()->launchTable(t);
+                } else {
+                    LOG_DEBUG("Enter pressed but no table selected");
+                }
             }
-        });
-
+        );
+    }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 1.4f);
     if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
                                  ui.searchBuffer(), sizeof(ui.searchBuffer()))) {
         ui.setSearchQuery(ui.searchBuffer());
         ui.filterAndSortTablesPublic();
     }
+    // ImGui::Text("Buffer len: %zu  Query len: %zu", strlen(ui.searchBuffer()), ui.searchQuery().size());
+    ImGui::Text("strlen: %zu  raw bytes:", strlen(ui.searchBuffer()));
+    for (int i = 0; i < 16; i++) {
+        ImGui::SameLine();
+        ImGui::Text("%02X", static_cast<unsigned char>(ui.searchBuffer()[i]));
+    }
+
     ImGui::PopItemWidth();
     ImGui::SameLine();
 

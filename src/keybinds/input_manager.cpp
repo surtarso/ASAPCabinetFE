@@ -387,7 +387,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
         return;
     }
 
-    ImGui_ImplSDL2_ProcessEvent(&event);
+    // ImGui_ImplSDL2_ProcessEvent(&event); // handled by imGui first??
 
     Uint32 currentTime = SDL_GetTicks();
     ImGuiIO& io = ImGui::GetIO();
