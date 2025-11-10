@@ -12,7 +12,7 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - spreadsheet column hover dynamic tooltips
 - main button tooltips positioning above buttons
 - [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- add playcound / success on status bar
+- increment launch stats (playcount etc) when launching from editor too
 - color tables with failed status
 - columns for release date, last modified and confidence match?
 - column for script patch status? status bar or files column instead?

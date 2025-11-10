@@ -14,8 +14,20 @@ void drawFooter(EditorUI& ui) {
     if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
         const auto& t = ui.filteredTables()[ui.selectedIndex()];
         if (!t.jsonOwner.empty()) {
-            ImGui::TextDisabled("Last table scanner: %s", t.jsonOwner.c_str());
+            ImGui::TextDisabled("Last table scanner: %s", t.jsonOwner.c_str()); //string
+            ImGui::SameLine();
         }
+
+        ImGui::TextDisabled(" | Broken: %s", t.isBroken ? "Yes" : "No"); //bool
+        ImGui::SameLine();
+
+        ImGui::TextDisabled(" | Play Count: %d", t.playCount); //int
+        ImGui::SameLine();
+
+        ImGui::TextDisabled(" | Last Play Time: %.2f mins", t.playTimeLast); //float
+        ImGui::SameLine();
+
+        ImGui::TextDisabled(" | Total Play Time: %.2f mins", t.playTimeTotal); //float
     }
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing()*2.0f);
