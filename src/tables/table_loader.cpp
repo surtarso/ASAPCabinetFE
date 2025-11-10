@@ -44,7 +44,8 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->logMessages.clear();
     }
 
-    // Fast path: Load only from index if ignoreScanners is true
+    // Fast path: Load only from index if ignoreScanners is true and tables index is not empty/missing
+    bool fastPathFailed = false;
     if (settings.ignoreScanners) {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
@@ -62,33 +63,31 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                 progress->totalTablesToLoad = tables.size();
             }
         } else {
-            LOG_ERROR("Failed to load asapcab_index.json in fast path");
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTask = "Index loading failed";
-                progress->currentTablesLoaded = 0;
-                progress->totalTablesToLoad = 0;
-            }
-            return tables; // Return empty list on failure
+            LOG_WARN("Failed to load asapcab_index.json, scanning files...");
+            fastPathFailed = true; // continue to full path
         }
 
-        // Stage 10: Sorting and Indexing
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = "Sorting and indexing tables...";
-            progress->currentStage = 10;
-            progress->currentTablesLoaded = 0;
-            progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
+        if (fastPathFailed) {
+            LOG_INFO("Proceeding with file scan due to missing index.");
+        } else {
+            // Stage 10: Sorting and Indexing
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTask = "Sorting and indexing tables...";
+                progress->currentStage = 10;
+                progress->currentTablesLoaded = 0;
+                progress->totalTablesToLoad = tables.empty() ? 0 : tables.size();
+            }
+            sortTables(tables, settings.titleSortBy, progress);
+            if (progress) {
+                std::lock_guard<std::mutex> lock(progress->mutex);
+                progress->currentTask = "Loading complete";
+                progress->currentTablesLoaded = tables.size();
+                progress->totalTablesToLoad = tables.size();
+                progress->currentStage = 11;
+            }
+            return tables;
         }
-        sortTables(tables, settings.titleSortBy, progress);
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = "Loading complete";
-            progress->currentTablesLoaded = tables.size();
-            progress->totalTablesToLoad = tables.size();
-            progress->currentStage = 11;
-        }
-        return tables;
     }
 
     // Full path: Proceed with all stages

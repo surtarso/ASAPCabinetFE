@@ -4,10 +4,13 @@
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
 #include "launcher/itable_launcher.h"
+#include "core/ui/loading_progress.h"
+#include "core/ui/loading_screen.h"
 #include <SDL2/SDL.h>
 #include <thread>
 #include <string>
 #include <memory>
+#include <atomic>
 
 /**
  * @class Editor
@@ -51,4 +54,7 @@ private:
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
+    std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
+    std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
+    std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
 };

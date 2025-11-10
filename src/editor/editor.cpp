@@ -12,7 +12,9 @@ Editor::Editor(const std::string& configPath)
       configPath_(configPath),
       window_(nullptr),
       renderer_(nullptr),
-      imguiManager_(nullptr)
+      imguiManager_(nullptr),
+      isLoadingTables_{false},
+      loadingProgress_(std::make_shared<LoadingProgress>())
     {
     initializeSDL();
 
