@@ -35,7 +35,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::BeginGroup();
 
     {
-        // ImGui::Separator();
+        ImGui::Separator();
         const char* modeLabel = (ui.scannerMode() == ScannerMode::File) ? "File" :
                                (ui.scannerMode() == ScannerMode::VPin) ? "VPin" : "VPSDb";
         std::string comboLabel = std::string("Rescan (") + modeLabel + ")";
@@ -58,12 +58,10 @@ void drawFooter(EditorUI& ui) {
                 ui.setScannerMode(ScannerMode::VPSDb);
 
             ImGui::TextDisabled("Options");
-            // ImGui::Checkbox("Force Rebuild Metadata", &ui.forceRebuildMetadata());
             bool flag = ui.forceRebuildMetadata();
             if (ImGui::Checkbox("Force Rebuild Metadata", &flag)) {
                 ui.setForceRebuildMetadata(flag);
             }
-            // ImGui::Checkbox("Use External VPXTool",        &ui.useVpxtool());
             bool flagUse = ui.useVpxtool();
             if (ImGui::Checkbox("Use External VPXTool", &flagUse)) {
                 ui.setUseVpxtool(flagUse);
@@ -228,7 +226,7 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::PopStyleColor(3);
 
-    float exitWidth     = ImGui::CalcTextSize("Settings  Exit Editor").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+    float exitWidth     = ImGui::CalcTextSize("Settings  Exit Editor").x + ImGui::GetStyle().FramePadding.x * 2.3f;
     float rightAlignPos = ImGui::GetContentRegionAvail().x - exitWidth;
     ImGui::SameLine(rightAlignPos);
 
