@@ -21,7 +21,7 @@ private:
     nlohmann::json parseHashesJson(const std::string& jsonContent);
 
     /** Checks if a table needs a patch based on hash comparison. */
-    bool needsPatch(const TableData& table, const nlohmann::json& hashes);
+    bool needsPatch(TableData& table, const nlohmann::json& hashes);
 
     /** Downloads a .vbs file from a URL and saves it to the specified path. */
     void downloadAndSaveVbs(const std::string& url, const std::string& savePath);

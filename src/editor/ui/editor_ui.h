@@ -11,7 +11,7 @@
 #include <string>
 #include <mutex>
 
-enum class ScannerMode { File, VPin, VPSDb, HasIndex };
+enum class ScannerMode { File, VPin, VPSDb, HasIndex, Patch };
 
 /**
  * Orchestrator for the Editor UI.

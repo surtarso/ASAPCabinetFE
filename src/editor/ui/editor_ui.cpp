@@ -100,6 +100,11 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 settings.titleSource = "filename";
                 settings.fetchVPSdb = false;
                 break;
+            case ScannerMode::Patch:
+                settings.titleSource = "filename";
+                settings.fetchVPSdb = false;
+                settings.autoPatchTables = true;
+                break;
         }
 
         auto newTables = tableLoader_->loadTableList(settings, nullptr);

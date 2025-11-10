@@ -104,6 +104,7 @@ struct TableData {
     // vbs script patcher related
     std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
     std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
+    bool isPatched = false;      ///< true if a script patch was applied
     bool hasDiffVbs = false;     ///< check if sidecar .vbs is different than the .vbs inside the VPX file.
     // table launch related
     int playCount = 0;           ///< capture successful launches

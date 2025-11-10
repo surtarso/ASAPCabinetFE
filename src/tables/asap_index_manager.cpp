@@ -126,6 +126,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("hashFromVpx") && table["hashFromVpx"].is_string()) tableData.hashFromVpx = table["hashFromVpx"].get<std::string>();
             if (table.contains("hashFromVbs") && table["hashFromVbs"].is_string()) tableData.hashFromVbs = table["hashFromVbs"].get<std::string>();
             if (table.contains("hasDiffVbs") && table["hasDiffVbs"].is_boolean()) tableData.hasDiffVbs = table["hasDiffVbs"].get<bool>();
+            if (table.contains("isPatched") && table["isPatched"].is_boolean()) tableData.isPatched = table["isPatched"].get<bool>();
             // EXTRA FILES SCAN Boolean flags (ensure they are boolean type in JSON)
             if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
             if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
@@ -251,6 +252,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["hashFromVpx"] = table.hashFromVpx;
         tableJson["hashFromVbs"] = table.hashFromVbs;
         tableJson["hasDiffVbs"] = table.hasDiffVbs;
+        tableJson["isPatched"] = table.isPatched;
         // EXTRA FILE SCAN (Boolean flags)
         tableJson["hasAltSound"] = table.hasAltSound;
         tableJson["hasAltColor"] = table.hasAltColor;

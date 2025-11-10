@@ -129,7 +129,7 @@ nlohmann::json TablePatcher::parseHashesJson(const std::string& jsonContent) {
     }
 }
 
-bool TablePatcher::needsPatch(const TableData& table, const nlohmann::json& hashes) {
+bool TablePatcher::needsPatch(TableData& table, const nlohmann::json& hashes) {
     if (table.hashFromVpx.empty()) {
         LOG_DEBUG("No hashFromVpx for table " + table.title + ", skipping patch check");
         return false;
@@ -145,6 +145,7 @@ bool TablePatcher::needsPatch(const TableData& table, const nlohmann::json& hash
                 LOG_WARN("Sidecar .vbs hash mismatch for " + table.title + ", computed: " + table.hashFromVbs + ", expected: " + patchedHash);
                 return true;
             } else {
+                table.isPatched = true;
                 LOG_INFO("Sidecar .vbs for " + table.title + " is already patched");
                 return false;
             }
@@ -251,6 +252,7 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
                         std::string expectedHash = entry["patched"]["sha256"];
                         if (computedHash == expectedHash) {
                             table.hashFromVbs = computedHash;
+                            table.isPatched = true;
                             LOG_DEBUG("Updated hashFromVbs for " + table.title + ": " + table.hashFromVbs);
                         } else {
                             LOG_ERROR("Hash mismatch for downloaded .vbs for " + table.title + ", computed: " + computedHash + ", expected: " + expectedHash);

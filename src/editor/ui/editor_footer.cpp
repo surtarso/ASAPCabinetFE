@@ -18,6 +18,9 @@ void drawFooter(EditorUI& ui) {
             ImGui::SameLine();
         }
 
+        ImGui::TextDisabled(" | Patched: %s", t.isPatched ? "Yes" : "No"); //bool
+        ImGui::SameLine();
+
         ImGui::TextDisabled(" | Broken: %s", t.isBroken ? "Yes" : "No"); //bool
         ImGui::SameLine();
 
@@ -145,7 +148,14 @@ void drawFooter(EditorUI& ui) {
     ImGui::SameLine();
 
     if (ImGui::Button("Apply Patch")) {
-        LOG_DEBUG("Apply Patch pressed (placeholder)");
+        if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
+            const auto& t = ui.filteredTables()[ui.selectedIndex()];
+            LOG_DEBUG("PLACEHOLDER-> Patching table: " + t.vpxFile);
+        } else {
+            LOG_DEBUG("Applying Patch to all tables needing it");
+            ui.setScannerMode(ScannerMode::Patch);
+            ui.rescanAsyncPublic(ui.scannerMode());
+        }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
