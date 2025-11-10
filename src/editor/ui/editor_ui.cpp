@@ -15,7 +15,8 @@ EditorUI::EditorUI(bool& showMeta,
                    bool& showSettings,
                    IConfigService* config,
                    ITableLoader* tableLoader,
-                   ITableLauncher* launcher
+                   ITableLauncher* launcher,
+                   std::shared_ptr<LoadingProgress> progress
                    )
     : showMetadataEditor_(showMeta),
       showVpsdbBrowser_(showBrowser),
@@ -23,6 +24,7 @@ EditorUI::EditorUI(bool& showMeta,
       config_(config),
       tableLoader_(tableLoader),
       tableLauncher_(launcher),
+      loadingProgress_(progress),
       actions_(config)
 {
     Settings settings = config_->getSettings();
@@ -76,6 +78,18 @@ void EditorUI::rescanAsync(ScannerMode mode) {
     if (loading_) return;
     loading_ = true;
 
+    {
+        std::lock_guard<std::mutex> lock(loadingProgress_->mutex);
+        loadingProgress_->currentTablesLoaded = 0;
+        loadingProgress_->totalTablesToLoad = 0;
+        loadingProgress_->currentStage = 0; // Or 1 if "Loading Index" is the first stage
+        loadingProgress_->numMatched = 0;
+        loadingProgress_->numNoMatch = 0;
+        loadingProgress_->currentTask = "Initializing scan...";
+        loadingProgress_->logMessages.clear();
+        loadingProgress_->addLogMessage("INFO: Starting table scan...");
+    }
+
     std::thread([this, mode]() {
         Settings settings = config_->getSettings();
         settings.ignoreScanners = false;
@@ -107,7 +121,8 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 break;
         }
 
-        auto newTables = tableLoader_->loadTableList(settings, nullptr);
+        auto newTables = tableLoader_->loadTableList(settings, loadingProgress_.get());
+        // auto newTables = tableLoader_->loadTableList(settings, nullptr);
         {
             std::lock_guard<std::mutex> lock(tableMutex_);
             tables_ = std::move(newTables);

@@ -57,7 +57,7 @@ private:
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
 
-    std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
+    // std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
     std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
 };

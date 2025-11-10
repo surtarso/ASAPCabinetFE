@@ -14,7 +14,7 @@ Editor::Editor(const std::string& configPath)
       window_(nullptr),
       renderer_(nullptr),
       imguiManager_(nullptr),
-      isLoadingTables_{false},
+    //   isLoadingTables_{false},
       loadingProgress_(std::make_shared<LoadingProgress>())
     {
     initializeSDL();
@@ -30,6 +30,9 @@ Editor::Editor(const std::string& configPath)
     imguiManager_ = std::make_unique<ImGuiManager>(window_, renderer_, config_.get());
     imguiManager_->initialize();
 
+    // Initialize the loading screen UI, passing it the shared progress object
+    loadingScreen_ = std::make_unique<LoadingScreen>(loadingProgress_);
+
     // Create Table Loader and Launcher after GUI is ready
     tableLoader_ = std::make_unique<TableLoader>();
     tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
@@ -41,7 +44,8 @@ Editor::Editor(const std::string& configPath)
         showEditorSettings_,
         config_.get(),
         tableLoader_.get(),
-        tableLauncher_.get()
+        tableLauncher_.get(),
+        loadingProgress_
     );
 
     LOG_INFO("Editor initialized successfully.");
@@ -91,19 +95,24 @@ void Editor::mainLoop() {
         imguiManager_->newFrame();
 
         // Choose which panel to render
-        if (showMetadataEditor_) {
-            ImGui::Text("Metadata Editor would be here");
-            if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
-        } else if (showVpsdbBrowser_) {
-            ImGui::Text("VPSDB Browser would be here");
-            if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
-        } else if (showEditorSettings_) {
-            ImGui::Text("Editor Settings would be here");
-            if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
+        if (editorUI_->loading()) {
+            // If loading, render the loading screen
+            loadingScreen_->render();
         } else {
-            editorUI_->draw();
+            // If not loading, render the normal editor UI logic
+            if (showMetadataEditor_) {
+                ImGui::Text("Metadata Editor would be here");
+                if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
+            } else if (showVpsdbBrowser_) {
+                ImGui::Text("VPSDB Browser would be here");
+                if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
+            } else if (showEditorSettings_) {
+                ImGui::Text("Editor Settings would be here");
+                if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
+            } else {
+                editorUI_->draw();
+            }
         }
-
         SDL_SetRenderDrawColor(renderer_, 30, 30, 30, 255);
         SDL_RenderClear(renderer_);
         imguiManager_->render(renderer_);

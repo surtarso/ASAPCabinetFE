@@ -6,9 +6,11 @@
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
 #include "launcher/itable_launcher.h"
+#include "core/ui/loading_progress.h"
 #include <imgui.h>
 #include <vector>
 #include <string>
+#include <memory>
 #include <mutex>
 
 enum class ScannerMode { File, VPin, VPSDb, HasIndex, Patch };
@@ -24,7 +26,8 @@ public:
              bool& showSettings,
              IConfigService* config,
              ITableLoader* tableLoader,
-             ITableLauncher* launcher
+             ITableLauncher* launcher,
+             std::shared_ptr<LoadingProgress> progress
              );
 
     void draw();
@@ -88,6 +91,7 @@ private:
     IConfigService* config_;
     ITableLoader* tableLoader_;
     ITableLauncher* tableLauncher_;
+    std::shared_ptr<LoadingProgress> loadingProgress_;
     ButtonActions actions_;
     EditorTableFilter tableFilter_;
 
