@@ -7,11 +7,9 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- hook settings panel button (editor related)
+- [!] create settings panel (editor related)
 - [!] hook the loading screen
-- extractvbs recolor on diff (use bool hasDiffVbs)
 - spreadsheet column hover dynamic tooltips
-- collapsable columns for less screen clutter
 - main button tooltips positioning above buttons
 - [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - add playcound / success on status bar

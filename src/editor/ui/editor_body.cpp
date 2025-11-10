@@ -110,11 +110,41 @@ void drawBody(EditorUI& ui) {
                     ImGui::TextUnformatted(displayAuthor.c_str());
                     ImGui::TableSetColumnIndex(4);
                     ImGui::TextUnformatted(displayManufacturer.c_str());
+                    // Extra Files
                     ImGui::TableSetColumnIndex(5);
-                    ImGui::Text("%s%s%s",
-                                t.hasINI ? "I " : "- ",
-                                t.hasVBS ? "V " : "- ",
-                                t.hasB2S ? "B " : "- ");
+
+                    // Start text line
+                    if (t.hasINI)
+                        ImGui::TextUnformatted("I ");
+                    else
+                        ImGui::TextUnformatted("- ");
+
+                    // Keep same line for next text
+                    ImGui::SameLine(0, 0);
+
+                    // "V" in yellow if t.hasDiff, otherwise normal
+                    if (t.hasVBS) {
+                        if (t.hasDiffVbs)
+                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "V ");
+                        else
+                            ImGui::TextUnformatted("V ");
+                    } else {
+                        ImGui::TextUnformatted("- ");
+                    }
+
+                    // Same line again for "B"
+                    ImGui::SameLine(0, 0);
+                    if (t.hasB2S)
+                        ImGui::TextUnformatted("B ");
+                    else
+                        ImGui::TextUnformatted("- ");
+
+                    // ImGui::TableSetColumnIndex(5);
+                    // ImGui::Text("%s%s%s",
+                    //             t.hasINI ? "I " : "- ",
+                    //             t.hasVBS ? "V " : "- ",
+                    //             t.hasB2S ? "B " : "- ");
+
                     ImGui::TableSetColumnIndex(6);
                     if (!t.romName.empty()) {
                         ImGui::TextUnformatted(t.romName.c_str());
