@@ -7,7 +7,7 @@ FIX:
 - live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
-- add settings panel button (editor related)
+- hook settings panel button (editor related)
 - hook the loading screen
 - extractvbs recolor on diff (use bool hasDiffVbs)
 - spreadsheet column hover dynamic tooltips
@@ -22,7 +22,7 @@ ONGOING: "editor mode" - port of vpx gui tools (--editor / -e flags)
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
 - hook vpsdb browser (or remake = bad)
 - mark tables unmatched in vpsdb (no vpsdb ID)
-- add refresh button for "fast path/ignorescanners" to reload detections (ini vbs etc)
+- hook refresh button for "fast path/ignorescanners" to reload detections (ini vbs etc)
 
 QOL:
 - 'feedback' /util/ to receive a string and print as a message window universally!

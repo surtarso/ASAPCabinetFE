@@ -4,8 +4,10 @@
 
 namespace Tooltips {
     static const std::unordered_map<std::string, std::string> BUTTON_TOOLTIPS = {
+        {"Settings", "Open the Editor Settings panel."},
         {"Exit Editor", "Close the Editor"},
         {"Rescan Tables", "Rescan the table folder and refresh the list."},
+        {"Refresh", "Refresh the current table list."},
         {"Play Selected", "Launch the current selection in VPinballX."},
         {"Extract VBS", "Extract the VBS script from the selected table.\nOpen the script in external editor if already extracted."},
         {"Open Folder", "Open the table folder.\nOpen tables root folder if no table selected."},
