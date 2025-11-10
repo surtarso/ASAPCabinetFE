@@ -10,10 +10,9 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] create settings panel (editor related)
 - [!] hook the loading screen
 - [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- [!][fix] increment launch stats (playcount etc) when launching from editor too 
+- [fix] increment launch stats (playcount etc) when launching from editor too 
 -       (gotta switch table launcher for input manager action instead)
 - spreadsheet column hover dynamic tooltips
-- color tables with failed status
 - columns for release date, last modified and confidence match?
 - column for script patch status? status bar or files column instead?
 - view metadata panel plan: display current media, separate each scanner info for inspection

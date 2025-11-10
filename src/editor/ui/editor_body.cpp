@@ -68,7 +68,7 @@ void drawBody(EditorUI& ui) {
                 for (int i = 0; i < static_cast<int>(ui.filteredTables().size()); ++i) {
                     const auto& t = ui.filteredTables()[i];
                     ImGui::TableNextRow();
-
+                    // Pick correct values by scanner with fallback to best match
                     std::string displayYear = !t.vpsYear.empty() ? t.vpsYear
                                              : !t.tableYear.empty() ? t.tableYear
                                              : !t.year.empty() ? t.year
@@ -88,40 +88,51 @@ void drawBody(EditorUI& ui) {
                                                    : !t.manufacturer.empty() ? t.manufacturer
                                                    : "-";
 
+                    // ================================ COLUMNS =================================
+                    // ----------------------------------------- YEAR
                     ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(displayYear.c_str());
+
+                    // ----------------------------------------- NAME
                     ImGui::TableSetColumnIndex(1);
                     ImGui::PushID(i);
                     bool isSelected = (ui.selectedIndex() == i);
+                    if (t.isBroken) {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                    }
                     if (ImGui::Selectable(displayName.c_str(), isSelected,
                                           ImGuiSelectableFlags_SpanAllColumns)) {
                         ui.setSelectedIndex(isSelected ? -1 : i);
                         ui.setScrollToSelected(false);
                     }
+                    if (t.isBroken) {
+                        ImGui::PopStyleColor();
+                    }
                     ImGui::PopID();
 
+                    // ----------------------------------------- VERSION
                     ImGui::TableSetColumnIndex(2);
                     if (!t.tableVersion.empty()) {
                         ImGui::TextUnformatted(t.tableVersion.c_str());
                     } else {
                         ImGui::TextUnformatted("");
                     }
+
+                    // ----------------------------------------- AUTHOR
                     ImGui::TableSetColumnIndex(3);
                     ImGui::TextUnformatted(displayAuthor.c_str());
                     ImGui::TableSetColumnIndex(4);
                     ImGui::TextUnformatted(displayManufacturer.c_str());
-                    // Extra Files
-                    ImGui::TableSetColumnIndex(5);
 
+                    // ----------------------------------------- Extra Files
+                    ImGui::TableSetColumnIndex(5);
                     // Start text line
                     if (t.hasINI)
                         ImGui::TextUnformatted("I ");
                     else
                         ImGui::TextUnformatted("- ");
-
                     // Keep same line for next text
                     ImGui::SameLine(0, 0);
-
                     // "V" in yellow if t.hasDiff, otherwise normal
                     if (t.hasVBS) {
                         if (t.hasDiffVbs)
@@ -131,7 +142,6 @@ void drawBody(EditorUI& ui) {
                     } else {
                         ImGui::TextUnformatted("- ");
                     }
-
                     // Same line again for "B"
                     ImGui::SameLine(0, 0);
                     if (t.hasB2S)
@@ -139,18 +149,15 @@ void drawBody(EditorUI& ui) {
                     else
                         ImGui::TextUnformatted("- ");
 
-                    // ImGui::TableSetColumnIndex(5);
-                    // ImGui::Text("%s%s%s",
-                    //             t.hasINI ? "I " : "- ",
-                    //             t.hasVBS ? "V " : "- ",
-                    //             t.hasB2S ? "B " : "- ");
-
+                    // ----------------------------------------- ROM Name
                     ImGui::TableSetColumnIndex(6);
                     if (!t.romName.empty()) {
                         ImGui::TextUnformatted(t.romName.c_str());
                     } else {
                         ImGui::TextUnformatted("");
                     }
+
+                    // ----------------------------------------- Media Extras
                     ImGui::TableSetColumnIndex(7);
                     ImGui::Text("%s%s%s%s%s",
                                 t.hasAltSound ? "S " : "- ",
