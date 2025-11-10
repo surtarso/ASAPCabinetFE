@@ -18,12 +18,12 @@ void drawFooter(EditorUI& ui) {
         }
     }
 
-    ImGui::Separator();
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing()*2.0f);
 
     ImGui::BeginGroup();
 
     {
+        // ImGui::Separator();
         const char* modeLabel = (ui.scannerMode() == ScannerMode::File) ? "File" :
                                (ui.scannerMode() == ScannerMode::VPin) ? "VPin" : "VPSDb";
         std::string comboLabel = std::string("Rescan (") + modeLabel + ")";
@@ -149,6 +149,14 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
+    ImVec4 green      = ImVec4(0.16f,0.45f,0.16f,1.0f);
+    ImVec4 greenHover = ImVec4(0.20f,0.55f,0.20f,1.0f);
+    ImVec4 greenActive= ImVec4(0.12f,0.35f,0.12f,1.0f);
+
+    ImGui::PushStyleColor(ImGuiCol_Button,        green);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  greenActive);
+
     if (ImGui::Button("View Metadata")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             ui.showMetadataEditor_ = true;
@@ -170,14 +178,6 @@ void drawFooter(EditorUI& ui) {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Browse Tables").c_str());
     }
     ImGui::SameLine();
-
-    ImVec4 green      = ImVec4(0.2f,0.7f,0.2f,1.0f);
-    ImVec4 greenHover = ImVec4(0.3f,0.8f,0.3f,1.0f);
-    ImVec4 greenActive= ImVec4(0.1f,0.6f,0.1f,1.0f);
-
-    ImGui::PushStyleColor(ImGuiCol_Button,        green);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  greenActive);
 
     if (ImGui::Button("Play Selected")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
@@ -227,6 +227,8 @@ void drawFooter(EditorUI& ui) {
         ss << "  |  Selected: /" << p.parent_path().filename().string()
            << "/" << p.filename().string();
     }
-    ImGui::TextDisabled("%s", ss.str().c_str());
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94f, 0.94f, 0.94f, 1.0f)); // off-white (whitesmoke)
+    ImGui::Text("%s", ss.str().c_str());
+    ImGui::PopStyleColor();
 }
 }
