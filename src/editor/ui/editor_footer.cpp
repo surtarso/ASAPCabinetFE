@@ -71,12 +71,16 @@ void drawFooter(EditorUI& ui) {
 
     ImGui::SameLine();
 
+    // blue
     ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
 
+    // for this to work properly we need changes to asapcab_index.json marked and saved before scan
     if (ImGui::Button("Refresh")) {
-        LOG_DEBUG("Refresh pressed (placeholder)");
+        LOG_DEBUG("Refresh pressed");
+        ui.setScannerMode(ScannerMode::HasIndex);
+        ui.rescanAsyncPublic(ui.scannerMode());
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
