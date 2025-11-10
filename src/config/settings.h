@@ -94,7 +94,7 @@ struct Settings {
     std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
     bool useVpxtool = false;
-    bool ignoreScanners = false;
+    bool ignoreScanners = true;
     bool forceRebuildMetadata = false;
     std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
 
