@@ -20,6 +20,7 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook vpsdb browser (or remake = bad)
 - mark tables unmatched in vpsdb (no vpsdb ID)
 - add data/imgui.ini to editor only
+- hook advanced option to top pop-up menu (file operations etc)
 
 QOL:
 - [!] 'feedback' /util/ to receive a string and print as a message window universally!

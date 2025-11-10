@@ -35,7 +35,6 @@ void drawFooter(EditorUI& ui) {
     ImGui::BeginGroup();
 
     {
-        ImGui::Separator();
         const char* modeLabel = (ui.scannerMode() == ScannerMode::File) ? "File" :
                                (ui.scannerMode() == ScannerMode::VPin) ? "VPin" : "VPSDb";
         std::string comboLabel = std::string("Rescan (") + modeLabel + ")";
@@ -177,9 +176,9 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
-    ImVec4 green      = ImVec4(0.16f,0.45f,0.16f,1.0f);
-    ImVec4 greenHover = ImVec4(0.20f,0.55f,0.20f,1.0f);
-    ImVec4 greenActive= ImVec4(0.12f,0.35f,0.12f,1.0f);
+    ImVec4 green      = ImVec4(0.24f, 0.74f, 0.24f, 1.0f);
+    ImVec4 greenHover = ImVec4(0.20f, 0.55f, 0.20f, 1.0f);
+    ImVec4 greenActive= ImVec4(0.12f, 0.35f, 0.12f, 1.0f);
 
     ImGui::PushStyleColor(ImGuiCol_Button,        green);
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);

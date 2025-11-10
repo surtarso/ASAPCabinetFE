@@ -27,14 +27,14 @@ void drawHeader(EditorUI& ui) {
     ImGui::PopItemWidth();
     ImGui::SameLine();
 
-    if (ImGui::BeginCombo("##advanced_combo", "Advanced", ImGuiComboFlags_NoPreview)) {
+    if (ImGui::BeginCombo("##advanced_combo", "Advanced", ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
 
         ImGui::TextDisabled("Test choices");
-        if (ImGui::Selectable("test choice 1"))
+        if (ImGui::Selectable("test choice 1", false))
             LOG_DEBUG("Advanced Menu test choice 1 button pressed (placeholder)");
-        if (ImGui::Selectable("test choice 2"))
+        if (ImGui::Selectable("test choice 2", true))
             LOG_DEBUG("Advanced Menu test choice 2 button pressed (placeholder)");
-        if (ImGui::Selectable("test choice 3"))
+        if (ImGui::Selectable("test choice 3", false))
             LOG_DEBUG("Advanced Menu test choice 3 button pressed (placeholder)");
 
         ImGui::TextDisabled("Test options");
@@ -47,6 +47,13 @@ void drawHeader(EditorUI& ui) {
             LOG_DEBUG("Advanced Menu test option 2 button pressed (placeholder)");
         }
 
+        ImGui::Separator();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
+        if (ImGui::Selectable("Exit Editor", false)) {
+            LOG_DEBUG("Exit Editor requested from Advanced Menu");
+            ui.requestExit();
+        }
+        ImGui::PopStyleColor();
         ImGui::EndCombo();
     }
 }
