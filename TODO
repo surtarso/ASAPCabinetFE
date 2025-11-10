@@ -10,14 +10,13 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] create settings panel (editor related)
 - [!] hook the loading screen
 - [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
+- [fix] isConfigValid() spam on confirmation.
 - [fix] increment launch stats (playcount etc) when launching from editor too 
 -       (gotta switch table launcher for input manager action instead)
 - spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
 - hook vpsdb browser (or remake = bad)
-- mark tables unmatched in vpsdb (no vpsdb ID)
-- add data/imgui.ini to editor only
 - hook advanced option to top pop-up menu (file operations etc)
 
 QOL:

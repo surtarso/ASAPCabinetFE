@@ -10,18 +10,38 @@ namespace fs = std::filesystem;
 namespace editor_footer {
 
 void drawFooter(EditorUI& ui) {
-    // Last scan info
     if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
         const auto& t = ui.filteredTables()[ui.selectedIndex()];
+        // --- Last Scanner Owner ---
         if (!t.jsonOwner.empty()) {
             ImGui::TextDisabled("Last table scanner: %s", t.jsonOwner.c_str()); //string
             ImGui::SameLine();
         }
 
-        ImGui::TextDisabled(" | Patched: %s", t.isPatched ? "Yes" : "No"); //bool
+        // --- Patched Status ---
+        ImGui::TextDisabled(" | Patched: ");
         ImGui::SameLine();
 
-        ImGui::TextDisabled(" | Broken: %s", t.isBroken ? "Yes" : "No"); //bool
+        if (t.isPatched) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.54f, 0.74f, 0.24f, 1.0f)); //green
+            ImGui::TextUnformatted("Yes");
+            ImGui::PopStyleColor();
+        } else {
+            ImGui::TextDisabled("No");
+        }
+        ImGui::SameLine();
+
+        // --- Broken Status ---
+        ImGui::TextDisabled(" | Broken: ");
+        ImGui::SameLine();
+
+        if (t.isBroken) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));  //red
+            ImGui::TextUnformatted("Yes");
+            ImGui::PopStyleColor();
+        } else {
+            ImGui::TextDisabled("No");
+        }
         ImGui::SameLine();
 
         ImGui::TextDisabled(" | Play Count: %d", t.playCount); //int
