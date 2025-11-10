@@ -23,7 +23,7 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
     }
 
     std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
-                         settings.vpxSubCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs +
+                         settings.vpxPlayCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs +
                          " > " + vpxLogFile + " 2>&1 & echo $!";
     LOG_DEBUG("Executing VPX Launch command: " + command);
 

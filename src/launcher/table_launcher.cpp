@@ -22,7 +22,7 @@ std::pair<int, float> TableLauncher::launchTable(const TableData& table) {
 
     // Build command
     std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
-                         settings.vpxSubCmd + " \"" + table.vpxFile + "\" " +
+                         settings.vpxPlayCmd + " \"" + table.vpxFile + "\" " +
                          settings.vpxEndArgs;
     LOG_DEBUG("Command: " + command);
 

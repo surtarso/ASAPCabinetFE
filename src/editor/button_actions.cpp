@@ -39,14 +39,16 @@ void ButtonActions::extractVBS(const std::string& filepath) {
             LOG_ERROR("Failed to extract VBS from table: " + filepath + " (command: " + cmd + ")");
         }
     } else {
-        // --- Internal vpin_wrapper Logic (Placeholder) ---
-        LOG_WARN("Placeholder: Internal VBS extraction is not yet implemented in vpin_wrapper.");
-        // Example:
-        //
-        // bool success = extract_vbs_from_vpx(filepath.c_str());
-        // if (!success) {
-        //     LOG_ERROR("Internal VBS extraction failed for: " + filepath);
-        // }
+        // --- Use VPinballX to extract Logic ---
+        LOG_INFO("Using VPinballX for VBS extraction.");
+        // Build command
+        // std::string command = settings.VPinballXPath + " " + settings.vpxExtractCmd + " \"" + filepath;
+        std::string command = "\"" + settings.VPinballXPath + "\" " + settings.vpxExtractCmd + " \"" + filepath + "\"";
+        LOG_DEBUG("Command: " + command);
+        int result = system(command.c_str());
+        if (result != 0) {
+            LOG_ERROR("VPinballX failed to extract VBS from table: " + filepath + " (command: " + command + ")");
+        }
     }
 }
 

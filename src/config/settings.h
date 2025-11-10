@@ -199,7 +199,8 @@ struct Settings {
 
     // [Internal]
     std::string exeDir;
-    std::string vpxSubCmd = "-Play";
+    std::string vpxPlayCmd = "-Play";
+    std::string vpxExtractCmd = "-ExtractVBS";
     std::string vpsDbPath = "data/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
     std::string vpsDbLastUpdated = "data/lastUpdated.json";
@@ -502,7 +503,8 @@ private:
             }},
             {"Internal", {
                 {"exeDir", s.exeDir},
-                {"vpxSubCmd", s.vpxSubCmd},
+                {"vpxPlayCmd", s.vpxPlayCmd},
+                {"vpxExtractCmd", s.vpxExtractCmd},
                 {"vpsDbPath", s.vpsDbPath},
                 {"vpsDbUpdateFrequency", s.vpsDbUpdateFrequency},
                 {"vpsDbLastUpdated", s.vpsDbLastUpdated},
@@ -715,7 +717,8 @@ private:
 
         // Internal
         s.exeDir = j.value("Internal", nlohmann::json{}).value("exeDir", s.exeDir);
-        s.vpxSubCmd = j.value("Internal", nlohmann::json{}).value("vpxSubCmd", s.vpxSubCmd);
+        s.vpxPlayCmd = j.value("Internal", nlohmann::json{}).value("vpxPlayCmd", s.vpxPlayCmd);
+        s.vpxExtractCmd = j.value("Internal", nlohmann::json{}).value("vpxExtractCmd", s.vpxExtractCmd);
         s.vpsDbPath = j.value("Internal", nlohmann::json{}).value("vpsDbPath", s.vpsDbPath);
         s.vpsDbUpdateFrequency = j.value("Internal", nlohmann::json{}).value("vpsDbUpdateFrequency", s.vpsDbUpdateFrequency);
         s.vpsDbLastUpdated = j.value("Internal", nlohmann::json{}).value("vpsDbLastUpdated", s.vpsDbLastUpdated);
@@ -917,14 +920,16 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
 
     // Internal paths and timing
     {"exeDir", {Settings::ReloadType::None, "Path to the application executable directory."}},
-    {"vpxSubCmd", {Settings::ReloadType::None, "VPinballX command used to play .vpx tables (internal helper)."}},
-    {"vpsDbPath", {Settings::ReloadType::None, "Path to the VPS database file (relative to the executable directory)."}},
+    {"vpxPlayCmd", {Settings::ReloadType::None, "VPinballX command used to play .vpx tables (internal helper)."}},
+    {"vpxExtractCmd", {Settings::ReloadType::None, "VPinballX command used to extract .vbs scripts from tables (internal helper)."}},
+    {"vpsDbPath", {Settings::ReloadType::None, "Full path to the VPS database file."}},
     {"vpsDbUpdateFrequency", {Settings::ReloadType::None, "When to check for VPSdb updates (e.g., 'startup')."}},
-    {"vpsDbLastUpdated", {Settings::ReloadType::None, "Path to the VPS database timestamp file (relative to executable)."}},
+    {"vpsDbLastUpdated", {Settings::ReloadType::None, "Full path to the VPS database timestamp file."}},
+
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file (defaults to vpxtool_index.json)."}},
-    {"vpxtoolBin", {Settings::ReloadType::None, "Path to the vpxtool binary, if it is not on your PATH."}},
+    {"vpxtoolBin", {Settings::ReloadType::None, "Full path to the vpxtool binary, if it is not on your PATH."}},
     {"vpxtoolExtractCmd", {Settings::ReloadType::None, "The vpxtool subcommand for extracting VBScripts."}},
-    {"indexPath", {Settings::ReloadType::None, "Path to the main table index file (relative to the executable)."}},
+    {"indexPath", {Settings::ReloadType::None, "Full path to the main table index file."}},
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},

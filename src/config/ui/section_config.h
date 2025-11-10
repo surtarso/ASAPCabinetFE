@@ -407,20 +407,26 @@ public:
         };
 
         keyOrders_["Internal"] = {
-            "vpxSubCmd",
+            "vpxPlayCmd",
+            "vpxExtractCmd",
             "vpsDbPath",
             "vpsDbUpdateFrequency",
             "vpsDbLastUpdated",
+            "vpxtoolBin",
+            "vpxtoolExtractCmd",
             "vpxtoolIndex",
             "indexPath",
             "screenshotWait"
         };
         keyDisplayNames_["Internal"] = {
-            {"vpxSubCmd", "VPX Subcommand"},
+            {"vpxPlayCmd", "VPinballX 'Play' Subcommand"},
+            {"vpxExtractCmd", "VPinballX 'Extract VBS' Subcommand"},
             {"vpsDbPath", "VPS Database Path"},
             {"vpsDbUpdateFrequency", "VPS Database Update Frequency"},
             {"vpsDbLastUpdated", "VPS Database Last Updated"},
-            {"vpxtoolIndex", "VPX Tool Index"},
+            {"vpxtoolBin", "VPXTool Binary Path"},
+            {"vpxtoolExtractCmd", "VPXTool Extract Command"},
+            {"vpxtoolIndex", "VPXTool Index File"},
             {"indexPath", "Index Path"},
             {"screenshotWait", "Screenshot Wait Time"}
         };
