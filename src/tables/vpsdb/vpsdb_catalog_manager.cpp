@@ -430,6 +430,23 @@ bool VpsdbCatalog::render() {
         }
     }
 
+    ImGui::SameLine();
+    // Align to the far right
+    float closeButtonWidth = 100.0f;
+    ImGui::SameLine(ImGui::GetWindowWidth() - closeButtonWidth - ImGui::GetStyle().WindowPadding.x);
+    // Red close button style
+    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.7f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
+
+    if (ImGui::Button("Close", ImVec2(100, 0))) {
+        LOG_DEBUG("VpsdbCatalog: Close button clicked.");
+        ImGui::PopStyleColor(3);
+        ImGui::End(); // Manually end the window
+        return false; // This signals App/Editor to close the panel
+    }
+    ImGui::PopStyleColor(3);
+
     // Loading overlay
     if (isTableLoading_) {
         ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);

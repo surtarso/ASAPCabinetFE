@@ -16,7 +16,6 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
-- hook vpsdb browser
 - hook advanced option to top pop-up menu (file operations etc)
 
 QOL:

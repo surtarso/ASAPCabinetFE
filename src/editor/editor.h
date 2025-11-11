@@ -16,7 +16,14 @@
  * @class Editor
  * @brief Standalone editor for table management inside ASAPCabinetFE (--editor mode)
  */
+
+ // Forward declarations
 class ImGuiManager; // forward declaration
+
+namespace vpsdb {
+    class VpsdbCatalog;
+    class VpsdbJsonLoader;
+}
 
 class Editor : public IApp {
 public:
@@ -52,12 +59,13 @@ private:
     // --- ASAPCabinetFE dependencies ---
     std::unique_ptr<IConfigService> config_;
     std::unique_ptr<IKeybindProvider> keybindProvider_; /// To listen to keystrokes
-    std::unique_ptr<IInputManager> inputManager_;       /// Input manager for handling actions
+    std::unique_ptr<IInputManager> inputManager_;       /// Input manager for handling actions?
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<EditorUI> editorUI_;
+    std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
+    std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_;
 
-    // std::atomic<bool> isLoadingTables_{false};          ///< Tracks loading status
     std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
 };

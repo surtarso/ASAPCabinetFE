@@ -1,8 +1,10 @@
 #include "editor/editor.h"
 #include "log/logging.h"
+#include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
-#include "core/dependency_factory.h"
+#include "tables/vpsdb/vpsdb_catalog_manager.h"
+#include "tables/vpsdb/vpsdb_catalog_json.h"
 #include <SDL.h>
 #include <stdexcept>
 
@@ -14,8 +16,9 @@ Editor::Editor(const std::string& configPath)
       window_(nullptr),
       renderer_(nullptr),
       imguiManager_(nullptr),
-    //   isLoadingTables_{false},
-      loadingProgress_(std::make_shared<LoadingProgress>())
+      loadingProgress_(std::make_shared<LoadingProgress>()),
+      vpsdbCatalog_(nullptr),
+      vpsdbJsonLoader_(nullptr)
     {
     initializeSDL();
 
@@ -104,8 +107,27 @@ void Editor::mainLoop() {
                 ImGui::Text("Metadata Editor would be here");
                 if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
             } else if (showVpsdbBrowser_) {
-                ImGui::Text("VPSDB Browser would be here");
-                if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
+                if (!vpsdbCatalog_) {
+                    // Lazy initialization
+                    LOG_DEBUG("Editor: Initializing VpsdbCatalog...");
+                    vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(config_->getSettings().vpsDbPath,
+                                                                            config_->getSettings());
+                    vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(config_->getSettings().vpsDbPath,
+                                                                        renderer_, // Use the Editor's main renderer
+                                                                        config_->getSettings(),
+                                                                        *vpsdbJsonLoader_);
+                    LOG_DEBUG("Editor: vpsdbCatalog and vpsdbJsonLoader initialized");
+                }
+
+                // Render the catalog. It returns false when it wants to close.
+                if (!vpsdbCatalog_->render()) {
+                    vpsdbCatalog_.reset();
+                    vpsdbJsonLoader_.reset();
+                    showVpsdbBrowser_ = false; // The flag that opened it is set back to false
+                    LOG_DEBUG("Editor: Closed VpsdbCatalog and vpsdbJsonLoader");
+                }
+                // ImGui::Text("VPSDB Browser would be here");
+                // if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
             } else if (showEditorSettings_) {
                 ImGui::Text("Editor Settings would be here");
                 if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
