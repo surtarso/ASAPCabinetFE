@@ -271,7 +271,7 @@ We’re dreaming big! Help us bring these features to life:
 - Highscore tracking.
 
 ## In Development now:
-Check out how the editor is looking using the latest build! Still a work in progress and most functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Suggestions at this early stage are highly appreciated!
+Check out how the editor is looking using the latest build! Still a work in progress and some functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Suggestions are highly appreciated!
 
 - Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management. (--editor)
 
