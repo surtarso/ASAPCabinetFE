@@ -245,8 +245,18 @@ ASAPCabinetFE provides you with three distinct scanners:
 
 <img width="729" height="443" alt="image" src="https://github.com/user-attachments/assets/4aeea268-9656-45b1-be55-dac02f963c30" />
 
+Usage:
+- The default behavior is to *only read the index* for a fast start.
+- If an index can't be found in the default path, it will fire the *file scanner* to create one.
+- You can opt in the other scanners as you wish, but notice some features will require all scanners to have ran at least once, like fetching art from VPin Database.
+- Your files will be re-scanned (for changes, new tables etc) on every start-up if you opt to uncheck 'fast start'.
+- If you want to rebuild the database from scratch (overwrite instead of increment) you need to check 'force rebuild' (and uncheck 'fast start').
+
 >[!NOTE]
 > If you already have `vpxtool` installed or `vpxtool_index.json` already built in your tables folder, we will try to use it instead of VPin. No need to double scan or keep multiple metadata files.
+
+>[!TIP]
+> Table management is easier using the built-in editor, start with (`ASAPCabinetFE-Editor`).
 
 ## If Something Goes Wrong
 
