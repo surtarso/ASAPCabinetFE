@@ -187,38 +187,31 @@ _Built something cool? Share it with us in the [Discussions](https://github.com/
 ```
 # ----------- ASAPCabinetFE + VPinballX
 # Playfield
-windowrulev2 = workspace 4, title:Playfield
-windowrulev2 = monitor:DP-1, title:Playfield
-windowrulev2 = fullscreen, title:Playfield
-windowrulev2 = workspace 4, title:^(Visual Pinball Player)$
-windowrulev2 = monitor:DP-1, title:^(Visual Pinball Player)$
-windowrulev2 = fullscreen, title:^(Visual Pinball Player)$
+windowrule = workspace 4, title:Playfield
+windowrule = fullscreen, title:Playfield
+windowrule = workspace 4, title:^(Visual Pinball Player)$
+windowrule = fullscreen, title:^(Visual Pinball Player)$
 
 # ASAPCabinetFE Backglass
-windowrulev2 = workspace 3, title:Backglass
-windowrulev2 = monitor:HDMI-A-1, title:Backglass
-windowrulev2 = move 45% 3%, title:Backglass
+windowrule = workspace 3, title:Backglass
+windowrule = move 45% 3%, title:Backglass
 # VPinballX Backglass
-windowrulev2 = workspace 3, initialTitle:^(.*Backglass)$
-windowrulev2 = workspace 3, title:^(Visual Pinball - Backglass)$
-windowrulev2 = monitor:HDMI-A-1, initialTitle:^(.*Backglass)$
-windowrulev2 = monitor:HDMI-A-1, title:^(Visual Pinball - Backglass)$
-windowrulev2 = move 45% 3%, initialTitle:^(.*Backglass)$
-windowrulev2 = move 45% 3%, title:^(Visual Pinball - Backglass)$
+windowrule = workspace 3, initialTitle:^(.*Backglass)$
+windowrule = workspace 3, title:^(Visual Pinball - Backglass)$
+windowrule = move 45% 3%, initialTitle:^(.*Backglass)$
+windowrule = move 45% 3%, title:^(Visual Pinball - Backglass)$
 
 # DMD/Score
-windowrulev2 = workspace 3, title:DMD
-windowrulev2 = monitor:HDMI-A-1, title:DMD
-windowrulev2 = move 45% 75%, title:DMD
-windowrulev2 = workspace 3, title:^(Visual Pinball - Score)$
-windowrulev2 = monitor:HDMI-A-1, title:^(Visual Pinball - Score)$
-windowrulev2 = move 45% 75%, title:^(Visual Pinball - Score)$
+windowrule = workspace 3, title:DMD
+windowrule = move 45% 75%, title:DMD
+windowrule = workspace 3, title:^(Visual Pinball - Score)$
+windowrule = move 45% 75%, title:^(Visual Pinball - Score)$
 
 # Screenshot window
-windowrulev2 = float, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
-windowrulev2 = center, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
-windowrulev2 = float, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
-windowrulev2 = center, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
+windowrule = float, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
+windowrule = center, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
+windowrule = float, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
+windowrule = center, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
 ```
 </details>
 
