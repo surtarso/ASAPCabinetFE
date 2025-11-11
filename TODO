@@ -13,7 +13,6 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - add metadata override panel from main ui, separate from view metadata.
 - hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
 - hook screenshot (Single table)
-- add author and manufacturer to fuzzy search
 
 QOL:
 - [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)

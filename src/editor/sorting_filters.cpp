@@ -17,6 +17,29 @@ namespace
         return ascending ? (val_a < val_b) : (val_a > val_b);
     }
 
+    // Case-insensitive, multi-author aware compare
+    bool compareTextField(const std::string &aField, const std::string &bField, bool ascending,
+                        const TableData &a, const TableData &b) {
+        auto normalize = [](std::string s) {
+            std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+            for (char c : {'+', '&', '/', ';'})
+                std::replace(s.begin(), s.end(), c, ',');
+            std::replace(s.begin(), s.end(), ' ', ',');
+            return s;
+        };
+
+        std::string na = normalize(aField);
+        std::string nb = normalize(bField);
+
+        // Optional: split on ',' and compare first author for sorting stability
+        std::stringstream sa(na), sb(nb);
+        std::string fa, fb;
+        std::getline(sa, fa, ',');
+        std::getline(sb, fb, ',');
+
+        return compareWithTieBreaker(fa, fb, ascending, a, b);
+    }
+
     // The actual sort logic wrapped in a function for clarity
     void performSort(std::vector<TableData> &tables, int sortColumn, bool sortAscending) {
         std::sort(tables.begin(), tables.end(), [sortColumn, sortAscending](const TableData &a, const TableData &b) {
@@ -27,9 +50,9 @@ namespace
                 if (sortColumn == 1) {
                     return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
                 }
-                // Author (ID 3) should use 'tableAuthor'
+                // Author (ID 3) should use all table authors
                 if (sortColumn == 3) {
-                    return compareWithTieBreaker(a.tableAuthor, b.tableAuthor, sortAscending, a, b);
+                    return compareTextField(a.tableAuthor, b.tableAuthor, sortAscending, a, b);
                 }
                 // Manufacturer (ID 4) should use 'manufacturer'
                 if (sortColumn == 4) {
@@ -67,41 +90,72 @@ void EditorTableFilter::filterAndSort(const std::vector<TableData>& sourceTables
     std::string lowerQuery;
     if (!searchQuery.empty()) {
         lowerQuery = searchQuery;
-        // Use std::tolower from <cctype> via ::tolower
         std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower);
     }
 
+    // Fuzzy search filtering
     for (const auto &table : sourceTables) {
-        // --- FUZZY SEARCH LOGIC (from vpxguitools pattern) ---
         if (searchQuery.empty()) {
             targetFilteredTables.push_back(table);
             continue;
         }
 
-        // Prepare fields for case-insensitive search
-        std::string lowerTitle = table.title;
-        std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+        auto toLower = [](std::string s) {
+            std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+            return s;
+        };
 
-        std::string lowerTableName = table.tableName;
-        std::transform(lowerTableName.begin(), lowerTableName.end(), lowerTableName.begin(), ::tolower);
+        // ---- Normalize and combine equivalent metadata ----
+        std::string titleCombo =
+            toLower(table.title + " " + table.tableName + " " + table.vpsName);
 
-        std::string lowerVpsName = table.vpsName;
-        std::transform(lowerVpsName.begin(), lowerVpsName.end(), lowerVpsName.begin(), ::tolower);
+        std::string authorCombo =
+            toLower(table.tableAuthor + " " + table.vpsAuthors);
 
+        std::string manufCombo =
+            toLower(table.manufacturer + " " + table.tableManufacturer + " " + table.vpsManufacturer);
+
+        std::string yearCombo =
+            toLower(table.year + " " + table.tableYear + " " + table.vpsYear);
 
         fs::path vpxPath(table.vpxFile);
-        std::string lowerFilename = vpxPath.stem().string();
-        std::transform(lowerFilename.begin(), lowerFilename.end(), lowerFilename.begin(), ::tolower);
+        std::string filename = toLower(vpxPath.stem().string());
+        std::string rom = toLower(table.romName);
 
-        std::string lowerRom = table.romName;
-        std::transform(lowerRom.begin(), lowerRom.end(), lowerRom.begin(), ::tolower);
+        // --- Split authors ---
+        std::vector<std::string> authors;
+        {
+            std::string temp = authorCombo;
+            size_t pos = 0;
+            while ((pos = temp.find(" and ", pos)) != std::string::npos)
+                temp.replace(pos, 5, ",");
+            for (char c : {'+', '&', '/', ';'})
+                std::replace(temp.begin(), temp.end(), c, ',');
+            std::stringstream ss(temp);
+            std::string token;
+            while (std::getline(ss, token, ',')) {
+                token.erase(0, token.find_first_not_of(" \t\r\n"));
+                token.erase(token.find_last_not_of(" \t\r\n") + 1);
+                if (!token.empty())
+                    authors.push_back(token);
+            }
+        }
 
-        // Check if query is found in Name (title), Filename (vpxFile stem), or ROM name
-        if (lowerTitle.find(lowerQuery) != std::string::npos ||
-            lowerTableName.find(lowerQuery) != std::string::npos ||
-            lowerVpsName.find(lowerQuery) != std::string::npos ||
-            lowerFilename.find(lowerQuery) != std::string::npos ||
-            lowerRom.find(lowerQuery) != std::string::npos) {
+        // --- Match logic ---
+        bool authorMatch = false;
+        for (const auto& a : authors)
+            if (a.find(lowerQuery) != std::string::npos) {
+                authorMatch = true;
+                break;
+            }
+
+        if (titleCombo.find(lowerQuery)     != std::string::npos ||
+            manufCombo.find(lowerQuery)     != std::string::npos ||
+            yearCombo.find(lowerQuery)      != std::string::npos ||
+            filename.find(lowerQuery)       != std::string::npos ||
+            rom.find(lowerQuery)            != std::string::npos ||
+            authorMatch)
+        {
             targetFilteredTables.push_back(table);
         }
     }

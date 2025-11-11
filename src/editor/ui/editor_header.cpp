@@ -28,11 +28,13 @@ void drawHeader(EditorUI& ui) {
         );
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 1.4f);
-    if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
+    if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Year, Name, Author, Manufacturer, File, or ROM",
                                  ui.searchBuffer(), ui.searchBufferSize())) {
         ui.setSearchQuery(ui.searchBuffer());
         ui.filterAndSortTablesPublic();
     }
+
+    // --- Debug: show raw buffer length and bytes
     // ImGui::Text("Buffer len: %zu  Query len: %zu", strlen(ui.searchBuffer()), ui.searchQuery().size());
     // ImGui::Text("strlen: %zu  raw bytes:", strlen(ui.searchBuffer()));
     // for (int i = 0; i < 16; i++) {
