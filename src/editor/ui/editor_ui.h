@@ -6,6 +6,7 @@
 #include "config/iconfig_service.h"
 #include "tables/table_data.h"
 #include "launcher/itable_launcher.h"
+#include "tables/itable_callbacks.h"
 #include "core/ui/loading_progress.h"
 #include <imgui.h>
 #include <vector>
@@ -27,6 +28,7 @@ public:
              IConfigService* config,
              ITableLoader* tableLoader,
              ITableLauncher* launcher,
+             ITableCallbacks* tableCallbacks,
              std::shared_ptr<LoadingProgress> progress
              );
 
@@ -78,9 +80,15 @@ public:
 
     std::mutex& tableMutex()            { return tableMutex_; }
 
-    bool& showMetadataEditor_;
-    bool& showVpsdbBrowser_;
-    bool& showEditorSettings_;
+    bool showMetadataEditor() const { return showMetadataEditor_; }
+    void setShowMetadataEditor(bool v) { showMetadataEditor_ = v; }
+
+    bool showVpsdbBrowser() const { return showVpsdbBrowser_; }
+    void setShowVpsdbBrowser(bool v) { showVpsdbBrowser_ = v; }
+
+    bool showEditorSettings() const { return showEditorSettings_; }
+    void setShowEditorSettings(bool v) { showEditorSettings_ = v; }
+
 
 private:
     // helper methods
@@ -91,6 +99,7 @@ private:
     IConfigService* config_;
     ITableLoader* tableLoader_;
     ITableLauncher* tableLauncher_;
+    ITableCallbacks* tableCallbacks_;
     std::shared_ptr<LoadingProgress> loadingProgress_;
     ButtonActions actions_;
     EditorTableFilter tableFilter_;
@@ -114,4 +123,8 @@ private:
 
     int  sortColumn_         = 1;
     bool sortAscending_      = true;
+
+    bool& showMetadataEditor_;
+    bool& showVpsdbBrowser_;
+    bool& showEditorSettings_;
 };

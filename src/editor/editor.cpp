@@ -3,6 +3,7 @@
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
 #include "tables/table_loader.h"
+#include "tables/asap_index_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_json.h"
 #include <SDL.h>
@@ -39,6 +40,7 @@ Editor::Editor(const std::string& configPath)
     // Create Table Loader and Launcher after GUI is ready
     tableLoader_ = std::make_unique<TableLoader>();
     tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
+    tableCallbacks_ = std::make_unique<AsapIndexManager>(config_->getSettings());
 
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
@@ -48,6 +50,7 @@ Editor::Editor(const std::string& configPath)
         config_.get(),
         tableLoader_.get(),
         tableLauncher_.get(),
+        tableCallbacks_.get(),
         loadingProgress_
     );
 

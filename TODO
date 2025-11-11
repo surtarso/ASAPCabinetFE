@@ -8,7 +8,6 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [fix] isConfigValid() spam on confirmation.
-- [fix] persist launch stats after 'play' (with ItableCallbacks)
 - [fix] search bar can only accept 7 characters?!? why?!
 - [!] create settings panel (editor related)
 - spreadsheet column hover dynamic tooltips

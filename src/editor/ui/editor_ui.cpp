@@ -16,16 +16,19 @@ EditorUI::EditorUI(bool& showMeta,
                    IConfigService* config,
                    ITableLoader* tableLoader,
                    ITableLauncher* launcher,
+                   ITableCallbacks* tableCallbacks,
                    std::shared_ptr<LoadingProgress> progress
                    )
-    : showMetadataEditor_(showMeta),
-      showVpsdbBrowser_(showBrowser),
-      showEditorSettings_(showSettings),
-      config_(config),
+    : config_(config),
       tableLoader_(tableLoader),
       tableLauncher_(launcher),
+      tableCallbacks_(tableCallbacks),
       loadingProgress_(progress),
-      actions_(config)
+      actions_(config, tableCallbacks),
+      tableFilter_(),
+      showMetadataEditor_(showMeta),
+      showVpsdbBrowser_(showBrowser),
+      showEditorSettings_(showSettings)
 {
     Settings settings = config_->getSettings();
 

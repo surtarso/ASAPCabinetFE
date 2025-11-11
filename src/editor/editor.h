@@ -4,6 +4,7 @@
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
 #include "launcher/itable_launcher.h"
+#include "tables/itable_callbacks.h"
 #include "core/ui/loading_progress.h"
 #include "core/ui/loading_screen.h"
 #include <SDL2/SDL.h>
@@ -62,10 +63,11 @@ private:
     std::unique_ptr<IInputManager> inputManager_;       /// Input manager for handling actions?
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
+    std::unique_ptr<ITableCallbacks> tableCallbacks_;
     std::unique_ptr<EditorUI> editorUI_;
+    std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
     std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_;
 
-    std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
 };

@@ -216,7 +216,7 @@ void drawFooter(EditorUI& ui) {
 
     if (ImGui::Button("View Metadata")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            ui.showMetadataEditor_ = true;
+            ui.setShowMetadataEditor(true);
             LOG_DEBUG("Toggling metadata editor ON");
         } else {
             LOG_DEBUG("View Metadata pressed but no table selected");
@@ -230,7 +230,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::SameLine();
 
     if (ImGui::Button("Browse Tables")) {
-        ui.showVpsdbBrowser_ = true;
+        ui.setShowVpsdbBrowser(true);
         LOG_DEBUG("Browse Tables pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -269,7 +269,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::SameLine(rightAlignPos);
 
     if (ImGui::Button("Settings")) {
-        ui.showEditorSettings_ = true;
+        ui.setShowEditorSettings(true);
         LOG_DEBUG("Settings pressed (placeholder)");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

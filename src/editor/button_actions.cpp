@@ -11,8 +11,10 @@
 
 namespace fs = std::filesystem;
 
-ButtonActions::ButtonActions(IConfigService* config)
-    : config_(config) {}
+// ButtonActions::ButtonActions(IConfigService* config)
+//     : config_(config) {}
+ButtonActions::ButtonActions(IConfigService* config, ITableCallbacks* tableCallbacks)
+    : config_(config), tableCallbacks_(tableCallbacks) {}
 
 void ButtonActions::extractVBS(const std::string& filepath) {
     if (!config_) {
@@ -206,6 +208,21 @@ void ButtonActions::launchTableWithStats(
         // Failure
         t_mutable.isBroken = true;
         LOG_ERROR("Table launch failed with exit code " + std::to_string(result) + ". Marked as broken.");
+    }
+
+    // Save updated table data via callback
+    if (tableCallbacks_ && config_) {
+        // Retrieve settings to pass to the save method
+        const auto& settings = config_->getSettings();
+
+        // Call the save method exactly as in the original InputManager logic
+        if (tableCallbacks_->save(settings, masterTables, nullptr)) {
+            LOG_DEBUG("Table data updated and saved successfully via callback.");
+        } else {
+            LOG_ERROR("Failed to save updated table data via callback.");
+        }
+    } else {
+        LOG_ERROR("Cannot save table data: Missing TableCallbacks or ConfigService dependency.");
     }
 
     // 4. SYNCHRONIZE UI

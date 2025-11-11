@@ -7,6 +7,7 @@
 #include "config/iconfig_service.h" // for IConfigService interface
 #include "launcher/itable_launcher.h"
 #include "tables/table_data.h"
+#include "tables/itable_callbacks.h"  // to call save() after updating stats
 
 /**
  * @brief Handles simple table-related operations for EditorUI,
@@ -14,7 +15,8 @@
  */
 class ButtonActions {
 public:
-    explicit ButtonActions(IConfigService* config);
+    // explicit ButtonActions(IConfigService* config);
+    explicit ButtonActions(IConfigService* config, ITableCallbacks* tableCallbacks);
 
     /**
      * @brief Extracts the VBScript from a .vpx file using vpxtool.
@@ -59,6 +61,7 @@ public:
 
 private:
     IConfigService* config_; // Non-owning pointer
+    ITableCallbacks* tableCallbacks_; // Non-owning pointer to save updated stats
     bool pendingSearchFocus_ = false; // Deferred focus flag
 };
 
