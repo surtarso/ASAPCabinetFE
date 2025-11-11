@@ -69,6 +69,7 @@ public:
     void setUseVpxtool(bool v)               { useVpxtool_ = v; }
 
     char* searchBuffer()                  { return searchBuffer_; }
+    constexpr size_t searchBufferSize() const { return sizeof(searchBuffer_); }
 
     void filterAndSortTablesPublic()     { filterAndSortTables(); }
     void rescanAsyncPublic(ScannerMode mode) { rescanAsync(mode); }

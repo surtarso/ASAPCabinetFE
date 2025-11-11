@@ -29,7 +29,7 @@ void drawHeader(EditorUI& ui) {
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 1.4f);
     if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Name, File, or ROM",
-                                 ui.searchBuffer(), sizeof(ui.searchBuffer()))) {
+                                 ui.searchBuffer(), ui.searchBufferSize())) {
         ui.setSearchQuery(ui.searchBuffer());
         ui.filterAndSortTablesPublic();
     }
