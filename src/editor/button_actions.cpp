@@ -11,8 +11,6 @@
 
 namespace fs = std::filesystem;
 
-// ButtonActions::ButtonActions(IConfigService* config)
-//     : config_(config) {}
 ButtonActions::ButtonActions(IConfigService* config, ITableCallbacks* tableCallbacks)
     : config_(config), tableCallbacks_(tableCallbacks) {}
 
@@ -46,7 +44,6 @@ void ButtonActions::extractVBS(const std::string& filepath) {
         // --- Use VPinballX to extract Logic ---
         LOG_INFO("Using VPinballX for VBS extraction.");
         // Build command
-        // std::string command = settings.VPinballXPath + " " + settings.vpxExtractCmd + " \"" + filepath;
         std::string command = "\"" + settings.VPinballXPath + "\" " + settings.vpxExtractCmd + " \"" + filepath + "\"";
         LOG_DEBUG("Command: " + command);
         int result = system(command.c_str());

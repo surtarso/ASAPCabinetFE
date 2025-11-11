@@ -35,7 +35,7 @@ public:
     void draw();
     bool shouldExit() const { return exitRequested_; }
 
-    // — Expose necessary fields and helpers for sub-modules:
+    // Fields and helpers for sub-modules:
     ButtonActions& actions()             { return actions_; }
     ITableLauncher* tableLauncher()     { return tableLauncher_; }
     IConfigService* configService()     { return config_; }
@@ -49,7 +49,6 @@ public:
     bool loading()              const { return loading_; }
     void setLoading(bool l)            { loading_ = l; }
 
-    // const std::string& searchQuery() const { return searchQuery_; }
     std::string& searchQuery() { return searchQuery_; }
     void setSearchQuery(const std::string& q)   { searchQuery_ = q; }
 

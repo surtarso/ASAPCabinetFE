@@ -32,7 +32,7 @@ void drawFirstRun(EditorUI& ui) {
             mutableSettings.VPinballXPath = vpxPathBuf;
             ui.configService()->saveConfig();
 
-            // NEW LOGIC: Re-check validity once, update the cached state, and initiate scan if successful.
+            // Re-check validity once, update the cached state, and initiate scan if successful.
             bool isValid = ui.configService()->isConfigValid();
             ui.setConfigValid(isValid);
 

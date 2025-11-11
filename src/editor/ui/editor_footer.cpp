@@ -11,6 +11,7 @@ namespace editor_footer {
 
 void drawFooter(EditorUI& ui) {
     if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
+        // ---------- Footer Selected Upper Info ----------
         const auto& t = ui.filteredTables()[ui.selectedIndex()];
         // --- Last Scanner Owner ---
         if (!t.jsonOwner.empty()) {
@@ -70,6 +71,7 @@ void drawFooter(EditorUI& ui) {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoveredColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,  activeColor);
 
+        // ---------- Rescan Options Combo ----------
         if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview)) {
             ImGui::TextDisabled("Scanner Mode");
             if (ImGui::Selectable("File Scanner", ui.scannerMode() == ScannerMode::File))
@@ -92,6 +94,8 @@ void drawFooter(EditorUI& ui) {
             ImGui::EndCombo();
         }
         ImGui::SameLine();
+
+        // ---------- Rescan Tables Button ----------
         if (ImGui::Button("Rescan Tables")) {
             ui.rescanAsyncPublic(ui.scannerMode());
         }
@@ -110,7 +114,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
 
-    // for this to work properly we need changes to asapcab_index.json marked and saved before scan
+    // ---------- Refresh Button ----------
     if (ImGui::Button("Refresh")) {
         LOG_DEBUG("Refresh pressed");
         ui.setScannerMode(ScannerMode::HasIndex);
@@ -124,6 +128,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
 
+    // ---------- Open Folder Button ----------
     if (ImGui::Button("Open Folder")) {
         std::string path;
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size()))
@@ -145,6 +150,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, yellowHover);
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  yellowActive);
 
+    // ---------- Extract VBS Button ----------
     if (ImGui::Button("Extract VBS")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
@@ -167,6 +173,7 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
+    // ---------- Apply Patch Button ----------
     if (ImGui::Button("Apply Patch")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
@@ -186,6 +193,7 @@ void drawFooter(EditorUI& ui) {
 
     ImGui::PopStyleColor(3);
 
+    // ---------- Download Media Button ----------
     if (ImGui::Button("Download Media")) {
         LOG_DEBUG("Download Media pressed (placeholder)");
     }
@@ -196,6 +204,7 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
+    // ---------- Screenshot Button ----------
     if (ImGui::Button("Screenshot")) {
         LOG_DEBUG("Screenshot pressed (placeholder)");
     }
@@ -214,6 +223,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  greenActive);
 
+    // ---------- View Metadata Button ----------
     if (ImGui::Button("View Metadata")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             ui.setShowMetadataEditor(true);
@@ -229,6 +239,7 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
+    // ---------- Browse Tables Button ----------
     if (ImGui::Button("Browse Tables")) {
         ui.setShowVpsdbBrowser(true);
         LOG_DEBUG("Browse Tables pressed (placeholder)");
@@ -240,6 +251,7 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
+    // ---------- Play Selected Button ----------
     if (ImGui::Button("Play Selected")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
 
@@ -268,6 +280,7 @@ void drawFooter(EditorUI& ui) {
     float rightAlignPos = ImGui::GetContentRegionAvail().x - exitWidth;
     ImGui::SameLine(rightAlignPos);
 
+    // ---------- Settings Button ----------
     if (ImGui::Button("Settings")) {
         ui.setShowEditorSettings(true);
         LOG_DEBUG("Settings pressed (placeholder)");
@@ -285,6 +298,7 @@ void drawFooter(EditorUI& ui) {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f,0.25f,0.25f,1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.6f,0.1f,0.1f,1.0f));
 
+    // ---------- Exit Editor Button ----------
     if (ImGui::Button("Exit Editor")) {
         ui.requestExit();
     }
@@ -300,6 +314,7 @@ void drawFooter(EditorUI& ui) {
 
     ImGui::EndGroup();
 
+    // ---------- Footer Text ----------
     std::ostringstream ss;
     ss << ui.filteredTables().size() << " tables found";
     if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {

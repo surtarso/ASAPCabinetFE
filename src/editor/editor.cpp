@@ -28,9 +28,7 @@ Editor::Editor(const std::string& configPath)
     config_ = DependencyFactory::createConfigService(configPath_, keybindProvider.get());
     keybindProvider_ = std::move(keybindProvider);
 
-    inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get());
-
-    // Initialize ImGui using the shared manager (no manual backend calls)
+    // Initialize ImGui using the shared manager (no manual backend calls) [why not create with factory?]
     imguiManager_ = std::make_unique<ImGuiManager>(window_, renderer_, config_.get());
     imguiManager_->initialize();
 

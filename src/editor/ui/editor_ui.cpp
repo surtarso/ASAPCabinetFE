@@ -35,7 +35,6 @@ EditorUI::EditorUI(bool& showMeta,
 
     Settings settings = config_->getSettings();
 
-    // maybe this should be in editor_body or first_run?
     if (configValid_) {
         LOG_INFO("Paths valid. Starting asynchronous load.");
         if (!settings.indexPath.empty()) {
@@ -88,10 +87,10 @@ void EditorUI::rescanAsync(ScannerMode mode) {
         std::lock_guard<std::mutex> lock(loadingProgress_->mutex);
         loadingProgress_->currentTablesLoaded = 0;
         loadingProgress_->totalTablesToLoad = 0;
-        loadingProgress_->currentStage = 0; // Or 1 if "Loading Index" is the first stage
+        loadingProgress_->currentStage = 0;
         loadingProgress_->numMatched = 0;
         loadingProgress_->numNoMatch = 0;
-        loadingProgress_->currentTask = "Initializing scan...";
+        loadingProgress_->currentTask = "Initializing table loading...";
         loadingProgress_->logMessages.clear();
         loadingProgress_->addLogMessage("INFO: Starting table scan...");
     }
@@ -128,7 +127,6 @@ void EditorUI::rescanAsync(ScannerMode mode) {
         }
 
         auto newTables = tableLoader_->loadTableList(settings, loadingProgress_.get());
-        // auto newTables = tableLoader_->loadTableList(settings, nullptr);
         {
             std::lock_guard<std::mutex> lock(tableMutex_);
             tables_ = std::move(newTables);

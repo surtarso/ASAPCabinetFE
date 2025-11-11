@@ -60,7 +60,6 @@ private:
     // --- ASAPCabinetFE dependencies ---
     std::unique_ptr<IConfigService> config_;
     std::unique_ptr<IKeybindProvider> keybindProvider_; /// To listen to keystrokes
-    std::unique_ptr<IInputManager> inputManager_;       /// Input manager for handling actions?
     std::unique_ptr<ITableLoader> tableLoader_;
     std::unique_ptr<ITableLauncher> tableLauncher_;
     std::unique_ptr<ITableCallbacks> tableCallbacks_;
