@@ -8,7 +8,6 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] create settings panel (editor related)
-- spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - add metadata override panel from main ui, separate from view metadata.
 - hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)

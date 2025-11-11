@@ -9,6 +9,155 @@ namespace fs = std::filesystem;
 
 namespace editor_body {
 
+// Forward declarations for all tooltip helpers
+static void drawYearTooltip(const TableData& t);
+static void drawNameTooltip(const TableData& t);
+static void drawAuthorTooltip(const TableData& t);
+static void drawFilesTooltip(const TableData& t);
+static void drawRomTooltip(const TableData& t);
+static void drawVersionTooltip(const TableData& t);
+static void drawExtrasTooltip(const TableData& t);
+static void drawAssetsTooltip(const TableData& t);
+static void drawManufacturerTooltip(const TableData& t);
+static void drawVideosTooltip(const TableData& t);
+static void drawSoundsTooltip(const TableData& t);
+
+// ------------------------------------------------------------------
+// Tooltip router
+static void drawTooltipForColumn(int column, const TableData& t) {
+    ImGui::BeginTooltip();
+    switch (column) {
+        case 0: drawYearTooltip(t); break;
+        case 1: drawNameTooltip(t); break;
+        case 2: drawVersionTooltip(t); break;
+        case 3: drawAuthorTooltip(t); break;
+        case 4: drawManufacturerTooltip(t); break;
+        case 5: drawFilesTooltip(t); break;
+        case 6: drawRomTooltip(t); break;
+        case 7: drawExtrasTooltip(t); break;
+        case 8: drawAssetsTooltip(t); break;
+        case 9: drawVideosTooltip(t); break;
+        case 10: drawSoundsTooltip(t); break;
+        default:
+            ImGui::TextDisabled("No tooltip defined.");
+            break;
+    }
+    ImGui::EndTooltip();
+}
+
+// ------------------------------------------------------------------
+// YEAR column
+static void drawYearTooltip(const TableData& t) {
+    ImGui::Text("Metadata: %s", t.tableYear.empty() ? "-" : t.tableYear.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsYear.empty() ? "-" : t.vpsYear.c_str());
+
+    ImGui::Separator();
+    ImGui::Text("Best match: %s (%.0f%%)", t.year.c_str(), t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// NAME column
+static void drawNameTooltip(const TableData& t) {
+    ImGui::Text("File: %s", t.vpxFile.empty() ? "-" : t.vpxFile.c_str());
+    ImGui::Text("Metadata: %s", t.tableName.empty() ? "-" : t.tableName.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsName.empty() ? "-" : t.vpsName.c_str());
+
+    ImGui::Separator();
+    ImGui::Text("Best match: %s (%.0f%%)", t.title.c_str(), t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// AUTHOR column
+static void drawAuthorTooltip(const TableData& t) {
+    ImGui::Text("Metadata: %s", t.tableAuthor.empty() ? "-" : t.tableAuthor.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsAuthors.empty() ? "-" : t.vpsAuthors.c_str());
+
+    std::string best = !t.vpsAuthors.empty() ? t.vpsAuthors :
+                       !t.tableAuthor.empty() ? t.tableAuthor : "-";
+    ImGui::Separator();
+    ImGui::Text("Best match: %s (%.0f%%)", best.c_str(), t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// FILES column
+static void drawFilesTooltip(const TableData& t) {
+    ImGui::Text("Legend: I=INI, V=VBS, B=B2S");
+    ImGui::TextColored(t.hasINI ? (t.hasDiffVbs ? ImVec4(1.f,1.f,0.f,1.f) : ImVec4(0.8f,0.8f,0.8f,1.f))
+                                : ImVec4(0.5f,0.5f,0.5f,1.f),
+                       "INI: %s", t.hasINI ? (t.hasDiffVbs ? "modified" : "present") : "-");
+    ImGui::TextColored(t.hasVBS ? (t.hasDiffVbs ? ImVec4(1.f,1.f,0.f,1.f) : ImVec4(0.8f,0.8f,0.8f,1.f))
+                                : ImVec4(0.5f,0.5f,0.5f,1.f),
+                       "VBS: %s", t.hasVBS ? (t.hasDiffVbs ? "modified" : "present") : "-");
+    ImGui::Text("B2S: %s", t.hasB2S ? "present" : "-");
+}
+
+// ------------------------------------------------------------------
+// ROM column
+static void drawRomTooltip(const TableData& t) {
+    ImGui::Text("Local: %s", t.romName.empty() ? "-" : t.romName.c_str());
+    ImGui::Text("Metadata: (placeholder"); // TODO: add rom from metadata (vpxtool/vpin)
+}
+
+// ------------------------------------------------------------------
+// MANUFACTURER column
+static void drawManufacturerTooltip(const TableData& t) {
+    ImGui::Text("Metadata: %s", t.tableManufacturer.empty() ? "-" : t.tableManufacturer.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsManufacturer.empty() ? "-" : t.vpsManufacturer.c_str());
+    ImGui::Separator();
+    ImGui::Text("Best match: %s (%.0f%%)", t.manufacturer.c_str(), t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// VERSION column
+static void drawVersionTooltip(const TableData& t) {
+    ImGui::Text("Metadata: %s", t.tableVersion.empty() ? "-" : t.tableVersion.c_str());
+    ImGui::Text("VPSDB: %s (latest)", t.vpsVersion.empty() ? "-" : t.vpsVersion.c_str());
+    ImGui::Separator();
+    ImGui::Text("Match confidence: %.0f%%", t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// EXTRAS column
+static void drawExtrasTooltip(const TableData& t) {
+    ImGui::Text("Legend: C=Alt color, S=Alt sound, P=Pup videos, U=UltraDMD, M=Alt music");
+    ImGui::Text("Alt Color: %s", t.hasAltColor ? "present" : "-");
+    ImGui::Text("Alt Sound: %s", t.hasAltSound ? "present" : "-");
+    ImGui::Text("Pup Videos: %s", t.hasPup ? "present" : "-");
+    ImGui::Text("UltraDMD: %s", t.hasUltraDMD ? "present" : "-");
+    ImGui::Text("Alt music: %s", t.hasAltMusic ? "present" : "-");
+}
+
+// ------------------------------------------------------------------
+// ASSETS column (Images)
+static void drawAssetsTooltip(const TableData& t) {
+    ImGui::Text("Legend: P=Playfield, B=Backglass, D=DMD, T=Topper, W=Wheel");
+    ImGui::Text("Playfield: %s", t.hasPlayfieldImage ? t.playfieldImage.c_str() : "-");
+    ImGui::Text("Backglass: %s", t.hasBackglassImage ? t.backglassImage.c_str() : "-");
+    ImGui::Text("DMD: %s", t.hasDmdImage ? t.dmdImage.c_str() : "-");
+    ImGui::Text("Topper: %s", t.hasTopperImage ? t.topperImage.c_str() : "-");
+    ImGui::Text("Wheel: %s", t.hasWheelImage ? t.wheelImage.c_str() : "-");
+}
+
+// ------------------------------------------------------------------
+// VIDEOS column
+static void drawVideosTooltip(const TableData& t) {
+    ImGui::Text("Legend: P=Playfield, B=Backglass, D=DMD, T=Topper");
+    ImGui::Text("Playfield: %s", t.hasPlayfieldVideo ? t.playfieldVideo.c_str() : "-");
+    ImGui::Text("Backglass: %s", t.hasBackglassVideo ? t.backglassVideo.c_str() : "-");
+    ImGui::Text("DMD: %s", t.hasDmdVideo ? t.dmdVideo.c_str() : "-");
+    ImGui::Text("Topper: %s", t.hasTopperVideo ? t.topperVideo.c_str() : "-");
+}
+
+// ------------------------------------------------------------------
+// SOUNDS column
+static void drawSoundsTooltip(const TableData& t) {
+    ImGui::Text("Legend: M=Front-end Music, L=Launch audio");
+    ImGui::Text("Table music: %s", t.hasTableMusic ? t.music.c_str() : "-");
+    ImGui::Text("Launch audio: %s", t.hasLaunchAudio ? t.launchAudio.c_str() : "-");
+}
+// ------------------------------------------------------------------
+
+// Main body drawing function
 void drawBody(EditorUI& ui) {
     std::lock_guard<std::mutex> lock(ui.tableMutex());
 
@@ -90,11 +239,16 @@ void drawBody(EditorUI& ui) {
 
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR
-                    ImGui::TableSetColumnIndex(0);
+                    {ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(displayYear.c_str());
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                        drawTooltipForColumn(0, t);}
 
                     // ----------------------------------------- NAME
-                    ImGui::TableSetColumnIndex(1);
+                    {ImGui::TableSetColumnIndex(1);
+
                     ImGui::PushID(i);
                     bool isSelected = (ui.selectedIndex() == i);
                     if (t.isBroken) {
@@ -108,24 +262,44 @@ void drawBody(EditorUI& ui) {
                     if (t.isBroken) {
                         ImGui::PopStyleColor();
                     }
-                    ImGui::PopID();
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(1, t);
+                    ImGui::PopID();}
 
                     // ----------------------------------------- VERSION
-                    ImGui::TableSetColumnIndex(2);
+                    {ImGui::TableSetColumnIndex(2);
+
                     if (!t.tableVersion.empty()) {
                         ImGui::TextUnformatted(t.tableVersion.c_str());
                     } else {
                         ImGui::TextUnformatted("");
                     }
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(2, t);}
 
                     // ----------------------------------------- AUTHOR
-                    ImGui::TableSetColumnIndex(3);
+                    {ImGui::TableSetColumnIndex(3);
                     ImGui::TextUnformatted(displayAuthor.c_str());
-                    ImGui::TableSetColumnIndex(4);
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(3, t);}
+
+                    // ----------------------------------------- MANUFACTURER
+                    {ImGui::TableSetColumnIndex(4);
                     ImGui::TextUnformatted(displayManufacturer.c_str());
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(4, t);}
 
                     // ----------------------------------------- Extra Files
-                    ImGui::TableSetColumnIndex(5);
+                    {ImGui::TableSetColumnIndex(5);
+
                     // Start text line
                     if (t.hasINI)
                         ImGui::TextUnformatted("I ");
@@ -148,40 +322,75 @@ void drawBody(EditorUI& ui) {
                         ImGui::TextUnformatted("B ");
                     else
                         ImGui::TextUnformatted("- ");
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(5, t);}
 
                     // ----------------------------------------- ROM Name
-                    ImGui::TableSetColumnIndex(6);
+                    {ImGui::TableSetColumnIndex(6);
+
                     if (!t.romName.empty()) {
                         ImGui::TextUnformatted(t.romName.c_str());
                     } else {
                         ImGui::TextUnformatted("");
                     }
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(6, t);}
 
                     // ----------------------------------------- Media Extras
-                    ImGui::TableSetColumnIndex(7);
+                    {ImGui::TableSetColumnIndex(7);
+
                     ImGui::Text("%s%s%s%s%s",
                                 t.hasAltSound ? "S " : "- ",
                                 t.hasAltColor ? "C " : "- ",
                                 t.hasPup ? "P " : "- ",
                                 t.hasUltraDMD ? "U " : "- ",
                                 t.hasAltMusic ? "M " : "- ");
-                    ImGui::TableSetColumnIndex(8);
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(7, t);}
+
+                    // ----------------------------------------- Media Assets - Images
+                    {ImGui::TableSetColumnIndex(8);
+
                     ImGui::Text("%s%s%s%s%s",
                                 t.hasPlayfieldImage ? "P " : "- ",
                                 t.hasBackglassImage ? "B " : "- ",
                                 t.hasDmdImage ? "D " : "- ",
                                 t.hasTopperImage ? "T " : "- ",
                                 t.hasWheelImage ? "W " : "- ");
-                    ImGui::TableSetColumnIndex(9);
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(8, t);}
+
+                    // ----------------------------------------- Media Assets - Videos
+                    {ImGui::TableSetColumnIndex(9);
+
                     ImGui::Text("%s%s%s%s",
                                 t.hasPlayfieldVideo ? "P " : "- ",
                                 t.hasBackglassVideo ? "B " : "- ",
                                 t.hasDmdVideo ? "D " : "- ",
                                 t.hasTopperVideo ? "T " : "- ");
-                    ImGui::TableSetColumnIndex(10);
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(9, t);}
+
+                    // ----------------------------------------- Media Assets - Sounds
+                    {ImGui::TableSetColumnIndex(10);
+
                     ImGui::Text("%s%s",
                                 t.hasTableMusic ? "M " : "- ",
                                 t.hasLaunchAudio ? "L " : "- ");
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(10, t);}
                 }
 
                 ImGui::EndTable();
