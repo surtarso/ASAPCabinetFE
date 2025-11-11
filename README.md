@@ -17,7 +17,7 @@
 
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-<p align="center">A multi-monitor <a href="https://github.com/vpinball/vpinball">VPinballX</a> front-end for your Linux virtual pinball cabinet.</p>
+<p align="center">A multi-monitor Virtual Pinball suite for Linux.</p>
 <p align="center">Yes! You <i>can</i> use on single monitor 🙃</p>
 
 <div align="center">
