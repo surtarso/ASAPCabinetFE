@@ -11,20 +11,20 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [fix] persist launch stats after 'play' (with ItableCallbacks)
 - [fix] search bar can only accept 7 characters?!? why?!
 - [!] create settings panel (editor related)
-- [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - add metadata override panel from main ui, separate from view metadata.
 - hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
 - hook screenshot (Single table)
+- add author and manufacturer to fuzzy search
 
 QOL:
+- [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [!] single table vs all tables action in general (ss, patch, rescan etc)
 - [!] 'feedback' /util/ to receive a string and print as a message window universally!
 - [!] feedback for table launch/failure
 - [!] single table scan (all, selectable) override manager?
 - save metadata back to .vpx with vpin/vpxtool
-- screenshot mode using app size/pos as frame
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - [FE] a proper font picker
@@ -40,6 +40,7 @@ QOL:
 On hold:
 - refactor the monoliths...
 - update header docs and user manual
+- screenshot mode using app size/pos as frame?
 - Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - multi launchers (other emulators, other versions of vpx w.e.)
 - [FE] add some of editor's new scraped data to main metadata panel
