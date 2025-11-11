@@ -9,11 +9,7 @@ namespace fs = std::filesystem;
 namespace editor_first_run {
 
 void drawFirstRun(EditorUI& ui) {
-    // This logic executes only when ui.tables() is empty
-    Settings settings = ui.configService()->getSettings();
-
-    if(!ui.configService()->isConfigValid()) { // ensure we have the latest validity state
-
+    if(!ui.isConfigValid()) {
         ImGui::Separator();
         ImGui::Text("Quick Setup: Check your paths, click Save and then Rescan to continue.");
 
@@ -35,7 +31,20 @@ void drawFirstRun(EditorUI& ui) {
             mutableSettings.VPXTablesPath = tablesPathBuf;
             mutableSettings.VPinballXPath = vpxPathBuf;
             ui.configService()->saveConfig();
+
+            // NEW LOGIC: Re-check validity once, update the cached state, and initiate scan if successful.
+            bool isValid = ui.configService()->isConfigValid();
+            ui.setConfigValid(isValid);
+
             LOG_INFO("First-run paths updated by user, validating...");
+
+            if (isValid) {
+                LOG_INFO("Paths are valid. Starting initial table load.");
+                // If valid, trigger the table scan.
+                ui.rescanAsyncPublic(ScannerMode::File);
+            } else {
+                LOG_WARN("Paths still invalid. Please check folder locations.");
+            }
         }
     }
 }

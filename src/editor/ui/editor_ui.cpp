@@ -30,10 +30,13 @@ EditorUI::EditorUI(bool& showMeta,
       showVpsdbBrowser_(showBrowser),
       showEditorSettings_(showSettings)
 {
+    bool initialConfigValid = config_->isConfigValid();
+    configValid_ = initialConfigValid;
+
     Settings settings = config_->getSettings();
 
     // maybe this should be in editor_body or first_run?
-    if (config_->isConfigValid()) {
+    if (configValid_) {
         LOG_INFO("Paths valid. Starting asynchronous load.");
         if (!settings.indexPath.empty()) {
             // Start with fast path (index load only)

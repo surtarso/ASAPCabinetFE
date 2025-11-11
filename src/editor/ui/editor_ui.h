@@ -89,6 +89,8 @@ public:
     bool showEditorSettings() const { return showEditorSettings_; }
     void setShowEditorSettings(bool v) { showEditorSettings_ = v; }
 
+    bool isConfigValid() const { return configValid_; }
+    void setConfigValid(bool v) { configValid_ = v; }
 
 private:
     // helper methods
@@ -123,6 +125,8 @@ private:
 
     int  sortColumn_         = 1;
     bool sortAscending_      = true;
+
+    bool configValid_ = false;
 
     bool& showMetadataEditor_;
     bool& showVpsdbBrowser_;

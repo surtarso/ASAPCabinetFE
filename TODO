@@ -7,7 +7,6 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- [fix] isConfigValid() spam on confirmation.
 - [fix] search bar can only accept 7 characters?!? why?!
 - [!] create settings panel (editor related)
 - spreadsheet column hover dynamic tooltips
