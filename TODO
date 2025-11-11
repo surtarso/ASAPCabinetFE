@@ -7,15 +7,16 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- [!] create settings panel (editor related)
-- [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [fix] isConfigValid() spam on confirmation.
 - [fix] increment launch stats (playcount etc) when launching from editor too 
--       (gotta switch table launcher for input manager action instead)
+-       (gotta switch table launcher for imgui/input manager action instead)
+- [fix] search bar can only accept 7 characters?!? why?!
+- [!] create settings panel (editor related)
+- [!] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - view metadata panel vs metadata override panel from main ui, separate or merge/use same?
-- hook vpsdb browser (or remake = bad)
+- hook vpsdb browser
 - hook advanced option to top pop-up menu (file operations etc)
 
 QOL:
