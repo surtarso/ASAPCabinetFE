@@ -12,8 +12,15 @@ void drawHeader(EditorUI& ui) {
             [&ui]() { ui.filterAndSortTablesPublic(); },
             [&ui]() {
                 if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-                    const auto& t = ui.filteredTables()[ui.selectedIndex()];
-                    ui.tableLauncher()->launchTable(t);
+                    const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
+
+                    // Use the shared, centralized launch logic from ButtonActions
+                    ui.actions().launchTableWithStats(
+                        t_filtered,
+                        ui.tables(), // Mutable master list
+                        ui.tableLauncher(),
+                        [&ui](){ ui.filterAndSortTablesPublic(); } // Refresh UI callback
+                    );
                 } else {
                     LOG_DEBUG("Enter pressed but no table selected");
                 }

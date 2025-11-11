@@ -2,7 +2,11 @@
 #define BUTTON_ACTIONS_H
 
 #include <string>
+#include <vector>
+#include <functional>
 #include "config/iconfig_service.h" // for IConfigService interface
+#include "launcher/itable_launcher.h"
+#include "tables/table_data.h"
 
 /**
  * @brief Handles simple table-related operations for EditorUI,
@@ -39,6 +43,19 @@ public:
     std::string& searchQuery,
     std::function<void()> filterAndSort,
     std::function<void()> onEnter);
+
+    /**
+     * @brief Launches the selected table and updates its statistics (play count, time, isBroken).
+     * @param selectedTable The TableData object selected (used for its vpxFile key).
+     * @param masterTables The mutable reference to the master list of tables for updating stats.
+     * @param launcher The table launcher dependency.
+     * @param refreshUICallback Function to call after stats are updated to refresh the UI view.
+     */
+    void launchTableWithStats(
+        const TableData& selectedTable,
+        std::vector<TableData>& masterTables,
+        ITableLauncher* launcher,
+        std::function<void()> refreshUICallback);
 
 private:
     IConfigService* config_; // Non-owning pointer

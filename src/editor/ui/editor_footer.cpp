@@ -242,8 +242,17 @@ void drawFooter(EditorUI& ui) {
 
     if (ImGui::Button("Play Selected")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            ui.tableLauncher()->launchTable(t);
+
+            const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
+
+            // Call the launch logic in ButtonActions
+            ui.actions().launchTableWithStats(
+                t_filtered,
+                ui.tables(), // The mutable master list
+                ui.tableLauncher(),
+                [&ui](){ ui.filterAndSortTablesPublic(); } // Callback to refresh UI
+            );
+
         } else {
             LOG_DEBUG("Play pressed but no table selected");
         }

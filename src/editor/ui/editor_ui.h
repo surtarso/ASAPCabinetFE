@@ -38,7 +38,7 @@ public:
     ITableLauncher* tableLauncher()     { return tableLauncher_; }
     IConfigService* configService()     { return config_; }
 
-    const std::vector<TableData>& tables()         const { return tables_; }
+    std::vector<TableData>& tables()          { return tables_; }
     const std::vector<TableData>& filteredTables() const { return filteredTables_; }
 
     int  selectedIndex()        const { return selectedIndex_; }
