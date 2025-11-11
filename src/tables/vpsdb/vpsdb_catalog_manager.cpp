@@ -75,18 +75,61 @@ bool VpsdbCatalog::render() {
         return true;
     }
 
+    // ImGuiIO& io = ImGui::GetIO();
+    // float panelWidth = io.DisplaySize.x * 0.7f;
+    // float panelHeight = io.DisplaySize.y * 0.52f;
+    // float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
+    // float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
+
+    // ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+    // ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
+    // ImGui::SetNextWindowBgAlpha(0.8f);
+
+    // ImGui::Begin("VPSDB Catalog", nullptr,
+    //              ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+    float panelWidth = 0.0f;
+    float panelHeight = 0.0f;
+    float posX = 0.0f;
+    float posY = 0.0f;
+
     ImGuiIO& io = ImGui::GetIO();
-    float panelWidth = io.DisplaySize.x * 0.7f;
-    float panelHeight = io.DisplaySize.y * 0.52f;
-    float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
-    float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
+    ImGuiWindowFlags windowFlags;
 
-    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.8f);
+    // Smart detection based on aspect ratio
+    if (io.DisplaySize.x > io.DisplaySize.y) {
+        // --- LANDSCAPE (Editor App) ---
+        // Use full viewport, no title bar, opaque background
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    ImGui::Begin("VPSDB Catalog", nullptr,
-                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+        posX = viewport->WorkPos.x;
+        posY = viewport->WorkPos.y;
+        panelWidth = viewport->WorkSize.x;
+        panelHeight = viewport->WorkSize.y;
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowBgAlpha(1.0f); // Opaque
+
+        windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+
+    } else {
+        // --- PORTRAIT (Main App) ---
+        panelWidth = io.DisplaySize.x * 0.7f;
+        panelHeight = io.DisplaySize.y * 0.52f;
+        posX = (io.DisplaySize.x - panelWidth) / 2.0f;
+        posY = (io.DisplaySize.y - panelHeight) / 2.0f;
+
+        ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(0.8f); // Semi-transparent
+
+        windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoCollapse;
+    }
+
+    ImGui::Begin("VPSDB Catalog", nullptr, windowFlags);
 
     // Process loaded table data
     {

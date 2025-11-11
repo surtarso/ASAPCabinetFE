@@ -27,11 +27,11 @@ void drawHeader(EditorUI& ui) {
         ui.filterAndSortTablesPublic();
     }
     // ImGui::Text("Buffer len: %zu  Query len: %zu", strlen(ui.searchBuffer()), ui.searchQuery().size());
-    ImGui::Text("strlen: %zu  raw bytes:", strlen(ui.searchBuffer()));
-    for (int i = 0; i < 16; i++) {
-        ImGui::SameLine();
-        ImGui::Text("%02X", static_cast<unsigned char>(ui.searchBuffer()[i]));
-    }
+    // ImGui::Text("strlen: %zu  raw bytes:", strlen(ui.searchBuffer()));
+    // for (int i = 0; i < 16; i++) {
+    //     ImGui::SameLine();
+    //     ImGui::Text("%02X", static_cast<unsigned char>(ui.searchBuffer()[i]));
+    // }
 
     ImGui::PopItemWidth();
     ImGui::SameLine();
