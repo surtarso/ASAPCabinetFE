@@ -15,9 +15,11 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - spreadsheet column hover dynamic tooltips
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - add metadata override panel from main ui, separate from view metadata.
-- hook advanced option to top pop-up menu (file operations etc)
+- hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
+- hook screenshot (Single table)
 
 QOL:
+- [!] single table vs all tables action in general (ss, patch, rescan etc)
 - [!] 'feedback' /util/ to receive a string and print as a message window universally!
 - [!] feedback for table launch/failure
 - [!] single table scan (all, selectable) override manager?
@@ -52,3 +54,4 @@ On hold:
 - splashscreen?
 - highscore tracking
 - editor cli helpers (see editor_binary.cpp for details)
+- centralize colors in a /util/ for later theming support
