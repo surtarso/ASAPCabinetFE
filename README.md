@@ -17,8 +17,8 @@
 
 <h1 align="center">As Simple As Possible Cabinet Front-End</h1>
 
-<p align="center">A multi-monitor Virtual Pinball suite for Linux.</p>
-<p align="center">Yes! You <i>can</i> use on single monitor 🙃</p>
+<p align="center">A multi-monitor Virtual Pinball Suite for Linux.</p>
+<p align="center">Yes! You <b>can</b> use on single monitor 🙃</p>
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/019e4170-94f2-464c-9209-4754ba87a029" width="400" />
@@ -33,7 +33,7 @@
 
 ### TL:DR <img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian
 <details>
-<summary>Copy/Paste like a vibe coder.</summary>
+<summary>Copy/paste like a <b>senior systems administrator</b> who has meticulously tested the <i>Ctrl+C</i> and <i>Ctrl+V</i> functionality for three years before committing it to production.</summary>
 
 ```sh
 sudo apt-get install git findutils -y -qq
@@ -50,9 +50,9 @@ cd ~/ASAPCabinetFE
 ```
 </details>
 
-### TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch (experimental)
+### TL:DR <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch
 <details>
-<summary>No VLC backend, reloading some configs may cause hangs.</summary>
+<summary>Copy/paste like an <b>overcaffeinated trench-coat-wearing coder</b> whose keyboard is sticky with energy drink residue and whose <i>one true source</i> is an outdated Wiki page.</summary>
   
 ```sh
 sudo pacman -Syu --noconfirm git findutils
@@ -67,8 +67,6 @@ cmake --install .
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
 ```
-
-ASAN detects leaks in Mesa (libgallium, libGLX_mesa) during OpenGL init via SDL3, used under sdl2-compat on Arch for SDL2 apps. It's a known false positive in graphics drivers.
 
 </details>
 
