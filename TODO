@@ -1,7 +1,6 @@
 TODO
 
 FIX:
-- [!] FEED-F***ING-BACK... everything is silent! (boooring)
 - VPin scanner not picking up manufacturers?
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
@@ -15,11 +14,12 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook fe config panel to settings button?
 - hook screenshot (Single table)
 
+- add feedback using new modal_dialog class
+
 QOL:
 - [!] basic/advanced toggle for main config ui
 - [!] single table vs all tables action in general (ss, patch, rescan etc)
 - [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- [!] 'feedback' /util/ to receive a string and print as a message window universally!
 - [!] feedback for table launch/failure
 - [!] single table scan (all, selectable) override manager?
 - save metadata back to .vpx with vpin/vpxtool
