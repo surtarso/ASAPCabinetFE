@@ -63,11 +63,14 @@ void EditorUI::draw() {
 
     ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
 
+
     editor_header::drawHeader(*this);
     editor_body::drawBody(*this);
     editor_footer::drawFooter(*this);
 
     ImGui::End();
+
+    modal_.draw();
 }
 
 void EditorUI::filterAndSortTables() {

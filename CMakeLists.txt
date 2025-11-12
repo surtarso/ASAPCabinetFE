@@ -270,6 +270,7 @@ set(SOURCES
     src/core/ui/imgui_manager.cpp
     src/core/ui/loading_screen.cpp
     src/core/ui/metadata_panel.cpp
+    src/core/ui/modal_dialog.cpp
     src/core/ui/playfield_overlay.cpp
     # launcher
     src/launcher/table_launcher.cpp

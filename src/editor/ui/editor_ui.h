@@ -2,12 +2,13 @@
 
 #include "editor/button_actions.h"
 #include "editor/sorting_filters.h"
-#include "tables/itable_loader.h"
 #include "config/iconfig_service.h"
+#include "tables/itable_loader.h"
 #include "tables/table_data.h"
-#include "launcher/itable_launcher.h"
 #include "tables/itable_callbacks.h"
+#include "launcher/itable_launcher.h"
 #include "core/ui/loading_progress.h"
+#include "core/ui/modal_dialog.h"
 #include <imgui.h>
 #include <vector>
 #include <string>
@@ -86,6 +87,8 @@ public:
     bool isConfigValid() const { return configValid_; }
     void setConfigValid(bool v) { configValid_ = v; }
 
+    ModalDialog& modal() { return modal_; }
+
 private:
     // helper methods
     void filterAndSortTables();
@@ -123,4 +126,6 @@ private:
     bool& showMetadataEditor_;
     bool& showVpsdbBrowser_;
     bool& showEditorSettings_;
+
+    ModalDialog modal_;
 };

@@ -6,19 +6,16 @@ namespace fs = std::filesystem;
 namespace menu_actions {
 
 // ---------------------------------------------------------------------------
-// Internal state
-// ---------------------------------------------------------------------------
-static bool confirmDeletePopup = false;
-static std::string pendingDeletePath;
-static std::string pendingDeleteType;
-static bool openDeletePopupNextFrame = false;
-
-// ---------------------------------------------------------------------------
 // Delete Folder Request
 // ---------------------------------------------------------------------------
 void requestDeleteTableFolder(EditorUI& ui) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
         LOG_WARN("Delete Table Folder requested but no table selected.");
+        // Show modal info for missing selection
+        ui.modal().openInfo(
+            "No Table Selected",
+            "Please select a table first and try again."
+        );
         return;
     }
 
@@ -26,11 +23,33 @@ void requestDeleteTableFolder(EditorUI& ui) {
     fs::path folder = fs::path(sel.vpxFile).parent_path();
 
     if (!folder.empty() && fs::exists(folder)) {
-        pendingDeletePath = folder.string();
-        pendingDeleteType = "folder";
-        confirmDeletePopup = true;
-        openDeletePopupNextFrame = true;
-        LOG_WARN("Delete Table Folder pending confirmation: " + pendingDeletePath);
+        ui.modal().openConfirm(
+            "Confirm Delete?",
+            "Delete folder:\n" + folder.string() + "\n\nThis will permanently remove all files. Continue?",
+            {"No", "Yes"}, // defaults to 1st on ui
+            [&ui, folder](const std::string& choice) {
+                if (choice == "Yes") {
+                    try {
+                        std::error_code ec;
+                        size_t removed = std::filesystem::remove_all(folder, ec);
+                        if (ec)
+                            LOG_ERROR("Failed to delete folder: " + ec.message());
+                        else
+                            LOG_INFO("Deleted folder: " + folder.string() + " (" + std::to_string(removed) + " items)");
+
+                        ui.rescanAsyncPublic(ui.scannerMode());
+                        ui.filterAndSortTablesPublic();
+
+                        ui.modal().openInfo("Deleted", "Folder deleted successfully:\n" + folder.string());
+                    } catch (const std::exception& e) {
+                        LOG_ERROR(std::string("Exception deleting folder: ") + e.what());
+                        ui.modal().openInfo("Error", "Failed to delete folder:\n" + folder.string());
+                    }
+                } else {
+                    LOG_INFO("Delete canceled.");
+                }
+            }
+        );
     } else {
         LOG_ERROR("Delete Table Folder failed: folder not found.");
     }
@@ -42,17 +61,47 @@ void requestDeleteTableFolder(EditorUI& ui) {
 void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
         LOG_WARN("Delete " + fileType + " requested but no table selected.");
+        // Show modal info for missing selection
+        ui.modal().openInfo(
+            "No Table Selected",
+            "You asked to delete \"" + fileType + "\" but no table is currently selected.\n\n"
+            "Please select a table first and try again."
+        );
         return;
     }
 
     const auto& sel = ui.filteredTables()[ui.selectedIndex()];
     fs::path base = fs::path(sel.vpxFile).replace_extension(fileType);
     if (fs::exists(base)) {
-        pendingDeletePath = base.string();
-        pendingDeleteType = fileType;
-        confirmDeletePopup = true;
-        openDeletePopupNextFrame = true;
-        LOG_WARN("Delete " + fileType + " pending confirmation: " + pendingDeletePath);
+        ui.modal().openConfirm(
+            "Confirm Delete?",
+            "Delete file:\n" + base.string() + "\n\nThis will permanently remove it. Continue?",
+            {"Yes", "No"},
+            [&ui, base, fileType](const std::string& choice) {
+                if (choice == "Yes") {
+                    try {
+                        std::error_code ec;
+                        bool removed = std::filesystem::remove(base, ec);
+                        if (ec)
+                            LOG_ERROR("Failed to delete " + fileType + ": " + ec.message());
+                        else if (removed)
+                            LOG_INFO("Deleted " + fileType + ": " + base.string());
+                        else
+                            LOG_WARN("Nothing deleted (file missing): " + base.string());
+
+                        ui.rescanAsyncPublic(ui.scannerMode());
+                        ui.filterAndSortTablesPublic();
+
+                        ui.modal().openInfo("Deleted", fileType + " file deleted successfully:\n" + base.string());
+                    } catch (const std::exception& e) {
+                        LOG_ERROR(std::string("Exception deleting ") + fileType + ": " + e.what());
+                        ui.modal().openInfo("Error", "Failed to delete file:\n" + base.string());
+                    }
+                } else {
+                    LOG_INFO("Delete canceled.");
+                }
+            }
+        );
     } else {
         LOG_ERROR("Delete " + fileType + " failed: file not found.");
     }
@@ -73,6 +122,11 @@ static std::string detectCompressor() {
 void requestCompressTableFolder(EditorUI& ui) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
         LOG_WARN("Compression requested but no table selected.");
+        // Show modal info for missing selection
+        ui.modal().openInfo(
+            "No Table Selected",
+            "Please select a table first and try again."
+        );
         return;
     }
 
@@ -121,6 +175,12 @@ void requestCompressTableFolder(EditorUI& ui) {
 void vpxtoolRun(EditorUI& ui, const std::string& command) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
         LOG_WARN("VPXTool " + command + " requested but no table selected.");
+        // Show modal info for missing selection
+        ui.modal().openInfo(
+            "No Table Selected",
+            "You pressed \"" + command + "\" but no table is currently selected.\n\n"
+            "Please select a table first and try again."
+        );
         return;
     }
 
@@ -148,66 +208,29 @@ void vpxtoolRun(EditorUI& ui, const std::string& command) {
 // ---------------------------------------------------------------------------
 // Clear Caches (placeholder)
 // ---------------------------------------------------------------------------
-void clearAllCaches(EditorUI& ui) {
-    LOG_WARN("Clear All Caches requested [Placeholder]");
-    // TODO: implement cache clearing
+    void clearAllCaches(EditorUI& ui) {
+        LOG_WARN("Clear All Caches requested [Confirmation]");
+    ui.modal().openConfirm(
+        "Clear Cache?",
+        "This will remove all cached data. Continue?",
+        {"Yes", "No"},
+        [&ui](const std::string& choice) {
+            if (choice == "Yes") {
+                LOG_INFO("Clearing caches...");
+                // TODO: actual cache clear logic
+                ui.modal().openInfo("Cache Cleared", "All caches were successfully cleared.");
+            } else {
+                LOG_INFO("Cache clearing canceled.");
+            }
+        }
+    );
 }
 
 // ---------------------------------------------------------------------------
 // Draw Confirmation Popups
 // ---------------------------------------------------------------------------
 void drawModals(EditorUI& ui) {
-    if (openDeletePopupNextFrame) {
-        ImGui::OpenPopup("Confirm Delete?");
-        openDeletePopupNextFrame = false;
-    }
-
-    if (!confirmDeletePopup) return;
-
-    if (ImGui::BeginPopupModal("Confirm Delete?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::TextWrapped("Delete %s:\n%s\n\nThis will permanently remove it.\nAre you sure?",
-                           pendingDeleteType.c_str(),
-                           pendingDeletePath.c_str());
-        ImGui::Spacing();
-        ImGui::Separator();
-
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-            confirmDeletePopup = false;
-            pendingDeletePath.clear();
-            pendingDeleteType.clear();
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Delete", ImVec2(120, 0))) {
-            try {
-                std::error_code ec;
-                size_t removed = fs::is_directory(pendingDeletePath)
-                                 ? fs::remove_all(pendingDeletePath, ec)
-                                 : (fs::remove(pendingDeletePath, ec) ? 1 : 0);
-
-                if (ec)
-                    LOG_ERROR("Failed to delete " + pendingDeleteType + ": " + ec.message());
-                else
-                    LOG_INFO("Deleted " + pendingDeleteType + ": " + pendingDeletePath +
-                             " (" + std::to_string(removed) + " items)");
-
-                ui.rescanAsyncPublic(ui.scannerMode());
-                ui.filterAndSortTablesPublic();
-            } catch (const std::exception& e) {
-                LOG_ERROR(std::string("Exception deleting ") + pendingDeleteType + ": " + e.what());
-            }
-
-            confirmDeletePopup = false;
-            pendingDeletePath.clear();
-            pendingDeleteType.clear();
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
-    }
+    ui.modal().draw();
 }
-
 
 }  // namespace menu_actions

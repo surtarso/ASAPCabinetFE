@@ -178,9 +178,17 @@ void drawFooter(EditorUI& ui) {
                 ui.actions().openInExternalEditor(vbsPath);
             } else {
                 LOG_WARN("Tried to open VBS, but extraction failed or file not found at: " + vbsPath);
+                ui.modal().openWarning(
+                    "File Not Found",
+                    "The specified file " + vbsPath + " could not be found or deleted."
+                );
             }
         } else {
             LOG_INFO("Extract VBS pressed but no table selected");
+            ui.modal().openInfo(
+                "No Table Selected",
+                "Please select a table first and try again."
+            );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -226,7 +234,11 @@ void drawFooter(EditorUI& ui) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             LOG_INFO("Screenshot pressed (single table) [Placeholder]");
         } else {
-            LOG_INFO("Screenshot pressed but no table selected [Placeholder]");
+            LOG_INFO("Extract VBS pressed but no table selected");
+            ui.modal().openInfo(
+                "No Table Selected",
+                "Please select a table first and try again."
+            );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
