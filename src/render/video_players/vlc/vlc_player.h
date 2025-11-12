@@ -3,7 +3,14 @@
 
 #include "render/ivideo_player.h"
 #include <SDL2/SDL.h>
+#ifdef HAVE_LIBVLC_V4
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+#else
 #include <vlc/vlc.h>
+#endif
+// #include <vlc/vlc.h>
 #include <string>
 
 /**

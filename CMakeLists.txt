@@ -158,7 +158,7 @@ endif()
 # 1. Fetch the vpin Rust library
 FetchContent_Declare(
     vpin
-    URL https://github.com/francisdb/vpin/archive/refs/tags/v0.18.0.tar.gz
+    URL https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_GetProperties(vpin)
@@ -418,6 +418,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${FFMPEG_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
 )
+
+# support VLC v3.x and v4.x
+pkg_get_variable(LIBVLC_VERSION libvlc version)
+if(LIBVLC_VERSION VERSION_GREATER_EQUAL "4.0.0")
+    add_compile_definitions(HAVE_LIBVLC_V4)
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenSSL::Crypto

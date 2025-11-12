@@ -3,10 +3,42 @@
  * @brief Implementation of the VlcVideoPlayer class for video playback using VLC.
  */
 
+ #include <vlc/libvlc_version.h>
+
+// ----------------------------------------------------------
+// Version detection
+// ----------------------------------------------------------
+#if LIBVLC_VERSION_MAJOR >= 4
+    #define HAVE_LIBVLC_V4 1
+#endif
+
+#ifdef HAVE_LIBVLC_V4
+    #include <vlc/libvlc.h>
+    #include <vlc/libvlc_media.h>
+    #include <vlc/libvlc_media_player.h>
+    #include <vlc/libvlc_events.h>
+#else
+    #include <vlc/vlc.h>
+#endif
+
+// Includes
 #include "vlc_player.h"
 #include "log/logging.h"
 #include <cstdlib> // For malloc, free
 #include <string>
+
+// ----------------------------------------------------------
+// API compatibility macros
+// ----------------------------------------------------------
+#if defined(HAVE_LIBVLC_V4)
+    #define VLC_STOP(player) libvlc_media_player_stop_async(player)
+    #define VLC_NEW_MEDIA(instance, path) libvlc_media_new_path(path)
+    #define VLC_STATE_ENDED(state)  ((state) == libvlc_Stopped || (state) == libvlc_Error)
+#else
+    #define VLC_STOP(player) libvlc_media_player_stop(player)
+    #define VLC_NEW_MEDIA(instance, path) libvlc_media_new_path(instance, path)
+    #define VLC_STATE_ENDED(state)  ((state) == libvlc_Ended || (state) == libvlc_Stopped || (state) == libvlc_Error)
+#endif
 
 VlcVideoPlayer::VlcVideoPlayer() : ctx_(nullptr) {}
 
@@ -17,7 +49,8 @@ VlcVideoPlayer::~VlcVideoPlayer() {
 void VlcVideoPlayer::cleanupContext() {
     if (!ctx_) return;
     if (ctx_->player) {
-        libvlc_media_player_stop(ctx_->player);
+        VLC_STOP(ctx_->player);
+
         libvlc_media_player_release(ctx_->player);
         ctx_->player = nullptr;
     }
@@ -124,12 +157,13 @@ bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int 
         ctx_->pitch = 0;
     } else {
         if (ctx_->player) {
-            libvlc_media_player_stop(ctx_->player);
+            VLC_STOP(ctx_->player);
         }
     }
 
     if (ctx_->player) {
-        libvlc_media_t* media = libvlc_media_new_path(ctx_->instance, path.c_str());
+        libvlc_media_t* media = VLC_NEW_MEDIA(ctx_->instance, path.c_str());
+
         if (!media) {
             LOG_ERROR("Failed to create VLC media for path: " + path);
             return false;
@@ -169,7 +203,16 @@ bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int 
             ctx_->width = width;
             ctx_->height = height;
 
-            libvlc_video_set_format(ctx_->player, "RV32", ctx_->width, ctx_->height, ctx_->pitch);
+            // libvlc_video_set_format(ctx_->player, "RV32", ctx_->width, ctx_->height, ctx_->pitch);
+            #ifdef HAVE_LIBVLC_V4
+                // VLC 4 uses BGRA internally for most outputs
+                libvlc_video_set_format(ctx_->player, "BGRA",
+                                        ctx_->width, ctx_->height, ctx_->pitch);
+            #else
+                libvlc_video_set_format(ctx_->player, "RV32",
+                                        ctx_->width, ctx_->height, ctx_->pitch);
+            #endif
+
         }
     } else {
         LOG_ERROR("Player not initialized in setup path.");
@@ -200,7 +243,7 @@ void VlcVideoPlayer::play() {
 
 void VlcVideoPlayer::stop() {
     if (ctx_ && ctx_->player) {
-        libvlc_media_player_stop(ctx_->player);
+        VLC_STOP(ctx_->player);
         ctx_->isPlaying = false;
         ctx_->frameReady = false;
         LOG_DEBUG("Player stopped.");
@@ -216,10 +259,7 @@ void VlcVideoPlayer::update() {
     }
 
     libvlc_state_t state = libvlc_media_player_get_state(ctx_->player);
-    if (state == libvlc_Ended || state == libvlc_Stopped || state == libvlc_Error) {
-        if (ctx_->isPlaying) {
-            //LOG_DEBUG("VLC player state changed to " + std::to_string(state) + ". Setting isPlaying to false.");
-        }
+    if (VLC_STATE_ENDED(state)) {
         ctx_->isPlaying = false;
         ctx_->frameReady = false;
         return;
