@@ -72,7 +72,7 @@ void drawFooter(EditorUI& ui) {
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,  activeColor);
 
         // ---------- Rescan Options Combo ----------
-        if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview)) {
+        if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
             ImGui::TextDisabled("Scanner Mode");
             if (ImGui::Selectable("File Scanner", ui.scannerMode() == ScannerMode::File))
                 ui.setScannerMode(ScannerMode::File);
@@ -82,13 +82,29 @@ void drawFooter(EditorUI& ui) {
                 ui.setScannerMode(ScannerMode::VPSDb);
 
             ImGui::TextDisabled("Options");
-            bool flag = ui.forceRebuildMetadata();
-            if (ImGui::Checkbox("Force Rebuild Metadata", &flag)) {
-                ui.setForceRebuildMetadata(flag);
+            Settings& settings = ui.configService()->getMutableSettings();
+
+            bool cleanIndex = settings.forceRebuildMetadata;
+            if (ImGui::Checkbox("Rebuild Metadata", &cleanIndex)) {
+                settings.forceRebuildMetadata = cleanIndex;
+                if (settings.forceRebuildMetadata){
+                    settings.ignoreScanners = false;
+                }
+                ui.configService()->saveConfig();
             }
-            bool flagUse = ui.useVpxtool();
-            if (ImGui::Checkbox("Use External VPXTool", &flagUse)) {
-                ui.setUseVpxtool(flagUse);
+
+            bool wantsVpxtool = settings.useVpxtool;
+            if (ImGui::Checkbox("Use External VPXTool", &wantsVpxtool)) {
+                settings.useVpxtool = wantsVpxtool;
+                ui.configService()->saveConfig();
+            }
+
+            // Auto patch tables
+            bool autoPatch = settings.autoPatchTables;
+            if (ImGui::Checkbox("Auto-Patch tables on Rescan", &autoPatch)) {
+                LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
+                settings.autoPatchTables = autoPatch;  // invert
+                ui.configService()->saveConfig();
             }
 
             ImGui::EndCombo();

@@ -335,6 +335,11 @@ void ConfigUI::saveConfig() {
             LOG_DEBUG("Synced keybinds to KeybindManager");
         }
 
+        if (settings.forceRebuildMetadata && settings.ignoreScanners) {
+            LOG_WARN("User wants to rebuild but Ignore Scanners is also true — disabling ignoreScanners to ensure rebuild runs.");
+            settings.ignoreScanners = false;
+        }
+
         configService_->saveConfig();
         LOG_DEBUG("Config saved successfully.");
 

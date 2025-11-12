@@ -61,12 +61,6 @@ public:
     ScannerMode scannerMode()   const { return selectedScanner_; }
     void setScannerMode(ScannerMode m)       { selectedScanner_ = m; }
 
-    bool forceRebuildMetadata() const { return forceRebuildMetadata_; }
-    void setForceRebuildMetadata(bool v)     { forceRebuildMetadata_ = v; }
-
-    bool useVpxtool()           const { return useVpxtool_; }
-    void setUseVpxtool(bool v)               { useVpxtool_ = v; }
-
     char* searchBuffer()                  { return searchBuffer_; }
     constexpr size_t searchBufferSize() const { return sizeof(searchBuffer_); }
 
@@ -108,8 +102,6 @@ private:
 
     // state
     ScannerMode selectedScanner_ = ScannerMode::File;
-    bool forceRebuildMetadata_ = false;
-    bool useVpxtool_            = false;
 
     std::vector<TableData> tables_;
     std::vector<TableData> filteredTables_;

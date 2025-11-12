@@ -135,21 +135,34 @@ void drawHeader(EditorUI& ui) {
 
         // ------------------------------
         ImGui::TextDisabled("System");
-
         Settings& settings = ui.configService()->getMutableSettings();
-        bool showTooltips = settings.showTableTooltips;
 
+        // toggle table tooltips
+        bool showTooltips = settings.showTableTooltips;
         if (ImGui::Checkbox("Show Table Tooltips", &showTooltips)) {
             LOG_INFO(std::string("Show Table Tooltips toggled: ") + (showTooltips ? "ON" : "OFF"));
             settings.showTableTooltips = showTooltips;
             ui.configService()->saveConfig();
         }
 
-        static bool autoRefresh = false;  // TODO: load from settings.Editor.autoRefresh
-        if (ImGui::Checkbox("Auto-Refresh on Startup", &autoRefresh)) {
-            LOG_INFO(std::string("Auto-Refresh on Startup toggled: ") + (autoRefresh ? "ON" : "OFF"));
-            // TODO: persist in settings.Editor.autoRefresh
+        // Fast Startup (Skip Scanning)
+        bool autoRefresh = settings.ignoreScanners;
+        if (ImGui::Checkbox("Fast Startup (Skip Scanners!)", &autoRefresh)) {
+            LOG_INFO(std::string("Fast Startup (Skip Scanning) toggled: ") + (autoRefresh ? "ON" : "OFF"));
+            settings.ignoreScanners = autoRefresh;
+            if (settings.ignoreScanners){
+                settings.forceRebuildMetadata = false;
+            }
+            ui.configService()->saveConfig();
         }
+
+        // // Auto patch tables
+        // bool autoPatch = settings.autoPatchTables;
+        // if (ImGui::Checkbox("Auto-Patch tables on Rescan", &autoPatch)) {
+        //     LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
+        //     settings.autoPatchTables = autoPatch;  // invert
+        //     ui.configService()->saveConfig();
+        // }
 
         // --- Maintenance submenu
         if (ImGui::BeginMenu("Maintenance")) {

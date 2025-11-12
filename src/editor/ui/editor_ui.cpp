@@ -97,30 +97,31 @@ void EditorUI::rescanAsync(ScannerMode mode) {
 
     std::thread([this, mode]() {
         Settings settings = config_->getSettings();
-        settings.ignoreScanners = false;
-        settings.forceRebuildMetadata = forceRebuildMetadata_;
-        settings.useVpxtool = useVpxtool_;
 
         switch (mode) {
             case ScannerMode::File:
+                settings.ignoreScanners = false;
                 settings.titleSource = "filename";
                 settings.fetchVPSdb = false;
                 break;
             case ScannerMode::VPin:
+                settings.ignoreScanners = false;
                 settings.titleSource = "metadata";
                 settings.fetchVPSdb = false;
                 break;
             case ScannerMode::VPSDb:
+                settings.ignoreScanners = false;
                 settings.titleSource = "metadata";
                 settings.fetchVPSdb = true;
                 break;
             case ScannerMode::HasIndex:
                 settings.ignoreScanners = true;
-                settings.titleSource = "filename";
+                settings.titleSource = "filename"; // 'metadata'?
                 settings.fetchVPSdb = false;
                 break;
             case ScannerMode::Patch:
-                settings.titleSource = "filename";
+                settings.ignoreScanners = false;
+                settings.titleSource = "metadata";
                 settings.fetchVPSdb = false;
                 settings.autoPatchTables = true;
                 break;
