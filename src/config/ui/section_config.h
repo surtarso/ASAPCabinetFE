@@ -26,7 +26,8 @@ public:
             "VPX",
             "DefaultMedia",
             "UISounds",
-            "Internal"
+            "Internal",
+            "Editor"
         };
         sectionDisplayNames_ = {
             {"TableMetadata", "Table matching & metadata (source, indexing)"},
@@ -35,13 +36,14 @@ public:
             {"AudioSettings", "Global audio levels and mutes"},
             {"Keybinds", "Keyboard / Controller shortcuts"},
             {"DPISettings", "Display scale / DPI behavior"},
-            {"WindowSettings", "Window & placement settings"},
+            {"WindowSettings", "Renderer, window & placement settings"},
             {"MediaDimensions", "Media sizing & placement for each window"},
             {"CustomMedia", "Per-table custom media paths"},
             {"VPX", "VPX integration paths & launch options"},
             {"DefaultMedia", "Fallback default media (used when table media missing)"},
             {"UISounds", "Interface sound effects"},
-            {"Internal", "Advanced / internal settings (indexes, DB paths)"}
+            {"Internal", "Advanced / internal settings (indexes, DB paths)"},
+            {"Editor", "Editor mode settings"}
         };
         // -------------------- KEYS --------------------
         keyOrders_["TableMetadata"] = {
@@ -429,6 +431,18 @@ public:
             {"vpxtoolIndex", "VPXTool Index File"},
             {"indexPath", "Index Path"},
             {"screenshotWait", "Screenshot Wait Time"}
+        };
+
+        keyOrders_["Editor"] = {
+            "showTableTooltips",
+            "preferredCompressor"
+        };
+        keyDisplayNames_["Editor"] = {
+            {"showTableTooltips", "Show Metadata Tooltips"},
+            {"preferredCompressor", "Preferred Archival Tool"}
+        };
+        keyDropdownOptions_["Editor"] = {
+            {"preferredCompressor", {"auto", "zip", "7z", "tar", "rar"}}
         };
     }
 

@@ -59,11 +59,60 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
 }
 
 // ---------------------------------------------------------------------------
-// Compression Request (placeholder)
+// Compression Request
 // ---------------------------------------------------------------------------
+static std::string detectCompressor() {
+    const std::vector<std::string> tools = {"zip", "7z", "tar", "rar"};
+    for (const auto& t : tools) {
+        std::string cmd = "command -v " + t + " >/dev/null 2>&1";
+        if (std::system(cmd.c_str()) == 0) return t;
+    }
+    return {};
+}
+
 void requestCompressTableFolder(EditorUI& ui) {
-    LOG_WARN("Compress Table Folder requested [Placeholder]");
-    // TODO: implement zip thread
+    if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
+        LOG_WARN("Compression requested but no table selected.");
+        return;
+    }
+
+    const auto& sel = ui.filteredTables()[ui.selectedIndex()];
+    fs::path folder = fs::path(sel.vpxFile).parent_path();
+    if (!fs::exists(folder) || !fs::is_directory(folder)) {
+        LOG_ERROR("Compression failed: folder not found.");
+        return;
+    }
+
+    Settings& settings = ui.configService()->getMutableSettings();
+    std::string compressor = settings.preferredCompressor;
+
+    if (compressor == "auto" || compressor.empty()) {
+        compressor = detectCompressor();
+        if (compressor.empty()) {
+            LOG_ERROR("No compressor tool found (zip, 7z, tar, rar). Install one or set manually in settings.");
+            return;
+        }
+        settings.preferredCompressor = compressor;
+        ui.configService()->saveConfig();
+    }
+
+    fs::path archive = folder.parent_path() / (folder.filename().string() + ".zip");
+    std::string cmd;
+
+    if (compressor == "zip")       cmd = "zip -r \"" + archive.string() + "\" \"" + folder.string() + "\"";
+    else if (compressor == "7z")   cmd = "7z a \"" + archive.string() + ".7z\" \"" + folder.string() + "\"";
+    else if (compressor == "tar")  cmd = "tar -czf \"" + archive.string() + ".tar.gz\" -C \"" + folder.parent_path().string() + "\" \"" + folder.filename().string() + "\"";
+    else if (compressor == "rar")  cmd = "rar a \"" + archive.string() + ".rar\" \"" + folder.string() + "\"";
+
+    LOG_INFO("Compressing with " + compressor + ": " + cmd);
+
+    std::thread([cmd, compressor]() {
+        int ret = std::system(cmd.c_str());
+        if (ret == 0)
+            LOG_INFO("Compression complete using " + compressor);
+        else
+            LOG_ERROR("Compression failed (exit " + std::to_string(ret) + ")");
+    }).detach();
 }
 
 // ---------------------------------------------------------------------------

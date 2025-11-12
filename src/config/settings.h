@@ -215,6 +215,7 @@ struct Settings {
 
     // [Editor]
     bool showTableTooltips = true;
+    std::string preferredCompressor = "auto"; // or "zip", "7z", etc.
 
     // [Keybinds]
     std::map<std::string, std::string> keybinds_ = {
@@ -520,7 +521,8 @@ private:
                 {"configUIHeight", s.configUIHeight}
             }},
             {"Editor", {
-                {"showTableTooltips", s.showTableTooltips}
+                {"showTableTooltips", s.showTableTooltips},
+                {"preferredCompressor", s.preferredCompressor}
             }},
             {"Keybinds", s.keybinds_}
         };
@@ -738,6 +740,7 @@ private:
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
+        s.preferredCompressor = j.value("Editor", nlohmann::json{}).value("preferredCompressor", s.preferredCompressor);
 
         // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
@@ -944,7 +947,8 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
 
     // Editor
-    {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor."}},
+    {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},
+    {"preferredCompressor", {Settings::ReloadType::None, "Tool used to compress table folders."}},
 
     // Keybind descriptions
     {"Previous Table", {Settings::ReloadType::None, "Key to select the previous table."}},
