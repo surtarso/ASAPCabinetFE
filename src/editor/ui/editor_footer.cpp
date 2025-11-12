@@ -93,6 +93,7 @@ void drawFooter(EditorUI& ui) {
                 ui.configService()->saveConfig();
             }
 
+            // Use external VPXTOOLS
             bool wantsVpxtool = settings.useVpxtool;
             if (ImGui::Checkbox("Use External VPXTool", &wantsVpxtool)) {
                 settings.useVpxtool = wantsVpxtool;
@@ -101,7 +102,7 @@ void drawFooter(EditorUI& ui) {
 
             // Auto patch tables
             bool autoPatch = settings.autoPatchTables;
-            if (ImGui::Checkbox("Auto-Patch tables on Rescan", &autoPatch)) {
+            if (ImGui::Checkbox("Auto-Patch tables", &autoPatch)) {
                 LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
                 settings.autoPatchTables = autoPatch;  // invert
                 ui.configService()->saveConfig();
@@ -176,10 +177,10 @@ void drawFooter(EditorUI& ui) {
             if (fs::exists(vbsPath)) {
                 ui.actions().openInExternalEditor(vbsPath);
             } else {
-                LOG_ERROR("Tried to open VBS, but extraction failed or file not found at: " + vbsPath);
+                LOG_WARN("Tried to open VBS, but extraction failed or file not found at: " + vbsPath);
             }
         } else {
-            LOG_DEBUG("Extract VBS pressed but no table selected");
+            LOG_INFO("Extract VBS pressed but no table selected");
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -193,9 +194,9 @@ void drawFooter(EditorUI& ui) {
     if (ImGui::Button("Apply Patch")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            LOG_DEBUG("PLACEHOLDER-> Patching table: " + t.vpxFile);
+            LOG_DEBUG("[Placeholder] Patching table: " + t.vpxFile);
         } else {
-            LOG_DEBUG("Applying Patch to all tables needing it");
+            LOG_DEBUG("Applying Patch to all tables in need");
             ui.setScannerMode(ScannerMode::Patch);
             ui.rescanAsyncPublic(ui.scannerMode());
         }
@@ -211,7 +212,7 @@ void drawFooter(EditorUI& ui) {
 
     // ---------- Download Media Button ----------
     if (ImGui::Button("Download Media")) {
-        LOG_DEBUG("Download Media pressed (placeholder)");
+        LOG_INFO("Download Media pressed [Placeholder]");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
@@ -222,7 +223,11 @@ void drawFooter(EditorUI& ui) {
 
     // ---------- Screenshot Button ----------
     if (ImGui::Button("Screenshot")) {
-        LOG_DEBUG("Screenshot pressed (placeholder)");
+        if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
+            LOG_INFO("Screenshot pressed (single table) [Placeholder]");
+        } else {
+            LOG_INFO("Screenshot pressed but no table selected [Placeholder]");
+        }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
@@ -245,7 +250,7 @@ void drawFooter(EditorUI& ui) {
             ui.setShowMetadataEditor(true);
             LOG_DEBUG("Toggling metadata editor ON");
         } else {
-            LOG_DEBUG("View Metadata pressed but no table selected");
+            LOG_INFO("View Metadata pressed but no table selected");
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -258,7 +263,7 @@ void drawFooter(EditorUI& ui) {
     // ---------- Browse Tables Button ----------
     if (ImGui::Button("Browse Tables")) {
         ui.setShowVpsdbBrowser(true);
-        LOG_DEBUG("Browse Tables pressed (placeholder)");
+        LOG_DEBUG("Browse Tables pressed");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
@@ -282,7 +287,7 @@ void drawFooter(EditorUI& ui) {
             );
 
         } else {
-            LOG_DEBUG("Play pressed but no table selected");
+            LOG_INFO("Play pressed but no table selected");
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -299,7 +304,7 @@ void drawFooter(EditorUI& ui) {
     // ---------- Settings Button ----------
     if (ImGui::Button("Settings")) {
         ui.setShowEditorSettings(true);
-        LOG_DEBUG("Settings pressed (placeholder)");
+        LOG_DEBUG("Settings pressed");
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 buttonMin = ImGui::GetItemRectMin(); // Top-left corner of the button

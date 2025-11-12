@@ -10,6 +10,7 @@
  */
 
 #include "asap_index_manager.h"
+#include "utils/path_utils.h"
 #include "log/logging.h"
 #include <filesystem>
 #include <fstream>
@@ -396,9 +397,20 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
                 mergedTable = existingTable;
                 mergedTable.fileLastModified = newTable.fileLastModified; // Update timestamp to match scan
             }
+
         } else {
             LOG_INFO("Adding new table " + newTable.vpxFile);
         }
+
+        // Recheck presence of linked files regardless of update decision
+        mergedTable.hasINI = PathUtils::hasIniForTable(
+            mergedTable.folder,
+            fs::path(mergedTable.vpxFile).stem().string()
+        );
+        mergedTable.hasB2S = PathUtils::hasB2SForTable(
+            mergedTable.folder,
+            fs::path(mergedTable.vpxFile).stem().string()
+        );
 
         mergedTables.push_back(mergedTable);
         if (progress) {

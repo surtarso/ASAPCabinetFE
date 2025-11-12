@@ -1,5 +1,9 @@
 #include "editor/ui/editor_header.h"
+#include "editor/menu_actions.h"
 #include <imgui.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace editor_header {
 
@@ -51,61 +55,29 @@ void drawHeader(EditorUI& ui) {
 
         ImGui::TextDisabled("Table Actions");
         if (ImGui::Selectable("Repair Table (via VPXTool)", false)) {
-            LOG_INFO("Repair Table requested via VPXTool");
-            // TODO: run VPXTool repair subprocess, e.g. system("vpxtool repair <table>");
+            menu_actions::repairTableViaVpxtool(ui);
         }
-        if (ImGui::Selectable("Rebuild Table Index", false)) {
-            LOG_INFO("Rebuild Table Index requested");
-            // TODO: trigger table index regeneration (reload json)
-        }
-        if (ImGui::Selectable("Launch in VPinballX", false)) {
-            LOG_INFO("Launch current table in VPinballX requested");
-            // TODO: launch external VPX executable using current table path
-        }
+
         if (ImGui::Selectable("Export Metadata Override", false)) {
-            LOG_INFO("Export Metadata Override requested");
-            // TODO: write JSON override file to /metadata/overrides/<table>.json
+            LOG_WARN("Export Metadata Override requested [Placeholder]");
+            // TODO: hook to metadata-override save() method
+            // open panel in override manager afterwards? before?
         }
 
         // --- Delete submenu
         if (ImGui::BeginMenu("Delete")) {
-            if (ImGui::MenuItem("Table Folder")) {
-                LOG_WARN("Delete Table Folder requested");
-                // TODO: std::filesystem::remove_all(table.folder)
-            }
-            if (ImGui::MenuItem("Table INI")) {
-                LOG_WARN("Delete Table INI requested");
-                // TODO: std::filesystem::remove(table.ini)
-            }
-            if (ImGui::MenuItem("Table VBS")) {
-                LOG_WARN("Delete Table VBS requested");
-                // TODO: std::filesystem::remove(table.vbs)
-            }
-            if (ImGui::MenuItem("Table Metadata")) {
-                LOG_WARN("Delete Table Metadata requested");
-                // TODO: std::filesystem::remove(table.metadata)
-            }
-            if (ImGui::MenuItem("Table Overrides")) {
-                LOG_WARN("Delete Table Overrides requested");
-                // TODO: std::filesystem::remove(table.override)
-            }
-            ImGui::Separator();
-            if (ImGui::MenuItem("Delete All Related Files")) {
-                LOG_WARN("Delete All Related Files requested");
-                // TODO: batch remove all files above
-            }
+            if (ImGui::MenuItem("Table Folder")) menu_actions::requestDeleteTableFolder(ui);
+            if (ImGui::MenuItem("Table INI")) menu_actions::requestDeleteTableFile(ui, "ini");
+            if (ImGui::MenuItem("Table VBS")) menu_actions::requestDeleteTableFile(ui, "vbs");
+            // if (ImGui::MenuItem("Table Metadata")) menu_actions::requestDeleteTableFile(ui, "metadata");
+            if (ImGui::MenuItem("Table Overrides")) menu_actions::requestDeleteTableFile(ui, "json");
             ImGui::EndMenu();
         }
 
         // --- Compress submenu
         if (ImGui::BeginMenu("Compress")) {
-            if (ImGui::MenuItem("Compress Table Folder (.zip)")) {
-                LOG_INFO("Compress Table Folder requested");
-                // TODO: use zip library or system("zip -r table.zip tablefolder")
-            }
-            if (ImGui::MenuItem("Compress Individual Components")) {
-                LOG_INFO("Compress Individual Components requested");
-                // TODO: compress each component individually
+            if (ImGui::MenuItem("Compress Table Folder (Archive)")) {
+                menu_actions::requestCompressTableFolder(ui);
             }
             ImGui::EndMenu();
         }
@@ -114,21 +86,18 @@ void drawHeader(EditorUI& ui) {
 
         // ------------------------------
         ImGui::TextDisabled("Media Tools");
+        // this is meant to be a media compression tool (maybe)
+                // like compressing images/videos/sounds to be more efficient
+                // maybe user has 4k videos and wants 1080p.. maybe audio is flac he wants mp3...
+                // maybe the videos are too long he wants shorter.. idk.. that kinda thing.
+
         if (ImGui::Selectable("Resize Media...", false)) {
-            LOG_INFO("Resize Media requested");
+            LOG_WARN("Resize Media requested [Placeholder]");
             // TODO: open modal for resize presets
         }
         if (ImGui::Selectable("Compress Media...", false)) {
-            LOG_INFO("Compress Media requested");
+            LOG_WARN("Compress Media requested [Placeholder]");
             // TODO: open modal or run ffmpeg compression task
-        }
-        if (ImGui::Selectable("Clear Media Cache", false)) {
-            LOG_INFO("Clear Media Cache requested");
-            // TODO: clear cache folder (e.g., std::filesystem::remove_all(mediaCache))
-        }
-        if (ImGui::Selectable("Rebuild Media Cache", false)) {
-            LOG_INFO("Rebuild Media Cache requested");
-            // TODO: rebuild all cached media thumbnails/videos
         }
 
         ImGui::Separator();
@@ -156,27 +125,10 @@ void drawHeader(EditorUI& ui) {
             ui.configService()->saveConfig();
         }
 
-        // // Auto patch tables
-        // bool autoPatch = settings.autoPatchTables;
-        // if (ImGui::Checkbox("Auto-Patch tables on Rescan", &autoPatch)) {
-        //     LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
-        //     settings.autoPatchTables = autoPatch;  // invert
-        //     ui.configService()->saveConfig();
-        // }
-
         // --- Maintenance submenu
         if (ImGui::BeginMenu("Maintenance")) {
             if (ImGui::MenuItem("Clear All Caches")) {
-                LOG_INFO("Clear All Caches requested");
-                // TODO: clear texture, video, metadata, and temp caches
-            }
-            if (ImGui::MenuItem("Reload Configuration")) {
-                LOG_INFO("Reload Configuration requested");
-                // TODO: reload settings.json and refresh UI
-            }
-            if (ImGui::MenuItem("Reinitialize UI")) {
-                LOG_INFO("Reinitialize UI requested");
-                // TODO: trigger full ImGui/UI rebuild
+                menu_actions::clearAllCaches(ui);
             }
             ImGui::EndMenu();
         }
@@ -191,26 +143,7 @@ void drawHeader(EditorUI& ui) {
 
         ImGui::EndCombo();
     }
+
+    menu_actions::drawModals(ui);
 }
 }
-
-// ---------- possible actions:
-// vpxtool actions [submenu?] (repair, rebuild, etc)
-// vpinballx actions [submenu?] (launch, etc)
-// [delete submenu?]
-// - delete table folder
-// - delete table ini
-// - delete table vbs
-// - delete table metadata
-// - delete overrides (in metadata, the files that override table defaults)
-// - compress? (create an archive w/ all table files)
-// [media submenu?]
-// - compress media (quality settings?)
-// - resize media (dimensions?)
-// - clear cache(s)
-// - export metadata (create 'an override' file with all current metadata for the table)
-
-
-// ----------- possible options:
-// - show/hide tooltips
-// - auto-refresh on startup (fast path)

@@ -100,10 +100,14 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                         vbsHash = compute_file_sha256(vbs_path.string());
                     }
 
+                    bool iniNow = fs::exists(path.parent_path() / (path.stem().string() + ".ini"));
+                    bool b2sNow = PathUtils::hasB2SForTable(path.parent_path(), path.stem().string());
                     // Skip if unchanged
                     if (fileLastModified == existingTable.fileLastModified &&
                         vpxHash == existingTable.hashFromVpx &&
-                        vbsHash == existingTable.hashFromVbs) {
+                        vbsHash == existingTable.hashFromVbs &&
+                        iniNow == existingTable.hasINI &&
+                        b2sNow == existingTable.hasB2S) {
                         LOG_DEBUG("Skipping unchanged file: " + path.string());
                         if (progress) {
                             std::lock_guard<std::mutex> lock(progress->mutex);
