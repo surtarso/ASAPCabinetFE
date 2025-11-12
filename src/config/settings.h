@@ -22,6 +22,30 @@ struct Settings {
         Font            // Font for title display reload
     };
 
+    // Enum to define UI widgets to use on config panel in settingsMetadata(TODO)
+    // enum class UIType {
+    //     // 1. Basic Primitives
+    //     Checkbox,           // bool
+    //     InputInt,           // int (no range)
+    //     InputFloat,         // float (no range)
+    //     InputText,          // std::string (generic)
+
+    //     // 2. Specialized Range/Value Widgets
+    //     SliderIntRange,     // int with min/max constraints (e.g., fontSize)
+    //     SliderFloatRange,   // float with min/max constraints (e.g., metadataPanelWidth)
+    //     IntKnob,            // int for 0-360 rotation or 0-100 volume (visual knob widget)
+
+    //     // 3. Custom/Special Widgets
+    //     ColorPicker,        // SDL_Color type (using ImGui::ColorEdit4)
+    //     PathInputFile,      // std::string path for files (opens file dialog)
+    //     PathInputDirectory, // std::string path for directories (opens directory dialog)
+    //     Dropdown,           // std::string with constrained options (e.g., videoBackend)
+    //     KeybindEditor,      // std::map<std::string, std::string>
+
+    //     // 4. Hidden/Internal
+    //     Hidden,             // Settings that should not be shown in the UI (e.g., exeDir)
+    // };
+
     // Metadata for each setting: field name -> reload type
     // static const std::unordered_map<std::string, ReloadType> settingsMetadata;
     static const std::map<std::string, std::pair<ReloadType, std::string>> settingsMetadata;
@@ -753,6 +777,11 @@ private:
         }
     }
 };
+
+// TODO: adapt to new enum of ui widget types for easier config later
+// inline const std::map<std::pair<std::string, std::string>, std::pair<Settings::ReloadType, Settings::UIType>> Settings::settingsMetadata = {
+//     {{"VPinballXPath", "Absolute path to the VPinballX executable."}, {Settings::ReloadType::None, Settings::UIType::PathInputFile}}
+// };
 
 // Define settingsMetadata (user-facing help strings)
 inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>> Settings::settingsMetadata = {
