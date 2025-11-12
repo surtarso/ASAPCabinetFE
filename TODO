@@ -1,12 +1,13 @@
 TODO
 
 FIX:
+- [!] FEED-F***ING-BACK... everything is silent! (boooring)
 - VPin scanner not picking up manufacturers?
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
+- hook advanced option to top pop-up menu (media/cache related)
 
 - [!] create settings panel (editor related on dropdown?)
 - settings button for existing setting panel?
