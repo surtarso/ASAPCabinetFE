@@ -7,17 +7,18 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- hook advanced option to top pop-up menu (media/cache related)
+- finish advanced option to top pop-up menu (media/cache related)
+- hook metadata override panel from main ui to advanced menu (to export override)
+- editor related settings on dropdown (shortcuts for settings in general)
 
-- [!] create settings panel (editor related on dropdown?)
-- settings button for existing setting panel?
 - view metadata panel plan: display current media, separate each scanner info for inspection
-- add metadata override panel from main ui, separate from view metadata.
+- hook fe config panel to settings button?
 - hook screenshot (Single table)
 
 QOL:
-- [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
+- [!] basic/advanced toggle for main config ui
 - [!] single table vs all tables action in general (ss, patch, rescan etc)
+- [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [!] 'feedback' /util/ to receive a string and print as a message window universally!
 - [!] feedback for table launch/failure
 - [!] single table scan (all, selectable) override manager?
@@ -28,7 +29,6 @@ QOL:
 - [FE] key for metadata panel toggle?
 - [FE] key to switch sorting type (joystick oriented)
 - [FE] clean up new panels (vpsdb catalog and metadata editor)
-- [FE] basic/advanced toggle for main config ui
 - [FE] collapse all/expand all widget for main config ui
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
