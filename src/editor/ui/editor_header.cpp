@@ -54,8 +54,17 @@ void drawHeader(EditorUI& ui) {
     if (ImGui::BeginCombo("##advanced_combo", "Advanced", ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
 
         ImGui::TextDisabled("Table Actions");
-        if (ImGui::Selectable("Repair Table (via VPXTool)", false)) {
-            menu_actions::repairTableViaVpxtool(ui);
+        if (ImGui::BeginMenu("VPXTool")) {
+            if (ImGui::MenuItem("Table Info"))              menu_actions::vpxtoolRun(ui, "info");
+            if (ImGui::MenuItem("Diff Script vs VBS"))      menu_actions::vpxtoolRun(ui, "diff");
+            if (ImGui::MenuItem("Extract Script (VBS)"))    menu_actions::vpxtoolRun(ui, "extractvbs");
+            if (ImGui::MenuItem("Import Script (VBS)"))     menu_actions::vpxtoolRun(ui, "importvbs");
+            if (ImGui::MenuItem("Verify Structure"))        menu_actions::vpxtoolRun(ui, "verify");
+            if (ImGui::MenuItem("Apply Patch"))             menu_actions::vpxtoolRun(ui, "patch");
+            if (ImGui::MenuItem("List Contents"))           menu_actions::vpxtoolRun(ui, "ls");
+            // if (ImGui::MenuItem("Reindex Directory"))       menu_actions::vpxtoolRun(ui, "index");
+            // if (ImGui::MenuItem("Show CLI Help"))           menu_actions::vpxtoolRun(ui, "help");
+            ImGui::EndMenu();
         }
 
         if (ImGui::Selectable("Export Metadata Override", false)) {
@@ -124,6 +133,8 @@ void drawHeader(EditorUI& ui) {
             }
             ui.configService()->saveConfig();
         }
+
+        ImGui::Separator();
 
         // --- Maintenance submenu
         if (ImGui::BeginMenu("Maintenance")) {

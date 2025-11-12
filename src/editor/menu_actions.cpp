@@ -67,11 +67,33 @@ void requestCompressTableFolder(EditorUI& ui) {
 }
 
 // ---------------------------------------------------------------------------
-// Repair Table (placeholder)
+// VPXTool generic executor
 // ---------------------------------------------------------------------------
-void repairTableViaVpxtool(EditorUI& ui) {
-    LOG_WARN("Repair Table via VPXTool requested [Placeholder]");
-    // TODO: spawn vpxtool subprocess if found in PATH
+void vpxtoolRun(EditorUI& ui, const std::string& command) {
+    if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
+        LOG_WARN("VPXTool " + command + " requested but no table selected.");
+        return;
+    }
+
+    const auto& sel = ui.filteredTables()[ui.selectedIndex()];
+    fs::path vpxFile = sel.vpxFile;
+    if (!fs::exists(vpxFile)) {
+        LOG_ERROR("VPXTool command failed: table file not found: " + vpxFile.string());
+        return;
+    }
+
+    // Example command
+    std::string cmd = "vpxtool " + command + " \"" + vpxFile.string() + "\"";
+    LOG_INFO("Executing: " + cmd);
+
+    // Run asynchronously
+    std::thread([cmd]() {
+        int result = std::system(cmd.c_str());
+        if (result != 0)
+            LOG_ERROR("VPXTool command failed with exit code " + std::to_string(result));
+        else
+            LOG_INFO("VPXTool command completed successfully.");
+    }).detach();
 }
 
 // ---------------------------------------------------------------------------

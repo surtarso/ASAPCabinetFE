@@ -6,10 +6,12 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- [!] create settings panel (editor related) [resume on dropdown?]
+- hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
+
+- [!] create settings panel (editor related on dropdown?)
+- settings button for existing setting panel?
 - view metadata panel plan: display current media, separate each scanner info for inspection
 - add metadata override panel from main ui, separate from view metadata.
-- hook advanced option to top pop-up menu (file operations (delete/rename/move?) vpxtool/vpinballx flags etc)
 - hook screenshot (Single table)
 
 QOL:

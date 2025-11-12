@@ -40,9 +40,9 @@ namespace menu_actions {
     void requestCompressTableFolder(EditorUI& ui);
 
     /**
-     * @brief Repairs a table via external VPXTool, if configured.
+     * @brief Runs external VPXTool options, if configured.
      */
-    void repairTableViaVpxtool(EditorUI& ui);
+    void vpxtoolRun(EditorUI& ui, const std::string& command);
 
     /**
      * @brief Clears all caches (textures, metadata, temp, etc.)
