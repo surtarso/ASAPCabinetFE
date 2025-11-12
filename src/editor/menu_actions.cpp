@@ -40,7 +40,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
                         ui.rescanAsyncPublic(ui.scannerMode());
                         ui.filterAndSortTablesPublic();
 
-                        ui.modal().openInfo("Deleted", "Folder deleted successfully:\n" + folder.string());
+                        // ui.modal().openInfo("Deleted", "Folder deleted successfully:\n" + folder.string());
                     } catch (const std::exception& e) {
                         LOG_ERROR(std::string("Exception deleting folder: ") + e.what());
                         ui.modal().openInfo("Error", "Failed to delete folder:\n" + folder.string());
@@ -76,23 +76,24 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
         ui.modal().openConfirm(
             "Confirm Delete?",
             "Delete file:\n" + base.string() + "\n\nThis will permanently remove it. Continue?",
-            {"Yes", "No"},
+            {"No", "Yes"},
             [&ui, base, fileType](const std::string& choice) {
                 if (choice == "Yes") {
                     try {
                         std::error_code ec;
                         bool removed = std::filesystem::remove(base, ec);
-                        if (ec)
+                        if (ec) {
                             LOG_ERROR("Failed to delete " + fileType + ": " + ec.message());
-                        else if (removed)
+                            ui.modal().openError("File Operation error", "Failed to delete " + fileType + ": " + ec.message());
+                        } else if (removed) {
+                            ui.rescanAsyncPublic(ui.scannerMode());
+                            ui.filterAndSortTablesPublic();
                             LOG_INFO("Deleted " + fileType + ": " + base.string());
-                        else
+                            // ui.modal().openInfo("File Operation", "Deleted " + fileType + ": " + base.string());
+                        } else {
                             LOG_WARN("Nothing deleted (file missing): " + base.string());
-
-                        ui.rescanAsyncPublic(ui.scannerMode());
-                        ui.filterAndSortTablesPublic();
-
-                        ui.modal().openInfo("Deleted", fileType + " file deleted successfully:\n" + base.string());
+                            ui.modal().openWarning("File Operation", "Nothing deleted (file missing): " + base.string());
+                        }
                     } catch (const std::exception& e) {
                         LOG_ERROR(std::string("Exception deleting ") + fileType + ": " + e.what());
                         ui.modal().openInfo("Error", "Failed to delete file:\n" + base.string());
@@ -104,6 +105,7 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
         );
     } else {
         LOG_ERROR("Delete " + fileType + " failed: file not found.");
+        ui.modal().openError("File Operation error", "Delete " + fileType + " failed: file not found.");
     }
 }
 
@@ -121,12 +123,8 @@ static std::string detectCompressor() {
 
 void requestCompressTableFolder(EditorUI& ui) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
-        LOG_WARN("Compression requested but no table selected.");
-        // Show modal info for missing selection
-        ui.modal().openInfo(
-            "No Table Selected",
-            "Please select a table first and try again."
-        );
+        LOG_INFO("Compression requested but no table selected.");
+        ui.modal().openInfo("No Table Selected", "Please select a table first and try again.");
         return;
     }
 
@@ -134,6 +132,7 @@ void requestCompressTableFolder(EditorUI& ui) {
     fs::path folder = fs::path(sel.vpxFile).parent_path();
     if (!fs::exists(folder) || !fs::is_directory(folder)) {
         LOG_ERROR("Compression failed: folder not found.");
+        ui.modal().openError("Archival error", "Compression failed: folder not found.");
         return;
     }
 
@@ -144,6 +143,7 @@ void requestCompressTableFolder(EditorUI& ui) {
         compressor = detectCompressor();
         if (compressor.empty()) {
             LOG_ERROR("No compressor tool found (zip, 7z, tar, rar). Install one or set manually in settings.");
+            ui.modal().openError("Archival error", "No compressor tool found (zip, 7z, tar, rar). Install one or set manually in settings.");
             return;
         }
         settings.preferredCompressor = compressor;
@@ -188,6 +188,7 @@ void vpxtoolRun(EditorUI& ui, const std::string& command) {
     fs::path vpxFile = sel.vpxFile;
     if (!fs::exists(vpxFile)) {
         LOG_ERROR("VPXTool command failed: table file not found: " + vpxFile.string());
+        ui.modal().openError("VPXTool error", "VPXTool command failed: table file not found: " + vpxFile.string());
         return;
     }
 
@@ -198,10 +199,13 @@ void vpxtoolRun(EditorUI& ui, const std::string& command) {
     // Run asynchronously
     std::thread([cmd]() {
         int result = std::system(cmd.c_str());
-        if (result != 0)
+        if (result != 0){
             LOG_ERROR("VPXTool command failed with exit code " + std::to_string(result));
-        else
+            // ui.modal().openError("VPXTool command failed with exit code " + std::to_string(result));
+        } else {
             LOG_INFO("VPXTool command completed successfully.");
+            // ui.modal().finishProgress("VPXTool command completed successfully.");
+        }
     }).detach();
 }
 

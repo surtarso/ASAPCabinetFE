@@ -83,79 +83,90 @@ void ModalDialog::openError(const std::string& title,
 
 
 void ModalDialog::draw() {
-    std::scoped_lock lock(mutex_);
-    if (type_ == ModalType::None) return;
+    std::function<void(std::string)> deferredConfirm;
+    std::function<void()> deferredCancel;
+    std::string chosenOption;
 
-    std::string popupId = title_ + "##" + std::to_string(reinterpret_cast<uintptr_t>(this));
+    {
+        std::scoped_lock lock(mutex_);
+        if (type_ == ModalType::None) return;
 
-    if (pendingOpen_) {
-        ImGui::OpenPopup(popupId.c_str());
-        pendingOpen_ = false;
-    }
+        std::string popupId = title_ + "##" + std::to_string(reinterpret_cast<uintptr_t>(this));
 
-    // Compute real center in global coordinates
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    float verticalOffset = -viewport->Size.y * 0.15f;
-    ImVec2 windowPos = ImVec2(
-        viewport->Pos.x + viewport->Size.x * 0.5f,
-        viewport->Pos.y + viewport->Size.y * 0.5f - verticalOffset
-    );
-
-    // Forcefully reset to root layer (so it's not affected by parent window stack)
-    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    // ImGui::SetNextWindowViewport(viewport->ID);
-
-
-    if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        if (type_ == ModalType::Error)
-            ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "%s", message_.c_str());
-        else if (type_ == ModalType::Warning)
-            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", message_.c_str());
-        else
-            ImGui::TextWrapped("%s", message_.c_str());
-        // ImGui::TextWrapped("%s", message_.c_str());
-
-        if (!options_.empty()) {
-            std::vector<const char*> cstrOptions;
-            cstrOptions.reserve(options_.size());
-            for (const auto& opt : options_)
-                cstrOptions.push_back(opt.c_str());
-
-            ImGui::Combo("##options", &selectedOption_,
-                        cstrOptions.data(),
-                        static_cast<int>(cstrOptions.size()));
+        if (pendingOpen_) {
+            ImGui::OpenPopup(popupId.c_str());
+            pendingOpen_ = false;
         }
 
-        if (busy_)
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Processing...");
-        else if (completed_) {
-            ImGui::TextColored(ImVec4(0, 1, 0, 1), "Done!");
-            if (!resultPath_.empty())
-                ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        float verticalOffset = -viewport->Size.y * 0.15f;
+        ImVec2 windowPos = ImVec2(
+            viewport->Pos.x + viewport->Size.x * 0.5f,
+            viewport->Pos.y + viewport->Size.y * 0.5f - verticalOffset
+        );
+
+        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+        if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (type_ == ModalType::Error)
+                ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "%s", message_.c_str());
+            else if (type_ == ModalType::Warning)
+                ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", message_.c_str());
+            else
+                ImGui::TextWrapped("%s", message_.c_str());
+
+            if (!options_.empty()) {
+                std::vector<const char*> cstrOptions;
+                for (const auto& opt : options_) cstrOptions.push_back(opt.c_str());
+                ImGui::Combo("##options", &selectedOption_,
+                             cstrOptions.data(), static_cast<int>(cstrOptions.size()));
+            }
+
+            // -------------------- Button Section --------------------
+            if (type_ == ModalType::Confirm) {
+                if (ImGui::Button("Cancel")) {
+                    deferredCancel = onCancel_;
+                    type_ = ModalType::None;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Confirm")) {
+                    if (!options_.empty())
+                        chosenOption = options_[selectedOption_];
+                    deferredConfirm = onConfirm_;
+                    type_ = ModalType::None;
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            else if (type_ == ModalType::Info ||
+                     type_ == ModalType::Warning ||
+                     type_ == ModalType::Error) {
+                if (ImGui::Button("OK")) {
+                    type_ = ModalType::None;
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            else if (type_ == ModalType::Progress) {
+                if (busy_)
+                    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Processing...");
+                else if (completed_) {
+                    ImGui::TextColored(ImVec4(0, 1, 0, 1), "Done!");
+                    if (!resultPath_.empty())
+                        ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
+                    if (ImGui::Button("OK")) {
+                        type_ = ModalType::None;
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            }
+
+            ImGui::EndPopup();
         }
+    } // <-- lock released here
 
-        if (!busy_ && !completed_) {
-            if (ImGui::Button("Cancel")) {
-                if (onCancel_) onCancel_();
-                type_ = ModalType::None;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Confirm")) {
-                std::string chosen;
-                if (!options_.empty())
-                    chosen = options_[selectedOption_];
-                if (onConfirm_) onConfirm_(chosen);
-            }
-        } else if (completed_) {
-            if (ImGui::Button("OK")) {
-                type_ = ModalType::None;
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
-        ImGui::EndPopup();
-    }
-
-    // ImGui::PopID();
+    // Safe to execute callbacks now
+    if (deferredCancel) deferredCancel();
+    if (deferredConfirm) deferredConfirm(chosenOption);
 }
