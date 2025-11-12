@@ -136,7 +136,7 @@ bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int 
         }
 
     // Removed --no-xlib because it can interfere with some platform backends (Wayland/Arch)
-    const char* args[] = {"--quiet", "--loop"};
+    const char* args[] = {"--quiet", "--loop"}; // "--no-xlib", "--vout=opengl"
     ctx_->instance = libvlc_new(2, args);
         if (!ctx_->instance) {
             LOG_ERROR("Failed to create VLC instance");

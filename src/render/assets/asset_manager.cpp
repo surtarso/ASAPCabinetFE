@@ -206,17 +206,24 @@ void AssetManager::applyVideoAudioSettings() {
 void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& tables) {
     auto start = std::chrono::high_resolution_clock::now();
 
-    if (tables.empty()) {
-        LOG_ERROR("Tables not yet loaded, skipping asset reload");
-        return;
+    // make sure we switch everything on renderer change
+    static size_t lastIndex = static_cast<size_t>(-1);
+    const std::string currentBackend = configManager_ ? configManager_->getSettings().videoBackend : std::string("vlc");
+    static std::string lastBackend;
+    if (lastBackend != currentBackend) {
+        LOG_DEBUG("Video backend changed from " + lastBackend + " to " + currentBackend + ", forcing full reload");
+        lastBackend = currentBackend;
+        // Invalidate so we skip the 'already loaded' early return
+        lastIndex = static_cast<size_t>(-1);
     }
+
     if (index >= tables.size()) {
         LOG_ERROR("Invalid table index: " + std::to_string(index) + ", table count: " + std::to_string(tables.size()));
         return;
     }
 
     const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
-    static size_t lastIndex = static_cast<size_t>(-1);
+    // static size_t lastIndex = static_cast<size_t>(-1);
     static bool lastShowBackglass = settings.showBackglass;
     static bool lastShowDMD = settings.showDMD;
     static bool lastShowTopper = settings.showTopper;
@@ -386,7 +393,11 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         }
 
         if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
-            std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+            // std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+            // to identify from which backend the cache is from
+            std::string backend = configManager_ ? configManager_->getSettings().videoBackend : std::string("vlc");
+            std::string cacheKey = backend + ":" + w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+
             w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
             if (w.videoPlayer) {
                 w.videoPlayer->play();

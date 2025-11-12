@@ -74,8 +74,8 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             break;
         case VideoBackendType::UNKNOWN:
         default:
-            LOG_DEBUG("Unsupported videoBackend=" + videoBackendStr + ", attempting VLC fallback.");
-            player = std::make_unique<VlcVideoPlayer>();
+            LOG_DEBUG("Unsupported videoBackend=" + videoBackendStr + ", attempting FFmpeg fallback.");
+            player = std::make_unique<FFmpegPlayer>();
             break;
     }
 
