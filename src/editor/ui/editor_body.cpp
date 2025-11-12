@@ -24,7 +24,14 @@ static void drawSoundsTooltip(const TableData& t);
 
 // ------------------------------------------------------------------
 // Tooltip router
-static void drawTooltipForColumn(int column, const TableData& t) {
+static void drawTooltipForColumn(int column, const TableData& t, EditorUI& ui) {
+    // --- Global tooltip suppression logic ---
+    Settings settings = ui.configService()->getSettings();
+    bool ctrlHeld = ImGui::GetIO().KeyCtrl;
+    if (!settings.showTableTooltips || ctrlHeld || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup))
+        return; // skip drawing tooltips
+
+    // Only draw when permitted
     ImGui::BeginTooltip();
     switch (column) {
         case 0: drawYearTooltip(t); break;
@@ -244,7 +251,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                        drawTooltipForColumn(0, t);}
+                        drawTooltipForColumn(0, t, ui);}
 
                     // ----------------------------------------- NAME
                     {ImGui::TableSetColumnIndex(1);
@@ -265,7 +272,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(1, t);
+                       drawTooltipForColumn(1, t, ui);
                     ImGui::PopID();}
 
                     // ----------------------------------------- VERSION
@@ -279,7 +286,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(2, t);}
+                       drawTooltipForColumn(2, t, ui);}
 
                     // ----------------------------------------- AUTHOR
                     {ImGui::TableSetColumnIndex(3);
@@ -287,7 +294,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(3, t);}
+                       drawTooltipForColumn(3, t, ui);}
 
                     // ----------------------------------------- MANUFACTURER
                     {ImGui::TableSetColumnIndex(4);
@@ -295,7 +302,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(4, t);}
+                       drawTooltipForColumn(4, t, ui);}
 
                     // ----------------------------------------- Extra Files
                     {ImGui::TableSetColumnIndex(5);
@@ -325,7 +332,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(5, t);}
+                       drawTooltipForColumn(5, t, ui);}
 
                     // ----------------------------------------- ROM Name
                     {ImGui::TableSetColumnIndex(6);
@@ -338,7 +345,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(6, t);}
+                       drawTooltipForColumn(6, t, ui);}
 
                     // ----------------------------------------- Media Extras
                     {ImGui::TableSetColumnIndex(7);
@@ -352,7 +359,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(7, t);}
+                       drawTooltipForColumn(7, t, ui);}
 
                     // ----------------------------------------- Media Assets - Images
                     {ImGui::TableSetColumnIndex(8);
@@ -366,7 +373,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(8, t);}
+                       drawTooltipForColumn(8, t, ui);}
 
                     // ----------------------------------------- Media Assets - Videos
                     {ImGui::TableSetColumnIndex(9);
@@ -379,7 +386,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(9, t);}
+                       drawTooltipForColumn(9, t, ui);}
 
                     // ----------------------------------------- Media Assets - Sounds
                     {ImGui::TableSetColumnIndex(10);
@@ -390,7 +397,7 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(10, t);}
+                       drawTooltipForColumn(10, t, ui);}
                 }
 
                 ImGui::EndTable();

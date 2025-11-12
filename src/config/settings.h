@@ -209,9 +209,12 @@ struct Settings {
     std::string vpxtoolIndex = "vpxtool_index.json";
     std::string indexPath = "data/asapcab_index.json";
     int screenshotWait = 4; // 0-60
-    // defaults in ConfigUI::drawGUI()
+    // defaults in ConfigUI::drawGUI(), these are for FE config panel
     float configUIWidth = 0.7f;
     float configUIHeight = 0.5f;
+
+    // [Editor]
+    bool showTableTooltips = true;
 
     // [Keybinds]
     std::map<std::string, std::string> keybinds_ = {
@@ -516,6 +519,9 @@ private:
                 {"configUIWidth", s.configUIWidth},
                 {"configUIHeight", s.configUIHeight}
             }},
+            {"Editor", {
+                {"showTableTooltips", s.showTableTooltips}
+            }},
             {"Keybinds", s.keybinds_}
         };
     }
@@ -730,6 +736,9 @@ private:
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
 
+        // Editor
+        s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
+
         // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
             s.keybinds_.clear();
@@ -933,6 +942,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
+
+    // Editor
+    {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor."}},
 
     // Keybind descriptions
     {"Previous Table", {Settings::ReloadType::None, "Key to select the previous table."}},
