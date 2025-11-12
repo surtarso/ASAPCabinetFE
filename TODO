@@ -2,6 +2,7 @@ TODO
 
 FIX:
 - make fast start and rebuild exclusive (unclick) between eachother
+- VPin scanner not picking up manufacturers?
 - [FE] vlc video renderer not working (Arch only!)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)

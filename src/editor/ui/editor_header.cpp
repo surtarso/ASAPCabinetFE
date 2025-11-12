@@ -22,7 +22,7 @@ void drawHeader(EditorUI& ui) {
                         [&ui](){ ui.filterAndSortTablesPublic(); } // Refresh UI callback
                     );
                 } else {
-                    LOG_DEBUG("Enter pressed but no table selected");
+                    LOG_DEBUG("'Play' pressed but no table selected");
                 }
             }
         );
@@ -76,3 +76,24 @@ void drawHeader(EditorUI& ui) {
     }
 }
 }
+
+// ---------- possible actions:
+// vpxtool actions [submenu?] (repair, rebuild, etc)
+// vpinballx actions [submenu?] (launch, etc)
+// [delete submenu?]
+// - delete table folder
+// - delete table ini
+// - delete table vbs
+// - delete table metadata
+// - delete overrides (in metadata, the files that override table defaults)
+// - compress? (create an archive w/ all table files)
+// [media submenu?]
+// - compress media (quality settings?)
+// - resize media (dimensions?)
+// - clear cache(s)
+// - export metadata (create 'an override' file with all current metadata for the table)
+
+
+// ----------- possible options:
+// - show/hide tooltips
+// - auto-refresh on startup (fast path)
