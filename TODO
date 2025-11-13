@@ -12,7 +12,6 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - editor related settings on dropdown (shortcuts for settings in general)
 
 - view metadata panel plan: display current media, separate each scanner info for inspection
-- hook fe config panel to settings button?
 - hook screenshot (Single table)
 
 QOL:
