@@ -233,8 +233,8 @@ void drawFooter(EditorUI& ui) {
                 "Single table media download is not yet implemented."
             );
         } else {
-            LOG_INFO("Download Media pressed but no table selected");
-            ui.modal().openInfo(
+            LOG_WARN("Download Media pressed but no table selected");
+            ui.modal().openWarning(
                 "No Table Selected",
                 "Please select a table first and try again."
                 "Bulk Media Download is not yet implemented."
@@ -258,10 +258,11 @@ void drawFooter(EditorUI& ui) {
                 "Single table screenshot is not yet implemented."
             );
         } else {
-            LOG_INFO("Screenshot pressed but no table selected");
-            ui.modal().openInfo(
+            LOG_WARN("Screenshot pressed but no table selected");
+            ui.modal().openWarning(
                 "No Table Selected",
                 "Please select a table first and try again."
+                "Bulk table screenshot is not yet implemented."
             );
         }
     }
@@ -272,13 +273,10 @@ void drawFooter(EditorUI& ui) {
     }
     ImGui::SameLine();
 
-    ImVec4 green      = ImVec4(0.24f, 0.74f, 0.24f, 1.0f);
-    ImVec4 greenHover = ImVec4(0.20f, 0.55f, 0.20f, 1.0f);
-    ImVec4 greenActive= ImVec4(0.12f, 0.35f, 0.12f, 1.0f);
-
-    ImGui::PushStyleColor(ImGuiCol_Button,        green);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  greenActive);
+    // blue
+    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
 
     // ---------- View Metadata Button ----------
     if (ImGui::Button("View Metadata")) {
@@ -310,7 +308,16 @@ void drawFooter(EditorUI& ui) {
         ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
         ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Browse Tables").c_str());
     }
+    ImGui::PopStyleColor(3);
     ImGui::SameLine();
+
+    ImVec4 green      = ImVec4(0.24f, 0.74f, 0.24f, 1.0f);
+    ImVec4 greenHover = ImVec4(0.20f, 0.55f, 0.20f, 1.0f);
+    ImVec4 greenActive= ImVec4(0.12f, 0.35f, 0.12f, 1.0f);
+
+    ImGui::PushStyleColor(ImGuiCol_Button,        green);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, greenHover);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  greenActive);
 
     // ---------- Play Selected Button ----------
     if (ImGui::Button("Play Selected")) {
@@ -328,6 +335,11 @@ void drawFooter(EditorUI& ui) {
 
         } else {
             LOG_INFO("Play pressed but no table selected");
+            ui.modal().openInfo(
+                "No Table Selected",
+                "You pressed 'Play' but no table was selected."
+                "Please select a table first and try again."
+            );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
