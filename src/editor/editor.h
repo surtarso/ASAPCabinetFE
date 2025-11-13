@@ -12,19 +12,25 @@
 #include <string>
 #include <memory>
 #include <atomic>
+#include <vector>
 
 /**
  * @class Editor
  * @brief Standalone editor for table management inside ASAPCabinetFE (--editor mode)
  */
 
- // Forward declarations
-class ImGuiManager; // forward declaration
+// --- Forward declarations ---
+// ----------------------------
+class ImGuiManager;
 
 namespace vpsdb {
     class VpsdbCatalog;
     class VpsdbJsonLoader;
 }
+
+class ConfigUI;
+struct TableData;
+// ----------------------------
 
 class Editor : public IApp {
 public:
@@ -69,4 +75,10 @@ private:
     std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_;
 
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
+
+    // Config UI and necessary placeholder dependencies ---
+    std::unique_ptr<ConfigUI> configUI_;
+    // Placeholder dependencies required by DependencyFactory::createConfigUI
+    size_t dummyCurrentIndex_ = 0;
+    std::vector<TableData> dummyTables_;
 };

@@ -61,7 +61,11 @@ void ConfigUI::drawGUI() {
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
                                    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
-    if (standaloneMode_) {
+    // Detect display orientation
+    bool isLandscape = io.DisplaySize.x > io.DisplaySize.y;
+
+    // Landscape → full-screen mode
+    if (isLandscape || standaloneMode_) {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
         ImGui::Begin("ASAPCabinetFE 1st Run Setup", &showConfig_, windowFlags);

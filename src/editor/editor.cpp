@@ -6,6 +6,7 @@
 #include "tables/asap_index_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_json.h"
+#include "config/ui/config_ui.h"
 #include <SDL.h>
 #include <stdexcept>
 
@@ -52,6 +53,19 @@ Editor::Editor(const std::string& configPath)
         loadingProgress_
     );
 
+    // Use DependencyFactory to create ConfigUI ---
+    // Pass nullptr for IAssetManager* and App* (which is IAppCallbacks* in this context),
+    // as the Editor doesn't manage those directly?
+    configUI_ = DependencyFactory::createConfigUI(
+        config_.get(),
+        keybindProvider_.get(),
+        nullptr, // IAssetManager*
+        &dummyCurrentIndex_,
+        &dummyTables_,
+        nullptr, // App* (IAppCallbacks*)
+        showEditorSettings_
+    );
+
     LOG_INFO("Editor initialized successfully.");
 }
 
@@ -92,6 +106,12 @@ void Editor::mainLoop() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             imguiManager_->processEvent(event);
+
+            // Pass events to ConfigUI for keybinding capture
+            if (configUI_) {
+                configUI_->handleEvent(event);
+            }
+
             if (event.type == SDL_QUIT)
                 return;
         }
@@ -107,6 +127,7 @@ void Editor::mainLoop() {
             if (showMetadataEditor_) {
                 ImGui::Text("Metadata Editor would be here");
                 if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
+
             } else if (showVpsdbBrowser_) {
                 if (!vpsdbCatalog_) {
                     // Lazy initialization
@@ -127,11 +148,23 @@ void Editor::mainLoop() {
                     showVpsdbBrowser_ = false; // The flag that opened it is set back to false
                     LOG_DEBUG("Editor: Closed VpsdbCatalog and vpsdbJsonLoader");
                 }
-                // ImGui::Text("VPSDB Browser would be here");
-                // if (ImGui::Button("Close Browser")) showVpsdbBrowser_ = false;
+
             } else if (showEditorSettings_) {
-                ImGui::Text("Editor Settings would be here");
-                if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
+                if (configUI_) {
+                    configUI_->drawGUI();
+                    // The showEditorSettings_ flag is passed by reference to ConfigUI.
+                    // When ConfigUI's internal flag is toggled (e.g., closing the window),
+                    // the reference is updated. We then save the config and refresh state.
+                    if (configUI_->shouldClose() && showEditorSettings_ == false) {
+                        configUI_->saveConfig(); // Save configuration when closing
+                        configUI_->refreshUIState(); // Refresh UI state after closing
+                    }
+                } else {
+                    ImGui::Text("ConfigUI failed to initialize.");
+                    if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
+                }
+                // ImGui::Text("Editor Settings would be here");
+                // if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
             } else {
                 editorUI_->draw();
             }
