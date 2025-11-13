@@ -99,21 +99,26 @@ void ModalDialog::draw() {
         }
 
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        float verticalOffset = -viewport->Size.y * 0.15f;
         ImVec2 windowPos = ImVec2(
             viewport->Pos.x + viewport->Size.x * 0.5f,
-            viewport->Pos.y + viewport->Size.y * 0.5f - verticalOffset
+            viewport->Pos.y + viewport->Size.y * 0.5f
         );
 
         ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
         if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+            float wrapWidth = ImGui::GetFontSize() * 30.0f; // ~30 chars wide, tweak as needed
+            ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + wrapWidth);
+
             if (type_ == ModalType::Error)
                 ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "%s", message_.c_str());
             else if (type_ == ModalType::Warning)
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", message_.c_str());
             else
                 ImGui::TextWrapped("%s", message_.c_str());
+
+            ImGui::PopTextWrapPos();
 
             if (!options_.empty()) {
                 std::vector<const char*> cstrOptions;
