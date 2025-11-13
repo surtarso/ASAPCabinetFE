@@ -7,27 +7,26 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - finish advanced option to top pop-up menu (media/cache related)
-- finish/test vpxtool args submenu
-- editor related settings on dropdown (shortcuts for settings in general)
+- test vpxtool args submenu (placeholders)
+- add editor related settings
 - hook screenshot (Single table)
+- hook vpindb media download (bulk)
 
 QOL:
 - [!] basic/advanced toggle for main config ui
 - [!] single table vs all tables action in general (ss, patch, rescan etc)
 - [!] feedback for table launch/failure
 - [!] single table scan (all, selectable) override manager?
+- [!][FE] a proper font picker
 - [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [ED] save metadata back to .vpx with vpin/vpxtool
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
-- [FE] a proper font picker
-- [FE] key for metadata panel toggle?
+- collapse all/expand all widget for main config ui
+- [FE] key for metadata panel toggle? (switch with FE override manager?)
 - [FE] key to switch sorting type (joystick oriented)
-- [FE] clean up new panels (vpsdb catalog and metadata editor)
-- [FE] collapse all/expand all widget for main config ui
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
-- [FE] user-pick fields to be shown on metadata panel
 
 On hold:
 - refactor the monoliths...
