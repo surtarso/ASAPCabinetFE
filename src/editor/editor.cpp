@@ -2,6 +2,7 @@
 #include "log/logging.h"
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
+#include "core/ui/metadata_panel.h"
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
@@ -173,8 +174,38 @@ void Editor::mainLoop() {
 
             // METADATA PANEL (TODO NEW PANEL)
             } else if (showMetadataView_) {
-                ImGui::Text("Metadata View would be here");
-                if (ImGui::Button("Close Meta")) showMetadataView_ = false;
+                // Lazy-create metadata panel
+                static MetadataPanel metadataPanel; // persistent instance
+
+                // Lock editorUI_ tables to get selected table
+                std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
+                auto &tables = editorUI_->tables();
+                int idx = editorUI_->selectedIndex();
+
+                if (idx >= 0 && static_cast<size_t>(idx) < tables.size()) {
+                    TableData &table = tables[idx];
+
+                    // Retrieve current SDL window size for adaptive layout
+                    int width = 0, height = 0;
+                    SDL_GetWindowSize(window_, &width, &height);
+
+                    // Use your ConfigService settings object (already held by config_)
+                    const Settings &settings = config_->getSettings();
+
+                    // Render the metadata panel (auto detects portrait/landscape)
+                    metadataPanel.render(table, width, height, settings);
+                } else {
+                    ImGui::Text("No table selected.");
+                }
+
+                // Bottom-right close button overlay TODO: better position, add one to switch to override manager
+                ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 180.0f, ImGui::GetIO().DisplaySize.y - 50.0f));
+                ImGui::SetNextWindowBgAlpha(0.3f);
+                ImGui::Begin("Close Metadata", nullptr,
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+                if (ImGui::Button("Close Metadata View")) showMetadataView_ = false;
+                ImGui::End();
 
             // VPSDB PANEL
             } else if (showVpsdbBrowser_) {

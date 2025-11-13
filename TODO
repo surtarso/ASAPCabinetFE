@@ -9,8 +9,6 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - finish advanced option to top pop-up menu (media/cache related)
 - finish/test vpxtool args submenu
 - editor related settings on dropdown (shortcuts for settings in general)
-
-- view metadata panel plan: display current media, separate each scanner info for inspection
 - hook screenshot (Single table)
 
 QOL:
