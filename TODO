@@ -7,6 +7,7 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - finish advanced option to top pop-up menu (media/cache related)
+- finish/test vpxtool args submenu
 - hook metadata override panel from main ui to advanced menu (to export override)
 - editor related settings on dropdown (shortcuts for settings in general)
 

@@ -1,13 +1,10 @@
 #include "renderer.h"
 #include "log/logging.h"
-#include "imgui.h" 
-#include "backends/imgui_impl_sdl2.h"
-#include "backends/imgui_impl_sdlrenderer2.h"
 #include "config/config_service.h" // Included for Settings struct definition
 
-Renderer::Renderer(SDL_Renderer* playfieldRenderer, 
-                   SDL_Renderer* backglassRenderer, 
-                   SDL_Renderer* dmdRenderer, 
+Renderer::Renderer(SDL_Renderer* playfieldRenderer,
+                   SDL_Renderer* backglassRenderer,
+                   SDL_Renderer* dmdRenderer,
                    SDL_Renderer* topperRenderer)
     : playfieldRenderer_(playfieldRenderer),
       backglassRenderer_(backglassRenderer),
@@ -49,7 +46,7 @@ void Renderer::render(IAssetManager& assets) {
 
 void Renderer::renderWindow(IAssetManager& assets, SDL_Renderer* renderer, const std::string& windowName,
                             bool isVisible, int mediaX, int mediaY, int mediaWidth, int mediaHeight,
-                            double rotation, const Settings& settings) { 
+                            double rotation, const Settings& settings) {
     if (!renderer || !isVisible) {
         return;
     }
