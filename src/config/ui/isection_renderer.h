@@ -17,6 +17,7 @@
 #include <imgui.h>
 #include <filesystem>
 #include "ImGuiFileDialog.h"
+#include "section_config.h"
 #include "log/logging.h"
 
 class ISectionRenderer {
@@ -165,17 +166,14 @@ protected:
 
     void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                                 ImGuiFileDialog* fileDialog, bool& isDialogOpen, std::string& dialogKey) {
+
+        // Render Path Input and Browse Button
         std::string val = value.get<std::string>();
         char buffer[1024];
         strncpy(buffer, val.c_str(), sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0';
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 60);
-        if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
-            value = std::string(buffer);
-            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + buffer);
-        }
-        ImGui::PopItemWidth();
-        ImGui::SameLine();
+
+        // show BROWSE button 1st
         if (ImGui::Button("Browse", ImVec2(50, 0))) {
             LOG_DEBUG("Browse button clicked for " + key);
             IGFD::FileDialogConfig config;
@@ -215,6 +213,25 @@ protected:
             dialogKey = key;
             LOG_DEBUG("Dialog opened with key: " + dialogKey + ", isDialogOpen: " + std::to_string(isDialogOpen));
         }
+        ImGui::SameLine();
+
+        // PushItemWidth sets the width for the InputText widget only, leaving space for the button
+        float labelAndButtonWidth = 50.0f + 180.0f; // 50 for button + 180 for label
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - labelAndButtonWidth);
+        // ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 80);
+
+        if (ImGui::InputText("##value", buffer, sizeof(buffer))) {
+            value = std::string(buffer);
+            LOG_DEBUG("Updated " + sectionName + "." + key + " to " + buffer);
+        }
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+
+        //Display the human-readable label clearly
+        SectionConfig secConfig; // If you can instantiate it here, otherwise it must be passed in.
+        std::string displayName = secConfig.getKeyDisplayName(sectionName, key);
+        if (displayName.empty()) {displayName = key;}
+        ImGui::Text("%s", displayName.c_str());
     }
 
     int snapToStep(int value) {
