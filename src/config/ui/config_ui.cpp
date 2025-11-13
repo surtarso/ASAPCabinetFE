@@ -234,10 +234,10 @@ void ConfigUI::drawGUI() {
                     dialogKey_ == "panelToggleSound" || dialogKey_ == "screenshotTakeSound" ||
                     dialogKey_ == "ambienceSound") {
 
-            if (fileDialog->Display("FileDlg_UISoundsAudio", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                LOG_DEBUG("Displaying FileDlg_UISoundsAudio");
+            if (fileDialog->Display("FileDlg_AudioPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("Displaying FileDlg_AudioPath");
                 if (fileDialog->IsOk()) {
-                    // Use dialogKey_ to identify the specific key (e.g., "interfaceAudioVol")
+                    // Using dialogKey_ to identify the specific key (e.g., "interfaceAudioVol")
                     jsonData_["UISounds"][dialogKey_] = fileDialog->GetFilePathName();
                     LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_["UISounds"][dialogKey_].get<std::string>());
                 }
@@ -245,7 +245,7 @@ void ConfigUI::drawGUI() {
                 isDialogOpen_ = false;
             }
 
-        // MEDIA SECTION  (TODO: create image / video distinction later)
+        // MEDIA SECTION
         } else if (dialogKey_ == "defaultPlayfieldImage" || dialogKey_ == "defaultBackglassImage" ||
                     dialogKey_ == "defaultDmdImage" || dialogKey_ == "defaultWheelImage" ||
                     dialogKey_ == "defaultTopperImage" || dialogKey_ == "defaultPlayfieldVideo" ||
@@ -257,14 +257,46 @@ void ConfigUI::drawGUI() {
                     dialogKey_ == "customDmdVideo" || dialogKey_ == "customTopperVideo" ||
                     dialogKey_ == "tableMusic" || dialogKey_ == "customLaunchSound") {
 
-            if (fileDialog->Display("FileDlg_MediaPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                LOG_DEBUG("Displaying FileDlg_MediaPath");
-                if (fileDialog->IsOk()) {
-                    jsonData_["DefaultMedia"][dialogKey_] = fileDialog->GetFilePathName();
-                    LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_["DefaultMedia"][dialogKey_].get<std::string>());
+            // 1. Image Dialog
+            if (fileDialog->IsOpened("FileDlg_ImagePath")) {
+                if (fileDialog->Display("FileDlg_ImagePath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (fileDialog->IsOk()) {
+                        // Determine the correct section based on the dialogKey_
+                        std::string targetSection = (dialogKey_.find("custom") != std::string::npos) ? "CustomMedia" : "DefaultMedia";
+                        jsonData_[targetSection][dialogKey_] = fileDialog->GetFilePathName();
+                        LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_[targetSection][dialogKey_].get<std::string>());
+                    }
+                    fileDialog->Close();
+                    isDialogOpen_ = false;
                 }
-                fileDialog->Close();
-                isDialogOpen_ = false;
+            }
+
+            // 2. Video Dialog
+            else if (fileDialog->IsOpened("FileDlg_VideoPath")) {
+                if (fileDialog->Display("FileDlg_VideoPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (fileDialog->IsOk()) {
+                        // Determine the correct section
+                        std::string targetSection = (dialogKey_.find("custom") != std::string::npos) ? "CustomMedia" : "DefaultMedia";
+                        jsonData_[targetSection][dialogKey_] = fileDialog->GetFilePathName();
+                        LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_[targetSection][dialogKey_].get<std::string>());
+                    }
+                    fileDialog->Close();
+                    isDialogOpen_ = false;
+                }
+            }
+
+            // 3. Audio Dialog
+            else if (fileDialog->IsOpened("FileDlg_AudioPath")) {
+                if (fileDialog->Display("FileDlg_AudioPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                    if (fileDialog->IsOk()) {
+                        // Determine the correct section
+                        std::string targetSection = (dialogKey_.find("custom") != std::string::npos) ? "CustomMedia" : "DefaultMedia";
+                        jsonData_[targetSection][dialogKey_] = fileDialog->GetFilePathName();
+                        LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_[targetSection][dialogKey_].get<std::string>());
+                    }
+                    fileDialog->Close();
+                    isDialogOpen_ = false;
+                }
             }
         } else {
             LOG_ERROR("Unknown dialog key: " + dialogKey_);

@@ -164,6 +164,11 @@ protected:
         }
     }
 
+    const char* imageFilter = "Image Files {.png,.jpg,.jpeg,.webp}";
+    const char* videoFilter = "Video Files {.mp4,.avi,.webm,.mov,.mkv}";
+    const char* audioFilter = "Audio Files {.mp3,.ogg,.flac,.wav}";
+    const char* allMediaFilter = "Media Files {.png,.jpg,.jpeg,.webp,.mp4,.avi,.webm,.mov,.mkv,.mp3,.ogg,.flac,.wav},Media Files {.*}";
+
     void renderPathOrExecutable(const std::string& key, nlohmann::json& value, const std::string& sectionName,
                                 ImGuiFileDialog* fileDialog, bool& isDialogOpen, std::string& dialogKey) {
 
@@ -195,18 +200,31 @@ protected:
                 fileDialog->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
             }
 
-            // AUDIO File Picker
-            else if (sectionName == "UISounds") {
+            // AUDIO File Picker (default/custom)
+            else if (sectionName == "UISounds" || key == "tableMusic" || key == "customLaunchSound") {
                 // file picker (by extension)
-                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".mp3,.wav,.ogg,.flac", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-                fileDialog->OpenDialog("FileDlg_UISoundsAudio", "Select default audio", ".mp3,.wav,.ogg,.flac", config);
+                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".mp3,.wav,.ogg,.flac", ImVec4(0.7f, 0.1f, 0.9f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_AudioPath", "Select Audio File", audioFilter, config);
             }
 
-            // MEDIA File Picker (Image/Video) TODO: add imageFilter and videoFilter to separate them.
+            // MEDIA File Picker (Image/Video/generic)
             else if (sectionName == "CustomMedia" || sectionName == "DefaultMedia") {
-                // file picker (by extension)
-                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".png,.jpg,.jpeg,.webp,.mp4,.avi,.webm", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-                fileDialog->OpenDialog("FileDlg_MediaPath", "Select media", ".png,.jpg,.jpeg,.webp,.mp4,.avi,.webm", config);
+                // Check if the key name contains "Video"
+                if (key.find("Video") != std::string::npos) {
+                    // Video Picker
+                    fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".mp4,.avi,.webm,.mov,.mkv", ImVec4(0.2f, 0.7f, 1.0f, 0.9f));
+                    fileDialog->OpenDialog("FileDlg_VideoPath", "Select Video File", videoFilter, config);
+
+                // Check if the key name contains "Image" (or "Wheel")
+                } else if (key.find("Image") != std::string::npos || key.find("Wheel") != std::string::npos) {
+                    // Image Picker
+                    fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".png,.jpg,.jpeg,.webp", ImVec4(1.0f, 0.5f, 0.1f, 0.9f));
+                    fileDialog->OpenDialog("FileDlg_ImagePath", "Select Image File", imageFilter, config);
+
+                } else {
+                    // Fallback for general media types
+                    fileDialog->OpenDialog("FileDlg_GenericMediaPath", "Select Media File", allMediaFilter, config);
+                }
             }
 
             isDialogOpen = true;
