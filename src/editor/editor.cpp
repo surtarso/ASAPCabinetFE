@@ -172,7 +172,7 @@ void Editor::mainLoop() {
                     }
                 }
 
-            // METADATA PANEL (TODO NEW PANEL)
+            // METADATA PANEL
             } else if (showMetadataView_) {
                 // Lazy-create metadata panel
                 static MetadataPanel metadataPanel; // persistent instance
@@ -199,12 +199,14 @@ void Editor::mainLoop() {
                 }
 
                 // Bottom-right close button overlay TODO: better position, add one to switch to override manager
-                ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 180.0f, ImGui::GetIO().DisplaySize.y - 50.0f));
+                ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f, ImGui::GetIO().DisplaySize.y - 50.0f));
                 ImGui::SetNextWindowBgAlpha(0.3f);
                 ImGui::Begin("Close Metadata", nullptr,
-                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
-                if (ImGui::Button("Close Metadata View")) showMetadataView_ = false;
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground |
+                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration);
+                if (ImGui::Button("Edit Metadata")) {showMetadataView_ = false; showMetadataEditor_ = true;}
+                ImGui::SameLine();
+                if (ImGui::Button("Close")) showMetadataView_ = false;
                 ImGui::End();
 
             // VPSDB PANEL

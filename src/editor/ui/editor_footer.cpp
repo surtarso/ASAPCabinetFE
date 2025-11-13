@@ -202,7 +202,12 @@ void drawFooter(EditorUI& ui) {
     if (ImGui::Button("Apply Patch")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            LOG_DEBUG("[Placeholder] Patching table: " + t.vpxFile);
+            LOG_WARN("[Placeholder] Patching table: " + t.vpxFile);
+            ui.modal().openWarning(
+                "A Table is Selected",
+                "Please unselect a table first and try again."
+                "Single table patching is not yet implemented."
+            );
         } else {
             LOG_DEBUG("Applying Patch to all tables in need");
             ui.setScannerMode(ScannerMode::Patch);
@@ -220,7 +225,21 @@ void drawFooter(EditorUI& ui) {
 
     // ---------- Download Media Button ----------
     if (ImGui::Button("Download Media")) {
-        LOG_INFO("Download Media pressed [Placeholder]");
+        if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
+        LOG_WARN("Download Media pressed (single table) [Placeholder]");
+        ui.modal().openWarning(
+                "A Table is Selected",
+                "Please unselect a table first and try again."
+                "Single table media download is not yet implemented."
+            );
+        } else {
+            LOG_INFO("Download Media pressed but no table selected");
+            ui.modal().openInfo(
+                "No Table Selected",
+                "Please select a table first and try again."
+                "Bulk Media Download is not yet implemented."
+            );
+        }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
@@ -232,9 +251,14 @@ void drawFooter(EditorUI& ui) {
     // ---------- Screenshot Button ----------
     if (ImGui::Button("Screenshot")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            LOG_INFO("Screenshot pressed (single table) [Placeholder]");
+            LOG_WARN("Screenshot pressed (single table) [Placeholder]");
+            ui.modal().openWarning(
+                "A Table is Selected",
+                "Please unselect a table first and try again."
+                "Single table screenshot is not yet implemented."
+            );
         } else {
-            LOG_INFO("Extract VBS pressed but no table selected");
+            LOG_INFO("Screenshot pressed but no table selected");
             ui.modal().openInfo(
                 "No Table Selected",
                 "Please select a table first and try again."
@@ -263,6 +287,10 @@ void drawFooter(EditorUI& ui) {
             LOG_DEBUG("Toggling metadata view ON");
         } else {
             LOG_INFO("View Metadata pressed but no table selected");
+            ui.modal().openInfo(
+                "No Table Selected",
+                "Please select a table first and try again."
+            );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
