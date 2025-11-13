@@ -11,6 +11,7 @@
 namespace fs = std::filesystem;
 
 EditorUI::EditorUI(bool& showMeta,
+                   bool& showView,
                    bool& showBrowser,
                    bool& showSettings,
                    IConfigService* config,
@@ -27,6 +28,7 @@ EditorUI::EditorUI(bool& showMeta,
       actions_(config, tableCallbacks),
       tableFilter_(),
       showMetadataEditor_(showMeta),
+      showMetadataView_(showView),
       showVpsdbBrowser_(showBrowser),
       showEditorSettings_(showSettings)
 {

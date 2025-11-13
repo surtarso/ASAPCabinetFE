@@ -5,6 +5,8 @@
 #include "core/dependency_factory.h"
 #include "launcher/itable_launcher.h"
 #include "tables/itable_callbacks.h"
+#include "tables/overrides/table_override_manager.h"
+#include "tables/overrides/table_override_editor.h"
 #include "core/ui/loading_progress.h"
 #include "core/ui/loading_screen.h"
 #include <SDL2/SDL.h>
@@ -46,6 +48,7 @@ private:
 
     // --- Sub-editor state flags ---
     bool showMetadataEditor_ = false;
+    bool showMetadataView_ = false;
     bool showVpsdbBrowser_ = false;
     bool showEditorSettings_ = false;
 
@@ -81,4 +84,7 @@ private:
     // Placeholder dependencies required by DependencyFactory::createConfigUI
     size_t dummyCurrentIndex_ = 0;
     std::vector<TableData> dummyTables_;
+
+    std::unique_ptr<TableOverrideManager> overrideManager_;
+    std::unique_ptr<TableOverrideEditor> metadataEditor_;
 };

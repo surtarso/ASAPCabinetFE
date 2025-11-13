@@ -53,7 +53,7 @@ void drawHeader(EditorUI& ui) {
     // ------------------------------ ADVANCED DROPMENU ------------------------------
     if (ImGui::BeginCombo("##advanced_combo", "Advanced", ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
 
-        ImGui::TextDisabled("Table Actions");
+        ImGui::TextDisabled("Selected Table Actions");
         if (ImGui::BeginMenu("VPXTool")) {
             if (ImGui::MenuItem("Table Info"))              menu_actions::vpxtoolRun(ui, "info");
             if (ImGui::MenuItem("Diff Script vs VBS"))      menu_actions::vpxtoolRun(ui, "diff");
@@ -63,17 +63,24 @@ void drawHeader(EditorUI& ui) {
             if (ImGui::MenuItem("Apply Patch"))             menu_actions::vpxtoolRun(ui, "patch");
             if (ImGui::MenuItem("List Contents"))           menu_actions::vpxtoolRun(ui, "ls");
             // if (ImGui::MenuItem("Reindex Directory"))       menu_actions::vpxtoolRun(ui, "index");
-            // if (ImGui::MenuItem("Show CLI Help"))           menu_actions::vpxtoolRun(ui, "help");
             ImGui::EndMenu();
         }
 
-        if (ImGui::Selectable("Export Metadata Override", false)) {
-            LOG_WARN("Export Metadata Override requested [Placeholder]");
-            // TODO: hook to metadata-override save() method
-            // open panel in override manager afterwards? before?
+        // --- Compress submenu
+        if (ImGui::BeginMenu("Backup/Archive")) {
+            if (ImGui::MenuItem("Compress Table Folder (Archive)")) {
+                menu_actions::requestCompressTableFolder(ui);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::Selectable("Edit Metadata", false)) {
+            ui.setShowMetadataEditor(true);
+            LOG_INFO("Edit Table Metadata requested");
         }
 
         // --- Delete submenu
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
         if (ImGui::BeginMenu("Delete")) {
             if (ImGui::MenuItem("Table Folder")) menu_actions::requestDeleteTableFolder(ui);
             if (ImGui::MenuItem("Table INI")) menu_actions::requestDeleteTableFile(ui, "ini");
@@ -82,14 +89,7 @@ void drawHeader(EditorUI& ui) {
             if (ImGui::MenuItem("Table Overrides")) menu_actions::requestDeleteTableFile(ui, "json");
             ImGui::EndMenu();
         }
-
-        // --- Compress submenu
-        if (ImGui::BeginMenu("Compress")) {
-            if (ImGui::MenuItem("Compress Table Folder (Archive)")) {
-                menu_actions::requestCompressTableFolder(ui);
-            }
-            ImGui::EndMenu();
-        }
+        ImGui::PopStyleColor();
 
         ImGui::Separator();
 

@@ -259,8 +259,8 @@ void drawFooter(EditorUI& ui) {
     // ---------- View Metadata Button ----------
     if (ImGui::Button("View Metadata")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            ui.setShowMetadataEditor(true);
-            LOG_DEBUG("Toggling metadata editor ON");
+            ui.setShowMetadataView(true);
+            LOG_DEBUG("Toggling metadata view ON");
         } else {
             LOG_INFO("View Metadata pressed but no table selected");
         }

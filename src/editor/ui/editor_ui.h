@@ -24,6 +24,7 @@ enum class ScannerMode { File, VPin, VPSDb, HasIndex, Patch };
 class EditorUI {
 public:
     EditorUI(bool& showMeta,
+             bool& showView,
              bool& showBrowser,
              bool& showSettings,
              IConfigService* config,
@@ -78,6 +79,9 @@ public:
     bool showMetadataEditor() const { return showMetadataEditor_; }
     void setShowMetadataEditor(bool v) { showMetadataEditor_ = v; }
 
+    bool showMetadataView() const { return showMetadataView_; }
+    void setShowMetadataView(bool v) { showMetadataView_ = v; }
+
     bool showVpsdbBrowser() const { return showVpsdbBrowser_; }
     void setShowVpsdbBrowser(bool v) { showVpsdbBrowser_ = v; }
 
@@ -124,6 +128,7 @@ private:
     bool configValid_ = false;
 
     bool& showMetadataEditor_;
+    bool& showMetadataView_;
     bool& showVpsdbBrowser_;
     bool& showEditorSettings_;
 

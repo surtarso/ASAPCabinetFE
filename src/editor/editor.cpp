@@ -12,6 +12,7 @@
 
 Editor::Editor(const std::string& configPath)
     : showMetadataEditor_(false),
+      showMetadataView_(false),
       showVpsdbBrowser_(false),
       showEditorSettings_(false),
       configPath_(configPath),
@@ -41,9 +42,12 @@ Editor::Editor(const std::string& configPath)
     tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
     tableCallbacks_ = std::make_unique<AsapIndexManager>(config_->getSettings());
 
+    overrideManager_ = std::make_unique<TableOverrideManager>();
+
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
         showMetadataEditor_,
+        showMetadataView_,
         showVpsdbBrowser_,
         showEditorSettings_,
         config_.get(),
@@ -122,12 +126,57 @@ void Editor::mainLoop() {
         if (editorUI_->loading()) {
             // If loading, render the loading screen
             loadingScreen_->render();
+        // If not loading, render the normal editor UI logic
         } else {
-            // If not loading, render the normal editor UI logic
+            // METADATA EDITOR (TODO: hook from tables/table_overrides)
             if (showMetadataEditor_) {
-                ImGui::Text("Metadata Editor would be here");
-                if (ImGui::Button("Close Meta")) showMetadataEditor_ = false;
+                // Lazy-create metadataEditor_ using the selected table from EditorUI.
+                // Do NOT invent accessor methods — use tables() and selectedIndex() that already exist.
+                if (!metadataEditor_) {
+                    int idx = editorUI_->selectedIndex();
+                    // Validate selected index and table vector bounds under the table mutex.
+                    {
+                        std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
+                        auto &tables = editorUI_->tables();
+                        if (idx >= 0 && static_cast<size_t>(idx) < tables.size()) {
+                            auto &table = tables[idx];
+                            metadataEditor_ = std::make_unique<TableOverrideEditor>(table, *overrideManager_);
+                        } else {
+                            // No valid selection: show a small notice and a close button.
+                            ImGui::Text("No table selected for metadata editing.");
+                            if (ImGui::Button("Close")) {
+                                showMetadataEditor_ = false;
+                            }
+                        }
+                    }
+                }
 
+                // If we have an instance, render it. The editor returns false when it requests to be closed.
+                if (metadataEditor_) {
+                    if (!metadataEditor_->render()) {
+                        // Editor requested close (Save or Discard). If saved, update UI view.
+                        bool saved = metadataEditor_->wasSaved();
+
+                        // Destroy the editor instance.
+                        metadataEditor_.reset();
+
+                        // Close the UI panel.
+                        showMetadataEditor_ = false;
+
+                        // If saved, refresh EditorUI table view so overridden values appear.
+                        // Use existing public method filterAndSortTablesPublic() to refresh filteredTables.
+                        if (saved) {
+                            editorUI_->filterAndSortTablesPublic();
+                        }
+                    }
+                }
+
+            // METADATA PANEL (TODO NEW PANEL)
+            } else if (showMetadataView_) {
+                ImGui::Text("Metadata View would be here");
+                if (ImGui::Button("Close Meta")) showMetadataView_ = false;
+
+            // VPSDB PANEL
             } else if (showVpsdbBrowser_) {
                 if (!vpsdbCatalog_) {
                     // Lazy initialization
@@ -149,6 +198,7 @@ void Editor::mainLoop() {
                     LOG_DEBUG("Editor: Closed VpsdbCatalog and vpsdbJsonLoader");
                 }
 
+            // SETTINGS PANEL (config_ui)
             } else if (showEditorSettings_) {
                 if (configUI_) {
                     configUI_->drawGUI();
@@ -163,8 +213,7 @@ void Editor::mainLoop() {
                     ImGui::Text("ConfigUI failed to initialize.");
                     if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
                 }
-                // ImGui::Text("Editor Settings would be here");
-                // if (ImGui::Button("Close Settings")) showEditorSettings_ = false;
+
             } else {
                 editorUI_->draw();
             }

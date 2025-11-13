@@ -75,14 +75,27 @@ bool TableOverrideEditor::render() {
 
     // Center and fix window size
     ImGuiIO& io = ImGui::GetIO();
-    float panelWidth = io.DisplaySize.x * TableOverrideEditorSettings::WIDTH_FACTOR;
-    float panelHeight = io.DisplaySize.y * TableOverrideEditorSettings::HEIGHT_FACTOR;
-    float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
-    float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
 
-    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(TableOverrideEditorSettings::ALPHA);
+    // Detect display orientation
+    bool isLandscape = io.DisplaySize.x > io.DisplaySize.y;
+
+    // Adjust window layout depending on orientation
+    if (isLandscape) {
+        // Landscape → full-screen mode
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(TableOverrideEditorSettings::ALPHA);
+    } else {
+        // Portrait → keep centered floating layout
+        float panelWidth = io.DisplaySize.x * TableOverrideEditorSettings::WIDTH_FACTOR;
+        float panelHeight = io.DisplaySize.y * TableOverrideEditorSettings::HEIGHT_FACTOR;
+        float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
+        float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
+
+        ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(TableOverrideEditorSettings::ALPHA);
+    }
 
     ImGui::Begin("ASAPCabinetFE Metadata Editor", nullptr,
                  ImGuiWindowFlags_NoMove |
@@ -90,7 +103,7 @@ bool TableOverrideEditor::render() {
 
     // Persistent buffers for text fields
     static std::map<std::string, std::array<char, 1024>> buffers;
-    
+
     // Initialize or update buffers
     for (const auto& [key, value] : fields_) {
         if (buffers.find(key) == buffers.end() || std::string(buffers[key].data()) != value) {
@@ -155,7 +168,7 @@ bool TableOverrideEditor::render() {
     ImGui::EndChild();
 
     // ImGui::Separator();
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - buttonHeight);
+    // ImGui::SetCursorPosY(ImGui::GetWindowHeight() - buttonHeight);
 
     // Render buttons
     bool hasChanges = fields_ != originalFields_;
