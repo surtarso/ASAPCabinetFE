@@ -105,41 +105,6 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
             return; // skip generic rendering for this section
         }
 
-
-
-        // if (sectionName == "Keybinds") {
-        //     ImGui::Text("Keyboard & Controller Bindings");
-        //     ImGui::Separator();
-
-        //     if (ImGui::BeginTable("KeybindsTable", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable)) {
-        //         ImGui::TableSetupColumn("Action");
-        //         ImGui::TableSetupColumn("Key");
-        //         ImGui::TableSetupColumn("");
-        //         ImGui::TableHeadersRow();
-
-        //         for (auto& [key, value] : sectionData.items()) {
-        //             ImGui::TableNextRow();
-        //             ImGui::TableSetColumnIndex(0);
-        //             ImGui::TextUnformatted(config.getKeyDisplayName(sectionName, key).c_str());
-
-        //             ImGui::TableSetColumnIndex(1);
-        //             ImGui::PushID(key.c_str());
-        //             renderKeybind(key.c_str(), value, sectionName, isCapturing, capturingKeyName);
-        //             ImGui::PopID();
-        //         }
-        //         ImGui::EndTable();
-        //     }
-
-        //     ImGui::Spacing();
-        //     ImGui::Separator();
-        //     ImGui::TextDisabled("Click a field, then press the key or button to rebind.");
-        //     ImGui::Unindent();
-        //     return; // skip generic renderer
-        // }
-
-
-
-
         // ----------------------- Special handling for Window section
         if (sectionName == "WindowSettings") {
             ImGui::Text("Window Layout Preview");
@@ -371,6 +336,8 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                         }
                     } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
                         //LOG_DEBUG("Rendering path for key " << key << " in section " << sectionName);
+                        renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
+                    } else if (sectionName == "UISounds" || sectionName == "DefaultMedia" || sectionName == "CustomMedia") {
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "Keybinds") {
                         renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);

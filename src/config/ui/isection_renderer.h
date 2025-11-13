@@ -183,15 +183,34 @@ protected:
             config.flags = ImGuiFileDialogFlags_Modal;
             fileDialog->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
 
+            // VPX Section
             if (key == "VPXTablesPath") {
+                // folder picker
                 fileDialog->OpenDialog("FolderDlg_VPXTablesPath", "Select VPX Tables Folder", nullptr, config);
             } else if (key == "VPinballXPath") {
+                // file picker (by regex)
                 fileDialog->SetFileStyle(IGFD_FileStyleByFullName, "((VPinballX.*))", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
                 fileDialog->OpenDialog("FileDlg_VPinballXPath", "Select VPinballX Executable", "((VPinballX.*))", config);
             } else if (key == "vpxIniPath") {
+                // file picker (by extension)
                 fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".ini", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
                 fileDialog->OpenDialog("FileDlg_vpxIniPath", "Select VPinballX Config File", ".ini", config);
             }
+
+            // AUDIO File Picker
+            else if (sectionName == "UISounds") {
+                // file picker (by extension)
+                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".mp3,.wav,.ogg,.flac", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_UISoundsAudio", "Select default audio", ".mp3,.wav,.ogg,.flac", config);
+            }
+
+            // MEDIA File Picker (Image/Video) TODO: add imageFilter and videoFilter to separate them.
+            else if (sectionName == "CustomMedia" || sectionName == "DefaultMedia") {
+                // file picker (by extension)
+                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".png,.jpg,.jpeg,.webp,.mp4,.avi,.webm", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_MediaPath", "Select media", ".png,.jpg,.jpeg,.webp,.mp4,.avi,.webm", config);
+            }
+
             isDialogOpen = true;
             dialogKey = key;
             LOG_DEBUG("Dialog opened with key: " + dialogKey + ", isDialogOpen: " + std::to_string(isDialogOpen));

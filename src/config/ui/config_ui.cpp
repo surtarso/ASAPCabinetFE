@@ -195,6 +195,7 @@ void ConfigUI::drawGUI() {
         ImVec2 maxSize = ImVec2(ImGui::GetIO().DisplaySize.x * 0.8f, ImGui::GetIO().DisplaySize.y * 0.8f);
         ImVec2 minSize = ImVec2(600, 400);
 
+        // VPX SECTION
         if (dialogKey_ == "VPXTablesPath") {
             if (fileDialog->Display("FolderDlg_VPXTablesPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 LOG_DEBUG("Displaying FolderDlg_VPXTablesPath");
@@ -221,6 +222,46 @@ void ConfigUI::drawGUI() {
                 if (fileDialog->IsOk()) {
                     jsonData_["VPX"]["vpxIniPath"] = fileDialog->GetFilePathName();
                     LOG_INFO("Selected vpxIniPath: " + jsonData_["VPX"]["vpxIniPath"].get<std::string>());
+                }
+                fileDialog->Close();
+                isDialogOpen_ = false;
+            }
+
+        // UI SOUNDS SECTION
+        } else if (dialogKey_ == "scrollNormalSound" || dialogKey_ == "scrollFastSound" ||
+                    dialogKey_ == "scrollJumpSound" || dialogKey_ == "scrollRandomSound" ||
+                    dialogKey_ == "launchTableSound" || dialogKey_ == "launchScreenshotSound" ||
+                    dialogKey_ == "panelToggleSound" || dialogKey_ == "screenshotTakeSound" ||
+                    dialogKey_ == "ambienceSound") {
+
+            if (fileDialog->Display("FileDlg_UISoundsAudio", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("Displaying FileDlg_UISoundsAudio");
+                if (fileDialog->IsOk()) {
+                    // Use dialogKey_ to identify the specific key (e.g., "interfaceAudioVol")
+                    jsonData_["UISounds"][dialogKey_] = fileDialog->GetFilePathName();
+                    LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_["UISounds"][dialogKey_].get<std::string>());
+                }
+                fileDialog->Close();
+                isDialogOpen_ = false;
+            }
+
+        // MEDIA SECTION  (TODO: create image / video distinction later)
+        } else if (dialogKey_ == "defaultPlayfieldImage" || dialogKey_ == "defaultBackglassImage" ||
+                    dialogKey_ == "defaultDmdImage" || dialogKey_ == "defaultWheelImage" ||
+                    dialogKey_ == "defaultTopperImage" || dialogKey_ == "defaultPlayfieldVideo" ||
+                    dialogKey_ == "defaultBackglassVideo" || dialogKey_ == "defaultDmdVideo" ||
+                    dialogKey_ == "defaultTopperVideo" || dialogKey_ == "customPlayfieldImage" ||
+                    dialogKey_ == "customBackglassImage" || dialogKey_ == "customDmdImage" ||
+                    dialogKey_ == "customWheelImage" || dialogKey_ == "customTopperImage" ||
+                    dialogKey_ == "customPlayfieldVideo" || dialogKey_ == "customBackglassVideo" ||
+                    dialogKey_ == "customDmdVideo" || dialogKey_ == "customTopperVideo" ||
+                    dialogKey_ == "tableMusic" || dialogKey_ == "customLaunchSound") {
+
+            if (fileDialog->Display("FileDlg_MediaPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                LOG_DEBUG("Displaying FileDlg_MediaPath");
+                if (fileDialog->IsOk()) {
+                    jsonData_["DefaultMedia"][dialogKey_] = fileDialog->GetFilePathName();
+                    LOG_INFO("Selected " + dialogKey_ + ": " + jsonData_["DefaultMedia"][dialogKey_].get<std::string>());
                 }
                 fileDialog->Close();
                 isDialogOpen_ = false;
