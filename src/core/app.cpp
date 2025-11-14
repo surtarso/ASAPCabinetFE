@@ -257,7 +257,7 @@ void App::initializeDependencies() {
     soundManager_ = DependencyFactory::createSoundManager(configManager_->getSettings());
 
     if (!configManager_->getSettings().ambienceSound.empty()) {
-        soundManager_->playAmbienceMusic(configManager_->getSettings().ambienceSound);
+        if (soundManager_) soundManager_->playAmbienceMusic(configManager_->getSettings().ambienceSound);
     }
 
     loadFont();

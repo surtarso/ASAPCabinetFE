@@ -9,6 +9,7 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
+- add feedback for 'launching screenshot mode' (normal play too)
 
 QOL:
 - add colors to rows according to conditions (patched, non-matched, diffs etc)

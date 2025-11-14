@@ -72,7 +72,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 SDL_Rect button = {0, 0, 215, 35};
                 if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
                     LOG_INFO("Capturing screenshots with mouse click...");
-                    soundManager_->playUISound("screenshot_take");
+                    if (soundManager_) soundManager_->playUISound("screenshot_take");
                     capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 }
             }

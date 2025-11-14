@@ -273,17 +273,12 @@ void drawFooter(EditorUI& ui) {
     // ---------- Screenshot Button ----------
     if (ImGui::Button("Screenshot")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            const auto& ta = ui.filteredTables()[ui.selectedIndex()];
-
-            LOG_INFO("Screenshot pressed for table: " + ta.vpxFile);
             Uint32 currentTime = SDL_GetTicks();
             if (ui.inExternalAppMode_ || (currentTime - ui.lastExternalAppReturnTime_) < EditorUI::EXTERNAL_APP_DEBOUNCE_TIME_MS) {
                 LOG_DEBUG("Screenshot mode skipped due to external app mode or debounce.");
             } else {
                 LOG_DEBUG("Screenshot mode triggered from editor button");
                 if (!ui.screenshotModeActive_ && ui.screenshotManager()) {
-                    // optional UI sound
-                    // soundManager_->playUISound("launch_screenshot");
 
                     ui.screenshotModeActive_ = true;
                     ui.inExternalAppMode_ = true;
@@ -297,7 +292,6 @@ void drawFooter(EditorUI& ui) {
                     LOG_DEBUG("Exited screenshot mode");
                 }
             }
-            // ui.screenshotManager()->launchScreenshotMode(t.vpxFile);
 
         } else {
             LOG_WARN("Screenshot pressed but no table selected");
