@@ -9,7 +9,7 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
 - finish advanced option to top pop-up menu (media/cache related)
 - test vpxtool args submenu (placeholders)
-- add editor related settings
+- add editor related settings?
 - hook screenshot (Single table)
 - hook vpindb media download (bulk)
 

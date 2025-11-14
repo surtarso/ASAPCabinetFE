@@ -107,7 +107,7 @@ void AssetManager::reloadAssets(IWindowManager* windowManager, TTF_Font* font, c
                                (oldDmd && oldDmd != dmdRenderer) ||
                                (oldTopper && oldTopper != topperRenderer);
         if (rendererChanged) {
-            LOG_WARN("Renderer pointer changed - clearing texture & video caches to avoid invalid textures");
+            LOG_DEBUG("Renderer pointer changed - clearing texture & video caches to avoid invalid textures");
             // Stop and clear active video players and cached players referencing old renderers
             clearVideoCache();
             // Clear texture cache so textures created on the old renderers are not reused
@@ -224,7 +224,6 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     }
 
     const Settings& settings = configManager_ ? configManager_->getSettings() : Settings();
-    // static size_t lastIndex = static_cast<size_t>(-1);
     static bool lastShowBackglass = settings.showBackglass;
     static bool lastShowDMD = settings.showDMD;
     static bool lastShowTopper = settings.showTopper;
@@ -412,7 +411,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         };
 
         //--------------------------------------------------------------------------
-        // FIXED PRIORITY FLAGS
+        // PRIORITY FLAGS
         //--------------------------------------------------------------------------
         bool imagesOnly = settings.forceImagesOnly;
 
@@ -420,10 +419,12 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         bool hasUserVideo = fileExists(w.tableVideo);
         bool hasUserImage = fileExists(w.tableImage);
 
-        // 1) IMAGES ONLY MODE
-        if (imagesOnly) {
-            // Priority: User Image → DefaultMedia
+        //--------------------------------------------------------------------------
+        // IMAGES ONLY = ON MODE
+        //--------------------------------------------------------------------------
+        // Priority: User Image → DefaultMedia
 
+        if (imagesOnly) {
             if (hasUserImage) {
                 // load user image
                 w.texture = textureCache_->getTexture(w.renderer, w.tableImage);
@@ -471,7 +472,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                     w.videoPath = w.tableVideo;
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
-                    LOG_DEBUG("ImagesOnly=OFF → Using NEW USER VIDEO for " + std::string(w.name));
+                    LOG_DEBUG("ImagesOnly=OFF → Loaded USER VIDEO for " + std::string(w.name));
                 }
             }
 
@@ -483,7 +484,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             w.texture = textureCache_->getTexture(w.renderer, w.tableImage);
             if (w.texture) {
                 w.imagePath = w.tableImage;
-                LOG_DEBUG("ImagesOnly=OFF → Using USER IMAGE for " + std::string(w.name));
+                LOG_DEBUG("No USER VIDEO and ImagesOnly=OFF → Using USER IMAGE for " + std::string(w.name));
                 continue;
             }
         }
@@ -496,9 +497,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 w.videoPlayer = std::move(player);
                 w.videoPlayer->play();
                 w.videoPath = "__DEFAULT_MEDIA__";
-                // w.mediaWidth = mediaWidth;
-                // w.mediaHeight = mediaHeight;
-                LOG_DEBUG("ImagesOnly=OFF → Using DEFAULT MEDIA for " + std::string(w.name));
+                LOG_DEBUG("No user media and ImagesOnly=OFF → Using DEFAULT MEDIA for " + std::string(w.name));
             }
         }
     }
