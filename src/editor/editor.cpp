@@ -58,7 +58,6 @@ Editor::Editor(const std::string& configPath)
         loadingProgress_
     );
 
-    // Use DependencyFactory to create ConfigUI ---
     // Pass nullptr for IAssetManager* and App* (which is IAppCallbacks* in this context),
     // as the Editor doesn't manage those directly?
     configUI_ = DependencyFactory::createConfigUI(
@@ -123,13 +122,14 @@ void Editor::mainLoop() {
 
         imguiManager_->newFrame();
 
-        // Choose which panel to render
+        // --- Choose which panel to render ---
         if (editorUI_->loading()) {
             // If loading, render the loading screen
             loadingScreen_->render();
         // If not loading, render the normal editor UI logic
         } else {
 
+            // ========================= METADATA EDITOR PANEL =========================
             if (showMetadataEditor_) {
 
                 if (!metadataEditor_) {
@@ -180,9 +180,7 @@ void Editor::mainLoop() {
                     }
                 }
 
-
-
-            // METADATA PANEL
+            // ========================= METADATA VIEW PANEL =========================
             } else if (showMetadataView_) {
 
                 static MetadataPanel metadataPanel;
@@ -243,7 +241,7 @@ void Editor::mainLoop() {
 
 
 
-            // VPSDB PANEL
+            // ========================= VPSDB PANEL =========================
             } else if (showVpsdbBrowser_) {
                 if (!vpsdbCatalog_) {
                     // Lazy initialization
@@ -265,7 +263,7 @@ void Editor::mainLoop() {
                     LOG_DEBUG("Editor: Closed VpsdbCatalog and vpsdbJsonLoader");
                 }
 
-            // SETTINGS PANEL (config_ui)
+            // ========================= SETTINGS PANEL =========================
             } else if (showEditorSettings_) {
                 if (configUI_) {
                     configUI_->drawGUI();
@@ -281,6 +279,7 @@ void Editor::mainLoop() {
                 }
 
             } else {
+                // ========================= EDITOR UI =========================
                 editorUI_->draw();
             }
         }
