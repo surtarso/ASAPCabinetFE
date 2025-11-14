@@ -44,7 +44,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         progress->logMessages.clear();
     }
 
-    // Fast path: Load only from index if ignoreScanners is true and tables index is not empty/missing
+    // Fast startup: Load only from index if ignoreScanners is true and tables index is not empty/missing
     bool fastPathFailed = false;
     if (settings.ignoreScanners) {
         if (progress) {
@@ -55,7 +55,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->totalTablesToLoad = 0;
         }
         if (indexManager.load(settings, tables, progress)) {
-            LOG_INFO("Fast path loaded " + std::to_string(tables.size()) + " tables from asapcab_index.json");
+            LOG_INFO("Fast Startup loaded " + std::to_string(tables.size()) + " tables from asapcab_index.json");
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Loaded from index";

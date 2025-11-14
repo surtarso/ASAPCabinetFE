@@ -65,7 +65,7 @@ public:
             {"titleSortBy", "Sort By"},
             {"useVpxtool", "Enable VPXTool"},
             {"fetchVPSdb", "Use VPS DB"},
-            {"ignoreScanners", "Fast load (skip scanners)"},
+            {"ignoreScanners", "Fast startup (skip scanners)"},
             {"forceRebuildMetadata", "Force rebuild metadata"},
             {"titleWeight", "Title weight"},
             {"yearWeight", "Year weight"},

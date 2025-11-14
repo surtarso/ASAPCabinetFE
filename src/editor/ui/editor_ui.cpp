@@ -40,7 +40,7 @@ EditorUI::EditorUI(bool& showMeta,
     if (configValid_) {
         LOG_INFO("Paths valid. Starting asynchronous load.");
         if (!settings.indexPath.empty()) {
-            // Start with fast path (index load only)
+            // Start with fast startup (index load only)
             rescanAsync(ScannerMode::HasIndex);
         } else {
             // Index doesn't exist (first run on new machine/folder), perform a full file scan
@@ -50,6 +50,7 @@ EditorUI::EditorUI(bool& showMeta,
     } else {
         LOG_WARN("Critical paths invalid — skipping table load. User must correct paths first.");
     }
+    LOG_INFO("Editor User Interface constructed.");
 }
 
 void EditorUI::draw() {
