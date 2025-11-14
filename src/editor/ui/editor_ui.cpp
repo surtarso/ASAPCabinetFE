@@ -138,6 +138,13 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 settings.fetchVPSdb = false;
                 settings.autoPatchTables = true;
                 break;
+            case ScannerMode::MediaDb:
+                settings.ignoreScanners = false;
+                settings.titleSource = "metadata";
+                settings.fetchVPSdb = true;
+                settings.autoPatchTables = true;
+                settings.fetchVpinMediaDb = true;
+                break;
         }
 
         auto newTables = tableLoader_->loadTableList(settings, loadingProgress_.get());

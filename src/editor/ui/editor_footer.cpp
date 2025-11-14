@@ -238,18 +238,28 @@ void drawFooter(EditorUI& ui) {
     // ---------- Download Media Button ----------
     if (ImGui::Button("Download Media")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-        LOG_WARN("Download Media pressed (single table) [Placeholder]");
-        ui.modal().openWarning(
+            const auto& t = ui.filteredTables()[ui.selectedIndex()];
+            LOG_WARN("[Placeholder] downloading media for table: " + t.vpxFile);
+            ui.modal().openWarning(
                 "A Table is Selected",
                 "Please unselect a table first and try again."
-                "Single table media download is not yet implemented."
+                "Single table media downloading is not yet implemented."
             );
         } else {
-            LOG_WARN("Download Media pressed but no table selected");
-            ui.modal().openWarning(
-                "No Table Selected",
-                "Please select a table first and try again."
-                "Bulk Media Download is not yet implemented."
+            // Open confirm dialog before media downloading for all tables
+            ui.modal().openConfirm(
+                "Confirm Download All?",
+                "This will download images for all tables it finds.\nAre you sure you want to continue?",
+                {"No", "Yes"},
+                [&ui](const std::string& choice) {
+                    if (choice == "Yes") {
+                        LOG_DEBUG("Confirmed: Downloading tables to all tables found (hashed and matched)");
+                        ui.setScannerMode(ScannerMode::MediaDb);
+                        ui.rescanAsyncPublic(ui.scannerMode());
+                    } else {
+                        LOG_INFO("Patch all canceled by user.");
+                    }
+                }
             );
         }
     }
