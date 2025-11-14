@@ -209,9 +209,21 @@ void drawFooter(EditorUI& ui) {
                 "Single table patching is not yet implemented."
             );
         } else {
-            LOG_DEBUG("Applying Patch to all tables in need");
-            ui.setScannerMode(ScannerMode::Patch);
-            ui.rescanAsyncPublic(ui.scannerMode());
+            // Open confirm dialog before patching all tables
+            ui.modal().openConfirm(
+                "Confirm Patch All?",
+                "This will apply patches to all tables in need.\nAre you sure you want to continue?",
+                {"No", "Yes"},
+                [&ui](const std::string& choice) {
+                    if (choice == "Yes") {
+                        LOG_DEBUG("Confirmed: Applying Patch to all tables in need");
+                        ui.setScannerMode(ScannerMode::Patch);
+                        ui.rescanAsyncPublic(ui.scannerMode());
+                    } else {
+                        LOG_INFO("Patch all canceled by user.");
+                    }
+                }
+            );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

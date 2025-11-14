@@ -8,11 +8,11 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
-- add apply patch feedback (like archive progress modals)
 - hook screenshot (Single table)
 - hook vpindb media download (bulk)
 
 QOL:
+- add colors to rows according to conditions (patched, non-matched, diffs etc)
 - [!] add basic/advanced toggle for main config ui
 - [!] add single table vs all tables action in general (ss, patch, rescan etc)
 - [!] add feedback for table launch/failure
