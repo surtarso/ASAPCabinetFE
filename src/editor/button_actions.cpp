@@ -8,6 +8,7 @@
 #include <cctype>
 #include <chrono>
 #include <algorithm>
+#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -66,7 +67,7 @@ bool ButtonActions::openInExternalEditor(const std::string& filepath) {
 void ButtonActions::openFolder(const std::string& filepath) {
     std::string folder;
     if (filepath.empty()) {
-        folder = config_ ? config_->getSettings().VPXTablesPath : "."; // fallback to tables dir if possible
+        folder = config_ ? config_->getSettings().VPXTablesPath : "."; // fallback
     } else {
         fs::path filePathObj(filepath);
         folder = filePathObj.parent_path().string();
@@ -77,14 +78,18 @@ void ButtonActions::openFolder(const std::string& filepath) {
         return;
     }
 
-    std::string cmd = "xdg-open \"" + folder + "\"";
-    int result = system(cmd.c_str());
-    if (result != 0) {
-        LOG_ERROR("Failed to open folder: " + folder + " (exit code " + std::to_string(result) + ")");
-    } else {
-        LOG_DEBUG("Opened folder: " + folder);
-    }
+    // Launch in a detached thread
+    std::thread([folder]() {
+        std::string cmd = "xdg-open \"" + folder + "\" >/dev/null 2>&1";
+        int result = std::system(cmd.c_str());
+        if (result != 0) {
+            LOG_ERROR("Failed to open folder: " + folder + " (exit code " + std::to_string(result) + ")");
+        } else {
+            LOG_DEBUG("Opened folder: " + folder);
+        }
+    }).detach();
 }
+
 
 void ButtonActions::handleKeyboardSearchFocus(char* searchBuffer,
     std::string& searchQuery,

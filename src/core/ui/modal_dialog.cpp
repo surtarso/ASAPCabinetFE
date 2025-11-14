@@ -38,6 +38,7 @@ void ModalDialog::openProgress(const std::string& title,
     message_ = message;
     busy_ = true;
     completed_ = false;
+    pendingOpen_ = true;
 }
 
 void ModalDialog::updateProgress(const std::string& message) {
@@ -52,6 +53,9 @@ void ModalDialog::finishProgress(const std::string& resultMessage,
     resultPath_ = resultPath;
     busy_ = false;
     completed_ = true;
+    // If progress popup was never opened (edge case), request to open it
+    // so the user can see the result message and press OK.
+    if (!pendingOpen_) pendingOpen_ = true;
 }
 
 void ModalDialog::openInfo(const std::string& title,
@@ -104,7 +108,7 @@ void ModalDialog::draw() {
             viewport->Pos.y + viewport->Size.y * 0.5f
         );
 
-        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
         if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 

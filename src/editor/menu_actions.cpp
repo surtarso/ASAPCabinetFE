@@ -124,52 +124,115 @@ static std::string detectCompressor() {
 }
 
 void requestCompressTableFolder(EditorUI& ui) {
-    if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
+    // ------------------------------
+    // Validate selection
+    // ------------------------------
+    int idx = ui.selectedIndex();
+    const auto& filtered = ui.filteredTables();
+
+    if (idx < 0 || idx >= static_cast<int>(filtered.size())) {
         LOG_INFO("Compression requested but no table selected.");
-        ui.modal().openInfo("No Table Selected", "Compression requested but no table selected." "Please select a table first and try again.");
+        ui.modal().openInfo(
+            "No Table Selected",
+            "Compression requested but no table selected. Please select a table first and try again."
+        );
         return;
     }
 
-    const auto& sel = ui.filteredTables()[ui.selectedIndex()];
+    // ------------------------------
+    // Resolve folder to compress
+    // ------------------------------
+    const auto& sel = filtered[idx];
     fs::path folder = fs::path(sel.vpxFile).parent_path();
+
     if (!fs::exists(folder) || !fs::is_directory(folder)) {
         LOG_ERROR("Compression failed: folder not found.");
-        ui.modal().openError("Archival error", "Compression failed: folder not found.");
+        ui.modal().openError("Archival Error",
+                             "Compression failed: folder not found.");
         return;
     }
 
+    // ------------------------------
+    // Determine compressor
+    // ------------------------------
     Settings& settings = ui.configService()->getMutableSettings();
     std::string compressor = settings.preferredCompressor;
 
     if (compressor == "auto" || compressor.empty()) {
         compressor = detectCompressor();
         if (compressor.empty()) {
-            LOG_ERROR("No compressor tool found (zip, 7z, tar, rar). Install one or set manually in settings.");
-            ui.modal().openError("Archival error", "No compressor tool found (zip, 7z, tar, rar). Install one or set manually in settings.");
+            LOG_ERROR("No compressor tool found.");
+            ui.modal().openError(
+                "Archival Error",
+                "No compressor tool found (zip, 7z, tar, rar).\n"
+                "Install one or choose manually in settings."
+            );
             return;
         }
         settings.preferredCompressor = compressor;
         ui.configService()->saveConfig();
     }
 
-    fs::path archive = folder.parent_path() / (folder.filename().string() + ".zip");
+    // Determine output paths
+    fs::path archiveBase = folder.parent_path() / folder.filename().string();
+    fs::path outputArchive;
+
     std::string cmd;
 
-    if (compressor == "zip")       cmd = "zip -r \"" + archive.string() + "\" \"" + folder.string() + "\"";
-    else if (compressor == "7z")   cmd = "7z a \"" + archive.string() + ".7z\" \"" + folder.string() + "\"";
-    else if (compressor == "tar")  cmd = "tar -czf \"" + archive.string() + ".tar.gz\" -C \"" + folder.parent_path().string() + "\" \"" + folder.filename().string() + "\"";
-    else if (compressor == "rar")  cmd = "rar a \"" + archive.string() + ".rar\" \"" + folder.string() + "\"";
+    if (compressor == "zip") {
+        outputArchive = archiveBase.string() + ".zip";
+        cmd = "zip -r \"" + outputArchive.string() + "\" \"" + folder.string() + "\"";
+    }
+    else if (compressor == "7z") {
+        outputArchive = archiveBase.string() + ".7z";
+        cmd = "7z a \"" + outputArchive.string() + "\" \"" + folder.string() + "\"";
+    }
+    else if (compressor == "tar") {
+        outputArchive = archiveBase.string() + ".tar.gz";
+        cmd = "tar -czf \"" + outputArchive.string() +
+              "\" -C \"" + folder.parent_path().string() +
+              "\" \"" + folder.filename().string() + "\"";
+    }
+    else if (compressor == "rar") {
+        outputArchive = archiveBase.string() + ".rar";
+        cmd = "rar a \"" + outputArchive.string() + "\" \"" + folder.string() + "\"";
+    }
 
-    LOG_INFO("Compressing with " + compressor + ": " + cmd);
+    LOG_INFO("Starting compression: " + cmd);
 
-    std::thread([cmd, compressor]() {
+    // ----------------------------------------
+    // Show progress modal IMMEDIATELY
+    // ----------------------------------------
+    ui.modal().openProgress(
+        "Archiving Table Folder",
+        "Compressing folder...\nThis may take a moment."
+    );
+
+    // ----------------------------------------
+    // Threaded compression
+    // ----------------------------------------
+    std::thread([cmd, compressor, outputArchive, &ui]() {
+        // (Optional) give tiny delay so progress popup appears before work starts
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+
         int ret = std::system(cmd.c_str());
-        if (ret == 0)
-            LOG_INFO("Compression complete using " + compressor);
-        else
-            LOG_ERROR("Compression failed (exit " + std::to_string(ret) + ")");
+
+        if (ret == 0) {
+            LOG_INFO("Compression complete");
+            ui.modal().finishProgress(
+                "Compression completed successfully.",
+                outputArchive.string()   // modal shows this as "Saved to:"
+            );
+        } else {
+            LOG_ERROR("Compression failed (exit code " + std::to_string(ret) + ")");
+            ui.modal().finishProgress(
+                "Compression failed.\nExit code: " + std::to_string(ret),
+                ""    // no result file
+            );
+        }
     }).detach();
 }
+
 
 // ---------------------------------------------------------------------------
 // VPXTool generic executor

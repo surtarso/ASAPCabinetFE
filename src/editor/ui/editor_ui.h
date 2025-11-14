@@ -92,6 +92,7 @@ public:
     void setConfigValid(bool v) { configValid_ = v; }
 
     ModalDialog& modal() { return modal_; }
+    std::function<void()> deferredModal_;
 
 private:
     // helper methods

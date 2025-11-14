@@ -66,15 +66,22 @@ void EditorUI::draw() {
 
     ImGui::Begin("ASAPCabinetFE Editor", nullptr, windowFlags);
 
-
     editor_header::drawHeader(*this);
     editor_body::drawBody(*this);
     editor_footer::drawFooter(*this);
 
     ImGui::End();
 
+    // ---- Run deferred menu actions *after* menu closes ----
+    if (deferredModal_) {
+        deferredModal_();
+        deferredModal_ = nullptr;
+    }
+
+    // ---- Draw modals LAST ----
     modal_.draw();
 }
+
 
 void EditorUI::filterAndSortTables() {
     tableFilter_.filterAndSort(tables_,

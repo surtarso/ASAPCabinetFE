@@ -68,9 +68,12 @@ void drawHeader(EditorUI& ui) {
 
         // --- Compress submenu
         if (ImGui::Selectable("Backup/Archive")) {
+            ui.deferredModal_ = [&ui]() {
                 menu_actions::requestCompressTableFolder(ui);
+            };
         }
 
+        // --- Edit Metadata (TableOverride Editor)
         if (ImGui::Selectable("Edit Metadata", false)) {
             int idx = ui.selectedIndex();
             auto& filtered = ui.filteredTables();

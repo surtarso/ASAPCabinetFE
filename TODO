@@ -7,7 +7,7 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
-- add feedback to backup/archive option
+- add apply patch feedback (like archive progress modals)
 - test vpxtool args submenu (placeholders)
 - hook screenshot (Single table)
 - hook vpindb media download (bulk)
