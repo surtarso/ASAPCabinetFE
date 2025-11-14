@@ -7,9 +7,8 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
-- finish advanced option to top pop-up menu (media/cache related)
+- add feedback to backup/archive option
 - test vpxtool args submenu (placeholders)
-- add editor related settings?
 - hook screenshot (Single table)
 - hook vpindb media download (bulk)
 
@@ -47,3 +46,57 @@ On hold:
 - add highscore tracking
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
+
+- MEDIA TOOLS PANEL — BLUEPRINT
+
+Purpose: One unified workspace (with previews) for:
+
+1. Image Tools
+
+Resize (720p, 1080p, custom WxH)
+
+Convert format (PNG → JPG, WEBP, AVIF)
+
+Compress (quality slider)
+
+Filters (blur, sharpen, denoise)
+
+2. Video Tools
+
+Resize (720p, 1080p, custom WxH)
+
+Re-encode (H264 / HEVC / VP9 / AV1)
+
+Trim (start, end)
+
+Change FPS
+
+Compress bitrate
+
+3. Audio Tools
+
+Convert (MP3 / OGG / WAV / FLAC)
+
+Bitrate control
+
+Trim
+
+Normalize volume
+
+4. Target Media Picker
+
+Auto-populated from selected table:
+
+Playfield image/video
+
+Backglass image/video
+
+DMD image/video
+
+Topper image/video
+
+Wheel image
+
+Table music
+
+Launch audio

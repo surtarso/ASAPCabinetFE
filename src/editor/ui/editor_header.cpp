@@ -67,11 +67,8 @@ void drawHeader(EditorUI& ui) {
         }
 
         // --- Compress submenu
-        if (ImGui::BeginMenu("Backup/Archive")) {
-            if (ImGui::MenuItem("Compress Table Folder (Archive)")) {
+        if (ImGui::Selectable("Backup/Archive")) {
                 menu_actions::requestCompressTableFolder(ui);
-            }
-            ImGui::EndMenu();
         }
 
         if (ImGui::Selectable("Edit Metadata", false)) {
@@ -93,23 +90,17 @@ void drawHeader(EditorUI& ui) {
 
         ImGui::Separator();
 
-        // ------------------------------
-        ImGui::TextDisabled("Media Tools");
-        // this is meant to be a media compression tool (maybe)
-                // like compressing images/videos/sounds to be more efficient
-                // maybe user has 4k videos and wants 1080p.. maybe audio is flac he wants mp3...
-                // maybe the videos are too long he wants shorter.. idk.. that kinda thing.
-
-        if (ImGui::Selectable("Resize Media...", false)) {
-            LOG_WARN("Resize Media requested [Placeholder]");
-            // TODO: open modal for resize presets
-        }
-        if (ImGui::Selectable("Compress Media...", false)) {
-            LOG_WARN("Compress Media requested [Placeholder]");
-            // TODO: open modal or run ffmpeg compression task
-        }
-
-        ImGui::Separator();
+        // ------------------------------ TODO: MEDIA PANEL
+        // ImGui::TextDisabled("Media Tools");
+        // if (ImGui::Selectable("Resize Media...", false)) {
+        //     LOG_WARN("Resize Media requested [Placeholder]");
+        //     // TODO: open modal for resize presets
+        // }
+        // if (ImGui::Selectable("Compress Media...", false)) {
+        //     LOG_WARN("Compress Media requested [Placeholder]");
+        //     // TODO: open modal or run ffmpeg compression task
+        // }
+        // ImGui::Separator();
 
         // ------------------------------
         ImGui::TextDisabled("System");
