@@ -9,6 +9,9 @@ namespace fs = std::filesystem;
 
 namespace editor_body {
 
+// TODO: move all tooltip logic to util/editor_tooltips.h (and maybe move to editor/ui/)
+// TODO: rename button -> footer, menu -> header (_actions.h|cpp)
+
 // Forward declarations for all tooltip helpers
 static void drawYearTooltip(const TableData& t);
 static void drawNameTooltip(const TableData& t);

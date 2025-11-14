@@ -10,7 +10,7 @@ namespace menu_actions {
 // ---------------------------------------------------------------------------
 void requestDeleteTableFolder(EditorUI& ui) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
-        LOG_WARN("Delete Table Folder requested but no table selected.");
+        LOG_INFO("Delete Table Folder requested but no table selected.");
         // Show modal info for missing selection
         ui.modal().openInfo(
             "No Table Selected",
@@ -77,7 +77,7 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
     if (fs::exists(base)) {
         ui.modal().openConfirm(
             "Confirm Delete?",
-            "Delete file:\n" + base.string() + "\n\nThis will permanently remove it. Continue?",
+            "Delete file:\n" + base.string() + "\n\nThis will permanently REMOVE it. Continue?",
             {"No", "Yes"},
             [&ui, base, fileType](const std::string& choice) {
                 if (choice == "Yes") {
@@ -126,7 +126,7 @@ static std::string detectCompressor() {
 void requestCompressTableFolder(EditorUI& ui) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
         LOG_INFO("Compression requested but no table selected.");
-        ui.modal().openInfo("No Table Selected", "Please select a table first and try again.");
+        ui.modal().openInfo("No Table Selected", "Compression requested but no table selected." "Please select a table first and try again.");
         return;
     }
 
