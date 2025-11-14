@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
                 << "  ./ASAPCabinetFE --editor\n"
                 << "=========================================================\n"
                 << "User's Manual:\n"
-                << "github.com/surtarso/ASAPCabinetFE/blob/main/UserManual.md\n"
+                << "github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md\n"
                 << "=========================================================\n"
                 << std::endl;
         return 0;
