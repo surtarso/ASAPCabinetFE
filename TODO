@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- [ED] double menu title(?) on vpxtool dropdown (old popup persisting)
 - VPin scanner not picking up manufacturers?
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
@@ -8,7 +9,6 @@ FIX:
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
 - add apply patch feedback (like archive progress modals)
-- test vpxtool args submenu (placeholders)
 - hook screenshot (Single table)
 - hook vpindb media download (bulk)
 

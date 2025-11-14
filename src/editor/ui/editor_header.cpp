@@ -55,14 +55,27 @@ void drawHeader(EditorUI& ui) {
 
         ImGui::TextDisabled("Selected Table Actions");
         if (ImGui::BeginMenu("VPXTool")) {
-            if (ImGui::MenuItem("Table Info"))              menu_actions::vpxtoolRun(ui, "info");
-            if (ImGui::MenuItem("Diff Script vs VBS"))      menu_actions::vpxtoolRun(ui, "diff");
-            if (ImGui::MenuItem("Extract Script (VBS)"))    menu_actions::vpxtoolRun(ui, "extractvbs");
-            if (ImGui::MenuItem("Import Script (VBS)"))     menu_actions::vpxtoolRun(ui, "importvbs");
-            if (ImGui::MenuItem("Verify Structure"))        menu_actions::vpxtoolRun(ui, "verify");
-            if (ImGui::MenuItem("Apply Patch"))             menu_actions::vpxtoolRun(ui, "patch");
-            if (ImGui::MenuItem("List Contents"))           menu_actions::vpxtoolRun(ui, "ls");
-            // if (ImGui::MenuItem("Reindex Directory"))       menu_actions::vpxtoolRun(ui, "index");
+
+            // --- Info submenu ---
+            if (ImGui::BeginMenu("Table Info")) {
+                if (ImGui::MenuItem("Show Info")) menu_actions::vpxtoolRun(ui, "info show");
+                if (ImGui::MenuItem("Extract Info")) menu_actions::vpxtoolRun(ui, "info extract");
+                // if (ImGui::MenuItem("Import Info")) menu_actions::vpxtoolRun(ui, "info import");
+                // if (ImGui::MenuItem("Edit Info")) menu_actions::vpxtoolRun(ui, "info edit");
+                if (ImGui::MenuItem("Diff Info")) menu_actions::vpxtoolRun(ui, "info diff");
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem("Diff Script vs VBS")) menu_actions::vpxtoolRun(ui, "diff");
+            if (ImGui::MenuItem("Extract Script (VBS)")) menu_actions::vpxtoolRun(ui, "extractvbs");
+            if (ImGui::MenuItem("Import Script (VBS)")) menu_actions::vpxtoolRun(ui, "importvbs");
+            if (ImGui::MenuItem("Verify Structure")) menu_actions::vpxtoolRun(ui, "verify");
+            if (ImGui::MenuItem("Show Gamedata")) menu_actions::vpxtoolRun(ui, "gamedata show");
+            if (ImGui::MenuItem("Convert Lossless")) menu_actions::vpxtoolRun(ui, "images webp");
+            if (ImGui::MenuItem("Apply Patch")) menu_actions::vpxtoolRun(ui, "patch");
+            if (ImGui::MenuItem("Show Rom Name")) menu_actions::vpxtoolRun(ui, "romname");
+            if (ImGui::MenuItem("List Contents")) menu_actions::vpxtoolRun(ui, "ls");
+
             ImGui::EndMenu();
         }
 

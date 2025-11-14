@@ -15,7 +15,8 @@ enum class ModalType {
     Progress,   ///< Progress dialog for ongoing operations.
     Info,       ///< Informational message dialog.
     Warning,    ///< Warning message dialog.
-    Error       ///< Error message dialog.
+    Error,      ///< Error message dialog.
+    CommandOutput ///< Terminal text/output
 };
 
 /**
@@ -112,6 +113,22 @@ public:
     void openError(const std::string& title,
                    const std::string& message);
 
+    void openCommandOutput(const std::string& title) {
+        std::scoped_lock lock(mutex_);
+        type_ = ModalType::CommandOutput;
+        title_ = title;
+        outputBuffer_.clear();
+        pendingOpen_ = true;
+        scrollToBottom_ = true;
+    }
+
+    void appendCommandOutput(const std::string& text) {
+        std::scoped_lock lock(mutex_);
+        outputBuffer_ += text + "\n";
+        scrollToBottom_ = true;
+    }
+
+
     // ---------------------------------------------------------------------
     // Rendering and State
     // ---------------------------------------------------------------------
@@ -146,6 +163,8 @@ private:
     bool completed_;                                  ///< True if progress operation is finished.
     std::string resultPath_;                          ///< Optional path displayed after completion.
     bool pendingOpen_;                                ///< True if ImGui::OpenPopup() should be triggered next frame.
+    std::string outputBuffer_;        // Stores command output text
+    bool scrollToBottom_ = false;    // Scroll helper
 };
 
 #endif // CORE_UI_MODAL_DIALOG_H

@@ -169,6 +169,19 @@ void ModalDialog::draw() {
                         ImGui::CloseCurrentPopup();
                     }
                 }
+            } else if (type_ == ModalType::CommandOutput) {
+                ImGui::BeginChild("##output_scroll", ImVec2(800, 500), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+                ImGui::TextUnformatted(outputBuffer_.c_str());
+                if (scrollToBottom_) {
+                    ImGui::SetScrollHereY(1.0f);
+                    scrollToBottom_ = false;
+                }
+                ImGui::EndChild();
+
+                if (ImGui::Button("Close")) {
+                    type_ = ModalType::None;
+                    ImGui::CloseCurrentPopup();
+                }
             }
 
             ImGui::EndPopup();

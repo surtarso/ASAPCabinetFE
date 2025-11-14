@@ -1,5 +1,9 @@
 #include "editor/menu_actions.h"
 #include <thread>
+#include <filesystem>
+#include "config/settings.h"
+#include "log/logging.h"
+#include <cstdlib>
 
 namespace fs = std::filesystem;
 
@@ -237,41 +241,83 @@ void requestCompressTableFolder(EditorUI& ui) {
 // ---------------------------------------------------------------------------
 // VPXTool generic executor
 // ---------------------------------------------------------------------------
-void vpxtoolRun(EditorUI& ui, const std::string& command) {
+static std::string findVpxtool(EditorUI& ui) {
+    // 1) Try default PATH first
+    if (std::system("command -v vpxtool >/dev/null 2>&1") == 0) {
+        return "vpxtool";
+    }
+
+    // 2) Try user-specified path
+    const Settings& settings = ui.configService()->getSettings();
+    if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
+        return settings.vpxtoolBin;
+    }
+
+    return {};
+}
+
+void vpxtoolRun(EditorUI& ui, const std::string& commandWithSub) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
-        LOG_INFO("VPXTool " + command + " requested but no table selected.");
-        // Show modal info for missing selection
-        ui.modal().openInfo(
-            "No Table Selected",
-            "You pressed \"" + command + "\" but no table is currently selected.\n\n"
-            "Please select a table first and try again."
-        );
+        ui.modal().openInfo("No Table Selected",
+                            "You pressed \"" + commandWithSub + "\" but no table is currently selected.\n\nPlease select a table first.");
         return;
     }
 
     const auto& sel = ui.filteredTables()[ui.selectedIndex()];
     fs::path vpxFile = sel.vpxFile;
     if (!fs::exists(vpxFile)) {
-        LOG_ERROR("VPXTool command failed: table file not found: " + vpxFile.string());
-        ui.modal().openError("VPXTool error", "VPXTool command failed: table file not found: " + vpxFile.string());
+        ui.modal().openError("VPXTool error", "Table file not found: " + vpxFile.string());
         return;
     }
 
-    // Example command
-    std::string cmd = "vpxtool " + command + " \"" + vpxFile.string() + "\"";
-    LOG_INFO("Executing: " + cmd);
+    std::string vpxtoolExe = findVpxtool(ui);
+    if (vpxtoolExe.empty()) {
+        ui.modal().openError("VPXTool Not Found",
+                             "VPXTool executable not found in PATH or user settings.");
+        return;
+    }
 
-    // Run asynchronously
-    std::thread([cmd]() {
-        int result = std::system(cmd.c_str());
-        if (result != 0){
-            LOG_ERROR("VPXTool command failed with exit code " + std::to_string(result));
-            // ui.modal().openError("VPXTool command failed with exit code " + std::to_string(result));
-        } else {
-            LOG_INFO("VPXTool command completed successfully.");
-            // ui.modal().finishProgress("VPXTool command completed successfully.");
-        }
-    }).detach();
+    // Build command: executable + subcommands + VPX file path
+    std::string fullCmd = vpxtoolExe + " " + commandWithSub + " \"" + vpxFile.string() + "\"";
+    LOG_INFO("Executing: " + fullCmd);
+
+    // Determine if the command should capture output
+    bool isOutputCommand = false;
+    {
+        // List of commands whose output we want in a terminal-like modal
+        static const std::vector<std::string> outputCmds = { "info show", "diff", "verify", "ls", "gamedata show", "romname" };
+        for (const auto& c : outputCmds)
+            if (commandWithSub.find(c) != std::string::npos)
+                isOutputCommand = true;
+    }
+
+    if (isOutputCommand) {
+        ui.modal().openCommandOutput("VPXTool Output: " + commandWithSub);
+
+        std::thread([fullCmd, &ui]() {
+            FILE* pipe = popen(fullCmd.c_str(), "r");
+            if (!pipe) {
+                ui.modal().appendCommandOutput("Failed to run command.");
+                return;
+            }
+            char buffer[256];
+            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                ui.modal().appendCommandOutput(buffer);
+            }
+            pclose(pipe);
+        }).detach();
+    } else {
+        ui.modal().openProgress("VPXTool", "Running VPXTool command...");
+
+        std::thread([fullCmd, &ui]() {
+            int result = std::system(fullCmd.c_str());
+
+            if (result != 0)
+                ui.modal().finishProgress("VPXTool failed (exit code " + std::to_string(result) + ")", "");
+            else
+                ui.modal().finishProgress("VPXTool command completed successfully.", "");
+        }).detach();
+    }
 }
 
 // ---------------------------------------------------------------------------
