@@ -14,35 +14,36 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - hook vpindb media download (bulk)
 
 QOL:
-- [!] basic/advanced toggle for main config ui
-- [!] single table vs all tables action in general (ss, patch, rescan etc)
-- [!] feedback for table launch/failure
-- [!] single table scan (all, selectable) override manager?
-- [!][FE] a proper font picker
-- [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- [ED] save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
+- [!] add basic/advanced toggle for main config ui
+- [!] add single table vs all tables action in general (ss, patch, rescan etc)
+- [!] add feedback for table launch/failure
+- [!] add single table scan (all, selectable) override manager?
+- [!][FE] add a proper font picker
+- [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)
+- [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
-- collapse all/expand all widget for main config ui
+- add collapse all/expand all widget for main config ui
 - [FE] key for metadata panel toggle? (switch with FE override manager.) M for metadata, N for new table (vpsdb)
-- [FE] key to switch sorting type (joystick oriented)
+- [FE] add key to switch sorting type (joystick oriented)
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
 
 On hold:
-- graphs/statistics panel.
+- add update version checker
+- add graphs/statistics panel.
 - refactor the monoliths...
 - update header docs and user manual
 - screenshot mode using app size/pos as frame?
-- multi launchers (other emulators, other versions of vpx w.e.)
-- [FE] auto-manufacturer logo on topper(or dmd?) thru metadata
-- [FE] attract mode (random table on a timer if idle) (optional)
-- [FE] support animated png for wheel/marquee
-- some way to download tables straight from the app?
+- add multi launchers (other emulators, other versions of vpx w.e.)
+- [FE] add auto-manufacturer logo on topper(or dmd?) thru metadata
+- [FE] add attract mode (random table on a timer if idle) (optional)
+- [FE] add support animated png for wheel/marquee
+- add some way to download tables straight from the app?
 - incorporate generate_media.sh?
-- flag to open --config only?
+- add flag to open --config only?
 - make both ui's switchable between them?
-- splashscreen?
-- highscore tracking
-- editor cli helpers (see editor_binary.cpp for details)
-- centralize colors in a /util/ for later theming support
+- add splashscreen?
+- add highscore tracking
+- add editor cli helpers (see editor_binary.cpp for details)
+- add centralize colors in a /util/ for later theming support
