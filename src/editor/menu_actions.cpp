@@ -14,6 +14,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
         // Show modal info for missing selection
         ui.modal().openInfo(
             "No Table Selected",
+            "Delete Table Folder requested but no table selected."
             "Please select a table first and try again."
         );
         return;
@@ -25,7 +26,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
     if (!folder.empty() && fs::exists(folder)) {
         ui.modal().openConfirm(
             "Confirm Delete?",
-            "Delete folder:\n" + folder.string() + "\n\nThis will permanently remove all files. Continue?",
+            "Delete TABLE FOLDER:\n" + folder.string() + "\n\nThis will permanently REMOVE ALL FILES. Continue?",
             {"No", "Yes"}, // defaults to 1st on ui
             [&ui, folder](const std::string& choice) {
                 if (choice == "Yes") {
@@ -43,7 +44,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
                         // ui.modal().openInfo("Deleted", "Folder deleted successfully:\n" + folder.string());
                     } catch (const std::exception& e) {
                         LOG_ERROR(std::string("Exception deleting folder: ") + e.what());
-                        ui.modal().openInfo("Error", "Failed to delete folder:\n" + folder.string());
+                        ui.modal().openError("Error", "Failed to delete folder:\n" + folder.string());
                     }
                 } else {
                     LOG_INFO("Delete canceled.");
@@ -52,6 +53,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
         );
     } else {
         LOG_ERROR("Delete Table Folder failed: folder not found.");
+        ui.modal().openError("Error", "Failed to delete, folder not found:\n" + folder.string());
     }
 }
 
@@ -96,7 +98,7 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
                         }
                     } catch (const std::exception& e) {
                         LOG_ERROR(std::string("Exception deleting ") + fileType + ": " + e.what());
-                        ui.modal().openInfo("Error", "Failed to delete file:\n" + base.string());
+                        ui.modal().openError("Error", "Failed to delete file:\n" + base.string());
                     }
                 } else {
                     LOG_INFO("Delete canceled.");
@@ -174,7 +176,7 @@ void requestCompressTableFolder(EditorUI& ui) {
 // ---------------------------------------------------------------------------
 void vpxtoolRun(EditorUI& ui, const std::string& command) {
     if (ui.selectedIndex() < 0 || ui.selectedIndex() >= static_cast<int>(ui.filteredTables().size())) {
-        LOG_WARN("VPXTool " + command + " requested but no table selected.");
+        LOG_INFO("VPXTool " + command + " requested but no table selected.");
         // Show modal info for missing selection
         ui.modal().openInfo(
             "No Table Selected",

@@ -30,6 +30,7 @@ QOL:
 - [FE] make windows resizeable with mouse and pass to config
 
 On hold:
+- graphs/statistics panel.
 - refactor the monoliths...
 - update header docs and user manual
 - screenshot mode using app size/pos as frame?
