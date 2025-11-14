@@ -23,19 +23,13 @@ std::string PathUtils::getImagePath(const std::string& root, const std::string& 
     if (fs::exists(imageFile)) {
         return imageFile.string();
     }
-    if (!fs::exists(defaultImagePath)) {
-        LOG_ERROR("Default image not found: " + std::string(defaultImagePath)); // Log error if default is missing
-    }
     return defaultImagePath; // Return default even if it doesn't exist
 }
 
-std::string PathUtils::getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath) {
+std::string PathUtils::getVideoPath(const std::string& root, const std::string& videoPath) {
     fs::path videoFile = fs::path(root) / videoPath; // Construct path from root and custom video path
     if (fs::exists(videoFile)) {
         return videoFile.string();
-    }
-    if (fs::exists(defaultVideoPath)) {
-        return defaultVideoPath; // Return default if it exists
     }
     return ""; // Return empty string if neither custom nor default exists
 }

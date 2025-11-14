@@ -250,11 +250,7 @@ void ConfigUI::drawGUI() {
             }
 
         // MEDIA SECTION
-        } else if (dialogKey_ == "defaultPlayfieldImage" || dialogKey_ == "defaultBackglassImage" ||
-                    dialogKey_ == "defaultDmdImage" || dialogKey_ == "defaultWheelImage" ||
-                    dialogKey_ == "defaultTopperImage" || dialogKey_ == "defaultPlayfieldVideo" ||
-                    dialogKey_ == "defaultBackglassVideo" || dialogKey_ == "defaultDmdVideo" ||
-                    dialogKey_ == "defaultTopperVideo" || dialogKey_ == "customPlayfieldImage" ||
+        } else if (dialogKey_ == "defaultWheelImage" || dialogKey_ == "customPlayfieldImage" ||
                     dialogKey_ == "customBackglassImage" || dialogKey_ == "customDmdImage" ||
                     dialogKey_ == "customWheelImage" || dialogKey_ == "customTopperImage" ||
                     dialogKey_ == "customPlayfieldVideo" || dialogKey_ == "customBackglassVideo" ||

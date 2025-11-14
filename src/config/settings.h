@@ -63,15 +63,7 @@ struct Settings {
     bool enableDpiScaling = true;
 
     // [DefaultMedia]
-    std::string defaultPlayfieldImage = "img/default_table.png";
-    std::string defaultBackglassImage = "img/default_backglass.png";
-    std::string defaultDmdImage = "img/default_dmd.png";
-    std::string defaultWheelImage = "img/default_wheel.png";
-    std::string defaultTopperImage = "img/default_topper.png";
-    std::string defaultPlayfieldVideo = "img/default_table.mp4";
-    std::string defaultBackglassVideo = "img/default_backglass.mp4";
-    std::string defaultDmdVideo = "img/default_dmd.mp4";
-    std::string defaultTopperVideo = "img/default_topper.mp4";
+    std::string defaultWheelImage = "/home/tarso/Development/ASAPCabinetFE/build/img/default_wheel.png";
 
     // [CustomMedia]
     std::string customPlayfieldImage = "images/table.png";
@@ -271,11 +263,6 @@ struct Settings {
 
         // List all paths that need resolution
         std::vector<std::string> pathFields = {
-            // Default Media Paths
-            "defaultPlayfieldImage", "defaultBackglassImage", "defaultDmdImage",
-            "defaultWheelImage", "defaultTopperImage", "defaultPlayfieldVideo",
-            "defaultBackglassVideo", "defaultDmdVideo", "defaultTopperVideo",
-
             // UI Sounds Paths ("default sounds")
             "scrollNormalSound", "scrollFastSound", "scrollJumpSound",
             "scrollRandomSound", "launchTableSound", "launchScreenshotSound",
@@ -287,15 +274,7 @@ struct Settings {
 
         // Iterate through the list and resolve each path
         for (const auto& field : pathFields) {
-            if (field == "defaultPlayfieldImage") defaultPlayfieldImage = resolvePath(defaultPlayfieldImage, exeDir);
-            else if (field == "defaultBackglassImage") defaultBackglassImage = resolvePath(defaultBackglassImage, exeDir);
-            else if (field == "defaultDmdImage") defaultDmdImage = resolvePath(defaultDmdImage, exeDir);
-            else if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
-            else if (field == "defaultTopperImage") defaultTopperImage = resolvePath(defaultTopperImage, exeDir);
-            else if (field == "defaultPlayfieldVideo") defaultPlayfieldVideo = resolvePath(defaultPlayfieldVideo, exeDir);
-            else if (field == "defaultBackglassVideo") defaultBackglassVideo = resolvePath(defaultBackglassVideo, exeDir);
-            else if (field == "defaultDmdVideo") defaultDmdVideo = resolvePath(defaultDmdVideo, exeDir);
-            else if (field == "defaultTopperVideo") defaultTopperVideo = resolvePath(defaultTopperVideo, exeDir);
+            if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
             // UI Sounds
             else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, exeDir);
             else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, exeDir);
@@ -384,15 +363,7 @@ private:
                 {"enableDpiScaling", s.enableDpiScaling}
             }},
             {"DefaultMedia", {
-                {"defaultPlayfieldImage", s.defaultPlayfieldImage},
-                {"defaultBackglassImage", s.defaultBackglassImage},
-                {"defaultDmdImage", s.defaultDmdImage},
-                {"defaultWheelImage", s.defaultWheelImage},
-                {"defaultTopperImage", s.defaultTopperImage},
-                {"defaultPlayfieldVideo", s.defaultPlayfieldVideo},
-                {"defaultBackglassVideo", s.defaultBackglassVideo},
-                {"defaultDmdVideo", s.defaultDmdVideo},
-                {"defaultTopperVideo", s.defaultTopperVideo}
+                {"defaultWheelImage", s.defaultWheelImage}
             }},
             {"CustomMedia", {
                 {"customPlayfieldImage", s.customPlayfieldImage},
@@ -566,15 +537,7 @@ private:
         s.enableDpiScaling = j.value("DPISettings", nlohmann::json{}).value("enableDpiScaling", s.enableDpiScaling);
 
         // DefaultMedia
-        s.defaultPlayfieldImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultPlayfieldImage", s.defaultPlayfieldImage);
-        s.defaultBackglassImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultBackglassImage", s.defaultBackglassImage);
-        s.defaultDmdImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultDmdImage", s.defaultDmdImage);
         s.defaultWheelImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
-        s.defaultTopperImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultTopperImage", s.defaultTopperImage);
-        s.defaultPlayfieldVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultPlayfieldVideo", s.defaultPlayfieldVideo);
-        s.defaultBackglassVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultBackglassVideo", s.defaultBackglassVideo);
-        s.defaultDmdVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultDmdVideo", s.defaultDmdVideo);
-        s.defaultTopperVideo = j.value("DefaultMedia", nlohmann::json{}).value("defaultTopperVideo", s.defaultTopperVideo);
 
         // CustomMedia
         s.customPlayfieldImage = j.value("CustomMedia", nlohmann::json{}).value("customPlayfieldImage", s.customPlayfieldImage);
@@ -806,16 +769,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                         "Disable this to set a custom DPI with 'dpiScale'."}},
 
     // Default media files
-    {"defaultPlayfieldImage", {Settings::ReloadType::Tables, "Absolute path to the default playfield preview image.\n\n"
-                                                            "Shown when a table has no custom preview image."}},
-    {"defaultBackglassImage", {Settings::ReloadType::Tables, "Absolute path to the default backglass image used when none is provided by a table."}},
-    {"defaultDmdImage", {Settings::ReloadType::Tables, "Absolute path to the default DMD image used when a table provides none."}},
     {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
-    {"defaultTopperImage", {Settings::ReloadType::Tables, "Absolute path to the default Topper image used when a table provides none."}},
-    {"defaultPlayfieldVideo", {Settings::ReloadType::Tables, "Absolute path to the default preview video for playfields (used when table lacks video)."}},
-    {"defaultBackglassVideo", {Settings::ReloadType::Tables, "Absolute path to the default backglass preview video (used when table lacks video)."}},
-    {"defaultDmdVideo", {Settings::ReloadType::Tables, "Absolute path to the default DMD preview video (used when table lacks video)."}},
-    {"defaultTopperVideo", {Settings::ReloadType::Tables, "Absolute path to the default Topper preview video (used when table lacks video)."}},
 
     // Custom media per-table (relative to each table folder)
     {"customPlayfieldImage", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the playfield preview image."}},

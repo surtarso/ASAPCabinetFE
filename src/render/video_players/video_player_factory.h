@@ -49,6 +49,11 @@ public:
                                                           const std::string& path,
                                                           int width, int height,
                                                           IConfigService* configService);
+
+    static std::unique_ptr<IVideoPlayer> createDefaultMediaPlayer(
+    SDL_Renderer* renderer,
+    int width,
+    int height);
 };
 
 #endif // VIDEO_PLAYER_FACTORY_H

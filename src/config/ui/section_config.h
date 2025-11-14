@@ -363,26 +363,10 @@ public:
         };
 
         keyOrders_["DefaultMedia"] = {
-            "defaultWheelImage",
-            "defaultPlayfieldImage",
-            "defaultBackglassImage",
-            "defaultDmdImage",
-            "defaultTopperImage",
-            "defaultPlayfieldVideo",
-            "defaultBackglassVideo",
-            "defaultDmdVideo",
-            "defaultTopperVideo"
+            "defaultWheelImage"
         };
         keyDisplayNames_["DefaultMedia"] = {
-            {"defaultWheelImage", "Default wheel image"},
-            {"defaultPlayfieldImage", "Default playfield image"},
-            {"defaultBackglassImage", "Default backglass image"},
-            {"defaultDmdImage", "Default DMD image"},
-            {"defaultTopperImage", "Default topper image"},
-            {"defaultPlayfieldVideo", "Default playfield video"},
-            {"defaultBackglassVideo", "Default backglass video"},
-            {"defaultDmdVideo", "Default DMD video"},
-            {"defaultTopperVideo", "Default topper video"}
+            {"defaultWheelImage", "Default wheel image"}
         };
 
         keyOrders_["UISounds"] = {

@@ -10,6 +10,7 @@
 #include "render/video_players/video_player_factory.h"
 #include "render/video_players/vlc/vlc_player.h"
 #include "render/video_players/ffmpeg/ffmpeg_player.h"
+#include "render/video_players/default_media_player.h"
 #include "config/iconfig_service.h"
 #include "log/logging.h"
 #include <SDL_image.h>
@@ -392,11 +393,66 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             mediaHeight = settings.topperMediaHeight;
         }
 
-        if (!settings.forceImagesOnly && !w.tableVideo.empty() && mediaWidth > 0 && mediaHeight > 0) {
-            // std::string cacheKey = w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
-            // to identify from which backend the cache is from
-            std::string backend = configManager_ ? configManager_->getSettings().videoBackend : std::string("vlc");
-            std::string cacheKey = backend + ":" + w.tableVideo + "_" + std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+        // If the user didn't specify media size, fallback to window size
+        if (mediaWidth <= 0 || mediaHeight <= 0) {
+            int rw, rh;
+            SDL_GetRendererOutputSize(w.renderer, &rw, &rh);
+            mediaWidth = rw;
+            mediaHeight = rh;
+        }
+
+        //--------------------------------------------------------------------------
+        // REAL FILE EXISTENCE CHECK
+        //--------------------------------------------------------------------------
+        auto fileExists = [](const std::string& p) -> bool {
+            if (p.empty()) return false;
+            std::error_code ec;
+            return std::filesystem::exists(p, ec) &&
+                std::filesystem::is_regular_file(p, ec);
+        };
+
+        //--------------------------------------------------------------------------
+        // FIXED PRIORITY FLAGS
+        //--------------------------------------------------------------------------
+        bool imagesOnly = settings.forceImagesOnly;
+
+        // IMPORTANT: detect REAL usable files, not just non-empty strings
+        bool hasUserVideo = fileExists(w.tableVideo);
+        bool hasUserImage = fileExists(w.tableImage);
+
+        // 1) IMAGES ONLY MODE
+        if (imagesOnly) {
+            // Priority: User Image → DefaultMedia
+
+            if (hasUserImage) {
+                // load user image
+                w.texture = textureCache_->getTexture(w.renderer, w.tableImage);
+                w.imagePath = w.tableImage;
+                LOG_DEBUG("ImagesOnly=ON → Using USER IMAGE for " + std::string(w.name) + ": " + w.tableImage);
+            } else {
+                // load DefaultMedia fallback
+                auto player = VideoPlayerFactory::createDefaultMediaPlayer(
+                    w.renderer, mediaWidth, mediaHeight);
+                if (player) {
+                    w.videoPlayer = std::move(player);
+                    w.videoPlayer->play();
+                    w.videoPath = "__DEFAULT_MEDIA__";
+                    LOG_DEBUG("ImagesOnly=ON → Using DEFAULT MEDIA for " + std::string(w.name));
+                }
+            }
+            continue;
+        }
+
+        //--------------------------------------------------------------------------
+        // IMAGES ONLY = OFF MODE
+        //--------------------------------------------------------------------------
+        // Priority: User Video → User Image → DefaultMedia
+
+        if (hasUserVideo && mediaWidth > 0 && mediaHeight > 0) {
+            // Try load video from cache
+            std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "vlc";
+            std::string cacheKey = backend + ":" + w.tableVideo + "_" +
+                                std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
 
             w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
             if (w.videoPlayer) {
@@ -404,44 +460,45 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 w.videoPath = w.tableVideo;
                 w.mediaWidth = mediaWidth;
                 w.mediaHeight = mediaHeight;
-                LOG_DEBUG("Reused cached video player for " + std::string(w.name) + ": " + w.tableVideo);
+                LOG_DEBUG("ImagesOnly=OFF → Using CACHED VIDEO for " + std::string(w.name));
             } else {
-                auto newPlayer = VideoPlayerFactory::createVideoPlayer(w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
+                auto newPlayer = VideoPlayerFactory::createVideoPlayer(
+                    w.renderer, w.tableVideo, mediaWidth, mediaHeight, configManager_);
+
                 if (newPlayer) {
                     w.videoPlayer = std::move(newPlayer);
                     w.videoPlayer->play();
                     w.videoPath = w.tableVideo;
                     w.mediaWidth = mediaWidth;
                     w.mediaHeight = mediaHeight;
-                    LOG_DEBUG("Created new video player for " + std::string(w.name) + ": " + w.tableVideo);
-
-                    // If this is a VLC player, spawn a short-lived monitor to detect black-screen (no frames)
-                    // We'll post an SDL_USEREVENT after 2 seconds to the main thread so it can safely replace the player
-                    VlcVideoPlayer* vlcPtr = dynamic_cast<VlcVideoPlayer*>(w.videoPlayer.get());
-                    if (vlcPtr) {
-                        // Capture required items by value for the detached thread
-                        SDL_Renderer* monRenderer = w.renderer;
-                        std::string monVideoPath = w.tableVideo;
-                        int monWidth = w.mediaWidth;
-                        int monHeight = w.mediaHeight;
-                        std::weak_ptr<VideoPlayerCache> weakCache; // unused but placeholder
-                        std::thread([this, monRenderer, monVideoPath, monWidth, monHeight]() {
-                            std::this_thread::sleep_for(std::chrono::seconds(2));
-                            // Post an SDL event to trigger fallback check
-                            SDL_Event ev;
-                            ev.type = SDL_USEREVENT;
-                            // store a pointer-sized hash in user.code to indicate fallback and carry nothing dangerous
-                            ev.user.code = 0x564C4346; // 'VLCF'
-                            // fill pointer-sized data with address of renderer (safe-ish) to identify target renderer
-                            ev.user.data1 = reinterpret_cast<void*>(monRenderer);
-                            ev.user.data2 = nullptr;
-                            SDL_PushEvent(&ev);
-                        }).detach();
-                        LOG_DEBUG("Spawned VLC frame-monitor for " + w.tableVideo);
-                    }
-                } else {
-                    LOG_WARN("Failed to create video player for " + std::string(w.name) + ": " + w.tableVideo);
+                    LOG_DEBUG("ImagesOnly=OFF → Using NEW USER VIDEO for " + std::string(w.name));
                 }
+            }
+
+            continue;
+        }
+
+        // No user video → Try user image
+        if (hasUserImage) {
+            w.texture = textureCache_->getTexture(w.renderer, w.tableImage);
+            if (w.texture) {
+                w.imagePath = w.tableImage;
+                LOG_DEBUG("ImagesOnly=OFF → Using USER IMAGE for " + std::string(w.name));
+                continue;
+            }
+        }
+
+        // No video and no image → DefaultMedia fallback
+        {
+            auto player = VideoPlayerFactory::createDefaultMediaPlayer(
+                w.renderer, mediaWidth, mediaHeight);
+            if (player) {
+                w.videoPlayer = std::move(player);
+                w.videoPlayer->play();
+                w.videoPath = "__DEFAULT_MEDIA__";
+                // w.mediaWidth = mediaWidth;
+                // w.mediaHeight = mediaHeight;
+                LOG_DEBUG("ImagesOnly=OFF → Using DEFAULT MEDIA for " + std::string(w.name));
             }
         }
     }

@@ -218,15 +218,15 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
-            table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, settings.defaultPlayfieldImage);
+            table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, "");
             table.wheelImage = PathUtils::getImagePath(table.folder, settings.customWheelImage, settings.defaultWheelImage);
-            table.backglassImage = PathUtils::getImagePath(table.folder, settings.customBackglassImage, settings.defaultBackglassImage);
-            table.dmdImage = PathUtils::getImagePath(table.folder, settings.customDmdImage, settings.defaultDmdImage);
-            table.topperImage = PathUtils::getImagePath(table.folder, settings.customTopperImage, settings.defaultTopperImage);
-            table.playfieldVideo = PathUtils::getVideoPath(table.folder, settings.customPlayfieldVideo, settings.defaultPlayfieldVideo);
-            table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo, settings.defaultBackglassVideo);
-            table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo, settings.defaultDmdVideo);
-            table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo, settings.defaultTopperVideo);
+            table.backglassImage = PathUtils::getImagePath(table.folder, settings.customBackglassImage, "");
+            table.dmdImage = PathUtils::getImagePath(table.folder, settings.customDmdImage, "");
+            table.topperImage = PathUtils::getImagePath(table.folder, settings.customTopperImage, "");
+            table.playfieldVideo = PathUtils::getVideoPath(table.folder, settings.customPlayfieldVideo);
+            table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo);
+            table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo);
+            table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo);
 
             auto markUserAsset = [&](const std::string& returnedPath,
                                     const std::string& defaultPath) -> bool {
@@ -237,16 +237,17 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.hasTableMusic = markUserAsset(table.music, settings.tableMusic);
             table.hasLaunchAudio = markUserAsset(table.launchAudio, settings.customLaunchSound);
 
-            table.hasPlayfieldImage = markUserAsset(table.playfieldImage, settings.defaultPlayfieldImage);
             table.hasWheelImage     = markUserAsset(table.wheelImage, settings.defaultWheelImage);
-            table.hasBackglassImage = markUserAsset(table.backglassImage, settings.defaultBackglassImage);
-            table.hasDmdImage       = markUserAsset(table.dmdImage, settings.defaultDmdImage);
-            table.hasTopperImage    = markUserAsset(table.topperImage, settings.defaultTopperImage);
+            table.hasPlayfieldImage = !table.playfieldImage.empty();
+            table.hasBackglassImage = !table.backglassImage.empty();
+            table.hasDmdImage       = !table.dmdImage.empty();
+            table.hasTopperImage    = !table.topperImage.empty();
 
-            table.hasPlayfieldVideo = markUserAsset(table.playfieldVideo, settings.defaultPlayfieldVideo);
-            table.hasBackglassVideo = markUserAsset(table.backglassVideo, settings.defaultBackglassVideo);
-            table.hasDmdVideo       = markUserAsset(table.dmdVideo, settings.defaultDmdVideo);
-            table.hasTopperVideo    = markUserAsset(table.topperVideo, settings.defaultTopperVideo);
+            table.hasPlayfieldVideo = !table.playfieldVideo.empty();
+            table.hasBackglassVideo = !table.backglassVideo.empty();
+            table.hasDmdVideo       = !table.dmdVideo.empty();
+            table.hasTopperVideo    = !table.topperVideo.empty();
+
 
             table.hasPup = PathUtils::getPupPath(table.folder);
             table.hasAltMusic = PathUtils::getAltMusic(table.folder);

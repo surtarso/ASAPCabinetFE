@@ -40,7 +40,7 @@ public:
      *
      * @param root The base directory to start the path resolution.
      * @param imagePath The custom path to the image file.
-     * @param defaultImagePath The fallback path if the custom path is invalid.
+     * @param defaultImagePath The fallback path if the custom path is invalid for wheel image.
      * @return The resolved path as a string (custom if exists, default otherwise).
      */
     static std::string getImagePath(const std::string& root, const std::string& imagePath, const std::string& defaultImagePath);
@@ -55,10 +55,9 @@ public:
      *
      * @param root The base directory to start the path resolution.
      * @param videoPath The custom path to the video file.
-     * @param defaultVideoPath The fallback path if the custom path is invalid.
      * @return The resolved path as a string (custom if exists, default if exists, empty otherwise).
      */
-    static std::string getVideoPath(const std::string& root, const std::string& videoPath, const std::string& defaultVideoPath);
+    static std::string getVideoPath(const std::string& root, const std::string& videoPath);
 
     /**
      * @brief Resolves the path to a music file.
