@@ -20,11 +20,11 @@ QOL:
 - [!] single table scan (all, selectable) override manager?
 - [!][FE] a proper font picker
 - [ED] check if present rom is correct and recolor (vpin/vpxtool hook!)
-- [ED] save metadata back to .vpx with vpin/vpxtool
+- [ED] save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - collapse all/expand all widget for main config ui
-- [FE] key for metadata panel toggle? (switch with FE override manager?)
+- [FE] key for metadata panel toggle? (switch with FE override manager.) M for metadata, N for new table (vpsdb)
 - [FE] key to switch sorting type (joystick oriented)
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
@@ -33,10 +33,7 @@ On hold:
 - refactor the monoliths...
 - update header docs and user manual
 - screenshot mode using app size/pos as frame?
-- Use a macro or code generation to define the JSON schema once and reuse it for serialization/deserialization.
 - multi launchers (other emulators, other versions of vpx w.e.)
-- [FE] add some of editor's new scraped data to main metadata panel
-- [FE] user-configurable options for video quality passed to videoplayer factory
 - [FE] auto-manufacturer logo on topper(or dmd?) thru metadata
 - [FE] attract mode (random table on a timer if idle) (optional)
 - [FE] support animated png for wheel/marquee
