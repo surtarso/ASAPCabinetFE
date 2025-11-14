@@ -11,12 +11,13 @@
 #include <SDL.h>
 #include <stdexcept>
 
-Editor::Editor(const std::string& configPath)
+Editor::Editor(const std::string& configPath, const std::string& exeDir)
     : showMetadataEditor_(false),
       showMetadataView_(false),
       showVpsdbBrowser_(false),
       showEditorSettings_(false),
       configPath_(configPath),
+      exeDir_(exeDir),
       window_(nullptr),
       renderer_(nullptr),
       imguiManager_(nullptr),
@@ -45,6 +46,8 @@ Editor::Editor(const std::string& configPath)
 
     overrideManager_ = std::make_unique<TableOverrideManager>();
 
+    screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, config_.get(), keybindProvider_.get(), nullptr);
+
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
         showMetadataEditor_,
@@ -55,7 +58,8 @@ Editor::Editor(const std::string& configPath)
         tableLoader_.get(),
         tableLauncher_.get(),
         tableCallbacks_.get(),
-        loadingProgress_
+        loadingProgress_,
+        screenshotManager_.get()
     );
 
     // Pass nullptr for IAssetManager* and App* (which is IAppCallbacks* in this context),

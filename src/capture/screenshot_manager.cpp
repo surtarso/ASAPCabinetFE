@@ -61,7 +61,7 @@ void ScreenshotManager::launchScreenshotMode(const std::string& vpxFile) {
                 SDL_KeyboardEvent keyEvent = event.key;
                 if (keybindProvider_->isAction(keyEvent, "Screenshot Key")) {
                     LOG_INFO("Capture key pressed");
-                    soundManager_->playUISound("screenshot_take");
+                    if (soundManager_) soundManager_->playUISound("screenshot_take");
                     capture_.captureAllScreenshots(playfieldImage, backglassImage, dmdImage, window_.getWindow());
                 } else if (keybindProvider_->isAction(keyEvent, "Screenshot Quit")) {
                     LOG_WARN("Quit key pressed");

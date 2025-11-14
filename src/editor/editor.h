@@ -32,11 +32,13 @@ namespace vpsdb {
 
 class ConfigUI;
 struct TableData;
+
+class IScreenshotManager;
 // ----------------------------
 
 class Editor : public IApp {
 public:
-    explicit Editor(const std::string& configPath);
+    explicit Editor(const std::string& configPath, const std::string& exeDir);
     ~Editor() override;
 
     void run() override;
@@ -54,6 +56,7 @@ private:
 
     // --- Core state ---
     std::string configPath_;
+    std::string exeDir_;
     bool exitRequested_ = false;
 
     // --- SDL window + renderer ---
@@ -87,4 +90,6 @@ private:
 
     std::unique_ptr<TableOverrideManager> overrideManager_;
     std::unique_ptr<TableOverrideEditor> metadataEditor_;
+
+    std::unique_ptr<IScreenshotManager> screenshotManager_;
 };

@@ -7,6 +7,7 @@
 #include "tables/table_data.h"
 #include "tables/itable_callbacks.h"
 #include "launcher/itable_launcher.h"
+#include "capture/iscreenshot_manager.h"
 #include "core/ui/loading_progress.h"
 #include "core/ui/modal_dialog.h"
 #include <imgui.h>
@@ -31,7 +32,8 @@ public:
              ITableLoader* tableLoader,
              ITableLauncher* launcher,
              ITableCallbacks* tableCallbacks,
-             std::shared_ptr<LoadingProgress> progress
+             std::shared_ptr<LoadingProgress> progress,
+             IScreenshotManager* screenshotManager
              );
 
     void draw();
@@ -94,6 +96,12 @@ public:
     ModalDialog& modal() { return modal_; }
     std::function<void()> deferredModal_;
 
+    IScreenshotManager* screenshotManager() const { return screenshotManager_; }
+    bool inExternalAppMode_ = false;              ///< Are we currently in an external app (like screenshot)?
+    Uint32 lastExternalAppReturnTime_ = 0;        ///< Timestamp of last external app return
+    bool screenshotModeActive_ = false;           ///< Is screenshot mode active
+    static constexpr Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< 0.5 sec debounce
+
 private:
     // helper methods
     void filterAndSortTables();
@@ -134,4 +142,5 @@ private:
     bool& showEditorSettings_;
 
     ModalDialog modal_;
+    IScreenshotManager* screenshotManager_;
 };

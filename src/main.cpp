@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
     // Handle --editor / -e argument
     // Create and run the editor (vpxguitools port)
     if (argc > 1 && (std::string(argv[1]) == "--editor" || std::string(argv[1]) == "-e")) {
-        Editor editor(configPath);
+        Editor editor(configPath, exeDir);
         editor.run();
         return 0;
     }
