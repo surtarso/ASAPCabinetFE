@@ -126,24 +126,24 @@ void drawFooter(EditorUI& ui) {
 
     ImGui::SameLine();
 
-    // blue
-    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
-
     // ---------- Refresh Button ----------
-    if (ImGui::Button("Refresh")) {
-        LOG_DEBUG("Refresh pressed");
-        ui.setScannerMode(ScannerMode::HasIndex);
-        ui.rescanAsyncPublic(ui.scannerMode());
-    }
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
-        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
-        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
-        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
-    }
-    ImGui::PopStyleColor(3);
-    ImGui::SameLine();
+    // blue
+    // ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
+    // ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
+    // ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
+
+    // if (ImGui::Button("Refresh")) {
+    //     LOG_DEBUG("Refresh pressed");
+    //     ui.setScannerMode(ScannerMode::HasIndex);
+    //     ui.rescanAsyncPublic(ui.scannerMode());
+    // }
+    // if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+    //     ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+    //     ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
+    //     ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
+    // }
+    // ImGui::PopStyleColor(3);
+    // ImGui::SameLine();
 
     // ---------- Open Folder Button ----------
     if (ImGui::Button("Open Folder")) {
