@@ -72,8 +72,19 @@ void drawHeader(EditorUI& ui) {
         }
 
         if (ImGui::Selectable("Edit Metadata", false)) {
-            ui.setShowMetadataEditor(true);
-            LOG_INFO("Edit Table Metadata requested");
+            int idx = ui.selectedIndex();
+            auto& filtered = ui.filteredTables();
+
+            if (idx >= 0 && idx < static_cast<int>(filtered.size())) {
+                ui.setShowMetadataEditor(true);
+                LOG_INFO("Edit Table Metadata requested");
+            } else {
+                LOG_INFO("Edit Metadata pressed but no table selected");
+                ui.modal().openInfo(
+                    "No Table Selected",
+                    "Please select a table first and try again."
+                );
+            }
         }
 
         // --- Delete submenu

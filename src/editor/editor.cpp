@@ -135,24 +135,14 @@ void Editor::mainLoop() {
                 if (!metadataEditor_) {
 
                     int filteredIndex = editorUI_->selectedIndex();
-                    std::string selectedPath;
 
                     TableData* realTable = nullptr;
-
                     {
-                        // lock ONCE
                         std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
-
                         auto& filtered = editorUI_->filteredTables();
-                        if (filteredIndex < 0 || filteredIndex >= (int)filtered.size()) {
-                            ImGui::Text("No table selected for metadata editing.");
-                            if (ImGui::Button("Close")) showMetadataEditor_ = false;
-                            return;
-                        }
+                        const std::string& selectedPath = filtered[filteredIndex].vpxFile;
 
-                        selectedPath = filtered[filteredIndex].vpxFile;
-
-                        // map filtered -> master
+                        // Map filtered -> master
                         for (auto& t : editorUI_->tables()) {
                             if (t.vpxFile == selectedPath) {
                                 realTable = &t;
@@ -161,12 +151,7 @@ void Editor::mainLoop() {
                         }
                     }
 
-                    if (!realTable) {
-                        ImGui::Text("Internal error: table not found in master list.");
-                        if (ImGui::Button("Close")) showMetadataEditor_ = false;
-                        return;
-                    }
-
+                    // No fallback ImGui UI. You ONLY reach this if the table is valid.
                     metadataEditor_ = std::make_unique<TableOverrideEditor>(*realTable, *overrideManager_);
                 }
 
@@ -175,6 +160,7 @@ void Editor::mainLoop() {
                         bool saved = metadataEditor_->wasSaved();
                         metadataEditor_.reset();
                         showMetadataEditor_ = false;
+
                         if (saved)
                             editorUI_->filterAndSortTablesPublic();
                     }
@@ -186,20 +172,12 @@ void Editor::mainLoop() {
                 static MetadataPanel metadataPanel;
 
                 int filteredIndex = editorUI_->selectedIndex();
-                std::string selectedPath;
                 TableData* realTable = nullptr;
 
                 {
-                    // lock ONCE
                     std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
-
                     auto& filtered = editorUI_->filteredTables();
-                    if (filteredIndex < 0 || filteredIndex >= (int)filtered.size()) {
-                        ImGui::Text("No table selected.");
-                        return;
-                    }
-
-                    selectedPath = filtered[filteredIndex].vpxFile;
+                    const std::string& selectedPath = filtered[filteredIndex].vpxFile;
 
                     for (auto& t : editorUI_->tables()) {
                         if (t.vpxFile == selectedPath) {
@@ -209,11 +187,6 @@ void Editor::mainLoop() {
                     }
                 }
 
-                if (!realTable) {
-                    ImGui::Text("Internal error: table missing in master list.");
-                    return;
-                }
-
                 const Settings& settings = config_->getSettings();
 
                 int width = 0, height = 0;
@@ -221,25 +194,30 @@ void Editor::mainLoop() {
 
                 metadataPanel.render(*realTable, width, height, settings);
 
-                // Overlay buttons
+                // Floating close/edit buttons
                 ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f,
                                             ImGui::GetIO().DisplaySize.y - 50.0f));
                 ImGui::SetNextWindowBgAlpha(0.3f);
                 ImGui::Begin("Close Metadata", nullptr,
-                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                    ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize |
-                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration);
+                    ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoBackground |
+                    ImGuiWindowFlags_AlwaysAutoResize |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoDecoration
+                );
 
                 if (ImGui::Button("Edit Metadata")) {
                     showMetadataView_ = false;
                     showMetadataEditor_ = true;
                 }
+
                 ImGui::SameLine();
-                if (ImGui::Button("Close")) showMetadataView_ = false;
+
+                if (ImGui::Button("Close"))
+                    showMetadataView_ = false;
 
                 ImGui::End();
-
-
 
             // ========================= VPSDB PANEL =========================
             } else if (showVpsdbBrowser_) {
