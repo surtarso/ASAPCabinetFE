@@ -10,6 +10,9 @@ FIX:
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
 - add feedback for 'launching screenshot mode' (normal play too)
+- organize the config ui again
+- option to resize vpindb media more obvious in editor
+- feedback before starting screenshot mode (instructions screen (with click to hide(forever)?)?)?
 
 QOL:
 - add colors to rows according to conditions (patched, non-matched, diffs etc)
@@ -47,56 +50,43 @@ On hold:
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
 
-- MEDIA TOOLS PANEL — BLUEPRINT
 
-Purpose: One unified workspace (with previews) for:
+- [NEW] MEDIA TOOLS PANEL — BLUEPRINT
+Purpose: One unified workspace with previews for:
 
 1. Image Tools
-
-Resize (720p, 1080p, custom WxH)
-
-Convert format (PNG → JPG, WEBP, AVIF)
-
-Compress (quality slider)
-
-Filters (blur, sharpen, denoise)
+- Resize (720p, 1080p, custom WxH)
+- Convert format (PNG → JPG, WEBP, AVIF)
+- Compress (quality slider)
+- Filters (blur, sharpen, denoise, monochrome, sepia)
 
 2. Video Tools
-
-Resize (720p, 1080p, custom WxH)
-
-Re-encode (H264 / HEVC / VP9 / AV1)
-
-Trim (start, end)
-
-Change FPS
-
-Compress bitrate
+- Resize (720p, 1080p, custom WxH)
+- Re-encode (H264 / HEVC / VP9 / AV1)
+- Trim (start, end)
+- Change FPS
+- Compress bitrate
 
 3. Audio Tools
-
-Convert (MP3 / OGG / WAV / FLAC)
-
-Bitrate control
-
-Trim
-
-Normalize volume
+- Convert (MP3 / OGG / WAV / FLAC)
+- Bitrate control
+- Trim
+- Normalize volume
 
 4. Target Media Picker
+- Auto-populated from selected table:
+- Playfield image/video
+- Backglass image/video
+- DMD image/video
+- Topper image/video
+- Wheel image
+- Table music
+- Launch audio
 
-Auto-populated from selected table:
-
-Playfield image/video
-
-Backglass image/video
-
-DMD image/video
-
-Topper image/video
-
-Wheel image
-
-Table music
-
-Launch audio
+5. Requirements: 
+- be able to manipulate single table, selection of table, all tables
+- use ffmpeg/imagemagick
+- be able to manipulate single or selection of media. e.g:
+    - only dmd all tables
+    - dmd and topper for selection of tables
+    - all images for all tables etc
