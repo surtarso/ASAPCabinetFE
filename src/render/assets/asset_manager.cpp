@@ -549,33 +549,3 @@ void AssetManager::cleanupVideoPlayers() {
     videoPlayerCache_->clearOldVideoPlayers();
     LOG_DEBUG("All video players and cache entries processed for cleanup.");
 }
-
-void AssetManager::processVlcFallbackEvent(void* data) {
-    (void)data; // Parameter intentionally unused; silence -Wunused-parameter
-    // Inspect active players and see if any VLC players have zero frames
-    auto checkAndFallback = [this](std::unique_ptr<IVideoPlayer>& player, SDL_Renderer* renderer, const std::string& path, int w, int h, const char* name) {
-        if (!player) return;
-        VlcVideoPlayer* vlcPtr = dynamic_cast<VlcVideoPlayer*>(player.get());
-        if (!vlcPtr) return;
-        int frames = vlcPtr->getFrameCount();
-        LOG_DEBUG(std::string("VLC monitor check for ") + name + ": frameCount=" + std::to_string(frames));
-        if (frames == 0) {
-            LOG_WARN(std::string("No VLC frames detected for ") + name + ", falling back to FFmpeg backend for " + path);
-            // Create an ffmpeg player in-place
-            auto fallback = std::make_unique<FFmpegPlayer>();
-            if (fallback->setup(renderer, path, w, h)) {
-                fallback->play();
-                // Move fallback into the slot
-                player = std::move(fallback);
-                LOG_INFO(std::string("Switched ") + name + " player to FFmpeg fallback for " + path);
-            } else {
-                LOG_ERROR(std::string("FFmpeg fallback setup failed for ") + name + ": " + path);
-            }
-        }
-    };
-
-    checkAndFallback(playfieldVideoPlayer, playfieldRenderer, currentPlayfieldVideoPath_, currentPlayfieldMediaWidth_, currentPlayfieldMediaHeight_, "playfield");
-    checkAndFallback(backglassVideoPlayer, backglassRenderer, currentBackglassVideoPath_, currentBackglassMediaWidth_, currentBackglassMediaHeight_, "backglass");
-    checkAndFallback(dmdVideoPlayer, dmdRenderer, currentDmdVideoPath_, currentDmdMediaWidth_, currentDmdMediaHeight_, "dmd");
-    checkAndFallback(topperVideoPlayer, topperRenderer, currentTopperVideoPath_, currentTopperMediaWidth_, currentTopperMediaHeight_, "topper");
-}

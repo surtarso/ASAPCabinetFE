@@ -44,8 +44,8 @@ SDL_Texture* TextureCache::getTexture(SDL_Renderer* renderer, const std::string&
     }
 
     if (!tex) {
-        LOG_ERROR("Failed to load texture " + path + ": " + std::string(IMG_GetError()));
-        return nullptr;
+        LOG_DEBUG("Returning nullptr, failed to load texture " + path + ": " + std::string(IMG_GetError()));
+        return nullptr; // this will trigger when user has no media so default media will be used (SDL animation)
     }
 
     cache_.emplace(path, CacheEntry(renderer, tex));

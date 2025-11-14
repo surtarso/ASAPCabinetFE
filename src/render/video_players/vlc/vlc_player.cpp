@@ -85,9 +85,9 @@ void* VlcVideoPlayer::lock(void* data, void** pixels) {
         return nullptr;
     }
     *pixels = ctx->pixels;
-    if (ctx->frameCount < 5) {
-        LOG_DEBUG("VlcVideoPlayer::lock invoked (early). frameCount=" + std::to_string(ctx->frameCount));
-    }
+    // if (ctx->frameCount < 5) {
+    //     LOG_DEBUG("VlcVideoPlayer::lock invoked (early). frameCount=" + std::to_string(ctx->frameCount));
+    // }
     return nullptr;
 }
 
@@ -98,9 +98,9 @@ void VlcVideoPlayer::unlock([[maybe_unused]] void* data, [[maybe_unused]] void* 
         return;
     }
     SDL_UnlockMutex(ctx->mutex);
-    if (ctx->frameCount < 5) {
-        LOG_DEBUG("VlcVideoPlayer::unlock invoked (early). frameCount=" + std::to_string(ctx->frameCount));
-    }
+    // if (ctx->frameCount < 5) {
+    //     LOG_DEBUG("VlcVideoPlayer::unlock invoked (early). frameCount=" + std::to_string(ctx->frameCount));
+    // }
 }
 
 void VlcVideoPlayer::display([[maybe_unused]] void* data, [[maybe_unused]] void* id) {
@@ -113,9 +113,9 @@ void VlcVideoPlayer::display([[maybe_unused]] void* data, [[maybe_unused]] void*
     // Mark a frame as ready and increment diagnostic counter
     ctx->frameReady = true;
     ctx->frameCount++;
-    if (ctx->frameCount <= 5 || (ctx->frameCount % 60) == 0) {
-        LOG_DEBUG("VlcVideoPlayer::display invoked. frameReady=true, frameCount=" + std::to_string(ctx->frameCount));
-    }
+    // if (ctx->frameCount <= 5 || (ctx->frameCount % 60) == 0) {
+    //     LOG_DEBUG("VlcVideoPlayer::display invoked. frameReady=true, frameCount=" + std::to_string(ctx->frameCount));
+    // }
 }
 
 bool VlcVideoPlayer::setup(SDL_Renderer* renderer, const std::string& path, int width, int height) {
@@ -271,9 +271,9 @@ void VlcVideoPlayer::update() {
                 LOG_ERROR("SDL_UpdateTexture failed: " + std::string(SDL_GetError()));
             } else {
                 ctx_->frameReady = false;
-                if (ctx_->frameCount <= 5 || (ctx_->frameCount % 60) == 0) {
-                    LOG_DEBUG("VlcVideoPlayer: SDL_UpdateTexture succeeded. frameCount=" + std::to_string(ctx_->frameCount));
-                }
+                // if (ctx_->frameCount <= 5 || (ctx_->frameCount % 60) == 0) {
+                //     LOG_DEBUG("VlcVideoPlayer: SDL_UpdateTexture succeeded. frameCount=" + std::to_string(ctx_->frameCount));
+                // }
             }
             SDL_UnlockMutex(ctx_->mutex);
         } else {

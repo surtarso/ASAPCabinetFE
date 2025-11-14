@@ -200,13 +200,6 @@ public:
      * based on the current mediaAudioVol and mediaAudioMute settings.
      */
     virtual void applyVideoAudioSettings() = 0;
-
-    /**
-     * @brief Process an application-level VLC fallback event posted by a monitor thread.
-     *
-     * Implementations may inspect active video players and swap backends if VLC fails to produce frames.
-     */
-    virtual void processVlcFallbackEvent([[maybe_unused]] void* data) { }
 };
 
 #endif // IASSET_MANAGER_H
