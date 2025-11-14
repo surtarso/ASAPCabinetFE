@@ -260,6 +260,7 @@ We’re dreaming big! Help us bring these features to life:
 
 - Multi-launchers.
 - In-game video recording.
+- Media manipulation.
 - Attract Mode.
 - Custom collections.
 - CLI automation.
