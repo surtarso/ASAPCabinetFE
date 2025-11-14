@@ -129,85 +129,119 @@ void Editor::mainLoop() {
             loadingScreen_->render();
         // If not loading, render the normal editor UI logic
         } else {
-            // METADATA EDITOR (TODO: hook from tables/table_overrides)
+
             if (showMetadataEditor_) {
-                // Lazy-create metadataEditor_ using the selected table from EditorUI.
-                // Do NOT invent accessor methods — use tables() and selectedIndex() that already exist.
+
                 if (!metadataEditor_) {
-                    int idx = editorUI_->selectedIndex();
-                    // Validate selected index and table vector bounds under the table mutex.
+
+                    int filteredIndex = editorUI_->selectedIndex();
+                    std::string selectedPath;
+
+                    TableData* realTable = nullptr;
+
                     {
+                        // lock ONCE
                         std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
-                        auto &tables = editorUI_->tables();
-                        if (idx >= 0 && static_cast<size_t>(idx) < tables.size()) {
-                            auto &table = tables[idx];
-                            metadataEditor_ = std::make_unique<TableOverrideEditor>(table, *overrideManager_);
-                        } else {
-                            // No valid selection: show a small notice and a close button.
+
+                        auto& filtered = editorUI_->filteredTables();
+                        if (filteredIndex < 0 || filteredIndex >= (int)filtered.size()) {
                             ImGui::Text("No table selected for metadata editing.");
-                            if (ImGui::Button("Close")) {
-                                showMetadataEditor_ = false;
+                            if (ImGui::Button("Close")) showMetadataEditor_ = false;
+                            return;
+                        }
+
+                        selectedPath = filtered[filteredIndex].vpxFile;
+
+                        // map filtered -> master
+                        for (auto& t : editorUI_->tables()) {
+                            if (t.vpxFile == selectedPath) {
+                                realTable = &t;
+                                break;
                             }
                         }
                     }
+
+                    if (!realTable) {
+                        ImGui::Text("Internal error: table not found in master list.");
+                        if (ImGui::Button("Close")) showMetadataEditor_ = false;
+                        return;
+                    }
+
+                    metadataEditor_ = std::make_unique<TableOverrideEditor>(*realTable, *overrideManager_);
                 }
 
-                // If we have an instance, render it. The editor returns false when it requests to be closed.
                 if (metadataEditor_) {
                     if (!metadataEditor_->render()) {
-                        // Editor requested close (Save or Discard). If saved, update UI view.
                         bool saved = metadataEditor_->wasSaved();
-
-                        // Destroy the editor instance.
                         metadataEditor_.reset();
-
-                        // Close the UI panel.
                         showMetadataEditor_ = false;
-
-                        // If saved, refresh EditorUI table view so overridden values appear.
-                        // Use existing public method filterAndSortTablesPublic() to refresh filteredTables.
-                        if (saved) {
+                        if (saved)
                             editorUI_->filterAndSortTablesPublic();
+                    }
+                }
+
+
+
+            // METADATA PANEL
+            } else if (showMetadataView_) {
+
+                static MetadataPanel metadataPanel;
+
+                int filteredIndex = editorUI_->selectedIndex();
+                std::string selectedPath;
+                TableData* realTable = nullptr;
+
+                {
+                    // lock ONCE
+                    std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
+
+                    auto& filtered = editorUI_->filteredTables();
+                    if (filteredIndex < 0 || filteredIndex >= (int)filtered.size()) {
+                        ImGui::Text("No table selected.");
+                        return;
+                    }
+
+                    selectedPath = filtered[filteredIndex].vpxFile;
+
+                    for (auto& t : editorUI_->tables()) {
+                        if (t.vpxFile == selectedPath) {
+                            realTable = &t;
+                            break;
                         }
                     }
                 }
 
-            // METADATA PANEL
-            } else if (showMetadataView_) {
-                // Lazy-create metadata panel
-                static MetadataPanel metadataPanel; // persistent instance
-
-                // Lock editorUI_ tables to get selected table
-                std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
-                auto &tables = editorUI_->tables();
-                int idx = editorUI_->selectedIndex();
-
-                if (idx >= 0 && static_cast<size_t>(idx) < tables.size()) {
-                    TableData &table = tables[idx];
-
-                    // Retrieve current SDL window size for adaptive layout
-                    int width = 0, height = 0;
-                    SDL_GetWindowSize(window_, &width, &height);
-
-                    // Use your ConfigService settings object (already held by config_)
-                    const Settings &settings = config_->getSettings();
-
-                    // Render the metadata panel (auto detects portrait/landscape)
-                    metadataPanel.render(table, width, height, settings);
-                } else {
-                    ImGui::Text("No table selected.");
+                if (!realTable) {
+                    ImGui::Text("Internal error: table missing in master list.");
+                    return;
                 }
 
-                // Bottom-right close button overlay TODO: better position, add one to switch to override manager
-                ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f, ImGui::GetIO().DisplaySize.y - 50.0f));
+                const Settings& settings = config_->getSettings();
+
+                int width = 0, height = 0;
+                SDL_GetWindowSize(window_, &width, &height);
+
+                metadataPanel.render(*realTable, width, height, settings);
+
+                // Overlay buttons
+                ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f,
+                                            ImGui::GetIO().DisplaySize.y - 50.0f));
                 ImGui::SetNextWindowBgAlpha(0.3f);
                 ImGui::Begin("Close Metadata", nullptr,
-                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground |
-                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration);
-                if (ImGui::Button("Edit Metadata")) {showMetadataView_ = false; showMetadataEditor_ = true;}
+                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize |
+                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration);
+
+                if (ImGui::Button("Edit Metadata")) {
+                    showMetadataView_ = false;
+                    showMetadataEditor_ = true;
+                }
                 ImGui::SameLine();
                 if (ImGui::Button("Close")) showMetadataView_ = false;
+
                 ImGui::End();
+
+
 
             // VPSDB PANEL
             } else if (showVpsdbBrowser_) {
@@ -237,9 +271,8 @@ void Editor::mainLoop() {
                     configUI_->drawGUI();
                     // The showEditorSettings_ flag is passed by reference to ConfigUI.
                     // When ConfigUI's internal flag is toggled (e.g., closing the window),
-                    // the reference is updated. We then save the config and refresh state.
+                    // the reference is updated. We then save the config (or not) and refresh state.
                     if (configUI_->shouldClose() && showEditorSettings_ == false) {
-                        configUI_->saveConfig(); // Save configuration when closing
                         configUI_->refreshUIState(); // Refresh UI state after closing
                     }
                 } else {
