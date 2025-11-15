@@ -35,6 +35,9 @@ QOL:
 - [FE] make windows resizeable with mouse and pass to config
 
 On hold:
+- portability: SDL drawn default wheel
+- portability: embbed the UI sounds on binary
+- portability: embbed and pre-configure app icon?
 - add update version checker
 - add graphs/statistics panel.
 - refactor the monoliths...
