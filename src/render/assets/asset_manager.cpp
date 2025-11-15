@@ -293,14 +293,36 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
     for (auto& w : windowsForCleanup) {
         if (w.videoPlayer) {
             w.videoPlayer->stop();
+
             if (!w.videoPath.empty() && w.mediaWidth > 0 && w.mediaHeight > 0 && w.renderer) {
-                std::string cacheKey = w.videoPath + "_" + std::to_string(w.mediaWidth) + "x" + std::to_string(w.mediaHeight);
-                videoPlayerCache_->cacheVideoPlayer(cacheKey, std::move(w.videoPlayer), w.renderer, w.mediaWidth, w.mediaHeight);
-            } else {
+                // Retrieve backend for consistent cache key generation
+                std::string backend = configManager_
+                    ? configManager_->getSettings().videoBackend
+                    : "ffmpeg";
+
+                // Use exactly the same key format as in loadTableAssets()
+                std::string cacheKey =
+                    backend + "_" +
+                    w.name + "_" +          // playfield, backglass, etc
+                    w.videoPath + "_" +
+                    std::to_string(w.mediaWidth) + "x" +
+                    std::to_string(w.mediaHeight);
+
+                videoPlayerCache_->cacheVideoPlayer(
+                    cacheKey,
+                    std::move(w.videoPlayer),
+                    w.renderer,
+                    w.mediaWidth,
+                    w.mediaHeight
+                );
+            }
+            else {
                 videoPlayerCache_->addOldVideoPlayer(std::move(w.videoPlayer));
             }
+
             w.videoPlayer.reset();
         }
+
         w.texture = nullptr;
         w.wheelTexture = nullptr;
         w.titleTexture = nullptr;
@@ -452,7 +474,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         if (hasUserVideo && mediaWidth > 0 && mediaHeight > 0) {
             // Try load video from cache
             std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "ffmpeg";
-            std::string cacheKey = backend + ":" + w.tableVideo + "_" +
+            std::string cacheKey = backend + "_" + w.name + "_" + w.tableVideo + "_" +
                                 std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
 
             w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);

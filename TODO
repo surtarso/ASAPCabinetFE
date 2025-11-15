@@ -16,19 +16,19 @@ ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 
 QOL:
 - ease overwhelm in FE, send to Editor!
-- add option to resize vpindb images more obvious in editor
-- add instructions to the screenshot mode
-- add colors to rows according to conditions (patched, non-matched, diffs etc)
-- [!] add basic/advanced toggle for main config ui
-- [!] add single table vs all tables action in general (ss, patch, rescan etc)
-- [!] add feedback for table launch/failure
-- [!] add single table scan (all, selectable) override manager?
-- [!][FE] add a proper font picker
+- [ED] add option to resize vpindb images more obvious in editor
+- [ED] add colors to rows according to conditions (patched, non-matched, diffs etc)
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
+- [!] add basic/advanced toggle for main config ui
+- [!] add single table vs all tables action in general (ss, patch, rescan etc)
+- [!] add single table scan (all, selectable) override manager?
+- [!] add a proper font picker
+- add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - add collapse all/expand all widget for main config ui
+- [FE] add feedback for table launch/failure
 - [FE] key for metadata panel toggle? (switch with FE override manager.) M for metadata, N for new table (vpsdb)
 - [FE] add key to switch sorting type (joystick oriented)
 - [FE] make windows naturally draggable with mouse hold
