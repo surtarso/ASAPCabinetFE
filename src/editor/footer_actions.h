@@ -1,5 +1,5 @@
-#ifndef BUTTON_ACTIONS_H
-#define BUTTON_ACTIONS_H
+#ifndef FOOTER_ACTIONS_H
+#define FOOTER_ACTIONS_H
 
 #include <string>
 #include <vector>
@@ -22,7 +22,7 @@ public:
      * @brief Extracts the VBScript from a .vpx file using vpxtool.
      * @param filepath Full path to the .vpx table.
      */
-    void extractVBS(
+    void extractOrOpenVbs(
         const std::string& filepath,
         std::function<void(const std::string&)> onOutput,
         std::function<void()> onFinished
@@ -70,4 +70,4 @@ private:
     bool pendingSearchFocus_ = false; // Deferred focus flag
 };
 
-#endif // BUTTON_ACTIONS_H
+#endif // FOOTER_ACTIONS_H

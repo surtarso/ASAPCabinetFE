@@ -9,12 +9,11 @@ FIX:
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
-- add feedback for 'launching screenshot mode' (normal play too)
 - organize the config ui again
-- option to resize vpindb media more obvious in editor
-- feedback before starting screenshot mode (instructions screen (with click to hide(forever)?)?)?
+- option to resize vpindb images more obvious in editor
 
 QOL:
+- add instructions to the screenshot mode
 - add colors to rows according to conditions (patched, non-matched, diffs etc)
 - [!] add basic/advanced toggle for main config ui
 - [!] add single table vs all tables action in general (ss, patch, rescan etc)

@@ -1,5 +1,5 @@
-#ifndef EDITOR_MENU_ACTIONS_H
-#define EDITOR_MENU_ACTIONS_H
+#ifndef EDITOR_HEADER_ACTIONS_H
+#define EDITOR_HEADER_ACTIONS_H
 
 #include <string>
 #include <filesystem>
@@ -13,7 +13,7 @@
  * This includes file management (delete, compress, export, repair) and system tools.
  * Each action has its own confirmation popup and uses the existing logging + rescan pipeline.
  */
-namespace menu_actions {
+namespace header_actions {
 
     /**
      * @brief Draws all modal popups (confirmations, progress, etc.) triggered by Advanced Menu actions.
@@ -49,6 +49,6 @@ namespace menu_actions {
      */
     void clearAllCaches(EditorUI& ui);
 
-}  // namespace menu_actions
+}  // namespace header_actions
 
-#endif // EDITOR_MENU_ACTIONS_H
+#endif // EDITOR_HEADER_ACTIONS_H

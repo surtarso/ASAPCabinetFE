@@ -1,4 +1,4 @@
-#include "editor/menu_actions.h"
+#include "editor/header_actions.h"
 #include <thread>
 #include <filesystem>
 #include "config/settings.h"
@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-namespace menu_actions {
+namespace header_actions {
 
 // ---------------------------------------------------------------------------
 // Delete Folder Request
@@ -348,4 +348,4 @@ void drawModals(EditorUI& ui) {
     ui.modal().draw();
 }
 
-}  // namespace menu_actions
+}  // namespace header_actions

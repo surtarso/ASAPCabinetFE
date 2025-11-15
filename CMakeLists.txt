@@ -287,8 +287,8 @@ set(SOURCES
     src/config/ui/section_renderer.cpp
     # editor
     # src/editor/editor_binary.cpp # gets imported later in binary creation
-    src/editor/button_actions.cpp
-    src/editor/menu_actions.cpp
+    src/editor/footer_actions.cpp
+    src/editor/header_actions.cpp
     src/editor/editor.cpp
     src/editor/editor_first_run.cpp
     src/editor/sorting_filters.cpp

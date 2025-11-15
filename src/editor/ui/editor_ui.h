@@ -1,6 +1,6 @@
 #pragma once
 
-#include "editor/button_actions.h"
+#include "editor/footer_actions.h"
 #include "editor/sorting_filters.h"
 #include "config/iconfig_service.h"
 #include "tables/itable_loader.h"

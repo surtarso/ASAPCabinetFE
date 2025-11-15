@@ -1,4 +1,4 @@
-#include "editor/button_actions.h"
+#include "editor/footer_actions.h"
 #include "vpin_wrapper.h"
 #include "log/logging.h"
 #include <imgui.h>
@@ -17,57 +17,71 @@ namespace fs = std::filesystem;
 ButtonActions::ButtonActions(IConfigService* config, ITableCallbacks* tableCallbacks)
     : config_(config), tableCallbacks_(tableCallbacks) {}
 
-void ButtonActions::extractVBS(
+void ButtonActions::extractOrOpenVbs(
     const std::string& filepath,
     std::function<void(const std::string&)> onOutput,
     std::function<void()> onFinished
 ) {
+    fs::path vpxPath(filepath);
+    fs::path vbsPath = vpxPath.parent_path() / (vpxPath.stem().string() + ".vbs");
+
+    // ----------------------------------------------------------
+    // 1) If VBS already exists → open it
+    // ----------------------------------------------------------
+    if (fs::exists(vbsPath)) {
+        if (onOutput) {
+            onOutput("VBS already exists:");
+            onOutput(vbsPath.string());
+            onOutput("Opening...");
+        }
+
+        openInExternalEditor(vbsPath.string());
+
+        if (onFinished) onFinished();
+        return;
+    }
+
+    // ----------------------------------------------------------
+    // 2) VBS missing → extract it
+    // ----------------------------------------------------------
+    if (onOutput) {
+        onOutput("VBS missing:");
+        onOutput(vbsPath.string());
+        onOutput("Extracting VBS from VPX...");
+    }
+
     if (!config_) {
-        if (onOutput) onOutput("ERROR: Config service is null, cannot extract VBS.");
+        if (onOutput) onOutput("ERROR: Config service is null.");
         if (onFinished) onFinished();
         return;
     }
 
     const auto& settings = config_->getSettings();
 
-    // -------------------------------
-    // Determine WHICH TOOL to use
-    // -------------------------------
+    // pick tool
     std::string toolPath;
     std::string toolCmd;
 
     if (settings.useVpxtool) {
-        toolPath = "vpxtool";
-
-        if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
-            toolPath = settings.vpxtoolBin;
-        } else if (!settings.vpxtoolBin.empty()) {
-            if (onOutput)
-                onOutput("WARNING: vpxtoolBin specified but not found. Falling back to PATH.");
-        }
-
-        toolCmd = settings.vpxtoolExtractCmd;
+        toolPath = settings.vpxtoolBin.empty() ? "vpxtool" : settings.vpxtoolBin;
+        toolCmd  = settings.vpxtoolExtractCmd;
     } else {
         toolPath = settings.VPinballXPath;
-        toolCmd = settings.vpxExtractCmd;
+        toolCmd  = settings.vpxExtractCmd;
     }
 
-    // Build command string
-    std::string cmd =
-        "\"" + toolPath + "\" " +
-        toolCmd + " \"" + filepath + "\"";
+    // build command
+    std::string cmd = "\"" + toolPath + "\" " + toolCmd + " \"" + filepath + "\"";
 
-    if (onOutput)
-        onOutput("Executing: " + cmd);
+    if (onOutput) onOutput("Executing: " + cmd);
 
-    // -------------------------------
-    // Run asynchronously
-    // -------------------------------
-    std::thread([cmd, onOutput, onFinished]() {
+    // ----------------------------------------------------------
+    // 3) Run async extraction
+    // ----------------------------------------------------------
+    std::thread([this, cmd, vbsPath, onOutput, onFinished]() {
+
         std::array<char, 256> buffer;
-
-        using PipeCloser = int (*)(FILE*);
-        std::unique_ptr<FILE, PipeCloser> pipe(popen(cmd.c_str(), "r"), pclose);
+        std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
 
         if (!pipe) {
             if (onOutput) onOutput("ERROR: Failed to execute command.");
@@ -75,9 +89,22 @@ void ButtonActions::extractVBS(
             return;
         }
 
-        // Read output
-        while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
             if (onOutput) onOutput(std::string(buffer.data()));
+        }
+
+        // ------------------------------------------------------
+        // 4) After extraction → open it
+        // ------------------------------------------------------
+        if (fs::exists(vbsPath)) {
+            if (onOutput) onOutput("Extraction complete. Opening VBS...");
+            openInExternalEditor(vbsPath.string());
+        } else {
+            if (onOutput) {
+                onOutput("ERROR: VBS not found after extraction:");
+                onOutput(vbsPath.string());
+                onOutput("Extraction failed.");
+            }
         }
 
         if (onFinished) onFinished();
@@ -85,15 +112,21 @@ void ButtonActions::extractVBS(
     }).detach();
 }
 
+
+
+// ----------------------------------------------------------
+// External editor opener (unchanged)
+// ----------------------------------------------------------
 bool ButtonActions::openInExternalEditor(const std::string& filepath) {
     std::string cmd = "xdg-open \"" + filepath + "\"";
     LOG_DEBUG("Attempting to open in external editor with: " + cmd);
     if (system(cmd.c_str()) != 0) {
-        LOG_WARN("xdg-open failed. (You could add a 'fallbackEditor' to your Settings struct like in the old app).");
+        LOG_WARN("xdg-open failed. (You could add a fallbackEditor to Settings).");
         return false;
     }
     return true;
 }
+
 
 void ButtonActions::openFolder(const std::string& filepath) {
     std::string folder;

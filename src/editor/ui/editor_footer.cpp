@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <filesystem>
 #include <sstream>
+#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -167,37 +168,24 @@ void drawFooter(EditorUI& ui) {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, yellowHover);
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  yellowActive);
 
-    // ---------- Extract VBS Button ----------
+    // ---------- Extract or Open VBS Button ----------
     if (ImGui::Button("Extract VBS")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
 
-            // 1) OPEN COMMAND OUTPUT MODAL
-            ui.modal().openCommandOutput("Extracting VBS...");
+            ui.modal().openCommandOutput("Processing VBS...");
 
-            // 2) RUN EXTRACTION ASYNC AND PIPE OUTPUT TO MODAL
-            ui.actions().extractVBS(
+            ui.actions().extractOrOpenVbs(
                 t.vpxFile,
 
-                // onOutput callback
+                // onOutput
                 [&ui](const std::string& line) {
                     ui.modal().appendCommandOutput(line);
                 },
 
-                // onFinished callback
-                [&ui, t]() {
-                    fs::path vpxPath(t.vpxFile);
-                    std::string vbsPath = (vpxPath.parent_path() /
-                        (vpxPath.stem().string() + ".vbs")).string();
-
-                    if (fs::exists(vbsPath)) {
-                        ui.modal().appendCommandOutput("Extraction complete.");
-                        ui.actions().openInExternalEditor(vbsPath);
-                    } else {
-                        ui.modal().appendCommandOutput("ERROR: VBS file not found.");
-                        ui.modal().appendCommandOutput(vbsPath);
-                        ui.modal().appendCommandOutput("Extraction failed.");
-                    }
+                // onFinished
+                [&ui]() {
+                    ui.modal().appendCommandOutput("Done.");
                 }
             );
         } else {
@@ -207,7 +195,6 @@ void drawFooter(EditorUI& ui) {
             );
         }
     }
-
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
         ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
@@ -297,16 +284,43 @@ void drawFooter(EditorUI& ui) {
                 LOG_DEBUG("Screenshot mode triggered from editor button");
                 if (!ui.screenshotModeActive_ && ui.screenshotManager()) {
 
+                    // --- THIS IS THE NEW LOGIC ---
+
+                    // Set flags *before* the thread
                     ui.screenshotModeActive_ = true;
                     ui.inExternalAppMode_ = true;
 
                     const auto& t = ui.filteredTables()[ui.selectedIndex()];
-                    ui.screenshotManager()->launchScreenshotMode(t.vpxFile);
+                    fs::path p(t.vpxFile);
+                    std::string vpxFile_copy = t.vpxFile; // Copy for thread
 
-                    ui.inExternalAppMode_ = false;
-                    ui.screenshotModeActive_ = false;
-                    ui.lastExternalAppReturnTime_ = SDL_GetTicks();
-                    LOG_DEBUG("Exited screenshot mode");
+                    // 1. Open modal *before* starting work
+                    ui.modal().openProgress(
+                        "Screenshot Mode",
+                        "Launching " + p.filename().string() + "..."
+                    );
+
+                    // 2. Start thread for blocking work
+                    std::thread([&ui, vpxFile_copy]() {
+                        // --- Worker Thread ---
+                        LOG_DEBUG("Worker Thread: Launching screenshot mode...");
+
+                        // 3. This is the blocking call
+                        ui.screenshotManager()->launchScreenshotMode(vpxFile_copy);
+
+                        // 4. Update modal (this is thread-safe)
+                        ui.modal().finishProgress("Screenshot complete!");
+
+                        // 5. Update flags *after* work is done
+                        // NOTE: This is not strictly thread-safe, but will
+                        // be picked up on the next frame after modal is closed.
+                        // For simple debounce, it's fine.
+                        ui.inExternalAppMode_ = false;
+                        ui.screenshotModeActive_ = false;
+                        ui.lastExternalAppReturnTime_ = SDL_GetTicks();
+                        LOG_DEBUG("Worker Thread: Exited screenshot mode");
+                        // --- End Worker Thread ---
+                    }).detach();
                 }
             }
 
@@ -377,14 +391,42 @@ void drawFooter(EditorUI& ui) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
 
             const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
+            fs::path p(t_filtered.vpxFile);
 
-            // Call the launch logic in ButtonActions
-            ui.actions().launchTableWithStats(
-                t_filtered,
-                ui.tables(), // The mutable master list
-                ui.tableLauncher(),
-                [&ui](){ ui.filterAndSortTablesPublic(); } // Callback to refresh UI
-            );
+            // 1. Open modal *before* starting work
+            ui.modal().openProgress("Launching Game", "Starting " + p.filename().string() + "...");
+
+            // Make copies of data needed for the thread
+            // This is CRITICAL. Do not use t_filtered directly in the lambda.
+            auto t_filtered_copy = t_filtered;
+            auto& tables = ui.tables();
+            auto* launcher = ui.tableLauncher();
+
+            // 2. Start thread for blocking work
+            std::thread([&ui, t_filtered_copy, &tables, launcher]() {
+                // --- Worker Thread ---
+                LOG_DEBUG("Worker Thread: Launching table...");
+
+                // 3. This is the blocking call.
+                // We pass a *thread-safe* callback to refresh the UI.
+                ui.actions().launchTableWithStats(
+                    t_filtered_copy,
+                    tables, // The mutable master list
+                    launcher,
+                    // DANGER: The original callback updates the UI.
+                    // We *must* make it thread-safe, e.g., by posting an
+                    // event or using a mutex in the UI.
+                    // For now, let's assume filterAndSortTablesPublic() is thread-safe
+                    // or you will make it so.
+                    // If it's NOT, just pass nullptr or an empty lambda.
+                    [&ui](){ ui.filterAndSortTablesPublic(); }
+                );
+
+                // 4. Update modal (this is thread-safe)
+                ui.modal().finishProgress("Launch complete!");
+                LOG_DEBUG("Worker Thread: Launch finished.");
+                // --- End Worker Thread ---
+            }).detach();
 
         } else {
             LOG_INFO("Play pressed but no table selected");

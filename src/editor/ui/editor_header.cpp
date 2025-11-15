@@ -1,5 +1,5 @@
 #include "editor/ui/editor_header.h"
-#include "editor/menu_actions.h"
+#include "editor/header_actions.h"
 #include <imgui.h>
 #include <filesystem>
 
@@ -58,23 +58,23 @@ void drawHeader(EditorUI& ui) {
 
             // --- Info submenu ---
             if (ImGui::BeginMenu("Table Info")) {
-                if (ImGui::MenuItem("Show Info")) menu_actions::vpxtoolRun(ui, "info show");
-                if (ImGui::MenuItem("Extract Info")) menu_actions::vpxtoolRun(ui, "info extract");
-                // if (ImGui::MenuItem("Import Info")) menu_actions::vpxtoolRun(ui, "info import");
-                // if (ImGui::MenuItem("Edit Info")) menu_actions::vpxtoolRun(ui, "info edit");
-                if (ImGui::MenuItem("Diff Info")) menu_actions::vpxtoolRun(ui, "info diff");
+                if (ImGui::MenuItem("Show Info")) header_actions::vpxtoolRun(ui, "info show");
+                if (ImGui::MenuItem("Extract Info")) header_actions::vpxtoolRun(ui, "info extract");
+                // if (ImGui::MenuItem("Import Info")) header_actions::vpxtoolRun(ui, "info import");
+                // if (ImGui::MenuItem("Edit Info")) header_actions::vpxtoolRun(ui, "info edit");
+                if (ImGui::MenuItem("Diff Info")) header_actions::vpxtoolRun(ui, "info diff");
                 ImGui::EndMenu();
             }
 
-            if (ImGui::MenuItem("Diff Script vs VBS")) menu_actions::vpxtoolRun(ui, "diff");
-            if (ImGui::MenuItem("Extract Script (VBS)")) menu_actions::vpxtoolRun(ui, "extractvbs");
-            if (ImGui::MenuItem("Import Script (VBS)")) menu_actions::vpxtoolRun(ui, "importvbs");
-            if (ImGui::MenuItem("Verify Structure")) menu_actions::vpxtoolRun(ui, "verify");
-            if (ImGui::MenuItem("Show Gamedata")) menu_actions::vpxtoolRun(ui, "gamedata show");
-            if (ImGui::MenuItem("Convert Lossless")) menu_actions::vpxtoolRun(ui, "images webp");
-            // if (ImGui::MenuItem("Apply Patch")) menu_actions::vpxtoolRun(ui, "patch");
-            if (ImGui::MenuItem("Show Rom Name")) menu_actions::vpxtoolRun(ui, "romname");
-            if (ImGui::MenuItem("List Contents")) menu_actions::vpxtoolRun(ui, "ls");
+            if (ImGui::MenuItem("Diff Script vs VBS")) header_actions::vpxtoolRun(ui, "diff");
+            if (ImGui::MenuItem("Extract Script (VBS)")) header_actions::vpxtoolRun(ui, "extractvbs");
+            if (ImGui::MenuItem("Import Script (VBS)")) header_actions::vpxtoolRun(ui, "importvbs");
+            if (ImGui::MenuItem("Verify Structure")) header_actions::vpxtoolRun(ui, "verify");
+            if (ImGui::MenuItem("Show Gamedata")) header_actions::vpxtoolRun(ui, "gamedata show");
+            if (ImGui::MenuItem("Convert Lossless")) header_actions::vpxtoolRun(ui, "images webp");
+            // if (ImGui::MenuItem("Apply Patch")) header_actions::vpxtoolRun(ui, "patch");
+            if (ImGui::MenuItem("Show Rom Name")) header_actions::vpxtoolRun(ui, "romname");
+            if (ImGui::MenuItem("List Contents")) header_actions::vpxtoolRun(ui, "ls");
 
             ImGui::EndMenu();
         }
@@ -82,7 +82,7 @@ void drawHeader(EditorUI& ui) {
         // --- Compress submenu
         if (ImGui::Selectable("Backup/Archive")) {
             ui.deferredModal_ = [&ui]() {
-                menu_actions::requestCompressTableFolder(ui);
+                header_actions::requestCompressTableFolder(ui);
             };
         }
 
@@ -106,11 +106,11 @@ void drawHeader(EditorUI& ui) {
         // --- Delete submenu
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
         if (ImGui::BeginMenu("Delete")) {
-            if (ImGui::MenuItem("Table Folder")) menu_actions::requestDeleteTableFolder(ui);
-            if (ImGui::MenuItem("Table INI")) menu_actions::requestDeleteTableFile(ui, "ini");
-            if (ImGui::MenuItem("Table VBS")) menu_actions::requestDeleteTableFile(ui, "vbs");
-            // if (ImGui::MenuItem("Table Metadata")) menu_actions::requestDeleteTableFile(ui, "metadata");
-            if (ImGui::MenuItem("Table Overrides")) menu_actions::requestDeleteTableFile(ui, "json");
+            if (ImGui::MenuItem("Table Folder")) header_actions::requestDeleteTableFolder(ui);
+            if (ImGui::MenuItem("Table INI")) header_actions::requestDeleteTableFile(ui, "ini");
+            if (ImGui::MenuItem("Table VBS")) header_actions::requestDeleteTableFile(ui, "vbs");
+            // if (ImGui::MenuItem("Table Metadata")) header_actions::requestDeleteTableFile(ui, "metadata");
+            if (ImGui::MenuItem("Table Overrides")) header_actions::requestDeleteTableFile(ui, "json");
             ImGui::EndMenu();
         }
         ImGui::PopStyleColor();
@@ -157,7 +157,7 @@ void drawHeader(EditorUI& ui) {
         // --- Maintenance submenu
         if (ImGui::BeginMenu("Maintenance")) {
             if (ImGui::MenuItem("Clear All Caches")) {
-                menu_actions::clearAllCaches(ui);
+                header_actions::clearAllCaches(ui);
             }
             ImGui::EndMenu();
         }
@@ -173,6 +173,6 @@ void drawHeader(EditorUI& ui) {
         ImGui::EndCombo();
     }
 
-    menu_actions::drawModals(ui);
+    header_actions::drawModals(ui);
 }
 }
