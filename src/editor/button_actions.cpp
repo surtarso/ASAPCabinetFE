@@ -9,49 +9,80 @@
 #include <chrono>
 #include <algorithm>
 #include <thread>
+#include <array>
+#include <memory>
 
 namespace fs = std::filesystem;
 
 ButtonActions::ButtonActions(IConfigService* config, ITableCallbacks* tableCallbacks)
     : config_(config), tableCallbacks_(tableCallbacks) {}
 
-void ButtonActions::extractVBS(const std::string& filepath) {
+void ButtonActions::extractVBS(
+    const std::string& filepath,
+    std::function<void(const std::string&)> onOutput,
+    std::function<void()> onFinished
+) {
     if (!config_) {
-        LOG_ERROR("Config service is null, cannot extract VBS.");
+        if (onOutput) onOutput("ERROR: Config service is null, cannot extract VBS.");
+        if (onFinished) onFinished();
         return;
     }
+
     const auto& settings = config_->getSettings();
 
-    // Check if the user wants to use the external vpxtool
+    // -------------------------------
+    // Determine WHICH TOOL to use
+    // -------------------------------
+    std::string toolPath;
+    std::string toolCmd;
+
     if (settings.useVpxtool) {
-        // --- External vpxtool Logic ---
-        LOG_DEBUG("Using external 'vpxtool' for VBS extraction.");
+        toolPath = "vpxtool";
 
-        // Use vpxtoolBin setting, fallback to PATH
-        std::string vpxtoolPath = "vpxtool";
         if (!settings.vpxtoolBin.empty() && fs::exists(settings.vpxtoolBin)) {
-            vpxtoolPath = settings.vpxtoolBin;
+            toolPath = settings.vpxtoolBin;
         } else if (!settings.vpxtoolBin.empty()) {
-            LOG_WARN("vpxtoolBin setting is specified but not found: " + settings.vpxtoolBin + ". Falling back to PATH.");
+            if (onOutput)
+                onOutput("WARNING: vpxtoolBin specified but not found. Falling back to PATH.");
         }
 
-        std::string cmd = "\"" + vpxtoolPath + "\" " + settings.vpxtoolExtractCmd + " \"" + filepath + "\"";
-        LOG_DEBUG("Extracting VBS with command: " + cmd);
-        int result = system(cmd.c_str());
-        if (result != 0) {
-            LOG_ERROR("Failed to extract VBS from table: " + filepath + " (command: " + cmd + ")");
-        }
+        toolCmd = settings.vpxtoolExtractCmd;
     } else {
-        // --- Use VPinballX to extract Logic ---
-        LOG_INFO("Using VPinballX for VBS extraction.");
-        // Build command
-        std::string command = "\"" + settings.VPinballXPath + "\" " + settings.vpxExtractCmd + " \"" + filepath + "\"";
-        LOG_DEBUG("Command: " + command);
-        int result = system(command.c_str());
-        if (result != 0) {
-            LOG_ERROR("VPinballX failed to extract VBS from table: " + filepath + " (command: " + command + ")");
-        }
+        toolPath = settings.VPinballXPath;
+        toolCmd = settings.vpxExtractCmd;
     }
+
+    // Build command string
+    std::string cmd =
+        "\"" + toolPath + "\" " +
+        toolCmd + " \"" + filepath + "\"";
+
+    if (onOutput)
+        onOutput("Executing: " + cmd);
+
+    // -------------------------------
+    // Run asynchronously
+    // -------------------------------
+    std::thread([cmd, onOutput, onFinished]() {
+        std::array<char, 256> buffer;
+
+        using PipeCloser = int (*)(FILE*);
+        std::unique_ptr<FILE, PipeCloser> pipe(popen(cmd.c_str(), "r"), pclose);
+
+        if (!pipe) {
+            if (onOutput) onOutput("ERROR: Failed to execute command.");
+            if (onFinished) onFinished();
+            return;
+        }
+
+        // Read output
+        while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+            if (onOutput) onOutput(std::string(buffer.data()));
+        }
+
+        if (onFinished) onFinished();
+
+    }).detach();
 }
 
 bool ButtonActions::openInExternalEditor(const std::string& filepath) {

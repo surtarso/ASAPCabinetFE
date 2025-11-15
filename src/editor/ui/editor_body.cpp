@@ -30,8 +30,19 @@ static void drawSoundsTooltip(const TableData& t);
 static void drawTooltipForColumn(int column, const TableData& t, EditorUI& ui) {
     // --- Global tooltip suppression logic ---
     Settings settings = ui.configService()->getSettings();
+    // --------------------------------------------
+    // Unified tooltip visibility logic:
+    //
+    // showTooltips = XOR(settings.showTableTooltips, ctrlHeld)
+    //
+    // Meaning:
+    //   - If tooltips ON  → CTRL hides
+    //   - If tooltips OFF → CTRL shows
+    // --------------------------------------------
     bool ctrlHeld = ImGui::GetIO().KeyCtrl;
-    if (!settings.showTableTooltips || ctrlHeld || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup))
+    bool showTooltips = settings.showTableTooltips ^ ctrlHeld;
+
+    if (!showTooltips || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup))
         return; // skip drawing tooltips
 
     // Only draw when permitted

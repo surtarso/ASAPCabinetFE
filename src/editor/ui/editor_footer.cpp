@@ -128,22 +128,22 @@ void drawFooter(EditorUI& ui) {
 
     // ---------- Refresh Button ----------
     // blue
-    // ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
-    // ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
-    // ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.45f, 0.85f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.1f, 0.3f, 0.6f, 1.0f));
 
-    // if (ImGui::Button("Refresh")) {
-    //     LOG_DEBUG("Refresh pressed");
-    //     ui.setScannerMode(ScannerMode::HasIndex);
-    //     ui.rescanAsyncPublic(ui.scannerMode());
-    // }
-    // if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
-    //     ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
-    //     ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
-    //     ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
-    // }
-    // ImGui::PopStyleColor(3);
-    // ImGui::SameLine();
+    if (ImGui::Button("Refresh")) {
+        LOG_DEBUG("Refresh pressed");
+        ui.setScannerMode(ScannerMode::HasIndex);
+        ui.rescanAsyncPublic(ui.scannerMode());
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
+        ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip
+        ImGui::SetTooltip(Tooltips::BUTTON_TOOLTIPS.at("Refresh").c_str());
+    }
+    ImGui::PopStyleColor(3);
+    ImGui::SameLine();
 
     // ---------- Open Folder Button ----------
     if (ImGui::Button("Open Folder")) {
@@ -171,26 +171,43 @@ void drawFooter(EditorUI& ui) {
     if (ImGui::Button("Extract VBS")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            ui.actions().extractVBS(t.vpxFile);
-            fs::path vpxPath(t.vpxFile);
-            std::string vbsPath = (vpxPath.parent_path() / (vpxPath.stem().string() + ".vbs")).string();
-            if (fs::exists(vbsPath)) {
-                ui.actions().openInExternalEditor(vbsPath);
-            } else {
-                LOG_WARN("Tried to open VBS, but extraction failed or file not found at: " + vbsPath);
-                ui.modal().openWarning(
-                    "File Not Found",
-                    "The specified file " + vbsPath + " could not be found or deleted."
-                );
-            }
+
+            // 1) OPEN COMMAND OUTPUT MODAL
+            ui.modal().openCommandOutput("Extracting VBS...");
+
+            // 2) RUN EXTRACTION ASYNC AND PIPE OUTPUT TO MODAL
+            ui.actions().extractVBS(
+                t.vpxFile,
+
+                // onOutput callback
+                [&ui](const std::string& line) {
+                    ui.modal().appendCommandOutput(line);
+                },
+
+                // onFinished callback
+                [&ui, t]() {
+                    fs::path vpxPath(t.vpxFile);
+                    std::string vbsPath = (vpxPath.parent_path() /
+                        (vpxPath.stem().string() + ".vbs")).string();
+
+                    if (fs::exists(vbsPath)) {
+                        ui.modal().appendCommandOutput("Extraction complete.");
+                        ui.actions().openInExternalEditor(vbsPath);
+                    } else {
+                        ui.modal().appendCommandOutput("ERROR: VBS file not found.");
+                        ui.modal().appendCommandOutput(vbsPath);
+                        ui.modal().appendCommandOutput("Extraction failed.");
+                    }
+                }
+            );
         } else {
-            LOG_INFO("Extract VBS pressed but no table selected");
             ui.modal().openInfo(
                 "No Table Selected",
                 "Please select a table first and try again."
             );
         }
     }
+
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImVec2 pos = ImGui::GetItemRectMin(); // top-left corner of the button
         ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // bottom-left corner of the tooltip

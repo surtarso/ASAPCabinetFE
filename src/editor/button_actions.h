@@ -22,7 +22,12 @@ public:
      * @brief Extracts the VBScript from a .vpx file using vpxtool.
      * @param filepath Full path to the .vpx table.
      */
-    void extractVBS(const std::string& filepath); // Ported from old TableActions
+    void extractVBS(
+        const std::string& filepath,
+        std::function<void(const std::string&)> onOutput,
+        std::function<void()> onFinished
+    );
+
 
     /**
      * @brief Opens a file (like a .vbs script) in the user's default external editor.

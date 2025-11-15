@@ -72,7 +72,7 @@ void drawHeader(EditorUI& ui) {
             if (ImGui::MenuItem("Verify Structure")) menu_actions::vpxtoolRun(ui, "verify");
             if (ImGui::MenuItem("Show Gamedata")) menu_actions::vpxtoolRun(ui, "gamedata show");
             if (ImGui::MenuItem("Convert Lossless")) menu_actions::vpxtoolRun(ui, "images webp");
-            if (ImGui::MenuItem("Apply Patch")) menu_actions::vpxtoolRun(ui, "patch");
+            // if (ImGui::MenuItem("Apply Patch")) menu_actions::vpxtoolRun(ui, "patch");
             if (ImGui::MenuItem("Show Rom Name")) menu_actions::vpxtoolRun(ui, "romname");
             if (ImGui::MenuItem("List Contents")) menu_actions::vpxtoolRun(ui, "ls");
 
