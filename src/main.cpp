@@ -160,11 +160,50 @@ int main(int argc, char* argv[]) {
     if (argc > 1 && (std::string(argv[1]) == "--reset" || std::string(argv[1]) == "-r")) {
         std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
         std::cout << "Resetting to defaults." << std::endl;
-        // move data/* to data/*.old
-        std::string dataDir = exeDir + "data";
-        std::filesystem::rename(dataDir, dataDir + ".old");
-        std::cout << "Your old settings have been moved to " << dataDir + ".old" << std::endl;
-        std::cout << "You will need to reconfigure ASAPCabinetFE on next launch." << std::endl;
+
+        const std::string dataDir = exeDir + "data";
+        const std::filesystem::path dataPath(dataDir);
+
+        // ---------------------------------------------------------
+        // 1. If ./data does not exist → nothing to reset
+        // ---------------------------------------------------------
+        if (!std::filesystem::exists(dataPath)) {
+            std::cout << "No existing data directory found at: " << dataDir << std::endl;
+            std::cout << "Nothing to reset. Defaults will be applied on next launch." << std::endl;
+            return 0;
+        }
+
+        // ---------------------------------------------------------
+        // 2. Determine a safe backup directory name
+        //    data.old, data.old2, data.old3, ...
+        // ---------------------------------------------------------
+        std::string backupBase = dataDir + ".old";
+        std::string backupName = backupBase;
+
+        int counter = 2;
+        // Loop until we find a name that doesn't exist
+        while (std::filesystem::exists(backupName)) {
+            backupName = backupBase + std::to_string(counter);
+            counter++;
+        }
+
+        // ---------------------------------------------------------
+        // 3. Attempt rename with error handling
+        // ---------------------------------------------------------
+        try {
+            std::filesystem::rename(dataDir, backupName);
+            std::cout << "Your old settings were moved to: " << backupName << std::endl;
+        } catch (const std::exception& e) {
+            std::cout << "Failed to move existing data directory." << std::endl;
+            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Reset aborted to avoid data loss." << std::endl;
+            return 1;
+        }
+
+        // ---------------------------------------------------------
+        // 4. Success
+        // ---------------------------------------------------------
+        std::cout << "You will need to reconfigure ASAPCabinetFE on the next launch." << std::endl;
         return 0;
     }
 

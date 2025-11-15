@@ -8,6 +8,11 @@ FIX:
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
 - organize the config ui again
+- force refresh not force refreshing.
+- new files are not being detected within a table (norom -> hasrom) on refresh/rescan
+- successfull launches with bad exits still marks table as broken
+- add filepicker to 1strun (Editor only)
+- add stats to fuzzy search filter (broken, patched etc) or a column for sorting (easier)
 
 QOL:
 - add option to resize vpindb images more obvious in editor
