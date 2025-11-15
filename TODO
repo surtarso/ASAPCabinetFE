@@ -1,8 +1,6 @@
 TODO
 
 FIX:
-- [ED] double menu title(?) on vpxtool dropdown (old popup persisting)
-- [ED] download media menu also weird.. seems like all popups are with leftovers from last ones.
 - VPin scanner not picking up manufacturers?
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)

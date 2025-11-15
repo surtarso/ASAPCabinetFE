@@ -115,6 +115,7 @@ public:
 
     void openCommandOutput(const std::string& title) {
         std::scoped_lock lock(mutex_);
+        reset();
         type_ = ModalType::CommandOutput;
         title_ = title;
         outputBuffer_.clear();
@@ -147,6 +148,12 @@ public:
     bool isActive() const;
 
 private:
+    /**
+     * @brief Resets all modal state to default values.
+     * MUST be called while holding the mutex lock.
+     */
+    void reset();
+
     // ---------------------------------------------------------------------
     // Internal State
     // ---------------------------------------------------------------------

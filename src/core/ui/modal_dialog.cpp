@@ -1,6 +1,25 @@
 #include "core/ui/modal_dialog.h"
 #include <imgui.h>
 
+/**
+ * @brief Resets all modal state. Must be called from within a locked context.
+ */
+void ModalDialog::reset() {
+    type_ = ModalType::None;
+    title_.clear();
+    message_.clear();
+    options_.clear();
+    onConfirm_ = nullptr;
+    onCancel_ = nullptr;
+    resultPath_.clear();
+    outputBuffer_.clear();
+    selectedOption_ = 0;
+    busy_ = false;
+    completed_ = false;
+    pendingOpen_ = false;
+    scrollToBottom_ = false;
+}
+
 ModalDialog::ModalDialog()
     : type_(ModalType::None), selectedOption_(0),
       busy_(false), completed_(false), pendingOpen_(false) {}
@@ -16,6 +35,7 @@ void ModalDialog::openConfirm(const std::string& title,
                               std::function<void(const std::string&)> onConfirm,
                               std::function<void()> onCancel) {
     std::scoped_lock lock(mutex_);
+    reset();
     type_ = ModalType::Confirm;
     title_ = title;
     message_ = message;
@@ -33,6 +53,7 @@ void ModalDialog::openConfirm(const std::string& title,
 void ModalDialog::openProgress(const std::string& title,
                                const std::string& message) {
     std::scoped_lock lock(mutex_);
+    reset();
     type_ = ModalType::Progress;
     title_ = title;
     message_ = message;
@@ -61,6 +82,7 @@ void ModalDialog::finishProgress(const std::string& resultMessage,
 void ModalDialog::openInfo(const std::string& title,
                            const std::string& message) {
     std::scoped_lock lock(mutex_);
+    reset();
     type_ = ModalType::Info;
     title_ = title;
     message_ = message;
@@ -70,6 +92,7 @@ void ModalDialog::openInfo(const std::string& title,
 void ModalDialog::openWarning(const std::string& title,
                               const std::string& message) {
     std::scoped_lock lock(mutex_);
+    reset();
     type_ = ModalType::Warning;
     title_ = title;
     message_ = message;
@@ -79,6 +102,7 @@ void ModalDialog::openWarning(const std::string& title,
 void ModalDialog::openError(const std::string& title,
                             const std::string& message) {
     std::scoped_lock lock(mutex_);
+    reset();
     type_ = ModalType::Error;
     title_ = title;
     message_ = message;
