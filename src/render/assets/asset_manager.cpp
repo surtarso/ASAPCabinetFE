@@ -451,7 +451,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
         if (hasUserVideo && mediaWidth > 0 && mediaHeight > 0) {
             // Try load video from cache
-            std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "vlc";
+            std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "ffmpeg";
             std::string cacheKey = backend + ":" + w.tableVideo + "_" +
                                 std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
 

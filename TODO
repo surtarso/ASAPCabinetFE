@@ -8,9 +8,9 @@ FIX:
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
 - [!] hook images to metadata view
 - organize the config ui again
-- option to resize vpindb images more obvious in editor
 
 QOL:
+- add option to resize vpindb images more obvious in editor
 - add instructions to the screenshot mode
 - add colors to rows according to conditions (patched, non-matched, diffs etc)
 - [!] add basic/advanced toggle for main config ui
