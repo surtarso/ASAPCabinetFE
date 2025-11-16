@@ -9,6 +9,7 @@
 #include "tables/overrides/table_override_editor.h"
 #include "core/ui/loading_progress.h"
 #include "core/ui/loading_screen.h"
+#include "sound/isound_manager.h"
 #include <SDL2/SDL.h>
 #include <thread>
 #include <string>
@@ -91,5 +92,6 @@ private:
     std::unique_ptr<TableOverrideManager> overrideManager_;
     std::unique_ptr<TableOverrideEditor> metadataEditor_;
 
+    std::unique_ptr<ISoundManager> soundManager_;
     std::unique_ptr<IScreenshotManager> screenshotManager_;
 };

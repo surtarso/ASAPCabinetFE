@@ -195,22 +195,42 @@ void MetadataPanel::render(const TableData& currentTable,
             }
         }
 
+        // --------------------------- AUDIO PREVIEW SECTION ------------------------------------
         if (currentTable.hasTableMusic || currentTable.hasLaunchAudio) {
             ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 0.9f, 0.6f, 1.0f), "AUDIO PREVIEW");
 
+            // Table Music
             if (currentTable.hasTableMusic) {
-                if (ImGui::Button("▶ Play Table Music", ImVec2(-FLT_MIN, 30))) {
-                    // TODO: hook into audio preview function
+                ImGui::Text("Table Music:");
+                ImGui::SameLine();
+
+                if (ImGui::Button("Play")) { // Play
+                    if (!currentTable.music.empty() && std::filesystem::exists(currentTable.music))
+                        soundManager_->playTableMusic(currentTable.music);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Stop")) { // Stop
+                    soundManager_->stopMusic();
                 }
             }
 
+            // Launch Audio
             if (currentTable.hasLaunchAudio) {
-                if (ImGui::Button("▶ Play Launch Sound", ImVec2(-FLT_MIN, 30))) {
-                    // TODO: hook into audio preview function
+                ImGui::Text("Launch Audio:");
+                ImGui::SameLine();
+
+                if (ImGui::Button("Play")) { // Play
+                    if (!currentTable.launchAudio.empty() && std::filesystem::exists(currentTable.launchAudio))
+                        soundManager_->playCustomLaunch(currentTable.launchAudio);
                 }
+                // ImGui::SameLine();
+                // if (ImGui::Button("■")) { // Stop
+                //     soundManager_->stopCustomLaunch();
+                // }
             }
         }
+
 
         ImGui::EndChild();
         ImGui::Columns(1);

@@ -46,7 +46,11 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
 
     overrideManager_ = std::make_unique<TableOverrideManager>();
 
-    screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, config_.get(), keybindProvider_.get(), nullptr);
+    // Create sound manager for editor (only for MetadataPanel preview)
+    soundManager_ = DependencyFactory::createSoundManager(config_->getSettings());
+
+    // Then pass it to screenshotManager if needed, or leave nullptr if not
+    screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, config_.get(), keybindProvider_.get(), soundManager_.get());
 
     MediaPreview::instance().setExeDir(exeDir_);
 
@@ -197,7 +201,7 @@ void Editor::mainLoop() {
 
                 int width = 0, height = 0;
                 SDL_GetWindowSize(window_, &width, &height);
-
+                metadataPanel.setSoundManager(soundManager_.get());
                 metadataPanel.render(*realTable, width, height, settings, renderer_);
 
                 // Floating close/edit buttons
