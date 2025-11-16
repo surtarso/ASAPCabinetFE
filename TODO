@@ -49,6 +49,7 @@ On hold:
 - add highscore tracking
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
+- use new utils / media preview for vpsdb panel (unify thumbnail logic)
 
 
 - [NEW] MEDIA TOOLS PANEL — BLUEPRINT

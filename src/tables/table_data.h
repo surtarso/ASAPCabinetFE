@@ -64,7 +64,7 @@ struct TableData {
     std::string tableAuthor;     ///< Author(s) from file metadata (e.g., from vpin's `author_name`).
     std::string tableDescription;///< Description from file metadata (e.g., from vpin's `table_description`).
     std::string tableSaveDate;   ///< Save date from file metadata (e.g., from vpin's `table_save_date`).
-    std::string tableLastModified;///< Last modified date from file metadata (this is usually from file system, not internal metadata).
+    std::string tableLastModified;///< Last modified date from file metadata (e.g., from vpin's `last_modified`).
     std::string tableReleaseDate;///< Release date from file metadata (e.g., from vpin's `release_date`).
     std::string tableVersion;    ///< Table version from file metadata (e.g., from vpin's `table_version`).
     std::string tableRevision;   ///< Table revision from file metadata (e.g., from vpin's `table_save_rev`).
@@ -100,7 +100,6 @@ struct TableData {
 
     // --------------- OPERATIONAL TAGS ------------------
     float matchConfidence = 0.0f;///< Confidence score of match with vpsdb
-    uint64_t fileLastModified;   ///< Timestamp of the last modification of the .vpx file
     // vbs script patcher related
     std::string hashFromVpx;     ///< SHA256 hash of internal .vpx VB script
     std::string hashFromVbs;     ///< SHA256 hash of (patched) sidecar vb script
@@ -133,7 +132,9 @@ struct TableData {
     bool hasTableMusic = false;      ///< True if found a custom table music file
     bool hasLaunchAudio = false;     ///< True if found a custom launch audio file
 
-    //TODO: use this to control which scanner to use/increment so we dont have to rebuild
+    uint64_t folderLastModified = 0;
+    uint64_t fileLastModified = 0;   ///< Timestamp of the last modification of the .vpx file
+
     std::string jsonOwner;       ///< file_scanner, vpin_scanner, vpxtool_scanner, vpsdb_scanner
 };
 

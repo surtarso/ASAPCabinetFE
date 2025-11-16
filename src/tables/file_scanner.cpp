@@ -1,12 +1,6 @@
 /**
  * @file file_scanner.cpp
  * @brief Implements the FileScanner class for scanning VPX table files in ASAPCabinetFE.
- *
- * This file provides the implementation of the FileScanner class, which recursively scans
- * a directory for VPX files and constructs TableData objects with file paths, media
- * asset paths, and VB script hashes. The scanner supports incremental updates by skipping
- * unchanged files based on an existing index, using Settings for configuration and
- * progress tracking via LoadingProgress.
  */
 
 #include "file_scanner.h"
@@ -23,8 +17,31 @@
 #include <future>
 #include <chrono>
 #include <unordered_map>
+#include <fstream>
 
 namespace fs = std::filesystem;
+
+// Helper to get the last modified timestamp of a folder recursively
+static uint64_t getFolderLastModifiedRecursive(const fs::path& folder) {
+    uint64_t lastMod = 0;
+    for (auto& entry : fs::recursive_directory_iterator(folder)) {
+        if (entry.is_regular_file()) {
+            try {
+                auto ftime = fs::last_write_time(entry);
+                auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+                );
+                lastMod = std::max(lastMod,
+                    static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
+                        sctp.time_since_epoch()).count())
+                );
+            } catch (...) {
+                // Ignore inaccessible files
+            }
+        }
+    }
+    return lastMod;
+}
 
 std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgress* progress,
                                          const std::vector<TableData>* existingTables) {
@@ -36,7 +53,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         return tables;
     }
 
-    // Build map of existing tables for quick lookup
+    // Build map of existing tables
     std::unordered_map<std::string, TableData> existingTableMap;
     if (!settings.forceRebuildMetadata && existingTables && !existingTables->empty()) {
         if (progress) {
@@ -44,9 +61,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             progress->currentTask = "Building existing table map...";
         }
         for (const auto& table : *existingTables) {
-            if (!table.vpxFile.empty()) {
+            if (!table.vpxFile.empty())
                 existingTableMap[table.vpxFile] = table;
-            }
         }
     }
 
@@ -64,48 +80,41 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         progress->currentTask = "Scanning VPX files...";
     }
 
-    std::vector<std::future<void>> futures;
     std::regex year_regex(R"(\b(19|20)\d{2}\b)");
+    std::vector<std::future<void>> futures;
 
     for (const auto& vpx_path : vpx_files) {
         futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex,
                                                          progress, &existingTableMap](const fs::path& path) {
-            // Check if file is unchanged based on index
+            TableData table;
+            table.vpxFile = path.string();
+            table.folder = path.parent_path().string();
+            table.title = path.stem().string();
+
+            // Timestamps
+            uint64_t fileLastModified = 0;
+            try {
+                auto ftime = fs::last_write_time(path);
+                auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+                );
+                fileLastModified = std::chrono::duration_cast<std::chrono::seconds>(
+                    sctp.time_since_epoch()
+                ).count();
+            } catch (...) {}
+
+            uint64_t folderLastModified = getFolderLastModifiedRecursive(path.parent_path());
+
+            // Check if we can skip
             if (!settings.forceRebuildMetadata && !existingTableMap.empty()) {
                 auto it = existingTableMap.find(path.string());
                 if (it != existingTableMap.end()) {
                     const auto& existingTable = it->second;
-                    uint64_t fileLastModified = 0;
-                    try {
-                        auto ftime = fs::last_write_time(path);
-                        auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-                            ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
-                        );
-                        fileLastModified = std::chrono::duration_cast<std::chrono::seconds>(
-                            sctp.time_since_epoch()
-                        ).count();
-                    } catch (const fs::filesystem_error& e) {
-                        LOG_ERROR("Failed to get last modified time for " + path.string() + ": " + std::string(e.what()));
-                    }
-
-                    // Compute hashes to compare
-                    std::string vpxHash, vbsHash;
-                    char* code_ptr = get_vpx_gamedata_code(path.string().c_str());
-                    if (code_ptr != nullptr) {
-                        vpxHash = calculate_string_sha256(std::string(code_ptr));
-                        free_rust_string(code_ptr);
-                    }
-                    fs::path vbs_path = path.parent_path() / (path.stem().string() + ".vbs");
-                    if (fs::exists(vbs_path)) {
-                        vbsHash = compute_file_sha256(vbs_path.string());
-                    }
-
                     bool iniNow = fs::exists(path.parent_path() / (path.stem().string() + ".ini"));
                     bool b2sNow = PathUtils::hasB2SForTable(path.parent_path(), path.stem().string());
-                    // Skip if unchanged
+
                     if (fileLastModified == existingTable.fileLastModified &&
-                        vpxHash == existingTable.hashFromVpx &&
-                        vbsHash == existingTable.hashFromVbs &&
+                        folderLastModified == existingTable.folderLastModified &&
                         iniNow == existingTable.hasINI &&
                         b2sNow == existingTable.hasB2S) {
                         LOG_DEBUG("Skipping unchanged file: " + path.string());
@@ -118,104 +127,60 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 }
             }
 
-            // Process new or modified file
-            TableData table;
-            table.vpxFile = path.string();
-            table.folder = path.parent_path().string();
-            table.title = path.stem().string();
-
-            try {
-                auto ftime = fs::last_write_time(path);
-                auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-                    ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
-                );
-                table.fileLastModified = std::chrono::duration_cast<std::chrono::seconds>(
-                    sctp.time_since_epoch()
-                ).count();
-            } catch (const fs::filesystem_error& e) {
-                LOG_ERROR("Failed to get last modified time for " + path.string() + ": " + std::string(e.what()));
-                table.fileLastModified = 0;
-            }
-
+            // --- Extract year ---
             std::smatch match;
-            if (std::regex_search(table.title, match, year_regex)) {
+            if (std::regex_search(table.title, match, year_regex))
                 table.year = match.str(0);
-            } else {
-                table.year = "";
-            }
 
+            // --- Extract manufacturer ---
             std::string lowerTitle = table.title;
             std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(),
-                           [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
+                           [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
             for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
                 if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
                     table.manufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
                     break;
                 }
             }
-            if (table.manufacturer.empty()) {
-                LOG_DEBUG("No known manufacturer found in filename: " + table.title);
-            }
 
+            table.fileLastModified = fileLastModified;
+            table.folderLastModified = folderLastModified;
+
+            // --- VPX GameData script ---
             char* code_ptr = get_vpx_gamedata_code(table.vpxFile.c_str());
             std::string vpx_script;
-            if (code_ptr != nullptr) {
+            if (code_ptr) {
                 vpx_script = std::string(code_ptr);
                 free_rust_string(code_ptr);
                 table.hashFromVpx = calculate_string_sha256(vpx_script);
-                LOG_DEBUG("hashFromVpx for " + table.title + ": " + table.hashFromVpx);
-            } else {
-                LOG_ERROR("Failed to extract GameData.code for: " + table.vpxFile);
-                table.hashFromVpx = "";
             }
 
-           // Case-insensitive .vbs search
+            // --- VBS detection ---
             fs::path found_vbs_path;
             bool foundVbs = false;
-            for (const auto& entry : fs::directory_iterator(path.parent_path())) {
+            for (auto& entry : fs::directory_iterator(path.parent_path())) {
                 if (!entry.is_regular_file()) continue;
                 std::string ext = entry.path().extension().string();
-                std::transform(ext.begin(), ext.end(), ext.begin(),
-                            [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
                 if (ext == ".vbs" && entry.path().stem() == path.stem()) {
                     found_vbs_path = entry.path();
                     foundVbs = true;
                     break;
                 }
             }
-
             if (foundVbs) {
                 table.hasVBS = true;
                 table.hashFromVbs = compute_file_sha256(found_vbs_path.string());
-                if (table.hashFromVbs.empty()) {
-                    LOG_ERROR("Failed to compute hash for .vbs file: " + found_vbs_path.string());
-                    table.hasDiffVbs = false;
-                } else {
-                    LOG_DEBUG("hashFromVbs for " + found_vbs_path.string() + ": " + table.hashFromVbs);
-                    if (!vpx_script.empty()) {
-                        std::ifstream vbs_file(found_vbs_path, std::ios::binary);
-                        if (vbs_file.is_open()) {
-                            std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)),
-                                                    std::istreambuf_iterator<char>());
-                            table.hasDiffVbs = (vpx_script != vbs_content);
-                            if (table.hasDiffVbs)
-                                LOG_DEBUG(".vbs differs from VPX script for " + table.title);
-                        } else {
-                            LOG_ERROR("Failed to open .vbs file for comparison: " + found_vbs_path.string());
-                            table.hasDiffVbs = false;
-                        }
-                    } else {
-                        table.hasDiffVbs = false;
+                if (!vpx_script.empty()) {
+                    std::ifstream vbs_file(found_vbs_path, std::ios::binary);
+                    if (vbs_file.is_open()) {
+                        std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
+                        table.hasDiffVbs = (vpx_script != vbs_content);
                     }
                 }
-            } else {
-                table.hashFromVbs = "";
-                table.hasDiffVbs = false;
-                table.hasVBS = false;
-                LOG_DEBUG("No .vbs file found for " + table.title);
             }
 
-
+            // --- Media paths ---
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
             table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, "");
@@ -228,64 +193,52 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo);
 
-            auto markUserAsset = [&](const std::string& returnedPath,
-                                    const std::string& defaultPath) -> bool {
-                return !returnedPath.empty() && returnedPath != defaultPath;
+            auto markUserAsset = [&](const std::string& assetpath, const std::string& defaultPath){
+                return !assetpath.empty() && assetpath != defaultPath;
             };
 
-            // After assigning all image/video paths, check default vs user:
             table.hasTableMusic = markUserAsset(table.music, settings.tableMusic);
             table.hasLaunchAudio = markUserAsset(table.launchAudio, settings.customLaunchSound);
-
-            table.hasWheelImage     = markUserAsset(table.wheelImage, settings.defaultWheelImage);
+            table.hasWheelImage = markUserAsset(table.wheelImage, settings.defaultWheelImage);
             table.hasPlayfieldImage = !table.playfieldImage.empty();
             table.hasBackglassImage = !table.backglassImage.empty();
-            table.hasDmdImage       = !table.dmdImage.empty();
-            table.hasTopperImage    = !table.topperImage.empty();
-
+            table.hasDmdImage = !table.dmdImage.empty();
+            table.hasTopperImage = !table.topperImage.empty();
             table.hasPlayfieldVideo = !table.playfieldVideo.empty();
             table.hasBackglassVideo = !table.backglassVideo.empty();
-            table.hasDmdVideo       = !table.dmdVideo.empty();
-            table.hasTopperVideo    = !table.topperVideo.empty();
-
+            table.hasDmdVideo = !table.dmdVideo.empty();
+            table.hasTopperVideo = !table.topperVideo.empty();
 
             table.hasPup = PathUtils::getPupPath(table.folder);
             table.hasAltMusic = PathUtils::getAltMusic(table.folder);
             table.hasUltraDMD = PathUtils::getUltraDmdPath(table.folder);
-
             table.hasINI = PathUtils::hasIniForTable(table.folder, path.stem().string());
             table.hasB2S = PathUtils::hasB2SForTable(table.folder, path.stem().string());
-
 
             std::string pinmamePath = PathUtils::getPinmamePath(table.folder);
             if (!pinmamePath.empty()) {
                 table.hasAltColor = PathUtils::getAltcolorPath(pinmamePath);
                 table.hasAltSound = PathUtils::getAltsoundPath(pinmamePath);
                 table.romPath = PathUtils::getRomPath(pinmamePath, table.romName);
-            } else {
-                table.hasAltColor = false;
-                table.hasAltSound = false;
-                table.romPath = "";
             }
 
             table.jsonOwner = "System File Scan";
 
+            // Push table
             {
                 std::lock_guard<std::mutex> lock(tables_mutex);
                 tables.push_back(table);
             }
-
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTablesLoaded++;
                 progress->logMessages.push_back("Processed table: " + table.vpxFile);
             }
+
         }, vpx_path));
     }
 
-    for (auto& future : futures) {
-        future.wait();
-    }
+    for (auto& future : futures) future.wait();
 
     LOG_INFO("Processed " + std::to_string(tables.size()) + " VPX tables (out of " + std::to_string(vpx_files.size()) + " found)");
     return tables;

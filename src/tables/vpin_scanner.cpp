@@ -82,6 +82,7 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
                 table.tableRules = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "table_rules", ""));
                 table.tableAuthorEmail = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_email", ""));
                 table.tableAuthorWebsite = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_website", ""));
+                table.tableLastModified = StringUtils::safeGetMetadataString(vpinJson, "last_modified", "");
 
                 if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
                     const json& properties = vpinJson["properties"];
