@@ -185,13 +185,17 @@ void ModalDialog::draw() {
                 if (busy_)
                     ImGui::TextColored(ImVec4(1, 1, 0, 1), "Processing...");
                 else if (completed_) {
-                    ImGui::TextColored(ImVec4(0, 1, 0, 1), "Done!");
-                    if (!resultPath_.empty())
-                        ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
-                    if (ImGui::Button("OK")) {
+                    // ImGui::TextColored(ImVec4(0, 1, 0, 1), "");
+                    if (message_.empty()) {
                         type_ = ModalType::None;
                         ImGui::CloseCurrentPopup();
                     }
+                    if (!resultPath_.empty())
+                        ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
+                    // if (ImGui::Button("OK")) {
+                    //     type_ = ModalType::None;
+                        ImGui::CloseCurrentPopup();
+                    // }
                 }
             } else if (type_ == ModalType::CommandOutput) {
                 ImGui::BeginChild("##output_scroll", ImVec2(800, 500), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar);

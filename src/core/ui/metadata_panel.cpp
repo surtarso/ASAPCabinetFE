@@ -117,8 +117,7 @@ void MetadataPanel::render(const TableData& currentTable,
         if (!currentTable.vpsFeatures.empty()) ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
         if (!currentTable.vpsFormat.empty()) ImGui::Text("Format: %s", currentTable.vpsFormat.c_str());
 
-        // This is where the original comment was, only shown if isLandscape. We now call
-        // this lambda in both modes, so we keep the condition to prevent showing it in FE.
+        // We now call this lambda in both modes, so we keep the condition to prevent showing it in FE.
         if (!currentTable.vpsComment.empty() && isLandscape)
             ImGui::TextWrapped("Comment: %s", currentTable.vpsComment.c_str());
     };
@@ -198,8 +197,7 @@ void MetadataPanel::render(const TableData& currentTable,
             }
         };
 
-        // --- Media Layout Configuration ---
-
+        // ---------------------- Media Layout Configuration ----------------------
         // Playfield, Backglass, Topper: Side-by-Side
         drawMediaPair("Playfield", currentTable.playfieldImage, currentTable.playfieldVideo,
                         currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo, true);
@@ -210,7 +208,7 @@ void MetadataPanel::render(const TableData& currentTable,
         drawMediaPair("Topper", currentTable.topperImage, currentTable.topperVideo,
                         currentTable.hasTopperImage, currentTable.hasTopperVideo, true);
 
-        // DMD: Stacked (as requested, since art is ultrawide)
+        // DMD: Stacked (since art is "ultrawide")
         drawMediaPair("DMD", currentTable.dmdImage, currentTable.dmdVideo,
                         currentTable.hasDmdImage, currentTable.hasDmdVideo, false);
 
@@ -265,7 +263,6 @@ void MetadataPanel::render(const TableData& currentTable,
     };
 
     // --- 3. CONDITIONAL RENDERING ---
-
     if (isLandscape) {
         // EDITOR MODE (Landscape: 40/60 Split View)
 
@@ -293,7 +290,6 @@ void MetadataPanel::render(const TableData& currentTable,
         ImGui::Columns(1); // End columns
     } else {
         // FRONTEND MODE (Portrait: Simple Stacked Text Only)
-        // Draw the text content only, preserving the original FE behavior.
         DrawInfoContent();
         // Media content is skipped, as DrawMediaContent is only called inside the isLandscape block.
     }
