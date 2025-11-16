@@ -5,10 +5,8 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- [!] sound preview on metada panel
 - [FIX] force refresh not force refreshing.
 - [FIX] new files are not being detected within a table (norom -> hasrom) on refresh/rescan
-- organize the config ui again
 
 QOL:
 - ease overwhelm in FE, send to Editor!

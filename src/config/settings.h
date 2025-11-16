@@ -62,9 +62,6 @@ struct Settings {
     float dpiScale = 1.0f; // 0.1-1.0
     bool enableDpiScaling = true;
 
-    // [DefaultMedia]
-    std::string defaultWheelImage = "/home/tarso/Development/ASAPCabinetFE/build/img/default_wheel.png";
-
     // [CustomMedia]
     std::string customPlayfieldImage = "images/table.png";
     std::string customBackglassImage = "images/backglass.png";
@@ -228,6 +225,7 @@ struct Settings {
     // defaults in ConfigUI::drawGUI(), these are for FE config panel
     float configUIWidth = 0.7f;
     float configUIHeight = 0.5f;
+    std::string defaultWheelImage = "/home/tarso/Development/ASAPCabinetFE/build/img/default_wheel.png";
 
     // [Editor]
     bool showTableTooltips = true;
@@ -361,9 +359,6 @@ private:
             {"DPISettings", {
                 {"dpiScale", s.dpiScale},
                 {"enableDpiScaling", s.enableDpiScaling}
-            }},
-            {"DefaultMedia", {
-                {"defaultWheelImage", s.defaultWheelImage}
             }},
             {"CustomMedia", {
                 {"customPlayfieldImage", s.customPlayfieldImage},
@@ -513,7 +508,8 @@ private:
                 {"indexPath", s.indexPath},
                 {"screenshotWait", s.screenshotWait},
                 {"configUIWidth", s.configUIWidth},
-                {"configUIHeight", s.configUIHeight}
+                {"configUIHeight", s.configUIHeight},
+                {"defaultWheelImage", s.defaultWheelImage}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -535,9 +531,6 @@ private:
         // DPISettings
         s.dpiScale = j.value("DPISettings", nlohmann::json{}).value("dpiScale", s.dpiScale);
         s.enableDpiScaling = j.value("DPISettings", nlohmann::json{}).value("enableDpiScaling", s.enableDpiScaling);
-
-        // DefaultMedia
-        s.defaultWheelImage = j.value("DefaultMedia", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
 
         // CustomMedia
         s.customPlayfieldImage = j.value("CustomMedia", nlohmann::json{}).value("customPlayfieldImage", s.customPlayfieldImage);
@@ -724,6 +717,7 @@ private:
         s.configUIWidth = j.value("Internal", nlohmann::json{}).value("configUIWidth", s.configUIWidth);
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
+        s.defaultWheelImage = j.value("Internal", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -767,9 +761,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                 "Use 1.0 for 100%, 1.5 for 150%, etc. Adjust if UI elements look too small or too large."}},
     {"enableDpiScaling", {Settings::ReloadType::Windows, "When enabled, the frontend will scale the UI automatically based on your monitor DPI.\n\n"
                                                         "Disable this to set a custom DPI with 'dpiScale'."}},
-
-    // Default media files
-    {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
 
     // Custom media per-table (relative to each table folder)
     {"customPlayfieldImage", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the playfield preview image."}},
@@ -928,6 +919,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
+    {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},

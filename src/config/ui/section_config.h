@@ -362,13 +362,6 @@ public:
             {"autoPatchTables", "Automatically Patch Tables"}
         };
 
-        keyOrders_["DefaultMedia"] = {
-            "defaultWheelImage"
-        };
-        keyDisplayNames_["DefaultMedia"] = {
-            {"defaultWheelImage", "Default wheel image"}
-        };
-
         keyOrders_["UISounds"] = {
             "scrollNormalSound",
             "scrollFastSound",
@@ -402,7 +395,8 @@ public:
             "vpxtoolExtractCmd",
             "vpxtoolIndex",
             "indexPath",
-            "screenshotWait"
+            "screenshotWait",
+            "defaultWheelImage"
         };
         keyDisplayNames_["Internal"] = {
             {"vpxPlayCmd", "VPinballX 'Play' Subcommand"},
@@ -414,7 +408,8 @@ public:
             {"vpxtoolExtractCmd", "VPXTool Extract Command"},
             {"vpxtoolIndex", "VPXTool Index File"},
             {"indexPath", "Index Path"},
-            {"screenshotWait", "Screenshot Wait Time"}
+            {"screenshotWait", "Screenshot Wait Time"},
+            {"defaultWheelImage", "Default wheel image"}
         };
 
         keyOrders_["Editor"] = {
