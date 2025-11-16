@@ -209,7 +209,7 @@ void drawBody(EditorUI& ui) {
                                     ImGuiTableFlags_Hideable |
                                     ImGuiTableFlags_Sortable;
 
-            if (ImGui::BeginTable("table_list", 11, flags, tableSize)) {
+            if (ImGui::BeginTable("table_list", 13, flags, tableSize)) {
                 ImGui::TableSetupScrollFreeze(0,1);
                 ImGui::TableSetupColumn("Year",        ImGuiTableColumnFlags_WidthFixed,   30.0f, 0);
                 ImGui::TableSetupColumn("Name",        ImGuiTableColumnFlags_WidthStretch,  0.0f,1);
@@ -222,6 +222,8 @@ void drawBody(EditorUI& ui) {
                 ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   75.0f,8);
                 ImGui::TableSetupColumn("Videos",      ImGuiTableColumnFlags_WidthFixed,   55.0f,9);
                 ImGui::TableSetupColumn("Sounds",      ImGuiTableColumnFlags_WidthFixed,   30.0f,10);
+                ImGui::TableSetupColumn("Patched",     ImGuiTableColumnFlags_WidthFixed,   30.0f,11);
+                ImGui::TableSetupColumn("Broken",      ImGuiTableColumnFlags_WidthFixed,   30.0f,12);
 
                 ImGui::TableHeadersRow();
 
@@ -331,7 +333,7 @@ void drawBody(EditorUI& ui) {
                     // "V" in yellow if t.hasDiff, otherwise normal
                     if (t.hasVBS) {
                         if (t.hasDiffVbs)
-                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "V ");
+                            ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.30f, 1.0f), "V ");
                         else
                             ImGui::TextUnformatted("V ");
                     } else {
@@ -412,6 +414,34 @@ void drawBody(EditorUI& ui) {
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
                        drawTooltipForColumn(10, t, ui);}
+
+                    // ----------------------------------------- Patch Status
+                    {ImGui::TableSetColumnIndex(11);
+
+                        if (t.isPatched) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.20f, 1.0f, 0.20f, 1.0f)); // green
+                            ImGui::Text(" P ");
+                            ImGui::PopStyleColor();
+                        } else {
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.60f, 0.60f, 1.0f)); // gray
+                            ImGui::Text(" - ");
+                            ImGui::PopStyleColor();
+                        }
+                    }
+
+                    // ----------------------------------------- Launch Status
+                    {ImGui::TableSetColumnIndex(12);
+
+                        if (t.isBroken) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.20f, 0.20f, 1.0f)); // red
+                            ImGui::Text(" B ");
+                            ImGui::PopStyleColor();
+                        } else {
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.60f, 0.60f, 1.0f)); // gray
+                            ImGui::Text(" - ");
+                            ImGui::PopStyleColor();
+                        }
+                    }
                 }
 
                 ImGui::EndTable();

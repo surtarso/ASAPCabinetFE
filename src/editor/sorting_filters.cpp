@@ -7,6 +7,12 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    int countTrue(std::initializer_list<bool> list) {
+        int c = 0;
+        for (bool v : list) if (v) ++c;
+        return c;
+    }
+
     // Helper to compare two values with direction and a unique tie-breaker
     template <typename T>
     bool compareWithTieBreaker(const T &val_a, const T &val_b, bool ascending, const TableData &a, const TableData &b) {
@@ -67,12 +73,50 @@ namespace
 
             // Handle integer and simple string fields
             switch (sortColumn) {
-                case 0: return compareWithTieBreaker(a.year, b.year, sortAscending, a, b);
-                case 2: return compareWithTieBreaker(a.tableVersion, b.tableVersion, sortAscending, a, b);
+                case 0: // Year
+                    return compareWithTieBreaker(a.year, b.year, sortAscending, a, b);
 
-                // If the sort column is not a dedicated data field (e.g., Files, Images, Videos),
-                // default the primary sort to the Name (title).
-                default: return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
+                case 2: // Version
+                    return compareWithTieBreaker(a.tableVersion, b.tableVersion, sortAscending, a, b);
+
+                case 5: { // Extra Files: I / V / B
+                    int ca = countTrue({ a.hasINI, a.hasVBS, a.hasB2S });
+                    int cb = countTrue({ b.hasINI, b.hasVBS, b.hasB2S });
+                    return compareWithTieBreaker(ca, cb, sortAscending, a, b);
+                }
+
+                case 7: { // Media Extras: S C P U M
+                    int ca = countTrue({ a.hasAltSound, a.hasAltColor, a.hasPup, a.hasUltraDMD, a.hasAltMusic });
+                    int cb = countTrue({ b.hasAltSound, b.hasAltColor, b.hasPup, b.hasUltraDMD, b.hasAltMusic });
+                    return compareWithTieBreaker(ca, cb, sortAscending, a, b);
+                }
+
+                case 8: { // Images: P B D T W
+                    int ca = countTrue({ a.hasPlayfieldImage, a.hasBackglassImage, a.hasDmdImage, a.hasTopperImage, a.hasWheelImage });
+                    int cb = countTrue({ b.hasPlayfieldImage, b.hasBackglassImage, b.hasDmdImage, b.hasTopperImage, b.hasWheelImage });
+                    return compareWithTieBreaker(ca, cb, sortAscending, a, b);
+                }
+
+                case 9: { // Videos: P B D T
+                    int ca = countTrue({ a.hasPlayfieldVideo, a.hasBackglassVideo, a.hasDmdVideo, a.hasTopperVideo });
+                    int cb = countTrue({ b.hasPlayfieldVideo, b.hasBackglassVideo, b.hasDmdVideo, b.hasTopperVideo });
+                    return compareWithTieBreaker(ca, cb, sortAscending, a, b);
+                }
+
+                case 10: { // Sounds: M L
+                    int ca = countTrue({ a.hasTableMusic, a.hasLaunchAudio });
+                    int cb = countTrue({ b.hasTableMusic, b.hasLaunchAudio });
+                    return compareWithTieBreaker(ca, cb, sortAscending, a, b);
+                }
+
+                case 11: // Patched
+                    return compareWithTieBreaker((int)a.isPatched, (int)b.isPatched, sortAscending, a, b);
+
+                case 12: // Broken
+                    return compareWithTieBreaker((int)a.isBroken, (int)b.isBroken, sortAscending, a, b);
+
+                default:
+                    return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
             }
         });
     }
