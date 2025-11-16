@@ -48,6 +48,8 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
 
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, config_.get(), keybindProvider_.get(), nullptr);
 
+    MediaPreview::instance().setExeDir(exeDir_);
+
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
         showMetadataEditor_,
@@ -196,7 +198,7 @@ void Editor::mainLoop() {
                 int width = 0, height = 0;
                 SDL_GetWindowSize(window_, &width, &height);
 
-                metadataPanel.render(*realTable, width, height, settings);
+                metadataPanel.render(*realTable, width, height, settings, renderer_);
 
                 // Floating close/edit buttons
                 ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f,
