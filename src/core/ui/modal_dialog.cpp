@@ -185,17 +185,20 @@ void ModalDialog::draw() {
                 if (busy_)
                     ImGui::TextColored(ImVec4(1, 1, 0, 1), "Processing...");
                 else if (completed_) {
-                    // ImGui::TextColored(ImVec4(0, 1, 0, 1), "");
+                    // If the thread passed an empty message (meaning: done, hide it now)
                     if (message_.empty()) {
-                        type_ = ModalType::None;
-                        ImGui::CloseCurrentPopup();
+                        type_ = ModalType::None; // Kills the modal state
+                        ImGui::CloseCurrentPopup(); // Closes the ImGui window
+                    } else {
+                        // This is the old "Done! OK" behavior for non-launching tasks
+                        ImGui::TextColored(ImVec4(0, 1, 0, 1), message_.c_str());
+                        if (!resultPath_.empty())
+                            ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
+                        if (ImGui::Button("OK")) {
+                            type_ = ModalType::None;
+                            ImGui::CloseCurrentPopup();
+                        }
                     }
-                    if (!resultPath_.empty())
-                        ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
-                    // if (ImGui::Button("OK")) {
-                    //     type_ = ModalType::None;
-                        ImGui::CloseCurrentPopup();
-                    // }
                 }
             } else if (type_ == ModalType::CommandOutput) {
                 ImGui::BeginChild("##output_scroll", ImVec2(800, 500), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar);

@@ -15,6 +15,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <atomic>
 
 enum class ScannerMode { File, VPin, VPSDb, HasIndex, Patch, MediaDb };
 
@@ -96,6 +97,8 @@ public:
     ModalDialog& modal() { return modal_; }
     std::function<void()> deferredModal_;
 
+    void requestPostLaunchCleanup() { postLaunchCleanupRequired_ = true; }
+
     IScreenshotManager* screenshotManager() const { return screenshotManager_; }
     bool inExternalAppMode_ = false;              ///< Are we currently in an external app (like screenshot)?
     Uint32 lastExternalAppReturnTime_ = 0;        ///< Timestamp of last external app return
@@ -143,4 +146,6 @@ private:
 
     ModalDialog modal_;
     IScreenshotManager* screenshotManager_;
+
+    std::atomic<bool> postLaunchCleanupRequired_ = false;
 };

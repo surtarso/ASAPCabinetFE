@@ -249,7 +249,7 @@ void ButtonActions::launchTableWithStats(
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    // --- NEW: ASYNC LAUNCH ---
+    // --- ASYNC LAUNCH ---
     launcher->launchTableAsync(
         t_mutable,
         [this, &t_mutable, &masterTables, refreshUICallback, startTime]
@@ -264,7 +264,7 @@ void ButtonActions::launchTableWithStats(
 
             float duration_minutes = timePlayedSeconds / 60.0f;
 
-            // 3. UPDATE STATS (unchanged)
+            // 3. UPDATE STATS
             if (result == 0) {
                 t_mutable.isBroken = false;
                 t_mutable.playCount++;
@@ -292,9 +292,9 @@ void ButtonActions::launchTableWithStats(
             }
 
             // REFRESH UI
-            // if (refreshUICallback) {
-            //     refreshUICallback();
-            // }
+            if (refreshUICallback) {
+                refreshUICallback();
+            }
         }
     );
 }

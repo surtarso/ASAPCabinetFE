@@ -19,15 +19,27 @@ void drawHeader(EditorUI& ui) {
                 if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
                     const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
 
+                    // 1. Add Modal Opening and External App Flag
+                    fs::path p(t_filtered.vpxFile);
+                    ui.inExternalAppMode_ = true;
+                    ui.modal().openProgress("Launching Game", "Starting " + p.filename().string() + "...");
+
                     // Use the shared, centralized launch logic from ButtonActions
                     ui.actions().launchTableWithStats(
                         t_filtered,
                         ui.tables(), // Mutable master list
                         ui.tableLauncher(),
-                        [&ui](){ ui.filterAndSortTablesPublic(); } // Refresh UI callback
+                        [&ui]() {
+                            ui.requestPostLaunchCleanup();
+                        }
                     );
                 } else {
                     LOG_DEBUG("'Play' pressed but no table selected");
+                    ui.modal().openInfo(
+                        "No Table Selected",
+                        "You pressed 'Play' but no table was selected."
+                        "Please select a table first and try again."
+                    );
                 }
             }
         );

@@ -309,7 +309,7 @@ void drawFooter(EditorUI& ui) {
                         ui.screenshotManager()->launchScreenshotMode(vpxFile_copy);
 
                         // 4. Update modal (this is thread-safe)
-                        ui.modal().finishProgress("Screenshot complete!");
+                        ui.modal().finishProgress("");
 
                         // 5. Update flags *after* work is done
                         // NOTE: This is not strictly thread-safe, but will
@@ -410,40 +410,27 @@ void drawFooter(EditorUI& ui) {
             const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
             fs::path p(t_filtered.vpxFile);
 
+            // --- Implement External App Mode Flags (for proper editor handling) ---
+            ui.inExternalAppMode_ = true;
+
             // 1. Open modal *before* starting work
             ui.modal().openProgress("Launching Game", "Starting " + p.filename().string() + "...");
 
             // Make copies of data needed for the thread
-            // This is CRITICAL. Do not use t_filtered directly in the lambda.
             auto t_filtered_copy = t_filtered;
             auto& tables = ui.tables();
             auto* launcher = ui.tableLauncher();
 
-            // 2. Start thread for blocking work
-            std::thread([&ui, t_filtered_copy, &tables, launcher]() {
-                // --- Worker Thread ---
-                LOG_DEBUG("Worker Thread: Launching table...");
-
-                // 3. This is the blocking call.
-                // We pass a *thread-safe* callback to refresh the UI.
-                ui.actions().launchTableWithStats(
-                    t_filtered_copy,
-                    tables, // The mutable master list
-                    launcher,
-                    // DANGER: The original callback updates the UI.
-                    // We *must* make it thread-safe, e.g., by posting an
-                    // event or using a mutex in the UI.
-                    // For now, let's assume filterAndSortTablesPublic() is thread-safe
-                    // or you will make it so.
-                    // If it's NOT, just pass nullptr or an empty lambda.
-                    [&ui](){ ui.filterAndSortTablesPublic(); }
-                );
-
-                // 4. Update modal (this is thread-safe)
-                ui.modal().finishProgress("Launch complete!");
-                LOG_DEBUG("Worker Thread: Launch finished.");
-                // --- End Worker Thread ---
-            }).detach();
+            // 2. Call the launch logic directly. This starts the asynchronous game thread internally (T3)
+            // and returns immediately. The modal stays open until the final callback runs.
+            ui.actions().launchTableWithStats(
+                t_filtered_copy,
+                tables, // The mutable master list
+                launcher,
+                // This is the refreshUICallback that runs AFTER the game exits and stats are saved.
+                [&ui]() {
+                    ui.requestPostLaunchCleanup();
+                });
 
         } else {
             LOG_INFO("Play pressed but no table selected");

@@ -80,6 +80,25 @@ void EditorUI::draw() {
         deferredModal_ = nullptr;
     }
 
+    // --- POST-LAUNCH CLEANUP (Execute ONLY on Main Thread T0) ---
+    // Safely check and reset the flag. This resolves the Heap-Use-After-Free crash.
+    if (postLaunchCleanupRequired_.exchange(false)) {
+        LOG_DEBUG("Deferred launch cleanup initiated on main thread (T0).");
+
+        // 1. Safely run UI mutation
+        // Note: We run this on T0 as it's the only thread that should modify filteredTables_.
+        filterAndSortTablesPublic();
+
+        // 2. Modal closing and flag reset
+        // This closes the modal for the Play Button, and is a safe no-op for the Enter key.
+        modal_.finishProgress("");
+        inExternalAppMode_ = false;
+        lastExternalAppReturnTime_ = SDL_GetTicks();
+
+        LOG_DEBUG("Deferred launch cleanup executed successfully.");
+    }
+    // --------------------------------------------------------------------
+
     // ---- Draw modals LAST ----
     modal_.draw();
 }
