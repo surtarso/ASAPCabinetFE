@@ -3,65 +3,157 @@
 #include "log/logging.h"
 #include <filesystem>
 #include <imgui.h>
+#include <ImGuiFileDialog.h>
 
 namespace fs = std::filesystem;
 
 namespace editor_first_run {
 
-void drawFirstRun(EditorUI& ui) {
-    if(!ui.isConfigValid()) {
+void drawFirstRun(EditorUI& ui)
+{
+    if (!ui.isConfigValid())
+    {
         ImGui::Separator();
         ImGui::Text("Quick Setup: Check your paths, click Save and then Rescan to continue.");
 
         Settings& mutableSettings = ui.configService()->getMutableSettings();
+
         static char tablesPathBuf[1024];
         static char vpxPathBuf[1024];
         static bool initialized = false;
 
-        // if (!initialized) {
-        //     strncpy(tablesPathBuf, mutableSettings.VPXTablesPath.c_str(), sizeof(tablesPathBuf));
-        //     strncpy(vpxPathBuf, mutableSettings.VPinballXPath.c_str(), sizeof(vpxPathBuf));
-        //     initialized = true;
-        // }
-
-        if (!initialized) {
-            // strncpy copy at most sizeof(tablesPathBuf) characters.
-            // If the source string is >= 1024 characters, it won't be null-terminated.
+        if (!initialized)
+        {
             strncpy(tablesPathBuf, mutableSettings.VPXTablesPath.c_str(), sizeof(tablesPathBuf));
-
-            // Manually ensure null termination
             tablesPathBuf[sizeof(tablesPathBuf) - 1] = '\0';
 
             strncpy(vpxPathBuf, mutableSettings.VPinballXPath.c_str(), sizeof(vpxPathBuf));
-
-            // Manually ensure null termination
             vpxPathBuf[sizeof(vpxPathBuf) - 1] = '\0';
 
             initialized = true;
         }
 
-        ImGui::InputText("Tables Folder", tablesPathBuf, sizeof(tablesPathBuf));
-        ImGui::InputText("VPX Executable", vpxPathBuf, sizeof(vpxPathBuf));
+        // ====================================================================
+        // TABLES FOLDER (copy of VPXTablesPath logic)
+        // ====================================================================
+        ImGui::Text("Tables Folder");
+        ImGui::SameLine(140);
+        ImGui::SetNextItemWidth(350);
+        ImGui::InputText("##TablesFolderInput", tablesPathBuf, sizeof(tablesPathBuf));
 
-        if (ImGui::Button("Save Paths##FirstRun")) {
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##FirstRunTables"))
+        {
+            LOG_DEBUG("Browse button clicked for VPXTablesPath");
+
+            IGFD::FileDialogConfig config;
+            config.path = (!mutableSettings.VPXTablesPath.empty() && fs::exists(mutableSettings.VPXTablesPath))
+                          ? fs::path(mutableSettings.VPXTablesPath).parent_path().string()
+                          : std::string(getenv("HOME"));
+            config.flags = ImGuiFileDialogFlags_Modal;
+
+            auto* dlg = ImGuiFileDialog::Instance();
+            dlg->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+
+            dlg->OpenDialog(
+                "FolderDlg_VPXTablesPath_FirstRun",
+                "Select VPX Tables Folder",
+                nullptr,
+                config
+            );
+        }
+
+        // ====================================================================
+        // VPX EXECUTABLE (copy of VPinballXPath logic)
+        // ====================================================================
+        ImGui::Text("VPX Executable");
+        ImGui::SameLine(140);
+        ImGui::SetNextItemWidth(350);
+        ImGui::InputText("##VpxExecInput", vpxPathBuf, sizeof(vpxPathBuf));
+
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##FirstRunVpxExec"))
+        {
+            LOG_DEBUG("Browse button clicked for VPinballXPath");
+
+            IGFD::FileDialogConfig config;
+            config.path = (!mutableSettings.VPinballXPath.empty() && fs::exists(mutableSettings.VPinballXPath))
+                          ? fs::path(mutableSettings.VPinballXPath).parent_path().string()
+                          : std::string(getenv("HOME"));
+            config.flags = ImGuiFileDialogFlags_Modal;
+
+            auto* dlg = ImGuiFileDialog::Instance();
+            dlg->SetFileStyle(
+                IGFD_FileStyleByFullName,
+                "((VPinballX.*))",
+                ImVec4(0.0f, 1.0f, 0.0f, 0.9f)
+            );
+
+            dlg->OpenDialog(
+                "FileDlg_VPinballXPath_FirstRun",
+                "Select VPinballX Executable",
+                "((VPinballX.*))",
+                config
+            );
+        }
+
+        // ====================================================================
+        // SAVE
+        // ====================================================================
+        if (ImGui::Button("Save Paths##FirstRun"))
+        {
             mutableSettings.VPXTablesPath = tablesPathBuf;
             mutableSettings.VPinballXPath = vpxPathBuf;
+
             ui.configService()->saveConfig();
 
-            // Re-check validity once, update the cached state, and initiate scan if successful.
             bool isValid = ui.configService()->isConfigValid();
             ui.setConfigValid(isValid);
 
-            LOG_INFO("First-run paths updated by user, validating...");
-
-            if (isValid) {
-                LOG_INFO("Paths are valid. Starting initial table load.");
-                // If valid, trigger the table scan.
+            if (isValid)
                 ui.rescanAsyncPublic(ScannerMode::File);
-            } else {
-                LOG_WARN("Paths still invalid. Please check folder locations.");
+        }
+
+        // ====================================================================
+        // FILE DIALOG HANDLERS — EXACT COPY OF YOUR SETTINGS SYSTEM
+        // ====================================================================
+
+        auto* dlg = ImGuiFileDialog::Instance();
+        ImVec2 minSize(500, 300);
+        ImVec2 maxSize(900, 600);
+
+        // VPX TABLES
+        if (dlg->Display("FolderDlg_VPXTablesPath_FirstRun",
+                         ImGuiWindowFlags_NoCollapse,
+                         minSize, maxSize))
+        {
+            if (dlg->IsOk())
+            {
+                std::string selected = dlg->GetCurrentPath();
+                strncpy(tablesPathBuf, selected.c_str(), sizeof(tablesPathBuf));
+                tablesPathBuf[sizeof(tablesPathBuf) - 1] = '\0';
+
+                LOG_INFO("Selected VPXTablesPath (First-Run): " + selected);
             }
+            dlg->Close();
+        }
+
+        // VPINBALLX EXECUTABLE
+        if (dlg->Display("FileDlg_VPinballXPath_FirstRun",
+                         ImGuiWindowFlags_NoCollapse,
+                         minSize, maxSize))
+        {
+            if (dlg->IsOk())
+            {
+                std::string selected = dlg->GetFilePathName();
+                strncpy(vpxPathBuf, selected.c_str(), sizeof(vpxPathBuf));
+                vpxPathBuf[sizeof(vpxPathBuf) - 1] = '\0';
+
+                LOG_INFO("Selected VPinballXPath (First-Run): " + selected);
+            }
+            dlg->Close();
         }
     }
 }
-}
+
+} // namespace editor_first_run
