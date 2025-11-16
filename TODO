@@ -4,10 +4,6 @@ FIX:
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
-ONGOING: [ED] "editor mode" - port of vpx gui tools (--editor / -e flags)
-- [FIX] force refresh not force refreshing.
-- [FIX] new files are not being detected within a table (norom -> hasrom) on refresh/rescan
-
 QOL:
 - ease overwhelm in FE, send to Editor!
 - [ED] add option to resize vpindb images more obvious in editor
