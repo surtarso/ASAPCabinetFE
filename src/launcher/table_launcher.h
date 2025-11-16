@@ -26,7 +26,7 @@ public:
      * @param configService The configuration service for settings.
      */
     explicit TableLauncher(IConfigService* configService);
-    
+
     /**
      * @brief Launches a VPX table.
      *
@@ -34,6 +34,11 @@ public:
      * @return A pair containing the exit code (0 for success) and formatted playtime (H:M:S).
      */
     std::pair<int, float> launchTable(const TableData& table) override;
+
+    void launchTableAsync(
+        const TableData& table,
+        std::function<void(int exitCode, float secondsPlayed)> callback
+    ) override;
 
 private:
     IConfigService* configService_; ///< Configuration service for settings.

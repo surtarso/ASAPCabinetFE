@@ -11,6 +11,7 @@
 #include "tables/table_data.h"
 #include <string>
 #include <utility>
+#include <functional>
 
 /**
  * @class ITableLauncher
@@ -31,6 +32,11 @@ public:
      * @return A pair containing the exit code (0 for success) and formatted playtime (H:M:S).
      */
     virtual std::pair<int, float> launchTable(const TableData& table) = 0;
+
+    virtual void launchTableAsync(
+        const TableData& table,
+        std::function<void(int exitCode, float secondsPlayed)> callback
+    ) = 0;
 };
 
 #endif // ITABLE_LAUNCHER_H

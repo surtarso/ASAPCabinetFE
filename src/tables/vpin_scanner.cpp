@@ -86,9 +86,10 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
                 if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
                     const json& properties = vpinJson["properties"];
                     table.tableType = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "TableType", ""));
-                    table.tableManufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyName", 
-                                                                 StringUtils::safeGetMetadataString(properties, "Company", "")));
-                    table.tableYear = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyYear", 
+                    table.tableManufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyName",
+                                                                 StringUtils::safeGetMetadataString(properties, "Company",
+                                                                    StringUtils::safeGetMetadataString(properties, "manufacturer", ""))));
+                    table.tableYear = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "CompanyYear",
                                                                  StringUtils::safeGetMetadataString(properties, "Year", "")));
                 }
 

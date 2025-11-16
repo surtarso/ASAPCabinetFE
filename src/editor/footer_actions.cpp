@@ -232,7 +232,7 @@ void ButtonActions::launchTableWithStats(
 
     const std::string& vpxFilePath = selectedTable.vpxFile;
 
-    // 1. Find the mutable table object in the master list using the unique file path
+    // 1. Find table in master list
     auto it = std::find_if(masterTables.begin(), masterTables.end(),
         [&vpxFilePath](const TableData& t) {
             return t.vpxFile == vpxFilePath;
@@ -247,52 +247,54 @@ void ButtonActions::launchTableWithStats(
 
     LOG_INFO("Editor: Launching table: " + t_mutable.title);
 
-    // 2. LAUNCH THE TABLE AND TIME IT
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    // launchTable returns std::pair<int, float> (exit_code, time_played_in_seconds)
-    auto [result, timePlayedSeconds] = launcher->launchTable(t_mutable);
+    // --- NEW: ASYNC LAUNCH ---
+    launcher->launchTableAsync(
+        t_mutable,
+        [this, &t_mutable, &masterTables, refreshUICallback, startTime]
+        (int result, float timePlayedSeconds)
+        {
+            auto endTime = std::chrono::high_resolution_clock::now();
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+            if (timePlayedSeconds <= 0) {
+                timePlayedSeconds =
+                    std::chrono::duration<float>(endTime - startTime).count();
+            }
 
-    // If the launcher didn't return time, calculate elapsed time
-    if (timePlayedSeconds <= 0) {
-        timePlayedSeconds = std::chrono::duration<float>(endTime - startTime).count();
-    }
+            float duration_minutes = timePlayedSeconds / 60.0f;
 
-    float duration_minutes = timePlayedSeconds / 60.0f;
+            // 3. UPDATE STATS (unchanged)
+            if (result == 0) {
+                t_mutable.isBroken = false;
+                t_mutable.playCount++;
+                t_mutable.playTimeLast = duration_minutes;
+                t_mutable.playTimeTotal += duration_minutes;
+                LOG_INFO("Table launched successfully. Play time: " +
+                         std::to_string(duration_minutes) + " mins.");
+            } else {
+                t_mutable.isBroken = true;
+                LOG_ERROR("Table launch failed with exit code " +
+                          std::to_string(result) +
+                          ". Marked as broken.");
+            }
 
-    // 3. UPDATE STATS
-    if (result == 0) {
-        // Success
-        t_mutable.isBroken = false;
-        t_mutable.playCount++;
-        t_mutable.playTimeLast = duration_minutes;
-        t_mutable.playTimeTotal += duration_minutes;
-        LOG_INFO("Table launched successfully. Play time: " + std::to_string(duration_minutes) + " mins.");
-    } else {
-        // Failure
-        t_mutable.isBroken = true;
-        LOG_ERROR("Table launch failed with exit code " + std::to_string(result) + ". Marked as broken.");
-    }
+            // SAVE (unchanged)
+            if (tableCallbacks_ && config_) {
+                const auto& settings = config_->getSettings();
+                if (tableCallbacks_->save(settings, masterTables, nullptr)) {
+                    LOG_DEBUG("Table data updated and saved successfully via callback.");
+                } else {
+                    LOG_ERROR("Failed to save updated table data via callback.");
+                }
+            } else {
+                LOG_ERROR("Cannot save table data: Missing TableCallbacks or ConfigService dependency.");
+            }
 
-    // Save updated table data via callback
-    if (tableCallbacks_ && config_) {
-        // Retrieve settings to pass to the save method
-        const auto& settings = config_->getSettings();
-
-        // Call the save method exactly as in the original InputManager logic
-        if (tableCallbacks_->save(settings, masterTables, nullptr)) {
-            LOG_DEBUG("Table data updated and saved successfully via callback.");
-        } else {
-            LOG_ERROR("Failed to save updated table data via callback.");
+            // REFRESH UI
+            // if (refreshUICallback) {
+            //     refreshUICallback();
+            // }
         }
-    } else {
-        LOG_ERROR("Cannot save table data: Missing TableCallbacks or ConfigService dependency.");
-    }
-
-    // 4. SYNCHRONIZE UI
-    if (refreshUICallback) {
-        refreshUICallback();
-    }
+    );
 }

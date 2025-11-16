@@ -259,50 +259,75 @@ void InputManager::registerActions() {
         } else {
             soundManager_->playCustomLaunch(tables_->at(*currentIndex_).launchAudio);
         }
-        auto [result, timePlayed] = tableLauncher_->launchTable(tables_->at(*currentIndex_));
-        if (result == 0 && !tables_->at(*currentIndex_).isBroken) {
-            tables_->at(*currentIndex_).playCount++;
-            tables_->at(*currentIndex_).playTimeLast = timePlayed;
-            tables_->at(*currentIndex_).playTimeTotal += timePlayed;
-            LOG_DEBUG("Updated TableData for " + tables_->at(*currentIndex_).title + ": playCount=" +
-                      std::to_string(tables_->at(*currentIndex_).playCount) + ", playTimeLast=" +
-                      std::to_string(tables_->at(*currentIndex_).playTimeLast) + ", playTimeTotal=" +
-                      std::to_string(tables_->at(*currentIndex_).playTimeTotal));
-        } else {
-            tables_->at(*currentIndex_).isBroken = true;
-            LOG_DEBUG("Marked table " + tables_->at(*currentIndex_).title + " as broken due to exit code " + std::to_string(result));
+
+        // --- LAUNCH ASYNC ---
+        // capture currentIndex by value to avoid races if user navigates
+        size_t idxx = *currentIndex_;
+        if (idxx > static_cast<size_t>(std::numeric_limits<int>::max())) {
+            LOG_ERROR("currentIndex_ too large to fit into int");
+            return;   // or clamp, or handle differently
         }
-        if (tableCallbacks_) {
-            if (tableCallbacks_->save(settingsManager_->getSettings(), *tables_, nullptr)) {
-                LOG_DEBUG("Table data updated via callback");
-            } else {
-                LOG_ERROR("Failed to update table data via callback");
+        const int launchedIndex = static_cast<int>(idxx);
+
+        tableLauncher_->launchTableAsync(
+            tables_->at(launchedIndex),
+            [this, launchedIndex](int result, float timePlayed)
+            {
+                // We are back from external app
+                inExternalAppMode_ = false;
+                lastExternalAppReturnTime_ = SDL_GetTicks();
+
+                // Safety: verify index still valid
+                if (!tables_ || launchedIndex < 0 || launchedIndex >= static_cast<int>(tables_->size())) {
+                    LOG_ERROR("Launch callback: table index out of range, skipping update");
+                    return;
+                }
+
+                TableData& t = tables_->at(launchedIndex);
+
+                // SUCCESS if result == 0 (mapped by launcher). Do NOT depend on previous t.isBroken.
+                if (result == 0) {
+                    // clear broken flag on good exit and update stats
+                    t.isBroken = false;
+                    t.playCount++;
+                    t.playTimeLast = timePlayed;
+                    t.playTimeTotal += timePlayed;
+                    LOG_DEBUG("Updated TableData for " + t.title +
+                            ": playCount=" + std::to_string(t.playCount) +
+                            ", playTimeLast=" + std::to_string(t.playTimeLast) +
+                            ", playTimeTotal=" + std::to_string(t.playTimeTotal));
+                } else {
+                    // non-zero mapped result -> treat as broken
+                    t.isBroken = true;
+                    LOG_DEBUG("Marked table " + t.title +
+                            " as broken due to mapped exit code " + std::to_string(result));
+                }
+
+                // Persist changes
+                if (tableCallbacks_) {
+                    if (tableCallbacks_->save(settingsManager_->getSettings(), *tables_, nullptr)) {
+                        LOG_DEBUG("Table data updated via callback");
+                    } else {
+                        LOG_ERROR("Failed to update table data via callback");
+                    }
+                } else {
+                    LOG_ERROR("Cannot update table data, tableCallbacks_ is null");
+                }
+
+                // Resume FE media
+                soundManager_->playTableMusic(t.music);
+
+                if (IVideoPlayer* p = assets_->getPlayfieldVideoPlayer()) p->play();
+                if (IVideoPlayer* p = assets_->getBackglassVideoPlayer()) p->play();
+                if (IVideoPlayer* p = assets_->getDmdVideoPlayer()) p->play();
+                if (IVideoPlayer* p = assets_->getTopperVideoPlayer()) p->play();
+
+                if (result != 0) {
+                    LOG_ERROR("VPX launch mapped to failure with exit code " + std::to_string(result));
+                }
             }
-        } else {
-            LOG_ERROR("Cannot update table data, tableCallbacks_ is null");
-        }
-        soundManager_->playTableMusic(tables_->at(*currentIndex_).music);
-        if (IVideoPlayer* player = assets_->getPlayfieldVideoPlayer()) {
-            player->play();
-            LOG_DEBUG("Resumed playfield video player");
-        }
-        if (IVideoPlayer* player = assets_->getBackglassVideoPlayer()) {
-            player->play();
-            LOG_DEBUG("Resumed backglass video player");
-        }
-        if (IVideoPlayer* player = assets_->getDmdVideoPlayer()) {
-            player->play();
-            LOG_DEBUG("Resumed DMD video player");
-        }
-        if (IVideoPlayer* player = assets_->getTopperVideoPlayer()) {
-            player->play();
-            LOG_DEBUG("Resumed topper video player");
-        }
-        if (result != 0) {
-            LOG_ERROR("VPX launch failed with exit code " + std::to_string(result));
-        }
-        inExternalAppMode_ = false;
-        lastExternalAppReturnTime_ = SDL_GetTicks();
+        );
+
     };
 
     actionHandlers_["Screenshot Mode"] = [this]() {
