@@ -54,81 +54,85 @@ void MetadataPanel::render(const TableData& currentTable,
 
     wasOpen_ = true;
 
-    // ======== BASIC TABLE INFO ========
-    std::filesystem::path filePath(currentTable.vpxFile);
-    ImGui::TextColored(ImVec4(1, 1, 0, 1), "TABLE INFO");
-    ImGui::Text("File: %s", filePath.filename().string().c_str());
-    if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string())
-        ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
-    if (!currentTable.vpsName.empty())
-        ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
-    if (!currentTable.title.empty() && currentTable.title != filePath.stem().string())
-        ImGui::Text("Title: %s", currentTable.title.c_str());
-    if (!currentTable.romName.empty())
-        ImGui::Text("ROM: %s", currentTable.romName.c_str());
+    // --- 1. METADATA TEXT CONTENT DRAWING LAMBDA ---
+    // Contains all the basic info and VPS details.
+    auto DrawInfoContent = [&]() {
+        // ======== BASIC TABLE INFO ========
+        std::filesystem::path filePath(currentTable.vpxFile);
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "TABLE INFO");
+        ImGui::Text("File: %s", filePath.filename().string().c_str());
+        if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string())
+            ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
+        if (!currentTable.vpsName.empty())
+            ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
+        if (!currentTable.title.empty() && currentTable.title != filePath.stem().string())
+            ImGui::Text("Title: %s", currentTable.title.c_str());
+        if (!currentTable.romName.empty())
+            ImGui::Text("ROM: %s", currentTable.romName.c_str());
 
-    bool hasManuf = !currentTable.manufacturer.empty();
-    bool hasYear  = !currentTable.year.empty();
-    if (hasManuf && hasYear)
-        ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
-    else if (hasManuf)
-        ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
-    else if (hasYear)
-        ImGui::Text("Year: %s", currentTable.year.c_str());
+        bool hasManuf = !currentTable.manufacturer.empty();
+        bool hasYear  = !currentTable.year.empty();
+        if (hasManuf && hasYear)
+            ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
+        else if (hasManuf)
+            ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
+        else if (hasYear)
+            ImGui::Text("Year: %s", currentTable.year.c_str());
 
-    if (currentTable.matchConfidence > 0) {
-        int fullStars = static_cast<int>(std::round(currentTable.matchConfidence * 10.0f));
-        fullStars = std::clamp(fullStars, 0, 10);
-        ImGui::Text("Match Confidence:");
-        ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
-        for (int i = 0; i < fullStars; ++i) { ImGui::TextUnformatted("+"); ImGui::SameLine(); }
-        ImGui::PopStyleColor();
-        for (int i = fullStars; i < 10; ++i) { ImGui::TextUnformatted("-"); ImGui::SameLine(); }
-        ImGui::NewLine();
-    }
-    ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
+        if (currentTable.matchConfidence > 0) {
+            int fullStars = static_cast<int>(std::round(currentTable.matchConfidence * 10.0f));
+            fullStars = std::clamp(fullStars, 0, 10);
+            ImGui::Text("Match Confidence:");
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
+            for (int i = 0; i < fullStars; ++i) { ImGui::TextUnformatted("+"); ImGui::SameLine(); }
+            ImGui::PopStyleColor();
+            for (int i = fullStars; i < 10; ++i) { ImGui::TextUnformatted("-"); ImGui::SameLine(); }
+            ImGui::NewLine();
+        }
+        ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
 
-    // ======== VPSDB DETAILS ========
-    if (!currentTable.vpsId.empty() || !currentTable.vpsManufacturer.empty() ||
-        !currentTable.vpsYear.empty() || !currentTable.vpsType.empty() ||
-        !currentTable.vpsThemes.empty() || !currentTable.vpsDesigners.empty() ||
-        !currentTable.vpsPlayers.empty() || !currentTable.vpsIpdbUrl.empty() ||
-        !currentTable.vpsVersion.empty() || !currentTable.vpsAuthors.empty() ||
-        !currentTable.vpsFeatures.empty() || !currentTable.vpsComment.empty() ||
-        !currentTable.vpsFormat.empty()) {
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(1, 1, 0, 1), "VPSDB DETAILS");
-    }
+        // ======== VPSDB DETAILS ========
+        if (!currentTable.vpsId.empty() || !currentTable.vpsManufacturer.empty() ||
+            !currentTable.vpsYear.empty() || !currentTable.vpsType.empty() ||
+            !currentTable.vpsThemes.empty() || !currentTable.vpsDesigners.empty() ||
+            !currentTable.vpsPlayers.empty() || !currentTable.vpsIpdbUrl.empty() ||
+            !currentTable.vpsVersion.empty() || !currentTable.vpsAuthors.empty() ||
+            !currentTable.vpsFeatures.empty() || !currentTable.vpsComment.empty() ||
+            !currentTable.vpsFormat.empty()) {
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "VPSDB DETAILS");
+        }
 
-    if (!currentTable.vpsId.empty()) ImGui::Text("ID: %s", currentTable.vpsId.c_str());
-    if (!currentTable.vpsManufacturer.empty()) ImGui::Text("Manufacturer: %s", currentTable.vpsManufacturer.c_str());
-    if (!currentTable.vpsYear.empty()) ImGui::Text("Year: %s", currentTable.vpsYear.c_str());
-    if (!currentTable.vpsType.empty()) ImGui::Text("Type: %s", currentTable.vpsType.c_str());
-    if (!currentTable.vpsThemes.empty()) ImGui::Text("Themes: %s", currentTable.vpsThemes.c_str());
-    if (!currentTable.vpsDesigners.empty()) ImGui::Text("Designers: %s", currentTable.vpsDesigners.c_str());
-    if (!currentTable.vpsPlayers.empty()) ImGui::Text("Players: %s", currentTable.vpsPlayers.c_str());
-    if (!currentTable.vpsIpdbUrl.empty()) ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
-    if (!currentTable.vpsVersion.empty()) ImGui::Text("Version: %s", currentTable.vpsVersion.c_str());
-    if (!currentTable.vpsAuthors.empty()) ImGui::Text("Authors: %s", currentTable.vpsAuthors.c_str());
-    if (!currentTable.vpsFeatures.empty()) ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
-    if (!currentTable.vpsFormat.empty()) ImGui::Text("Format: %s", currentTable.vpsFormat.c_str());
-    if (!currentTable.vpsComment.empty() && isLandscape)
-        ImGui::TextWrapped("Comment: %s", currentTable.vpsComment.c_str());
+        if (!currentTable.vpsId.empty()) ImGui::Text("ID: %s", currentTable.vpsId.c_str());
+        if (!currentTable.vpsManufacturer.empty()) ImGui::Text("Manufacturer: %s", currentTable.vpsManufacturer.c_str());
+        if (!currentTable.vpsYear.empty()) ImGui::Text("Year: %s", currentTable.vpsYear.c_str());
+        if (!currentTable.vpsType.empty()) ImGui::Text("Type: %s", currentTable.vpsType.c_str());
+        if (!currentTable.vpsThemes.empty()) ImGui::Text("Themes: %s", currentTable.vpsThemes.c_str());
+        if (!currentTable.vpsDesigners.empty()) ImGui::Text("Designers: %s", currentTable.vpsDesigners.c_str());
+        if (!currentTable.vpsPlayers.empty()) ImGui::Text("Players: %s", currentTable.vpsPlayers.c_str());
+        if (!currentTable.vpsIpdbUrl.empty()) ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
+        if (!currentTable.vpsVersion.empty()) ImGui::Text("Version: %s", currentTable.vpsVersion.c_str());
+        if (!currentTable.vpsAuthors.empty()) ImGui::Text("Authors: %s", currentTable.vpsAuthors.c_str());
+        if (!currentTable.vpsFeatures.empty()) ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
+        if (!currentTable.vpsFormat.empty()) ImGui::Text("Format: %s", currentTable.vpsFormat.c_str());
 
-    // ======== LANDSCAPE MODE MEDIA PREVIEW ========
-    if (isLandscape) {
-        ImGui::Columns(2, "metadata_landscape");
-        ImGui::BeginChild("metadata_info", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-        // ... draw table info (already drawn above) ...
-        ImGui::EndChild();
+        // This is where the original comment was, only shown if isLandscape. We now call
+        // this lambda in both modes, so we keep the condition to prevent showing it in FE.
+        if (!currentTable.vpsComment.empty() && isLandscape)
+            ImGui::TextWrapped("Comment: %s", currentTable.vpsComment.c_str());
+    };
 
-        ImGui::NextColumn();
-        ImGui::BeginChild("metadata_media", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+    // --- 2. MEDIA PREVIEW AND AUDIO DRAWING LAMBDA (Used only in Landscape/Editor) ---
+    auto DrawMediaContent = [&]() {
+
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "MEDIA PREVIEW");
 
-        auto drawMedia = [&](const char* label, const std::string& imagePath, const std::string& videoPath,
-                             bool hasImage, bool hasVideo)
+        // Helper to draw media (image and/or video) side-by-side or stacked
+        auto drawMediaPair = [&](const char* label,
+                                 const std::string& imagePath, const std::string& videoPath,
+                                 bool hasImage, bool hasVideo,
+                                 bool sideBySide = true)
         {
             if (!hasImage && !hasVideo) return;
 
@@ -143,6 +147,11 @@ void MetadataPanel::render(const TableData& currentTable,
 
             const int thumbHeight = 160;
 
+            if (sideBySide) {
+                ImGui::BeginGroup(); // Group 1 (Image)
+            }
+
+            // --------------------------------- IMAGE PREVIEW ----------------------------------
             if (hasImage) {
                 ImGui::Text("Image:");
                 SDL_Texture* tex = MediaPreview::instance().getThumbnail(uiRenderer, imagePath, thumbHeight);
@@ -157,7 +166,16 @@ void MetadataPanel::render(const TableData& currentTable,
                 }
             }
 
+            // --------------------------------- VIDEO PREVIEW -----------------------------------
             if (hasVideo) {
+                if (sideBySide && hasImage) {
+                    ImGui::SameLine();
+                }
+
+                if (sideBySide) {
+                    ImGui::BeginGroup(); // Group 2 (Video)
+                }
+
                 ImGui::Text("Video snapshot:");
                 SDL_Texture* tex = MediaPreview::instance().getThumbnail(uiRenderer, videoPath, thumbHeight);
                 if (tex) {
@@ -169,19 +187,37 @@ void MetadataPanel::render(const TableData& currentTable,
                 } else {
                     ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Failed to preview video");
                 }
+
+                if (sideBySide) {
+                    ImGui::EndGroup(); // End Group 2
+                }
+            }
+
+            if (sideBySide) {
+                ImGui::EndGroup(); // End Group 1 (or the outer group)
             }
         };
 
-        drawMedia("Playfield", currentTable.playfieldImage, currentTable.playfieldVideo,
-                  currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo);
-        drawMedia("Backglass", currentTable.backglassImage, currentTable.backglassVideo,
-                  currentTable.hasBackglassImage, currentTable.hasBackglassVideo);
-        drawMedia("DMD", currentTable.dmdImage, currentTable.dmdVideo,
-                  currentTable.hasDmdImage, currentTable.hasDmdVideo);
-        drawMedia("Topper", currentTable.topperImage, currentTable.topperVideo,
-                  currentTable.hasTopperImage, currentTable.hasTopperVideo);
+        // --- Media Layout Configuration ---
 
+        // Playfield, Backglass, Topper: Side-by-Side
+        drawMediaPair("Playfield", currentTable.playfieldImage, currentTable.playfieldVideo,
+                        currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo, true);
+
+        drawMediaPair("Backglass", currentTable.backglassImage, currentTable.backglassVideo,
+                        currentTable.hasBackglassImage, currentTable.hasBackglassVideo, true);
+
+        drawMediaPair("Topper", currentTable.topperImage, currentTable.topperVideo,
+                        currentTable.hasTopperImage, currentTable.hasTopperVideo, true);
+
+        // DMD: Stacked (as requested, since art is ultrawide)
+        drawMediaPair("DMD", currentTable.dmdImage, currentTable.dmdVideo,
+                        currentTable.hasDmdImage, currentTable.hasDmdVideo, false);
+
+        // Wheel (stacked)
         if (currentTable.hasWheelImage && uiRenderer) {
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "Wheel");
             const int thumbHeight = 160;
             SDL_Texture* tex = MediaPreview::instance().getThumbnail(uiRenderer, currentTable.wheelImage, thumbHeight);
             if (tex) {
@@ -205,12 +241,12 @@ void MetadataPanel::render(const TableData& currentTable,
                 ImGui::Text("Table Music:");
                 ImGui::SameLine();
 
-                if (ImGui::Button("Play")) { // Play
+                if (ImGui::Button("Play##Music")) { // Play
                     if (!currentTable.music.empty() && std::filesystem::exists(currentTable.music))
                         soundManager_->playTableMusic(currentTable.music);
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Stop")) { // Stop
+                if (ImGui::Button("Stop##Music")) { // Stop
                     soundManager_->stopMusic();
                 }
             }
@@ -220,20 +256,46 @@ void MetadataPanel::render(const TableData& currentTable,
                 ImGui::Text("Launch Audio:");
                 ImGui::SameLine();
 
-                if (ImGui::Button("Play")) { // Play
+                if (ImGui::Button("Play##Launch")) { // Play
                     if (!currentTable.launchAudio.empty() && std::filesystem::exists(currentTable.launchAudio))
                         soundManager_->playCustomLaunch(currentTable.launchAudio);
                 }
-                // ImGui::SameLine();
-                // if (ImGui::Button("■")) { // Stop
-                //     soundManager_->stopCustomLaunch();
-                // }
             }
         }
+    };
 
+    // --- 3. CONDITIONAL RENDERING ---
 
+    if (isLandscape) {
+        // EDITOR MODE (Landscape: 40/60 Split View)
+
+        // Start two columns (with a visible border)
+        ImGui::Columns(2, "metadata_landscape_split", true);
+
+        // Set the width of the first column (e.g., 40% for info, 60% for media)
+        float infoColumnWidth = panelWidth * 0.40f;
+        ImGui::SetColumnWidth(0, infoColumnWidth);
+
+        // --- COLUMN 1: INFO ---
+        // Use ImGui::BeginChild to allow the info column to scroll independently
+        ImGui::BeginChild("metadata_info_scroll", ImVec2(0, -1), false, ImGuiWindowFlags_HorizontalScrollbar);
+        DrawInfoContent();
         ImGui::EndChild();
-        ImGui::Columns(1);
+
+        ImGui::NextColumn();
+
+        // --- COLUMN 2: MEDIA ---
+        // Use ImGui::BeginChild to allow the media column to scroll independently
+        ImGui::BeginChild("metadata_media_scroll", ImVec2(0, -1), true, ImGuiWindowFlags_HorizontalScrollbar);
+        DrawMediaContent();
+        ImGui::EndChild();
+
+        ImGui::Columns(1); // End columns
+    } else {
+        // FRONTEND MODE (Portrait: Simple Stacked Text Only)
+        // Draw the text content only, preserving the original FE behavior.
+        DrawInfoContent();
+        // Media content is skipped, as DrawMediaContent is only called inside the isLandscape block.
     }
 
     ImGui::End();
