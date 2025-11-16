@@ -87,16 +87,12 @@ namespace CommandUtils {
     }
 
     bool isExecutableFile(const std::string& path) {
-        if (path.empty()) {
-            return false;
-        }
+        if (path.empty()) return false;
         std::error_code ec;
-        if (!fs::is_regular_file(path, ec) || ec) {
-            return false;
-        }
+        if (!fs::is_regular_file(path, ec) || ec) return false;
         return (access(path.c_str(), X_OK) == 0);
     }
-}
+} // namespace CommandUtils
 
 bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     std::string jsonPath = settings.VPXTablesPath + "/" + settings.vpxtoolIndex;
@@ -104,6 +100,20 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
     bool vpxtoolLoaded = false;
     std::string vpxtoolBinaryFullPath;
     std::string command_output_log;
+
+    // --- Check if index has at least one table matching actual files ---
+    auto isVpxtoolIndexValid = [&](const json& j, const std::vector<TableData>& scanTables) -> bool {
+        if (!j.contains("tables") || !j["tables"].is_array()) return false;
+        int validCount = 0;
+        for (const auto& entry : j["tables"]) {
+            std::string path = StringUtils::safeGetMetadataString(entry, "path");
+            if (path.empty()) continue;
+            for (const auto& t : scanTables) {
+                if (t.vpxFile == path) { validCount++; break; }
+            }
+        }
+        return validCount > 0;
+    };
 
     auto tryLoadJson = [&]() {
         vpxtoolLoaded = false;
@@ -113,10 +123,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 std::ifstream file(jsonPath);
                 if (!file.is_open()) {
                     LOG_ERROR("Could not open vpxtool_index.json for reading: " + jsonPath);
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->logMessages.push_back("ERROR: Cannot open vpxtool_index.json for reading.");
-                    }
+                    if (progress) { std::lock_guard lock(progress->mutex); progress->logMessages.push_back("ERROR: Cannot open vpxtool_index.json."); }
                     return false;
                 }
                 file >> vpxtoolJson;
@@ -124,106 +131,44 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                 if (vpxtoolJson.contains("tables") && vpxtoolJson["tables"].is_array()) {
                     vpxtoolLoaded = true;
                     LOG_INFO("Loaded vpxtool_index.json successfully from: " + jsonPath);
-                } else {
-                    LOG_ERROR("Invalid vpxtool_index.json: 'tables' missing or not an array.");
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->logMessages.push_back("ERROR: vpxtool_index.json is invalid: 'tables' array missing or malformed.");
-                    }
-                }
-            } catch (const json::exception& e) {
-                LOG_ERROR("Failed to parse vpxtool_index.json: " + std::string(e.what()));
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->logMessages.push_back("ERROR: Failed to parse vpxtool_index.json: " + std::string(e.what()));
                 }
             } catch (const std::exception& e) {
-                LOG_ERROR("Unexpected error loading vpxtool_index.json: " + std::string(e.what()));
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->logMessages.push_back("ERROR: Unexpected error loading vpxtool_index.json: " + std::string(e.what()));
-                }
+                LOG_ERROR("Failed to parse vpxtool_index.json: " + std::string(e.what()));
             }
         } else {
             LOG_WARN("vpxtool_index.json not found at: " + jsonPath);
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->logMessages.push_back("INFO: vpxtool_index.json not found. Attempting to generate.");
-            }
         }
         return vpxtoolLoaded;
     };
 
-    if (tryLoadJson()) {
-        LOG_INFO("Using existing vpxtool_index.json.");
-    } else {
-        if (progress) {
-            std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = "Attempting to generate VPXTool index...";
-            progress->logMessages.push_back("INFO: Checking for VPXTool binary to generate index.");
-        }
+    // --- VPXTool fallback logic START ---
+    if (!tryLoadJson() || !isVpxtoolIndexValid(vpxtoolJson, tables)) {
+        LOG_WARN("VPXTool index missing, invalid, or contains no matching tables. Attempting to generate new index...");
 
-        if (!settings.vpxtoolBin.empty()) {
-            if (CommandUtils::isExecutableFile(settings.vpxtoolBin)) {
-                vpxtoolBinaryFullPath = settings.vpxtoolBin;
-                LOG_INFO("Found custom VPXTool binary: " + vpxtoolBinaryFullPath);
-            } else {
-                LOG_DEBUG("Custom vpxtool path specified, but executable not found or not executable: " + settings.vpxtoolBin);
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->logMessages.push_back("WARNING: Custom VPXTool path invalid: " + settings.vpxtoolBin);
-                }
-            }
-        }
-
-        if (vpxtoolBinaryFullPath.empty()) {
-            vpxtoolBinaryFullPath = "vpxtool";
-            LOG_WARN("No specific VPXTool binary path found. Attempting to run 'vpxtool' from system PATH.");
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->logMessages.push_back("INFO: Attempting to run 'vpxtool' from system PATH.");
-            }
+        if (!settings.vpxtoolBin.empty() && CommandUtils::isExecutableFile(settings.vpxtoolBin)) {
+            vpxtoolBinaryFullPath = settings.vpxtoolBin;
+        } else {
+            vpxtoolBinaryFullPath = "vpxtool"; // fallback to system PATH
         }
 
         if (!vpxtoolBinaryFullPath.empty()) {
             std::string command_to_run = "\"" + vpxtoolBinaryFullPath + "\" index \"" + settings.VPXTablesPath + "\"";
             LOG_DEBUG("Executing VPXTool command: " + command_to_run);
-            if (CommandUtils::runCommand(command_to_run, settings.VPXTablesPath, progress, command_output_log)) {
-                LOG_INFO("VPXTool executed successfully. Attempting to load newly created index.");
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->logMessages.push_back("INFO: VPXTool executed successfully. Loading new index.");
-                }
-                if (tryLoadJson()) {
-                    LOG_INFO("Successfully loaded newly generated vpxtool_index.json.");
-                } else {
-                    LOG_ERROR("Failed to load newly generated vpxtool_index.json. Check logs for VPXTool output.");
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->logMessages.push_back("ERROR: Failed to load newly generated index after VPXTool run. Is output valid?");
-                    }
-                }
-            } else {
-                LOG_DEBUG("VPXTool command failed to execute.");
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->logMessages.push_back("ERROR: VPXTool command failed to run. Check log for details.");
-                }
+            if (!CommandUtils::runCommand(command_to_run, settings.VPXTablesPath, progress, command_output_log) ||
+                !tryLoadJson() || !isVpxtoolIndexValid(vpxtoolJson, tables)) {
+                LOG_WARN("VPXTool failed or produced no valid tables. Falling back to VPin scan.");
+                if (progress) { std::lock_guard lock(progress->mutex); progress->logMessages.push_back("WARN: VPXTool failed or empty. Using VPin scanner fallback."); }
+                return false; // fallback to VPin
             }
         } else {
-            LOG_INFO("No VPXTool binary identified (neither specified path nor on system PATH).");
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->logMessages.push_back("ERROR: No VPXTool binary found or specified. Cannot generate index.");
-            }
+            LOG_WARN("No VPXTool binary found. Falling back to VPin scan.");
+            if (progress) { std::lock_guard lock(progress->mutex); progress->logMessages.push_back("WARN: VPXTool binary missing. Using VPin scanner fallback."); }
+            return false;
         }
     }
+    // --- VPXTool fallback logic END ---
 
-    if (!vpxtoolLoaded) {
-        LOG_WARN("All attempts to load or generate vpxtool_index.json failed. Skipping VPXTool.");
-        return false;
-    }
-
+    // --- Process VPXTool JSON ---
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Processing vpxtool_index.json metadata...";
@@ -242,70 +187,29 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
         while (futures.size() >= maxThreads) {
             for (auto it = futures.begin(); it != futures.end();) {
                 if (it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-                    try {
-                        it->get();
-                    } catch (const std::exception& e) {
-                        LOG_ERROR("Thread exception during initial VPXTool processing: " + std::string(e.what()));
-                    }
+                    try { it->get(); } catch (...) {}
                     it = futures.erase(it);
-                } else {
-                    ++it;
-                }
+                } else { ++it; }
             }
             std::this_thread::yield();
         }
 
         futures.push_back(std::async(std::launch::async, [&tableJson, &tables, progress, &processedVpxTool]() {
+            // --- Table processing START ---
             try {
                 if (!tableJson.is_object()) {
-                    LOG_DEBUG("Skipping non-object table entry from JSON.");
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->numNoMatch++;
-                    }
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->currentTablesLoaded = ++processedVpxTool;
-                        progress->currentTask = "VPXTool metadata: " + std::to_string(processedVpxTool) + " of " + std::to_string(progress->totalTablesToLoad) + " entries";
-                    }
+                    if (progress) { std::lock_guard lock(progress->mutex); progress->numNoMatch++; }
+                    if (progress) { std::lock_guard lock(progress->mutex); progress->currentTablesLoaded = ++processedVpxTool; }
                     return;
                 }
                 std::string path = StringUtils::safeGetMetadataString(tableJson, "path");
-                if (path.empty()) {
-                    LOG_DEBUG("Skipping table with empty path from JSON.");
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->numNoMatch++;
-                    }
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->currentTablesLoaded = ++processedVpxTool;
-                        progress->currentTask = "VPXTool metadata: " + std::to_string(processedVpxTool) + " of " + std::to_string(progress->totalTablesToLoad) + " entries";
-                    }
-                    return;
-                }
+                if (path.empty()) { if (progress) { std::lock_guard lock(progress->mutex); progress->numNoMatch++; progress->currentTablesLoaded = ++processedVpxTool; } return; }
 
                 TableData* currentTable = nullptr;
                 for (auto& table : tables) {
-                    if (table.vpxFile == path) {
-                        currentTable = &table;
-                        break;
-                    }
+                    if (table.vpxFile == path) { currentTable = &table; break; }
                 }
-
-                if (!currentTable) {
-                    LOG_DEBUG("Table file from vpxtool_index.json not found in initial scan list: " + path);
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->numNoMatch++;
-                    }
-                    if (progress) {
-                        std::lock_guard<std::mutex> lock(progress->mutex);
-                        progress->currentTablesLoaded = ++processedVpxTool;
-                        progress->currentTask = "VPXTool metadata: " + std::to_string(processedVpxTool) + " of " + std::to_string(progress->totalTablesToLoad) + " entries";
-                    }
-                    return;
-                }
+                if (!currentTable) { if (progress) { std::lock_guard lock(progress->mutex); progress->numNoMatch++; progress->currentTablesLoaded = ++processedVpxTool; } return; }
 
                 if (tableJson.contains("table_info") && tableJson["table_info"].is_object()) {
                     const auto& tableInfo = tableJson["table_info"];
@@ -330,37 +234,25 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                     currentTable->manufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "manufacturer", ""));
                     currentTable->year = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "year", ""));
                 }
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numMatched++;
-                }
-            } catch (const json::exception& e) {
-                LOG_ERROR("JSON parsing error for table from vpxtool_index.json with path " + StringUtils::safeGetMetadataString(tableJson, "path", "N/A") + ": " + std::string(e.what()));
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numNoMatch++;
-                }
-            } catch (...) {
-                LOG_ERROR("Unexpected error processing table from vpxtool_index.json.");
-                if (progress) {
-                    std::lock_guard<std::mutex> lock(progress->mutex);
-                    progress->numNoMatch++;
-                }
-            }
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->currentTablesLoaded = ++processedVpxTool;
-                progress->currentTask = "VPXTool metadata: " + std::to_string(processedVpxTool) + " of " + std::to_string(progress->totalTablesToLoad) + " entries";
-            }
+                if (progress) { std::lock_guard lock(progress->mutex); progress->numMatched++; }
+            } catch (...) { if (progress) { std::lock_guard lock(progress->mutex); progress->numNoMatch++; } }
+
+            if (progress) { std::lock_guard lock(progress->mutex); progress->currentTablesLoaded = ++processedVpxTool; }
+            // --- Table processing END ---
         }));
     }
 
     for (auto& future : futures) {
-        try {
-            future.get();
-        } catch (const std::exception& e) {
+        try { future.get(); } catch (const std::exception& e) {
             LOG_ERROR("Thread exception during initial VPXTool processing: " + std::string(e.what()));
         }
+    }
+
+    // --- Final sanity check: ensure VPXTool actually matched tables ---
+    if (progress && progress->numMatched == 0) {
+        LOG_WARN("VPXTool processing completed, but no tables were matched. Falling back to VPin scan.");
+        progress->logMessages.push_back("WARN: VPXTool produced 0 matched tables. Using VPin scanner fallback.");
+        return false; // force fallback
     }
 
     LOG_INFO("Completed processing vpxtool_index.json.");

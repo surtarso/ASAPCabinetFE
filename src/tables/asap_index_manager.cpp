@@ -402,15 +402,15 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
             LOG_INFO("Adding new table " + newTable.vpxFile);
         }
 
-        // Recheck presence of linked files regardless of update decision
-        mergedTable.hasINI = PathUtils::hasIniForTable(
-            mergedTable.folder,
-            fs::path(mergedTable.vpxFile).stem().string()
-        );
-        mergedTable.hasB2S = PathUtils::hasB2SForTable(
-            mergedTable.folder,
-            fs::path(mergedTable.vpxFile).stem().string()
-        );
+        // ---------------- RECHECK LINKED FILES AND MEDIA FLAGS ----------------
+        mergedTable.hasINI      = PathUtils::hasIniForTable(mergedTable.folder, fs::path(mergedTable.vpxFile).stem().string());
+        mergedTable.hasB2S      = PathUtils::hasB2SForTable(mergedTable.folder, fs::path(mergedTable.vpxFile).stem().string());
+        mergedTable.hasPup      = PathUtils::getPupPath(mergedTable.folder);
+        mergedTable.hasAltColor = PathUtils::getAltcolorPath(mergedTable.folder);
+        mergedTable.hasAltSound = PathUtils::getAltsoundPath(mergedTable.folder);
+        mergedTable.hasAltMusic = PathUtils::getAltMusic(mergedTable.folder);
+        mergedTable.hasUltraDMD = PathUtils::getUltraDmdPath(mergedTable.folder);
+
 
         mergedTables.push_back(mergedTable);
         if (progress) {
