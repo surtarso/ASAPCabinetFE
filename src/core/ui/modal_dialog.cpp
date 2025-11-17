@@ -183,7 +183,7 @@ void ModalDialog::draw() {
             }
             else if (type_ == ModalType::Progress) {
                 if (busy_)
-                    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Processing...");
+                    ImGui::TextColored(ImVec4(1, 1, 0, 1), "%s", "Processing...");
                 else if (completed_) {
                     // If the thread passed an empty message (meaning: done, hide it now)
                     if (message_.empty()) {
@@ -191,7 +191,7 @@ void ModalDialog::draw() {
                         ImGui::CloseCurrentPopup(); // Closes the ImGui window
                     } else {
                         // This is the old "Done! OK" behavior for non-launching tasks
-                        ImGui::TextColored(ImVec4(0, 1, 0, 1), message_.c_str());
+                        ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", message_.c_str());
                         if (!resultPath_.empty())
                             ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
                         if (ImGui::Button("OK")) {
