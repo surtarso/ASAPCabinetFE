@@ -13,6 +13,11 @@ public:
     /** Initiates the patching process for all tables based on settings and table data with progress tracking. */
     void patchTables(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress = nullptr);
 
+    /** * Applies the patch to a single table.
+     * The table must already have the VPX file hash populated in table.hashFromVpx.
+     */
+    bool patchSingleTable(const Settings& settings, TableData& table);
+
 private:
     /** Downloads the hashes.json file from the specified GitHub URL, using cache if available. */
     std::string downloadHashesJson(const Settings& settings);

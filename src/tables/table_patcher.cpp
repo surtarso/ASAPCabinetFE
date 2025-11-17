@@ -271,3 +271,62 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
     }
     LOG_INFO("Patch process completed");
 }
+
+
+/** * Applies the patch to a single table.
+ * The table must already have the VPX file hash populated in table.hashFromVpx.
+ */
+bool TablePatcher::patchSingleTable(const Settings& settings, TableData& table) {
+    // 1. Download and Parse the Hash Database (Same as bulk method, but we only do it once)
+    std::string jsonContent = downloadHashesJson(settings);
+    if (jsonContent.empty()) {
+        LOG_ERROR("Aborting single patch for " + table.title + " due to empty hashes.json content");
+        return false;
+    }
+
+    nlohmann::json hashes = parseHashesJson(jsonContent);
+    if (hashes.is_null() || !hashes.is_array()) {
+        LOG_ERROR("Aborting single patch for " + table.title + " due to invalid hashes.json");
+        return false;
+    }
+
+    // 2. Check if the single table needs a patch
+    if (!needsPatch(table, hashes)) {
+        LOG_INFO(table.title + " is already patched or does not require a patch.");
+        return table.isPatched; // Returns true if it was already patched
+    }
+
+    // 3. Find the patch entry and apply it
+    for (const auto& entry : hashes) {
+        if (entry.is_object() && entry.contains("sha256") && entry["sha256"] == table.hashFromVpx) {
+            std::string url = entry["patched"]["url"];
+
+            // Construct the path to the VBS file (same folder as the VPX)
+            std::string savePath = table.folder + "/" + table.title + ".vbs";
+
+            LOG_INFO("Single Patch: Downloading .vbs for " + table.title + " from " + url);
+            downloadAndSaveVbs(url, savePath);
+
+            // 4. Verify the patch (Recalculate VBS hash)
+            std::string computedHash = compute_file_sha256(savePath);
+            if (!computedHash.empty()) {
+                std::string expectedHash = entry["patched"]["sha256"];
+                if (computedHash == expectedHash) {
+                    table.hashFromVbs = computedHash;
+                    table.isPatched = true;
+                    LOG_DEBUG("Single Patch Success: Updated hashFromVbs for " + table.title);
+                    return true;
+                } else {
+                    LOG_ERROR("Single Patch Failed: Hash mismatch for downloaded .vbs for " + table.title);
+                }
+            } else {
+                LOG_ERROR("Single Patch Failed: Could not compute hash for downloaded .vbs: " + savePath);
+            }
+            return false; // Patch failed after download attempt
+        }
+    }
+
+    // If we reach here, no patch entry was found.
+    LOG_INFO(table.title + " hash (" + table.hashFromVpx + ") not found in database.");
+    return false;
+}

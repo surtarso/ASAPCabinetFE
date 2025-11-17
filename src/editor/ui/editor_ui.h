@@ -19,6 +19,8 @@
 
 enum class ScannerMode { File, VPin, VPSDb, HasIndex, Patch, MediaDb };
 
+class TablePatcher;
+
 /**
  * Orchestrator for the Editor UI.
  * Delegates rendering to header, body, footer & first-run components.
@@ -34,7 +36,8 @@ public:
              ITableLauncher* launcher,
              ITableCallbacks* tableCallbacks,
              std::shared_ptr<LoadingProgress> progress,
-             IScreenshotManager* screenshotManager
+             IScreenshotManager* screenshotManager,
+             TablePatcher* patcher
              );
 
     void draw();
@@ -44,6 +47,7 @@ public:
     ButtonActions& actions()             { return actions_; }
     ITableLauncher* tableLauncher()     { return tableLauncher_; }
     IConfigService* configService()     { return config_; }
+    TablePatcher* tablePatcher()     { return tablePatcher_; }
 
     std::vector<TableData>& tables()          { return tables_; }
     const std::vector<TableData>& filteredTables() const { return filteredTables_; }
@@ -71,6 +75,7 @@ public:
 
     void filterAndSortTablesPublic()     { filterAndSortTables(); }
     void rescanAsyncPublic(ScannerMode mode) { rescanAsync(mode); }
+
 
     void setScrollToSelected(bool v) { scrollToSelected_ = v; }
     bool scrollToSelected() const { return scrollToSelected_; }
@@ -146,6 +151,7 @@ private:
 
     ModalDialog modal_;
     IScreenshotManager* screenshotManager_;
+    TablePatcher* tablePatcher_ = nullptr;
 
     std::atomic<bool> postLaunchCleanupRequired_ = false;
 };

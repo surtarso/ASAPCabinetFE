@@ -33,7 +33,7 @@ namespace vpsdb {
 
 class ConfigUI;
 struct TableData;
-
+class TablePatcher;
 class IScreenshotManager;
 // ----------------------------
 
@@ -80,7 +80,7 @@ private:
     std::shared_ptr<LoadingProgress> loadingProgress_; ///< Loading progress
     std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
     std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_;
-
+    std::unique_ptr<TablePatcher> tablePatcher_;
     std::unique_ptr<LoadingScreen> loadingScreen_;     ///< Loading screen UI
 
     // Config UI and necessary placeholder dependencies ---

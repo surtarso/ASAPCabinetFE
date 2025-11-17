@@ -5,6 +5,7 @@
 #include "core/ui/metadata_panel.h"
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
+#include "tables/table_patcher.h"
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_json.h"
 #include "config/ui/config_ui.h"
@@ -23,7 +24,8 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
       imguiManager_(nullptr),
       loadingProgress_(std::make_shared<LoadingProgress>()),
       vpsdbCatalog_(nullptr),
-      vpsdbJsonLoader_(nullptr)
+      vpsdbJsonLoader_(nullptr),
+      tablePatcher_(nullptr)
     {
     initializeSDL();
 
@@ -43,6 +45,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
     tableLoader_ = std::make_unique<TableLoader>();
     tableLauncher_ = DependencyFactory::createTableLauncher(config_.get());
     tableCallbacks_ = std::make_unique<AsapIndexManager>(config_->getSettings());
+    tablePatcher_ = std::make_unique<TablePatcher>();
 
     overrideManager_ = std::make_unique<TableOverrideManager>();
 
@@ -65,7 +68,8 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
         tableLauncher_.get(),
         tableCallbacks_.get(),
         loadingProgress_,
-        screenshotManager_.get()
+        screenshotManager_.get(),
+        tablePatcher_.get()
     );
 
     // Pass nullptr for IAssetManager* and App* (which is IAppCallbacks* in this context),

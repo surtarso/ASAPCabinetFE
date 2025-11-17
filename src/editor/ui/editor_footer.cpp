@@ -1,5 +1,6 @@
 #include "editor/ui/editor_footer.h"
 #include "utils/editor_tooltips.h"
+#include "tables/table_patcher.h"
 #include "log/logging.h"
 #include <imgui.h>
 #include <filesystem>
@@ -205,13 +206,43 @@ void drawFooter(EditorUI& ui) {
     // ---------- Apply Patch Button ----------
     if (ImGui::Button("Apply Patch")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
-            const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            LOG_WARN("[Placeholder] Patching table: " + t.vpxFile);
-            ui.modal().openWarning(
-                "A Table is Selected",
-                "Please unselect a table first and try again."
-                "Single table patching is not yet implemented."
-            );
+
+            // 1. Get the settings and dependencies
+            const Settings& settings = ui.configService()->getSettings();
+            TablePatcher* patcher = ui.tablePatcher();
+            TableData* tableToPatch = nullptr;
+
+            // 2. Map the filtered index back to the master table list
+            //    Access to tables_ and filteredTables_ must be thread-safe.
+            {
+                std::lock_guard<std::mutex> lock(ui.tableMutex());
+
+                // Get the unique file path of the currently selected (filtered) table
+                const std::string& selectedPath = ui.filteredTables()[ui.selectedIndex()].vpxFile;
+
+                // Find the matching TableData object in the master list
+                for (auto& t : ui.tables()) {
+                    if (t.vpxFile == selectedPath) {
+                        tableToPatch = &t;
+                        break;
+                    }
+                }
+            }
+            // 3. Call the single patch function on the found TableData
+            if (patcher && tableToPatch) {
+                LOG_INFO("Attempting single patch for: " + tableToPatch->title);
+
+                if (patcher->patchSingleTable(settings, *tableToPatch)) {
+                    LOG_DEBUG("Successfully patched table: " + tableToPatch->title);
+                    ui.modal().openInfo("Patch Complete", tableToPatch->title + " was successfully patched.");
+                } else {
+                    LOG_DEBUG("Patch not applied or failed for: " + tableToPatch->title);
+                    ui.modal().openWarning("Patch Status", tableToPatch->title + " did not require or failed to apply a patch.");
+                }
+
+                // Since we modified the table data (isPatched, hashFromVbs),
+                // we should re-filter/re-sort to update the display if necessary.
+                ui.filterAndSortTablesPublic();}
         } else {
             // Open confirm dialog before patching all tables
             ui.modal().openConfirm(

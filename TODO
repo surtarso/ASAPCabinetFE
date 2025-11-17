@@ -1,6 +1,8 @@
 TODO
 
 FIX:
+- [ED] re-add complete metadata to metadata panel, organize it.
+
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
@@ -11,8 +13,6 @@ QOL:
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
 - [!] add basic/advanced toggle for main config ui
-- [!] add single table vs all tables action in general (ss, patch, rescan etc)
-- [!] add single table scan (all, selectable) override manager?
 - [!] add a proper font picker
 - add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
@@ -46,6 +46,7 @@ On hold:
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
+- [!] add single table scan (all, selectable) override manager?
 
 
 - [NEW] MEDIA TOOLS PANEL — BLUEPRINT

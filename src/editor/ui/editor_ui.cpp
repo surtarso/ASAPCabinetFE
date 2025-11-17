@@ -19,7 +19,8 @@ EditorUI::EditorUI(bool& showMeta,
                    ITableLauncher* launcher,
                    ITableCallbacks* tableCallbacks,
                    std::shared_ptr<LoadingProgress> progress,
-                   IScreenshotManager* screenshotManager
+                   IScreenshotManager* screenshotManager,
+                   TablePatcher* patcher
                    )
     : config_(config),
       tableLoader_(tableLoader),
@@ -32,7 +33,8 @@ EditorUI::EditorUI(bool& showMeta,
       showMetadataView_(showView),
       showVpsdbBrowser_(showBrowser),
       showEditorSettings_(showSettings),
-      screenshotManager_(screenshotManager)
+      screenshotManager_(screenshotManager),
+      tablePatcher_(patcher)
 {
     bool initialConfigValid = config_->isConfigValid();
     configValid_ = initialConfigValid;
