@@ -76,7 +76,7 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             player = std::make_unique<FFmpegPlayer>();
             break;
         case VideoBackendType::DEFAULT:
-            player = std::make_unique<DefaultMediaPlayer>(renderer, width, height);
+            player = std::make_unique<DefaultMediaPlayer>(renderer, width, height, configService->getSettings().fontPath, "");
             if (player->setup(renderer, path, width, height)) {
                 LOG_DEBUG("Created DefaultMediaPlayer for path=" + path);
                 return player;
@@ -107,14 +107,16 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
 std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createDefaultMediaPlayer(
     SDL_Renderer* renderer,
     int width,
-    int height)
+    int height,
+    std::string fontPath,
+    std::string screenName)
 {
     if (!renderer || width <= 0 || height <= 0) {
         LOG_ERROR("Invalid parameters for createDefaultMediaPlayer()");
         return nullptr;
     }
 
-    auto player = std::make_unique<DefaultMediaPlayer>(renderer, width, height);
+    auto player = std::make_unique<DefaultMediaPlayer>(renderer, width, height, fontPath, screenName);
 
     // Use empty path — DefaultMediaPlayer internally knows to use your animated fallback
     if (!player->setup(renderer, "", width, height)) {

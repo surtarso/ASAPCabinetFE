@@ -53,7 +53,9 @@ public:
     static std::unique_ptr<IVideoPlayer> createDefaultMediaPlayer(
     SDL_Renderer* renderer,
     int width,
-    int height);
+    int height,
+    std::string fontPath,
+    std::string screenName);
 };
 
 #endif // VIDEO_PLAYER_FACTORY_H

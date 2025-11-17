@@ -455,7 +455,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             } else {
                 // load DefaultMedia fallback
                 auto player = VideoPlayerFactory::createDefaultMediaPlayer(
-                    w.renderer, mediaWidth, mediaHeight);
+                    w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
                 if (player) {
                     w.videoPlayer = std::move(player);
                     w.videoPlayer->play();
@@ -514,7 +514,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         // No video and no image → DefaultMedia fallback
         {
             auto player = VideoPlayerFactory::createDefaultMediaPlayer(
-                w.renderer, mediaWidth, mediaHeight);
+                w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
             if (player) {
                 w.videoPlayer = std::move(player);
                 w.videoPlayer->play();

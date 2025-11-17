@@ -7,6 +7,7 @@
 #include <string>
 #include <cmath>
 #include <iostream>
+#include <cctype>
 
 /**
  * @brief A procedural "default media" video player with SDL_ttf text rendering.
@@ -15,9 +16,8 @@
 class DefaultMediaPlayer : public IVideoPlayer {
 public:
     DefaultMediaPlayer(SDL_Renderer* renderer, int width, int height,
-                       const std::string& screenName = "ASAPCabinetFE",
-                       const std::string& fontPath = "/usr/share/fonts/TTF/HackNerdFont-Regular.ttf",
-                       int fontSize = 24)
+                       const std::string& fontPath,
+                       const std::string& screenName, int fontSize = 24)
         : renderer_(renderer), width_(width), height_(height),
           isPlaying_(false), screenName_(screenName), font_(nullptr)
     {
@@ -30,6 +30,11 @@ public:
         font_ = TTF_OpenFont(fontPath.c_str(), fontSize);
         if (!font_) {
             std::cerr << "Failed to load font: " << fontPath << " - " << TTF_GetError() << std::endl;
+        }
+
+        //Capitalize screen name
+        if (!screenName_.empty()) {
+            screenName_[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(screenName_[0])));
         }
     }
 
@@ -80,7 +85,7 @@ public:
         // const float scaledGravity = 980.0f / heightScale; // Use an inverse scale to keep time consistent
 
         float floorOffset = 40.0f; // this is the FLOOR (shadow + ball bounce)
-        float floorY = noMediaY + scaledMaxBounceH + floorOffset;; // Use the scaled value
+        float floorY = noMediaY + scaledMaxBounceH + floorOffset; // Use the scaled value
         const float ballRadius = 20.0f;
 
         Uint64 now = SDL_GetPerformanceCounter();
