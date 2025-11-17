@@ -92,7 +92,7 @@ cd ~/ASAPCabinetFE
 - Extremely lightweight and fully customizable.
 - No need to download artpacks, **generate** your own. (See [tools](#generator-tools))
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
-- Just what it takes to make your cabinet look good!
+- **Beta**: Editor mode to organize and manipulate your table collection.
 
 ### How it works
 - Scans recursively for `.vpx` files.
@@ -271,7 +271,7 @@ We’re dreaming big! Help us bring these features to life:
 
 - Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management. (--editor)
 
-The **new editor** is almost ready and can be *beta tested* with the [latest release](https://github.com/surtarso/ASAPCabinetFE/releases/tag/v1.2.10)! It's almost done but some functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Please report any issues or suggestions!
+The **new editor** is almost ready and can be *beta tested* with the [latest release](https://github.com/surtarso/ASAPCabinetFE/releases/)! It's almost done but some functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Please report any issues or suggestions!
 
 ## Contribute
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
