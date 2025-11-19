@@ -119,6 +119,7 @@ struct TableData {
     bool hasB2S = false;         ///< True if found the *.b2s file alongside the .vpx
     bool hasINI = false;         ///< True if found the *.ini file alongside the .vpx
     bool hasVBS = false;         ///< True if found the *.vbs file alongside the .vpx
+    bool hasOverride = false;    ///< True if found the *.json file alongside the .vpx
     // media scan
     bool hasPlayfieldImage = false;  ///< True if found a custom playfield image
     bool hasWheelImage = false;      ///< True if found a custom wheel image

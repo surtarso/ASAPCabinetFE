@@ -124,17 +124,39 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 }
             }
 
+            // check for .json override
+            for (auto& o_entry : fs::directory_iterator(path.parent_path())) {
+                if (!o_entry.is_regular_file())
+                    continue;
+
+                std::string ext = o_entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                if (ext == ".json" && o_entry.path().stem() == path.stem()) {
+                    table.hasOverride = true;
+                    break;
+                }
+            }
+
             // --- Skip unchanged tables ---
             if (!settings.forceRebuildMetadata && !existingTableMap.empty()) {
                 auto it = existingTableMap.find(path.string());
                 if (it != existingTableMap.end()) {
                     const auto& existingTable = it->second;
+
                     bool iniNow = PathUtils::hasIniForTable(path.parent_path(), path.stem().string());
                     bool b2sNow = PathUtils::hasB2SForTable(path.parent_path(), path.stem().string());
-                    if (fileLastModified == existingTable.fileLastModified &&
+
+                    bool unchanged =
+                        fileLastModified == existingTable.fileLastModified &&
                         folderLastModified == existingTable.folderLastModified &&
                         iniNow == existingTable.hasINI &&
-                        b2sNow == existingTable.hasB2S) {
+                        b2sNow == existingTable.hasB2S;
+
+                    // Force rescan if override exists in previous metadata OR new override is detected
+                    bool mustRescan = existingTable.hasOverride || table.hasOverride;
+
+                    if (unchanged && !mustRescan) {
                         if (progress) {
                             std::lock_guard<std::mutex> lock(progress->mutex);
                             progress->currentTablesLoaded++;
@@ -192,6 +214,20 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                         std::string vbs_content((std::istreambuf_iterator<char>(vbs_file)), std::istreambuf_iterator<char>());
                         table.hasDiffVbs = (vpx_script != vbs_content);
                     }
+                }
+            }
+
+            // check for .json override
+            for (auto& o_entry : fs::directory_iterator(path.parent_path())) {
+                if (!o_entry.is_regular_file())
+                    continue;
+
+                std::string ext = o_entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                if (ext == ".json" && o_entry.path().stem() == path.stem()) {
+                    table.hasOverride = true;
+                    break;
                 }
             }
 

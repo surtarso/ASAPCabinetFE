@@ -216,7 +216,7 @@ void drawBody(EditorUI& ui) {
                 ImGui::TableSetupColumn("Version",     ImGuiTableColumnFlags_WidthFixed,   75.0f,2);
                 ImGui::TableSetupColumn("Author",      ImGuiTableColumnFlags_WidthFixed,  100.0f,3);
                 ImGui::TableSetupColumn("Manufacturer",ImGuiTableColumnFlags_WidthFixed,   80.0f,4);
-                ImGui::TableSetupColumn("Files",       ImGuiTableColumnFlags_WidthFixed,   45.0f,5);
+                ImGui::TableSetupColumn("Files",       ImGuiTableColumnFlags_WidthFixed,   50.0f,5);
                 ImGui::TableSetupColumn("ROM",         ImGuiTableColumnFlags_WidthFixed,   75.0f,6);
                 ImGui::TableSetupColumn("Extras",      ImGuiTableColumnFlags_WidthFixed,   75.0f,7);
                 ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   75.0f,8);
@@ -260,6 +260,30 @@ void drawBody(EditorUI& ui) {
                                                    : !t.manufacturer.empty() ? t.manufacturer
                                                    : "-";
 
+                    // ================================ Row colors ================================
+                    // green row for known good tables
+                    if (!t.isBroken && t.playCount >= 1) {
+                        ImGui::TableSetBgColor(
+                            ImGuiTableBgTarget_RowBg0,
+                            IM_COL32(120, 255, 120, 40)   // green but very transparent
+                        );
+                    }
+                    // red row for broken tables
+                    if (t.isBroken && t.playCount >= 1) {
+                        ImGui::TableSetBgColor(
+                            ImGuiTableBgTarget_RowBg0,
+                            IM_COL32(255, 120, 120, 40)   // red but very transparent
+                        );
+                    }
+
+                    // blue row for unmatched tables
+                    if (t.matchConfidence == 0.0f) { // !t.jsonOwner == "vpsdb....."?
+                        ImGui::TableSetBgColor(
+                            ImGuiTableBgTarget_RowBg0,
+                            IM_COL32(120, 120, 255, 40)   // blue but very transparent
+                        );
+                    }
+
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR
                     {ImGui::TableSetColumnIndex(0);
@@ -274,16 +298,10 @@ void drawBody(EditorUI& ui) {
 
                     ImGui::PushID(i);
                     bool isSelected = (ui.selectedIndex() == i);
-                    if (t.isBroken) {
-                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                    }
                     if (ImGui::Selectable(displayName.c_str(), isSelected,
                                           ImGuiSelectableFlags_SpanAllColumns)) {
                         ui.setSelectedIndex(isSelected ? -1 : i);
                         ui.setScrollToSelected(false);
-                    }
-                    if (t.isBroken) {
-                        ImGui::PopStyleColor();
                     }
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
@@ -345,10 +363,17 @@ void drawBody(EditorUI& ui) {
                         ImGui::TextUnformatted("B ");
                     else
                         ImGui::TextUnformatted("- ");
+                    // Same line again for "O"
+                    ImGui::SameLine(0, 0);
+                    if (t.hasOverride)
+                        ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.30f, 1.0f), "O "); //yellow
+                    else
+                        ImGui::TextUnformatted("- ");
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
                        drawTooltipForColumn(5, t, ui);}
+
 
                     // ----------------------------------------- ROM Name
                     {ImGui::TableSetColumnIndex(6);

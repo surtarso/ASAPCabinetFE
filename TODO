@@ -6,16 +6,14 @@ FIX:
 
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
+- [ED] override saves not saving table.hasOverride to true =/ (to update table view)
 
 QOL:
 - ease overwhelm in FE, send to Editor!
 - [ED] add option to resize vpindb images more obvious in editor
 
 - [ED] add colors to rows according to conditions:
-        - bad launch - name already goes red. good.
-        - bad rom - soft red row
-        - good launch - soft green row
-        - metadata override present - soft yellow row
+        - bad rom - soft brown row
         - no vpsdb ID - soft purple
 
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)

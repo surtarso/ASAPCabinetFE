@@ -137,6 +137,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("hasB2S") && table["hasB2S"].is_boolean()) tableData.hasB2S = table["hasB2S"].get<bool>();
             if (table.contains("hasINI") && table["hasINI"].is_boolean()) tableData.hasINI = table["hasINI"].get<bool>();
             if (table.contains("hasVBS") && table["hasVBS"].is_boolean()) tableData.hasVBS = table["hasVBS"].get<bool>();
+            if (table.contains("hasOverride") && table["hasOverride"].is_boolean()) tableData.hasOverride = table["hasOverride"].get<bool>();
             // MEDIA SCAN (Boolean flags)
             if (table.contains("hasPlayfieldImage") && table["hasPlayfieldImage"].is_boolean()) tableData.hasPlayfieldImage = table["hasPlayfieldImage"].get<bool>();
             if (table.contains("hasWheelImage") && table["hasWheelImage"].is_boolean()) tableData.hasWheelImage = table["hasWheelImage"].get<bool>();
@@ -263,6 +264,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["hasB2S"] = table.hasB2S;
         tableJson["hasINI"] = table.hasINI;
         tableJson["hasVBS"] = table.hasVBS;
+        tableJson["hasOverride"] = table.hasOverride;
         // MEDIA SCAN (Boolean flags)
         tableJson["hasPlayfieldImage"] = table.hasPlayfieldImage;
         tableJson["hasWheelImage"] = table.hasWheelImage;

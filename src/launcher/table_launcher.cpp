@@ -82,7 +82,7 @@ void TableLauncher::launchTableAsync(
             // Treat Wine shutdown "crashes" as normal:
             // 0, 1, -1 (normal)
             // 132 (SIGILL), 134 (SIGABRT), 136 (SIGFPE), 139 (SIGSEGV)
-            if (exitCode == 0 || exitCode == 1 || exitCode == -1 ||
+            if (exitCode == 0 || exitCode == -1 || //exitCode == 1 ||
                 exitCode == 132 || exitCode == 134 ||
                 exitCode == 136 || exitCode == 139)
             {
