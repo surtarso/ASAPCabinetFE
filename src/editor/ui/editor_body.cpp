@@ -438,7 +438,11 @@ void drawBody(EditorUI& ui) {
                             ImGui::PopStyleColor();
                         } else {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.60f, 0.60f, 1.0f)); // gray
-                            ImGui::Text(" - ");
+                            if (t.playCount >= 1) {
+                                ImGui::Text(" ok ");
+                            } else {
+                                ImGui::Text(" - ");
+                            }
                             ImGui::PopStyleColor();
                         }
                     }
