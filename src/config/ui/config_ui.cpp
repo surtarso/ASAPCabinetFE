@@ -297,6 +297,22 @@ void ConfigUI::drawGUI() {
                     fileDialog->Close();
                     isDialogOpen_ = false;
                 }
+            // Font Dialog
+            }
+        } else if (dialogKey_ == "fontPath"){
+            if (fileDialog->IsOpened("FileDlg_FontPath")) {
+                if (fileDialog->Display("FileDlg_FontPath", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+                {
+                    if (fileDialog->IsOk())
+                    {
+                        // Determine the correct section
+                        jsonData_["TitleDisplay"][dialogKey_] = fileDialog->GetFilePathName();
+                        LOG_INFO("Selected fontPath: " + jsonData_["TitleDisplay"]["fontPath"].get<std::string>());
+                    }
+
+                    fileDialog->Close();
+                    isDialogOpen_ = false;
+                }
             }
         } else {
             LOG_ERROR("Unknown dialog key: " + dialogKey_);

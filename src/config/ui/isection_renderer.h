@@ -207,6 +207,12 @@ protected:
                 fileDialog->OpenDialog("FileDlg_AudioPath", "Select Audio File", audioFilter, config);
             }
 
+            // FONT File Picker (.ttf)
+            else if (sectionName == "TitleDisplay" && key == "fontPath"){
+                fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".ttf", ImVec4(0.7f, 0.1f, 0.9f, 0.9f));
+                fileDialog->OpenDialog("FileDlg_FontPath", "Select Font", ".ttf", config);
+            }
+
             // MEDIA File Picker (Image/Video/generic)
             else if (sectionName == "CustomMedia" || sectionName == "DefaultMedia") {
                 // Check if the key name contains "Video"
