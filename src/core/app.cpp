@@ -271,7 +271,7 @@ void App::initializeDependencies() {
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, configManager_.get(), keybindProvider_.get(), soundManager_.get());
     renderer_ = DependencyFactory::createRenderer(windowManager_.get());
     inputManager_ = DependencyFactory::createInputManager(keybindProvider_.get());
-    inputManager_->setDependencies(assets_.get(), soundManager_.get(), configManager_.get(),
+    inputManager_->setDependencies(this, assets_.get(), soundManager_.get(), configManager_.get(),
                                   currentIndex_, tables_, showConfig_, showEditor_, showVpsdb_, exeDir_, screenshotManager_.get(),
                                   windowManager_.get(), isLoadingTables_, tableLauncher_.get(), tableCallbacks_.get());
 

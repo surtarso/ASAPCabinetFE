@@ -31,7 +31,8 @@ void KeybindManager::initializeDefaults() {
     keybinds_[("Screenshot Mode")] = {SDL_GetKeyFromName("S")};
     keybinds_[("Screenshot Key")] = {SDL_GetKeyFromName("S")};
     keybinds_[("Screenshot Quit")] = {SDL_GetKeyFromName("Q")};
-    keybinds_[("Toggle Editor")] = {SDL_GetKeyFromName("M")};
+    keybinds_[("Toggle Editor")] = {SDL_GetKeyFromName("E")};
+    keybinds_[("Toggle Metadata")] = {SDL_GetKeyFromName("M")};
     keybinds_[("Toggle Catalog")] = {SDL_GetKeyFromName("N")};
 }
 

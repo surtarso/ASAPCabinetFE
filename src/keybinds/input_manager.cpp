@@ -23,12 +23,13 @@ InputManager::InputManager(IKeybindProvider* keybindProvider)
     LOG_INFO("InputManager constructed.");
 }
 
-void InputManager::setDependencies(IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
+void InputManager::setDependencies(IAppCallbacks* callbacks, IAssetManager* assets, ISoundManager* sound, IConfigService* settings,
                                   size_t& currentIndex, std::vector<TableData>& tables,
                                   bool& showConfig, bool& showEditor, bool& showVpsdb, const std::string& exeDir,
                                   IScreenshotManager* screenshotManager, IWindowManager* windowManager,
                                   std::atomic<bool>& isLoadingTables, ITableLauncher* tableLauncher,
                                   ITableCallbacks* tableCallbacks) {
+    callbacks_ = callbacks;
     assets_ = assets;
     soundManager_ = sound;
     settingsManager_ = settings;
@@ -370,6 +371,15 @@ void InputManager::registerActions() {
             LOG_DEBUG("Toggled showEditor to: " + std::to_string(*showEditor_));
         }
     };
+    // TODO:Actually toggle the panel.. this is just saving the settings, need reload ui!
+    actionHandlers_["Toggle Metadata"] = [this]() {
+        LOG_DEBUG("ToggleMetadata action triggered");
+            soundManager_->playUISound("panel_toggle");
+            settingsManager_->getMutableSettings().showMetadata = !settingsManager_->getMutableSettings().showMetadata;
+            settingsManager_->saveConfig();
+            callbacks_->reloadOverlaySettings();
+            LOG_DEBUG("Saved showMetadata to: " + std::to_string(settingsManager_->getSettings().showMetadata));
+    };
 
     actionHandlers_["Toggle Catalog"] = [this]() {
         LOG_DEBUG("ToggleCatalog action triggered");
@@ -436,6 +446,10 @@ void InputManager::handleEvent(const SDL_Event& event) {
         }
         if (keybindProvider_->isAction(event.key, "Toggle Editor")) {
             actionHandlers_["Toggle Editor"]();
+            return;
+        }
+        if (keybindProvider_->isAction(event.key, "Toggle Metadata")) {
+            actionHandlers_["Toggle Metadata"]();
             return;
         }
         if (keybindProvider_->isAction(event.key, "Toggle Catalog")) {

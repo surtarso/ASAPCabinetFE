@@ -247,7 +247,8 @@ struct Settings {
         {"Screenshot Mode", "S"},
         {"Screenshot Key", "S"},
         {"Screenshot Quit", "Q"},
-        {"Toggle Editor", "M"},
+        {"Toggle Editor", "E"},
+        {"Toggle Metadata", "M"},
         {"Toggle Catalog", "N"}
     };
 
@@ -944,6 +945,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"Screenshot Key", {Settings::ReloadType::None, "Key to capture a screenshot while in screenshot mode."}},
     {"Screenshot Quit", {Settings::ReloadType::None, "Key to exit screenshot mode."}},
     {"Toggle Editor", {Settings::ReloadType::None, "Key to open the metadata editor."}},
+    {"Toggle Metadata", {Settings::ReloadType::None, "Key to open the metadata panel."}},
     {"Toggle Catalog", {Settings::ReloadType::None, "Key to open the metadata catalog."}}
 };
 

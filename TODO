@@ -19,7 +19,6 @@ QOL:
 - use more than title on catalog search (author, manufacturer etc)
 - add collapse all/expand all widget for main config ui
 - [FE] add feedback for table launch/failure
-- [FE] key for metadata panel toggle? (switch with FE override manager.) M for metadata, N for new table (vpsdb)
 - [FE] add key to switch sorting type (joystick oriented)
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
