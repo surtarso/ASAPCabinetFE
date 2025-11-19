@@ -82,7 +82,6 @@ public:
 
         // Scale the gravity and max bounce height
         const float scaledMaxBounceH = 80.0f * heightScale;
-        // const float scaledGravity = 980.0f / heightScale; // Use an inverse scale to keep time consistent
 
         float floorOffset = 40.0f; // this is the FLOOR (shadow + ball bounce)
         float floorY = noMediaY + scaledMaxBounceH + floorOffset; // Use the scaled value

@@ -14,7 +14,7 @@ QOL:
 - [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
 - [!] add basic/advanced toggle for main config ui
 - [!] add a proper font picker
-- add instructions to the screenshot mode
+- [!] add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - add collapse all/expand all widget for main config ui
@@ -28,8 +28,10 @@ On hold:
 - portability: SDL drawn default wheel
 - portability: embbed the UI sounds on binary
 - portability: embbed and pre-configure app icon?
-- add update version checker
-- add graphs/statistics panel.
+- add update version checker/binary downloader (asapcab)
+- add update version checker/binary downloader (vpinballx)
+- add update version checker/binary downloader (vpxtool)
+- add graphs/statistics panel about tables
 - refactor the monoliths...
 - update header docs and user manual
 - screenshot mode using app size/pos as frame?

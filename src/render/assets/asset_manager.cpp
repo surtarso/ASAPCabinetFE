@@ -10,7 +10,6 @@
 #include "render/video_players/video_player_factory.h"
 #include "render/video_players/vlc/vlc_player.h"
 #include "render/video_players/ffmpeg/ffmpeg_player.h"
-#include "render/video_players/default_media_player.h"
 #include "config/iconfig_service.h"
 #include "log/logging.h"
 #include <SDL_image.h>
@@ -453,14 +452,56 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                 w.imagePath = w.tableImage;
                 LOG_DEBUG("ImagesOnly=ON → Using USER IMAGE for " + std::string(w.name) + ": " + w.tableImage);
             } else {
-                // load DefaultMedia fallback
-                auto player = VideoPlayerFactory::createDefaultMediaPlayer(
-                    w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
-                if (player) {
-                    w.videoPlayer = std::move(player);
-                    w.videoPlayer->play();
-                    w.videoPath = "__DEFAULT_MEDIA__";
-                    LOG_DEBUG("ImagesOnly=ON → Using DEFAULT MEDIA for " + std::string(w.name));
+                {
+                    std::unique_ptr<IVideoPlayer> player = nullptr;
+
+                    // Switch-like logic (strings can't use switch)
+                    const std::string_view zone = w.name;
+
+                    if (configManager_->getSettings().useGenArt) {
+
+                        std::string targetScreen;
+                        std::string targetText;
+                        // ALTERNATIVE MEDIA route
+                        if (zone == "dmd") {
+                            targetScreen = zone;
+                            targetText = table.manufacturer;
+                        }
+                        else if (zone == "topper") {
+                            targetScreen = zone;
+                            targetText = table.year;
+                        }
+                        else if (zone == "playfield") {
+                            targetScreen = zone;
+                            targetText = "ASAPCabinetFE";
+                        }
+                        else if (zone == "backglass") {
+                            targetScreen = zone;
+                            targetText = table.title;
+                        }
+                        player = VideoPlayerFactory::createAlternativeMediaPlayer(
+                                w.renderer, mediaWidth, mediaHeight,
+                                configManager_->getSettings().fontPath,
+                                targetScreen,
+                                targetText
+                            );
+                        if (player) {
+                            w.videoPlayer = std::move(player);
+                            w.videoPlayer->play();
+                            w.videoPath = "__ALTERNATIVE_MEDIA__";
+                            LOG_DEBUG("ImagesOnly=ON and user chose alternative → Using ALTERNATIVE MEDIA for " + std::string(w.name));
+                        }
+                    // DEFAULT 'NO MEDIA' ROUTE
+                    } else {
+                        auto noMediaPlayer = VideoPlayerFactory::createDefaultMediaPlayer(
+                            w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
+                        if (noMediaPlayer) {
+                            w.videoPlayer = std::move(noMediaPlayer);
+                            w.videoPlayer->play();
+                            w.videoPath = "__DEFAULT_MEDIA__";
+                            LOG_DEBUG("ImagesOnly=ON → Using DEFAULT MEDIA for " + std::string(w.name));
+                        }
+                    }
                 }
             }
             continue;
@@ -511,15 +552,57 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
             }
         }
 
-        // No video and no image → DefaultMedia fallback
+        // No video and no image → DefaultMedia/AlternativeMedia fallback
         {
-            auto player = VideoPlayerFactory::createDefaultMediaPlayer(
-                w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
-            if (player) {
-                w.videoPlayer = std::move(player);
-                w.videoPlayer->play();
-                w.videoPath = "__DEFAULT_MEDIA__";
-                LOG_DEBUG("No user media and ImagesOnly=OFF → Using DEFAULT MEDIA for " + std::string(w.name));
+            std::unique_ptr<IVideoPlayer> player = nullptr;
+
+            // Switch-like logic (strings can't use switch)
+            const std::string_view zone = w.name;
+
+            if (configManager_->getSettings().useGenArt) {
+
+                std::string targetScreen;
+                std::string targetText;
+                // ALTERNATIVE MEDIA route
+                if (zone == "dmd") {
+                    targetScreen = zone;
+                    targetText = table.manufacturer;
+                }
+                else if (zone == "topper") {
+                    targetScreen = zone;
+                    targetText = table.year;
+                }
+                else if (zone == "playfield") {
+                    targetScreen = zone;
+                    targetText = "ASAPCabinetFE";
+                }
+                else if (zone == "backglass") {
+                    targetScreen = zone;
+                    targetText = table.title;
+                }
+                player = VideoPlayerFactory::createAlternativeMediaPlayer(
+                        w.renderer, mediaWidth, mediaHeight,
+                        configManager_->getSettings().fontPath,
+                        targetScreen,
+                        targetText
+                    );
+                // If any of the above succeeded, install player
+                if (player) {
+                    w.videoPlayer = std::move(player);
+                    w.videoPlayer->play();
+                    w.videoPath = "__ALTERNATIVE_MEDIA__";
+                    LOG_DEBUG("No user media and ImagesOnly=OFF and chose alternative → Using ALTERNATIVE MEDIA for " + std::string(w.name));
+                }
+            // DEFAULT 'NO MEDIA' ROUTE
+            } else {
+                auto noMediaPlayer = VideoPlayerFactory::createDefaultMediaPlayer(
+                    w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
+                if (noMediaPlayer) {
+                    w.videoPlayer = std::move(noMediaPlayer);
+                    w.videoPlayer->play();
+                    w.videoPath = "__DEFAULT_MEDIA__";
+                    LOG_DEBUG("No user media and ImagesOnly=OFF → Using DEFAULT MEDIA for " + std::string(w.name));
+                }
             }
         }
     }

@@ -56,6 +56,14 @@ public:
     int height,
     std::string fontPath,
     std::string screenName);
+
+    static std::unique_ptr<IVideoPlayer> createAlternativeMediaPlayer(
+    SDL_Renderer* renderer,
+    int width,
+    int height,
+    std::string fontPath,
+    std::string screenName,
+    std::string displayText);
 };
 
 #endif // VIDEO_PLAYER_FACTORY_H

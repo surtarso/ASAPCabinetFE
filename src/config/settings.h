@@ -230,7 +230,7 @@ struct Settings {
     // [Editor]
     bool showTableTooltips = true;
     std::string preferredCompressor = "auto"; // or "zip", "7z", etc.
-    bool isSingleTable = false;
+    bool useGenArt = false;
 
     // [Keybinds]
     std::map<std::string, std::string> keybinds_ = {
@@ -515,7 +515,7 @@ private:
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
                 {"preferredCompressor", s.preferredCompressor},
-                {"isSingleTable", s.isSingleTable}
+                {"useGenArt", s.useGenArt}
             }},
             {"Keybinds", s.keybinds_}
         };
@@ -724,7 +724,7 @@ private:
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
         s.preferredCompressor = j.value("Editor", nlohmann::json{}).value("preferredCompressor", s.preferredCompressor);
-        s.isSingleTable = j.value("Editor", nlohmann::json{}).value("isSingleTable", s.isSingleTable);
+        s.useGenArt = j.value("Editor", nlohmann::json{}).value("useGenArt", s.useGenArt);
 
         // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
@@ -927,7 +927,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},
     {"preferredCompressor", {Settings::ReloadType::None, "Tool used to compress table folders."}},
-    {"isSingleTable", {Settings::ReloadType::None, "Force scanners to use only selected table (single table scans)."}},
+    {"useGenArt", {Settings::ReloadType::None, "Use computer generated graphics for missing table art."}},
 
     // Keybind descriptions
     {"Previous Table", {Settings::ReloadType::None, "Key to select the previous table."}},

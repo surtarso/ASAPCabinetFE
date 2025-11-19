@@ -5,6 +5,7 @@
 
 #include "video_player_factory.h"
 #include "dummy_player.h"
+#include "sdl_draw/alternate_media_player.h"
 #include "default_media_player.h"
 #include "vlc/vlc_player.h"
 #include "ffmpeg/ffmpeg_player.h"
@@ -18,7 +19,8 @@ enum class VideoBackendType {
     VLC,
     FFMPEG,
     NOVIDEO,  // dummy player
-    DEFAULT,  // for default media drawing
+    NOMEDIA,  // for default no media animation
+    ANIMATED, // for default generated animations
     UNKNOWN
 };
 
@@ -27,7 +29,8 @@ VideoBackendType getVideoBackendType(const std::string& backendName) {
         {"vlc", VideoBackendType::VLC},
         {"ffmpeg", VideoBackendType::FFMPEG},
         {"novideo", VideoBackendType::NOVIDEO},
-        {"default", VideoBackendType::DEFAULT}
+        {"default", VideoBackendType::NOMEDIA},
+        {"stats", VideoBackendType::ANIMATED}
     };
 
     auto it = backendMap.find(backendName);
@@ -75,13 +78,21 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
         case VideoBackendType::FFMPEG:
             player = std::make_unique<FFmpegPlayer>();
             break;
-        case VideoBackendType::DEFAULT:
+        case VideoBackendType::NOMEDIA:
             player = std::make_unique<DefaultMediaPlayer>(renderer, width, height, configService->getSettings().fontPath, "");
             if (player->setup(renderer, path, width, height)) {
                 LOG_DEBUG("Created DefaultMediaPlayer for path=" + path);
                 return player;
             }
             LOG_ERROR("Failed to setup DefaultMediaPlayer video player for path=" + path);
+            return nullptr;
+        case VideoBackendType::ANIMATED:
+            player = std::make_unique<AlternativeMediaPlayer>(renderer, width, height, configService->getSettings().fontPath, "", "");
+            if (player->setup(renderer, path, width, height)) {
+                LOG_DEBUG("Created AlternativeMediaPlayer for path=" + path);
+                return player;
+            }
+            LOG_ERROR("Failed to setup AlternativeMediaPlayer video player for path=" + path);
             return nullptr;
         case VideoBackendType::UNKNOWN:
         default:
@@ -121,6 +132,30 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createDefaultMediaPlayer(
     // Use empty path — DefaultMediaPlayer internally knows to use your animated fallback
     if (!player->setup(renderer, "", width, height)) {
         LOG_ERROR("DefaultMediaPlayer setup failed in createDefaultMediaPlayer()");
+        return nullptr;
+    }
+
+    return player;
+}
+
+std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createAlternativeMediaPlayer(
+    SDL_Renderer* renderer,
+    int width,
+    int height,
+    std::string fontPath,
+    std::string screenName,
+    std::string displayText)
+{
+    if (!renderer || width <= 0 || height <= 0) {
+        LOG_ERROR("Invalid parameters for createAlternativeMediaPlayer()");
+        return nullptr;
+    }
+
+    auto player = std::make_unique<AlternativeMediaPlayer>(renderer, width, height, fontPath, screenName, displayText);
+
+    // Use empty path — DefaultMediaPlayer internally knows to use your animated fallback
+    if (!player->setup(renderer, "", width, height)) {
+        LOG_ERROR("AlternativeMediaPlayer setup failed in createAlternativeMediaPlayer()");
         return nullptr;
     }
 

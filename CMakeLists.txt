@@ -373,6 +373,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/render/video_players
     ${CMAKE_SOURCE_DIR}/src/render/video_players/ffmpeg
     ${CMAKE_SOURCE_DIR}/src/render/video_players/vlc
+    ${CMAKE_SOURCE_DIR}/src/render/video_players/sdl_draw
     ${CMAKE_SOURCE_DIR}/src/tables
     ${CMAKE_SOURCE_DIR}/src/tables/overrides
     ${CMAKE_SOURCE_DIR}/src/tables/vpinmdb
