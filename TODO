@@ -16,11 +16,7 @@ QOL:
 - [!] add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
-- add collapse all/expand all widget for main config ui
 - [FE] add feedback for table launch/failure
-- [FE] add key to switch sorting type (joystick oriented)
-- [FE] make windows naturally draggable with mouse hold
-- [FE] make windows resizeable with mouse and pass to config
 
 On hold:
 - portability: SDL drawn default wheel
@@ -34,9 +30,11 @@ On hold:
 - update header docs and user manual
 - screenshot mode using app size/pos as frame?
 - add multi launchers (other emulators, other versions of vpx w.e.)
-- [FE] add auto-manufacturer logo on topper(or dmd?) thru metadata
+- [FE] make windows naturally draggable with mouse hold
+- [FE] make windows resizeable with mouse and pass to config
 - [FE] add attract mode (random table on a timer if idle) (optional)
 - [FE] add support animated png for wheel/marquee
+- [FE] add key to switch sorting type (joystick oriented)
 - add some way to download tables straight from the app?
 - incorporate generate_media.sh?
 - add flag to open --config only?
