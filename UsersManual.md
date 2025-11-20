@@ -26,6 +26,7 @@ No complicated setup—just fun pinball action!
       * [Automatic Positioning](#automatic-positioning)
   * [Adding Your Own Previews](#adding-your-own-previews)
       * [How It Works](#how-it-works)
+      * [Default Previews](#default-previews)
       * [Moving Around the Table List](#moving-around-the-table-list)
       * [Playing a Table](#playing-a-table)
   * [Taking Screenshots](#taking-screenshots)
@@ -75,8 +76,7 @@ You can set these paths using the in-app configuration menu. You can use your ow
 
 Simply double-click the ASAPCabinetFE icon (or start it as you would any other app). The first time you run it, a setup window will appear, asking you to point to your main VPX tables folder and the VPinballX program itself. Select these locations, save your choices, and close the menu. If everything is found correctly, the main app will then open.
 
-![image](https://github.com/user-attachments/assets/c0d39990-9cef-4d14-be4b-c34238fd4031)
-
+<img width="808" height="508" alt="image" src="https://github.com/user-attachments/assets/824f8b36-f16a-4c07-87d3-053aa72358a5" />
 
 ### Patching Tables With Latest Standalone VBScripts
 Enabling the auto-patcher will automatically download the latest patches from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts) for the tables needing it.
@@ -93,6 +93,9 @@ You can freely drag and place any of the app's windows wherever you prefer on yo
 ### Automatic Positioning
 
 If you've already set up your window positions within VPinballX, and your `VPinballX.ini` file is in its default location (`~/.vpinball`), ASAPCabinetFE can automatically adopt those positions and sizes when it loads. This feature is not enabled by default but can be toggled in the configuration menu.
+
+<img width="730" height="720" alt="image" src="https://github.com/user-attachments/assets/22534397-ac84-4f1e-8206-3fdd43c217ad" />
+
 >[!NOTE]
 >You can set a custom path for your VPinballX.ini in case you dont use the default location (optional).
 
@@ -121,7 +124,20 @@ Place your media files directly into the respective table's folder using these s
   - Topper video: `images/topper.mp4`
   - Table music: `audio/music.mp3`
     
-The next time you scroll to a table, your custom media will appear. If you don't add anything, the app will use its default previews, which you can also customize in the configuration menu.
+The next time you scroll to a table, your custom media will appear. 
+
+### Default previews
+
+If you don't add anything, the app will use its default animations, which you can choose in the configuration menu between "No Media" animations for collectionists, or "computer generated" DMD's for Topper and DMD windows that will use the table metadata do display info and some placeholders for backglass and playfield!
+
+<img width="1032" height="263" alt="No Media default display" src="https://github.com/user-attachments/assets/1517e21b-be1d-4d64-ba8a-0253f7dd1981" />
+<p align="center"><i>Example 'No Media' default display animation for DMD screen</i></p>
+
+<img width="1034" height="268" alt="Generated DMD metadata display" src="https://github.com/user-attachments/assets/a089740d-431a-41d3-9dfb-7d044818eed0" />
+<p align="center"><i>Example 'Generated' DMD metadata display animation for DMD screen</i></p>
+
+>[!NOTE]
+>The preference will always be Custom Videos -> Custom Images -> Default Animations. You can skip videos by using the "Images Only" option in the configuration menu.
 
 ### Moving Around the Table List
 
@@ -165,7 +181,7 @@ You don't need to manually edit any config files; everything you want to change 
 
 Press **C** at any time to bring up the configuration menu.
 
-![image](https://github.com/user-attachments/assets/b1bb742b-7786-490e-bd50-a808bd4cdbc9)
+<img width="733" height="356" alt="image" src="https://github.com/user-attachments/assets/d11cdf2f-0de0-464a-bab7-3cb07d4505dd" />
 
 ### What Can You Change? (Everything!)
 
@@ -181,11 +197,9 @@ Here’s a glimpse of what you can tweak:
   - **Media Dimensions**: Control the position and size of media elements within their respective windows, force images only.
   - **VPX Settings**: Set paths and control how you start VPinballX
 
-Still not enough? Ok! You can also change ALL default media to create your own fallbacks. Use your own images or sounds for the UI to trully make this app yours.
-
 ### Saving Your Changes
 
-Satisfied with your adjustments? Hit **Save**. If you change your mind and want to discard your modifications, press **Close** to exit the menu without saving.
+Satisfied with your adjustments? Hit **Save**. If you change your mind and want to discard your modifications, press **Close** to exit the menu without saving. (Or use the keybind 'q' to quit or 'c' to toggle without saving.)
 
 ## Controls (Key Bindings)
 
@@ -204,8 +218,7 @@ Here’s how you control the app using your keyboard to set things up:
 
 Want to use your joystick? But of'course! We have **cabinet** in the name, right? ;)
 
-
-![image](https://github.com/user-attachments/assets/48f353e6-7ea7-4bba-8ac5-cf160949b16c)
+<img width="730" height="418" alt="image" src="https://github.com/user-attachments/assets/b2e173a6-7b5b-4632-9f84-192b487b703e" />
 
 1.  Press **C** to open the configuration menu.
 2.  Navigate to the “Keybinds” section.
@@ -215,7 +228,7 @@ Want to use your joystick? But of'course! We have **cabinet** in the name, right
 
 Whether you love the tunes or prefer silence, you have full control over the audio:
 
-![image](https://github.com/user-attachments/assets/7e8c27b2-7fec-41f8-8560-19a4d96902c8)
+<img width="730" height="222" alt="image" src="https://github.com/user-attachments/assets/a320aeaf-2640-4706-b673-689a0ecc08e1" />
 
   - **Preview Videos**: Adjust the playback volume for video previews.
   - **Table Music**: Control the volume or mute individual table soundtracks.
@@ -243,7 +256,7 @@ ASAPCabinetFE provides you with three distinct scanners:
 - VPin Scanner: This is the scanner that will run when you select to use _metadata_. It will extract the metadata from your VPX files to display on the panel and possible help on matchmaking with vpsdb.
 - VPSDb Scanner: Using all gathered information, toggling fetchVPSDB will attempt to match you metadata with the Virtual Pinball Spreadsheet metadata.
 
-<img width="729" height="443" alt="image" src="https://github.com/user-attachments/assets/4aeea268-9656-45b1-be55-dac02f963c30" />
+<img width="729" height="346" alt="image" src="https://github.com/user-attachments/assets/146e67ad-68f5-4c00-b42a-6e420b5993b2" />
 
 Usage:
 - The default behavior is to *only read the index* for a fast start.
@@ -257,6 +270,8 @@ Usage:
 
 >[!TIP]
 > Table management is easier using the built-in editor, start with (`ASAPCabinetFE-Editor`).
+
+<img width="1288" height="727" alt="ASAPCabinetFE Editor" src="https://github.com/user-attachments/assets/320e5c61-ea1f-4e85-ac96-729ea7cc7afa" />
 
 ## If Something Goes Wrong
 
