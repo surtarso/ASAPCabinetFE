@@ -286,7 +286,10 @@ We’re dreaming big! Help us bring these features to life:
 
 - Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management. (--editor)
 
-The **new editor** is almost ready and can be *beta tested* with the [latest release](https://github.com/surtarso/ASAPCabinetFE/releases/)! It's almost done but some functionalities are not yet implemented. Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Please report any issues or suggestions!
+The **new editor** is almost ready and can be *beta tested* with the [latest release](https://github.com/surtarso/ASAPCabinetFE/releases/)! Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Please report any issues or suggestions! *(some functionalities are not yet implemented)*
+
+https://github.com/user-attachments/assets/2a430103-da5d-49fc-95c0-c1ee10a280c1
+<p align="center"><i>Example showing fuzzy search keyboard grab and table launching.</i></p>
 
 ## Contribute
 Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
