@@ -73,40 +73,50 @@ cd ~/ASAPCabinetFE
 
 </details>
 
-## Features
+## Front-End Features
 
 - Full screen multi monitor display of table playfield, backglass, topper and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
 - Use `VPinballX.ini` for size and position auto-configuration.
-- Use [VPin](https://github.com/francisdb/vpin) to **retrieve** table file metadata.
-- **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API.
-- Browse [VPSDb](https://virtual-pinball-spreadsheet.web.app/) to **find and download** new tables.
-- **Create** custom table overrides for media or metadata.
-- Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
-- Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb).
 - Sort tables by title, type, manufacturer, year or author.
 - Navigate tables with titles and/or wheels and marquees.
 - Support for ambience, per-table music and launch sounds.
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
-- Extremely lightweight and fully customizable.
-- No need to download artpacks, **generate** your own. (See [tools](#generator-tools))
+- Extremely lightweight, blazing fast and fully customizable.
+- No need to download artpacks, **generate** your own. (See [tools](#generator-tools--debian))
+- Multiple animations based on metadata to indicate your missing media.
+- Computer generated Topper and DMD windows with metadata info.
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
-- **Beta**: Editor mode to organize and manipulate your table collection.
 
-### How it works
-- Scans recursively for `.vpx` files.
-- Optionally scan file metadata or use your existing `vpxtool_index.json`.
-- Creates **up to four** windows for playfield, backglass, topper and DMD.
-- Loads default or custom media for each table.
-- Launches tables with desired VPX executable.
+## Editor Features
+
+- Spreadsheet view of all owned tables.
+- Row recolor on successful and failure launches for easy ID.
+- Easily filter tables by any characteristics.
+- View complete table metadata and art with a single click.
+- Fuzzy search and play hotkey making tests super fast.
+- Open root or specific folders straight from the editor.
+- Lists user owned media (images, videos and sounds).
+- Lists table specific files as INIs, VBSs, B2Ss.
+- Lists table specific extras as altColor, altSound etc.
+- Mark tables you have overrided metadata.
+- Advanced menu for file operations (delete, backup, override metadata).
+- Manage media cache with a single click.
+- Advanced menu for [VpxTool](https://github.com/francisdb/vpxtool) --flags.
+- Use [VPin](https://github.com/francisdb/vpin) to **retrieve** table file metadata.
+- **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API with visual feedback.
+- Browse [VPSDb](https://virtual-pinball-spreadsheet.web.app/) to **find and download** new tables.
+- **Create** custom table overrides for media or metadata.
+- Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
+- Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb).
 
 >[!NOTE]
 >Check the [User's Manual](UsersManual.md) for more details.
 
 ## Compiling and Running
 <details open>
-<summary>👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
+<summary>Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
   
 ```sh
 sudo apt-get update
@@ -114,14 +124,14 @@ sudo apt-get install git findutils -y
 ```
 </details>
 <details>
-<summary>👫 Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
+<summary>Make sure you have `git` and `xargs` available (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
 ```sh
 sudo pacman -Syu git findutils --noconfirm
 ```
 </details>
 
-💏 Clone the Repository
+Clone the Repository
 ```sh
 git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
@@ -129,14 +139,14 @@ git lfs install
 git lfs pull
 ```
 <details open>
-<summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
+<summary>Install Dependencies (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)</summary>
   
 ```sh
 cat apt-packages.txt | xargs sudo apt-get install -y
 ```
 </details>
 <details>
-<summary>👪 Install Dependencies (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
+<summary>Install Dependencies (<img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="Arch Linux" width="15"/> Arch)</summary>
   
 ```sh
 cat pacman-packages.txt | xargs sudo pacman -S --needed --noconfirm
@@ -218,7 +228,7 @@ windowrule = center, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
 
 ---
 
-## Default Keymap
+## Front-End Default Keymap
 Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
 
 | Action             |        Key       | Description                               |
@@ -231,7 +241,8 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | Launch SShot mode  | s                | Launch the table in screenshot mode.      |
 | Config Panel       | c                | Toggle config panel.                      |
 | Save window pos.   | left doubleclick | Saves current window positions in config. |
-| Metadata Editor    | m                | Toggle Metadata Editor in current table.  |
+| Metadata Editor    | e                | Toggle Metadata Editor in current table.  |
+| Metadata Panel     | m                | View current table Metadata Panel         |
 | VPSdb Catalog      | n                | Toggle VPSdb catalog for browsing tables. |
 | Quit               | q                | Exit the application.                     |
 
