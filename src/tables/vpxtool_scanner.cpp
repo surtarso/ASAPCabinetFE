@@ -221,7 +221,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
                     currentTable->tableVersion = StringUtils::safeGetMetadataString(tableInfo, "table_version");
                     currentTable->tableRevision = StringUtils::safeGetMetadataString(tableInfo, "table_save_rev");
                 }
-                currentTable->romName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson, "game_name"));
+                currentTable->tableRom = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson, "game_name"));
                 currentTable->romPath = StringUtils::safeGetMetadataString(tableJson, "rom_path");
                 currentTable->tableLastModified = StringUtils::safeGetMetadataString(tableJson, "last_modified");
                 currentTable->jsonOwner = "VPXTool Index";

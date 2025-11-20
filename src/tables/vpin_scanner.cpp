@@ -84,6 +84,10 @@ void VPinScanner::scanFiles(std::vector<TableData>& tables, LoadingProgress* pro
                 table.tableAuthorWebsite = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "author_website", ""));
                 table.tableLastModified = StringUtils::safeGetMetadataString(vpinJson, "last_modified", "");
 
+                // TODO: check if this is from file or extracted from script in vpxtool, this is a dirty copy paste job.
+                // table.tableRom = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(vpinJson, "game_name"));
+
+
                 if (vpinJson.contains("properties") && vpinJson["properties"].is_object()) {
                     const json& properties = vpinJson["properties"];
                     table.tableType = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(properties, "TableType", ""));

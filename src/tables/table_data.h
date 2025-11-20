@@ -72,6 +72,7 @@ struct TableData {
     std::string tableRules;      ///< Rules from file metadata (from vpin's `table_rules`).
     std::string tableAuthorEmail;///< Author's email from file metadata (from vpin's `author_email`).
     std::string tableAuthorWebsite;///< Author's website from file metadata (from vpin's `author_website`).
+    std::string tableRom;        ///< Rom name from file metadata (from vpin's 'romname'?) TODO: Get romname from script/file!!
     // These are inside 'properties' dictionary in 'table_info'
     std::string tableType;       ///< Table type from file metadata properties (e.g., from vpin's `properties.TableType`).
     std::string tableManufacturer;///< Manufacturer/Company from file metadata properties (e.g., from vpin's `properties.CompanyName` or `Company`).

@@ -93,6 +93,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("tableType") && table["tableType"].is_string()) tableData.tableType = table["tableType"].get<std::string>();
             if (table.contains("tableManufacturer") && table["tableManufacturer"].is_string()) tableData.tableManufacturer = table["tableManufacturer"].get<std::string>();
             if (table.contains("tableYear") && table["tableYear"].is_string()) tableData.tableYear = table["tableYear"].get<std::string>();
+            if (table.contains("tableRom") && table["tableRom"].is_string()) tableData.tableRom = table["tableRom"].get<std::string>();
 
 
             // --------------- VPSDB METADATA -------------
@@ -221,6 +222,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["tableType"] = table.tableType;
         tableJson["tableManufacturer"] = table.tableManufacturer;
         tableJson["tableYear"] = table.tableYear;
+        tableJson["tableRom"] = table.tableRom;
 
 
         // --------------- VPSDB METADATA -------------

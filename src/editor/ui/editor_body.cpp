@@ -117,7 +117,7 @@ static void drawFilesTooltip(const TableData& t) {
 // ROM column
 static void drawRomTooltip(const TableData& t) {
     ImGui::Text("Local: %s", t.romName.empty() ? "-" : t.romName.c_str());
-    ImGui::Text("Metadata: (placeholder"); // TODO: add rom from metadata (vpxtool/vpin)
+    ImGui::Text("Metadata: %s", t.tableRom.empty() ? "-" : t.tableRom.c_str());
 }
 
 // ------------------------------------------------------------------
@@ -262,6 +262,7 @@ void drawBody(EditorUI& ui) {
                                                    : "-";
 
                     // ================================ Row colors ================================
+                    // ----------- Last Win Schema --------
                     // green row for known good tables
                     if (!t.isBroken && t.playCount >= 1) {
                         ImGui::TableSetBgColor(
@@ -278,12 +279,12 @@ void drawBody(EditorUI& ui) {
                     }
 
                     // blue row for unmatched tables
-                    if (t.matchConfidence == 0.0f) { // !t.jsonOwner == "vpsdb....."?
-                        ImGui::TableSetBgColor(
-                            ImGuiTableBgTarget_RowBg0,
-                            IM_COL32(120, 120, 255, 40)   // blue but very transparent
-                        );
-                    }
+                    // if (t.matchConfidence == 0.0f) { // !t.jsonOwner == "vpsdb....."?
+                    //     ImGui::TableSetBgColor(
+                    //         ImGuiTableBgTarget_RowBg0,
+                    //         IM_COL32(120, 120, 255, 40)   // blue but very transparent
+                    //     );
+                    // }
 
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR
@@ -298,16 +299,35 @@ void drawBody(EditorUI& ui) {
                     {ImGui::TableSetColumnIndex(1);
 
                     ImGui::PushID(i);
+
+                    // Check if we need special coloring
+                    bool usePurple = (t.matchConfidence == 0.0f);
+
+                    // Light / faint purple (readable)
+                    ImVec4 faintPurple(0.70f, 0.55f, 1.00f, 1.00f); // tweak if needed
+
+                    int colorStack = 0;
+                    if (usePurple) {
+                        ImGui::PushStyleColor(ImGuiCol_Text, faintPurple);
+                        colorStack++;
+                    }
+
                     bool isSelected = (ui.selectedIndex() == i);
                     if (ImGui::Selectable(displayName.c_str(), isSelected,
-                                          ImGuiSelectableFlags_SpanAllColumns)) {
+                                        ImGuiSelectableFlags_SpanAllColumns)) {
                         ui.setSelectedIndex(isSelected ? -1 : i);
                         ui.setScrollToSelected(false);
                     }
+
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(1, t, ui);
+                        drawTooltipForColumn(1, t, ui);
+
+                    // Pop color if applied
+                    while (colorStack-- > 0)
+                        ImGui::PopStyleColor();
+
                     ImGui::PopID();}
 
                     // ----------------------------------------- VERSION
