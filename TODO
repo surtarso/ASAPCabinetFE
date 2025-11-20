@@ -10,13 +10,7 @@ FIX:
 QOL:
 - ease overwhelm in FE, send to Editor!
 - [ED] add option to resize vpindb images more obvious in editor
-
-- [ED] add colors to rows according to conditions:
-        - bad rom - name!
-        - no vpsdb ID - name!
-
-- [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)
-- [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)
+- [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
 - [!] add basic/advanced toggle for main config ui
 - [!] add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
