@@ -91,6 +91,8 @@ cd ~/ASAPCabinetFE
 
 ## Editor Features
 
+<img width="644" alt="ASAPCabinetFE Editor" src="https://github.com/user-attachments/assets/96d311ad-5027-4a48-b979-314e9e75f2e6" />
+
 - Spreadsheet view of all owned tables.
 - Row recolor on successful and failure launches for easy ID.
 - Easily filter tables by any characteristics.
@@ -163,6 +165,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug -B build -S .
 cmake --build build -j$(nproc)
 cd build
 ./ASAPCabinetFE
+# or ./ASAPCabinetFE-Editor
 ```
 </details>
 
@@ -179,6 +182,7 @@ Run and configure your paths:
 ```sh
 cd ~/ASAPCabinetFE
 ./ASAPCabinetFE
+# or ./ASAPCabinetFE-Editor
 ```
 </details>
 
