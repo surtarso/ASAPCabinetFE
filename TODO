@@ -8,13 +8,13 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 QOL:
-- ease overwhelm in FE, send to Editor!
 - [ED] add option to resize vpindb images more obvious in editor
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
 - [!] add basic/advanced toggle for main config ui
 - [!] add instructions to the screenshot mode
 - take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
+- ease overwhelm in FE, send to Editor!
 
 On hold:
 - portability: SDL drawn default wheel
@@ -23,15 +23,12 @@ On hold:
 - add update version checker/binary downloader (asapcab)
 - add update version checker/binary downloader (vpinballx)
 - add update version checker/binary downloader (vpxtool)
-- add graphs/statistics panel about tables
-    - played/unplayed count
-    - most played
-    - total playtime for all tables
-    - disk space for core files/media files
+- add multi launchers (other emulators, other versions of vpx w.e.)
+- screenshot mode using app size/pos as frame?
+- [!] add single table scan (all, selectable)
+
 - refactor the monoliths...
 - update header docs and user manual
-- screenshot mode using app size/pos as frame?
-- add multi launchers (other emulators, other versions of vpx w.e.)
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
 - [FE] add attract mode (random table on a timer if idle) (optional)
@@ -39,14 +36,19 @@ On hold:
 - [FE] add key to switch sorting type (joystick oriented)
 - add some way to download tables straight from the app?
 - incorporate generate_media.sh?
-- add flag to open --config only?
 - make both ui's switchable between them?
-- add splashscreen?
 - add highscore tracking
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
-- [!] add single table scan (all, selectable) override manager?
+
+
+- [NEW] STATISTIC TABLE
+    - add graphs/statistics panel about tables
+    - played/unplayed count
+    - most played
+    - total playtime for all tables
+    - disk space for core files/media files
 
 
 - [NEW] MEDIA TOOLS PANEL — BLUEPRINT

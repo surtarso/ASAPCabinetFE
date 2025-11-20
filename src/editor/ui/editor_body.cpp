@@ -271,7 +271,7 @@ void drawBody(EditorUI& ui) {
                         );
                     }
                     // red row for broken tables
-                    if (t.isBroken && t.playCount >= 1) {
+                    if (t.isBroken) {
                         ImGui::TableSetBgColor(
                             ImGuiTableBgTarget_RowBg0,
                             IM_COL32(255, 120, 120, 40)   // red but very transparent
