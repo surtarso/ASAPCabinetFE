@@ -315,8 +315,6 @@ void drawFooter(EditorUI& ui) {
                 LOG_DEBUG("Screenshot mode triggered from editor button");
                 if (!ui.screenshotModeActive_ && ui.screenshotManager()) {
 
-                    // --- THIS IS THE NEW LOGIC ---
-
                     // Set flags *before* the thread
                     ui.screenshotModeActive_ = true;
                     ui.inExternalAppMode_ = true;

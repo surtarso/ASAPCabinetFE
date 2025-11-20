@@ -281,43 +281,20 @@ void vpxtoolRun(EditorUI& ui, const std::string& commandWithSub) {
     std::string fullCmd = vpxtoolExe + " " + commandWithSub + " \"" + vpxFile.string() + "\"";
     LOG_INFO("Executing: " + fullCmd);
 
-    // Determine if the command should capture output
-    // bool isOutputCommand = false;
-    // {
-    //     // List of commands whose output we want in a terminal-like modal
-    //     static const std::vector<std::string> outputCmds = { "info show", "diff", "verify", "ls", "gamedata show", "romname" };
-    //     for (const auto& c : outputCmds)
-    //         if (commandWithSub.find(c) != std::string::npos)
-    //             isOutputCommand = true;
-    // }
+    ui.modal().openCommandOutput("VPXTool Output: " + commandWithSub);
 
-    // if (isOutputCommand) {
-        ui.modal().openCommandOutput("VPXTool Output: " + commandWithSub);
-
-        std::thread([fullCmd, &ui]() {
-            FILE* pipe = popen(fullCmd.c_str(), "r");
-            if (!pipe) {
-                ui.modal().appendCommandOutput("Failed to run command.");
-                return;
-            }
-            char buffer[256];
-            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-                ui.modal().appendCommandOutput(buffer);
-            }
-            pclose(pipe);
-        }).detach();
-    // } else {
-    //     ui.modal().openProgress("VPXTool", "Running VPXTool command...");
-
-    //     std::thread([fullCmd, &ui]() {
-    //         int result = std::system(fullCmd.c_str());
-
-    //         if (result != 0)
-    //             ui.modal().finishProgress("VPXTool failed (exit code " + std::to_string(result) + ")", "");
-    //         else
-    //             ui.modal().finishProgress("VPXTool command completed successfully.", "");
-    //     }).detach();
-    // }
+    std::thread([fullCmd, &ui]() {
+        FILE* pipe = popen(fullCmd.c_str(), "r");
+        if (!pipe) {
+            ui.modal().appendCommandOutput("Failed to run command.");
+            return;
+        }
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            ui.modal().appendCommandOutput(buffer);
+        }
+        pclose(pipe);
+    }).detach();
 }
 
 // ---------------------------------------------------------------------------

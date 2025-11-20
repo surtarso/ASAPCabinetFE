@@ -176,7 +176,6 @@ void Editor::mainLoop() {
                         showMetadataEditor_ = false;
 
                         if (saved) {
-                            // TODO: need to flip table.hasOverride to true. (here?)
                             {
                                 std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
 

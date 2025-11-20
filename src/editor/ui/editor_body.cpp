@@ -9,9 +9,6 @@ namespace fs = std::filesystem;
 
 namespace editor_body {
 
-// TODO: move all tooltip logic to util/editor_tooltips.h (and maybe move to editor/ui/)
-// TODO: rename button -> footer, menu -> header (_actions.h|cpp)
-
 // Forward declarations for all tooltip helpers
 static void drawYearTooltip(const TableData& t);
 static void drawNameTooltip(const TableData& t);
@@ -277,14 +274,6 @@ void drawBody(EditorUI& ui) {
                             IM_COL32(255, 120, 120, 40)   // red but very transparent
                         );
                     }
-
-                    // blue row for unmatched tables
-                    // if (t.matchConfidence == 0.0f) { // !t.jsonOwner == "vpsdb....."?
-                    //     ImGui::TableSetBgColor(
-                    //         ImGuiTableBgTarget_RowBg0,
-                    //         IM_COL32(120, 120, 255, 40)   // blue but very transparent
-                    //     );
-                    // }
 
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR

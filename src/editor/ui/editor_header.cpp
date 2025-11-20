@@ -121,25 +121,12 @@ void drawHeader(EditorUI& ui) {
             if (ImGui::MenuItem("Table Folder")) header_actions::requestDeleteTableFolder(ui);
             if (ImGui::MenuItem("Table INI")) header_actions::requestDeleteTableFile(ui, "ini");
             if (ImGui::MenuItem("Table VBS")) header_actions::requestDeleteTableFile(ui, "vbs");
-            // if (ImGui::MenuItem("Table Metadata")) header_actions::requestDeleteTableFile(ui, "metadata");
             if (ImGui::MenuItem("Table Overrides")) header_actions::requestDeleteTableFile(ui, "json");
             ImGui::EndMenu();
         }
         ImGui::PopStyleColor();
 
         ImGui::Separator();
-
-        // ------------------------------ TODO: MEDIA PANEL
-        // ImGui::TextDisabled("Media Tools");
-        // if (ImGui::Selectable("Resize Media...", false)) {
-        //     LOG_WARN("Resize Media requested [Placeholder]");
-        //     // TODO: open modal for resize presets
-        // }
-        // if (ImGui::Selectable("Compress Media...", false)) {
-        //     LOG_WARN("Compress Media requested [Placeholder]");
-        //     // TODO: open modal or run ffmpeg compression task
-        // }
-        // ImGui::Separator();
 
         // ------------------------------
         ImGui::TextDisabled("System");
