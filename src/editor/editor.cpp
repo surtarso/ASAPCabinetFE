@@ -175,8 +175,27 @@ void Editor::mainLoop() {
                         metadataEditor_.reset();
                         showMetadataEditor_ = false;
 
-                        if (saved)
+                        if (saved) {
+                            // TODO: need to flip table.hasOverride to true. (here?)
+                            {
+                                std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
+
+                                int filteredIndex = editorUI_->selectedIndex();
+                                auto& filtered = editorUI_->filteredTables();
+                                const std::string& selectedPath = filtered[filteredIndex].vpxFile;
+
+                                for (auto& t : editorUI_->tables()) {
+
+                                    // Match the same table used by TableOverrideEditor
+                                    if (t.vpxFile == selectedPath) {
+                                        t.hasOverride = true;   // <--- REQUIRED: mark override flag
+                                        tableCallbacks_->save(config_->getSettings(), editorUI_->tables(), nullptr);
+                                        break;
+                                    }
+                                }
+                            }
                             editorUI_->filterAndSortTablesPublic();
+                        }
                     }
                 }
 

@@ -126,13 +126,11 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             // check for .json override
             for (auto& o_entry : fs::directory_iterator(path.parent_path())) {
-                if (!o_entry.is_regular_file())
-                    continue;
 
-                std::string ext = o_entry.path().extension().string();
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                std::string o_ext = o_entry.path().extension().string();
+                std::transform(o_ext.begin(), o_ext.end(), o_ext.begin(), ::tolower);
 
-                if (ext == ".json" && o_entry.path().stem() == path.stem()) {
+                if (o_ext == ".json" && o_entry.path().stem() == path.stem()) {
                     table.hasOverride = true;
                     break;
                 }
@@ -219,13 +217,11 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             // check for .json override
             for (auto& o_entry : fs::directory_iterator(path.parent_path())) {
-                if (!o_entry.is_regular_file())
-                    continue;
 
-                std::string ext = o_entry.path().extension().string();
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                std::string o_ext = o_entry.path().extension().string();
+                std::transform(o_ext.begin(), o_ext.end(), o_ext.begin(), ::tolower);
 
-                if (ext == ".json" && o_entry.path().stem() == path.stem()) {
+                if (o_ext == ".json" && o_entry.path().stem() == path.stem()) {
                     table.hasOverride = true;
                     break;
                 }

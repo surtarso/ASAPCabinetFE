@@ -1,20 +1,19 @@
 TODO
+"nunca é cedo pra ser tarde demais"
+O arrependimento e a perda estão sempre à espreita, e a inação pode nos levar a um resultado indesejado mais rápido do que imaginamos.
 
 FIX:
 - [FE] add feedback for table launch/failure
-- [ED] re-add complete metadata to metadata panel, organize it.
-
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
-- [ED] override saves not saving table.hasOverride to true =/ (to update table view)
 
 QOL:
 - ease overwhelm in FE, send to Editor!
 - [ED] add option to resize vpindb images more obvious in editor
 
 - [ED] add colors to rows according to conditions:
-        - bad rom - soft brown row
-        - no vpsdb ID - soft purple
+        - bad rom - name!
+        - no vpsdb ID - name!
 
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!)
 - [ED] add save metadata back to .vpx with vpin/vpxtool? (metadata, not vbs script, possible?)

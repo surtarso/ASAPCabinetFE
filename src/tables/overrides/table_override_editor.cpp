@@ -48,6 +48,7 @@ TableOverrideEditor::TableOverrideEditor(TableData& table, TableOverrideManager&
         {"hasPup", table_.hasPup ? "true" : "false"},
         {"hasAltMusic", table_.hasAltMusic ? "true" : "false"},
         {"hasUltraDMD", table_.hasUltraDMD ? "true" : "false"},
+        {"hasOverride", table_.hasOverride ? "true" : "false"},
         {"tableName", table_.tableName},
         {"tableAuthor", table_.tableAuthor},
         {"tableDescription", table_.tableDescription},
@@ -123,7 +124,7 @@ bool TableOverrideEditor::render() {
     for (const auto& key : {"title", "manufacturer", "year", "vpxFile", "folder", "playfieldImage", "wheelImage",
                            "backglassImage", "dmdImage", "topperImage", "playfieldVideo", "backglassVideo",
                            "dmdVideo", "topperVideo", "music", "launchAudio", "romPath", "romName", "hasAltSound",
-                           "hasAltColor", "hasPup", "hasAltMusic", "hasUltraDMD"}) {
+                           "hasAltColor", "hasPup", "hasAltMusic", "hasUltraDMD", "hasOverride"}) {
         ImGui::Text("%s", key);
         ImGui::NextColumn();
 

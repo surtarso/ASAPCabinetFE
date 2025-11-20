@@ -102,7 +102,7 @@ static void drawAuthorTooltip(const TableData& t) {
 // ------------------------------------------------------------------
 // FILES column
 static void drawFilesTooltip(const TableData& t) {
-    ImGui::Text("Legend: I=INI, V=VBS, B=B2S");
+    ImGui::Text("Legend: I=INI, V=VBS\n  B=B2S O=Override");
     ImGui::TextColored(t.hasINI ? (t.hasDiffVbs ? ImVec4(1.f,1.f,0.f,1.f) : ImVec4(0.8f,0.8f,0.8f,1.f))
                                 : ImVec4(0.5f,0.5f,0.5f,1.f),
                        "INI: %s", t.hasINI ? (t.hasDiffVbs ? "modified" : "present") : "-");
@@ -110,6 +110,7 @@ static void drawFilesTooltip(const TableData& t) {
                                 : ImVec4(0.5f,0.5f,0.5f,1.f),
                        "VBS: %s", t.hasVBS ? (t.hasDiffVbs ? "modified" : "present") : "-");
     ImGui::Text("B2S: %s", t.hasB2S ? "present" : "-");
+    ImGui::Text("Override: %s", t.hasOverride ? "present" : "-");
 }
 
 // ------------------------------------------------------------------
