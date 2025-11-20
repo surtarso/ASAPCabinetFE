@@ -86,6 +86,9 @@ You may keep this enabled to make sure your tables always have the latest patch.
 The first time the app opens you might see all windows on top of each other on the corner of a single monitor.
 To ensure smooth transitions, you can set yout windows manually or let ASAPCab do it for you. You'll want the app's windows to align with your VPinballX setup.
 
+>[!NOTE]
+>You can set a custom path for your VPinballX.ini in case you dont use the default location (optional).
+
 ### Manual Positioning
 
 You can freely drag and place any of the app's windows wherever you prefer on your screen. Once you're happy with their positions, just **double-click anywhere on any screen to save these settings** to your configuration.
@@ -94,16 +97,17 @@ You can freely drag and place any of the app's windows wherever you prefer on yo
 
 If you've already set up your window positions within VPinballX, and your `VPinballX.ini` file is in its default location (`~/.vpinball`), ASAPCabinetFE can automatically adopt those positions and sizes when it loads. This feature is not enabled by default but can be toggled in the configuration menu.
 
-<img width="730" height="720" alt="image" src="https://github.com/user-attachments/assets/22534397-ac84-4f1e-8206-3fdd43c217ad" />
-
->[!NOTE]
->You can set a custom path for your VPinballX.ini in case you dont use the default location (optional).
-
 >[!IMPORTANT]
 >While this feature is enabled, manual positioning is disabled.
 
+<img width="730" height="720" alt="image" src="https://github.com/user-attachments/assets/22534397-ac84-4f1e-8206-3fdd43c217ad" />
+
 >[!WARNING]
 >In Hyprland, positioning will be handled by Hyprland's window rules.
+
+### Media sizing
+
+Media and windows are configured separatedly. Most cabinets will have their monitors using bezels and/or frames, so you are free to position, size and rotate the media itself inside the chosen window size. **This is specially important if your playfield is not in portrait mode, since you will need to rotate the media.**
 
 ## Adding Your Own Previews
 
