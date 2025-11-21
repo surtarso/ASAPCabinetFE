@@ -1,6 +1,4 @@
 TODO
-"nunca é cedo pra ser tarde demais"
-O arrependimento e a perda estão sempre à espreita, e a inação pode nos levar a um resultado indesejado mais rápido do que imaginamos.
 
 FIX:
 - [FE] add feedback for table launch/failure
@@ -17,23 +15,18 @@ QOL:
 - ease overwhelm in FE, send to Editor!
 
 On hold:
-- portability: SDL drawn default wheel
+- refactor the monoliths... interfaces, templates, factories...
+- [!] add single table scan (all, selectable)
+- add multi launchers (other emulators, other versions of vpx w.e.) '+' user add + dropdown
+- portability: SDL drawn default wheel (simple logo)
 - portability: embbed the UI sounds on binary
 - portability: embbed and pre-configure app icon?
-- add update version checker/binary downloader (asapcab)
-- add update version checker/binary downloader (vpinballx)
-- add update version checker/binary downloader (vpxtool)
-- add multi launchers (other emulators, other versions of vpx w.e.)
-- screenshot mode using app size/pos as frame?
-- [!] add single table scan (all, selectable)
-
-- refactor the monoliths...
+- screenshot mode using app size/pos as frame? kooha?
 - update header docs and user manual
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
 - [FE] add attract mode (random table on a timer if idle) (optional)
-- [FE] add support animated png for wheel/marquee
-- [FE] add key to switch sorting type (joystick oriented)
+- [FE] add key to switch sorting type (joystick oriented, cab navigation)
 - add some way to download tables straight from the app?
 - incorporate generate_media.sh?
 - make both ui's switchable between them?
@@ -43,7 +36,13 @@ On hold:
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
 
 
-- [NEW] STATISTIC TABLE
+- [NEW] UPDATE MANAGER PANEL
+    - check for updates -> self, vpinballx (vpxtool, new std patches?)
+    - click to download (maybe easy-install?)
+    - notification even if not opened on scheduled check
+
+
+- [NEW] STATISTICS PANEL
     - add graphs/statistics panel about tables
     - played/unplayed count
     - most played
