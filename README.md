@@ -87,7 +87,7 @@ cd ~/ASAPCabinetFE
 - No need to download artpacks, **generate** your own. (See [tools](#generator-tools--debian))
 - Multiple animations to indicate your missing media or to use as default.
 - Procedural generated Topper with table information.
-- Procedural generated DMD with manufacturer logos based on metadata info.
+- Procedural generated DMD with manufacturer logos based on metadata info. (see [Legal](#legal))
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
 
 ## Editor Features
