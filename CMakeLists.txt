@@ -312,6 +312,7 @@ set(SOURCES
     src/render/video_players/ffmpeg/ffmpeg_player.cpp
     src/render/video_players/ffmpeg/audio_decoder.cpp
     src/render/video_players/ffmpeg/video_decoder.cpp
+    src/render/video_players/sdl_draw/dmd_renderer.cpp
     src/render/video_players/vlc/vlc_player.cpp
     # tables
     src/tables/asap_index_manager.cpp

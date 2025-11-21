@@ -10,6 +10,7 @@
 #include "render/video_players/video_player_factory.h"
 #include "render/video_players/vlc/vlc_player.h"
 #include "render/video_players/ffmpeg/ffmpeg_player.h"
+#include "render/video_players/sdl_draw/dmd_renderer.h"
 #include "config/iconfig_service.h"
 #include "log/logging.h"
 #include <SDL_image.h>
@@ -44,6 +45,13 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       videoPlayerCache_(std::make_unique<VideoPlayerCache>()),
       titleRenderer_(std::make_unique<TitleRenderer>(nullptr)) {
     titleRenderer_->setFont(f);
+    if (dmd) {
+        dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmd);
+        // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
+        LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
+    } else {
+        LOG_WARN("DMD renderer is null, skipping DMD asset loading.");
+    }
     LOG_INFO("AssetManager constructed.");
 }
 
@@ -479,20 +487,55 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                             targetScreen = zone;
                             targetText = table.title;
                         }
-                        player = VideoPlayerFactory::createAlternativeMediaPlayer(
-                                w.renderer, mediaWidth, mediaHeight,
-                                configManager_->getSettings().fontPath,
-                                targetScreen,
-                                targetText
-                            );
-                        if (player) {
-                            w.videoPlayer = std::move(player);
+
+                        // CRITICAL: Generate a unique pseudoPath for DMD or default for others
+                        std::string pseudoPath = "__ALTERNATIVE_MEDIA__";
+                        if (zone == "dmd") {
+                            pseudoPath += ":" + targetText;
+                        }
+
+                        std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "ffmpeg";
+                        std::string cacheKey = backend + "_" + w.name + "_" + pseudoPath + "_" +
+                                               std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+
+                        // Try Cache first
+                        w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
+
+                        if (w.videoPlayer) {
                             w.videoPlayer->play();
-                            w.videoPath = "__ALTERNATIVE_MEDIA__";
-                            LOG_DEBUG("ImagesOnly=ON and user chose alternative → Using ALTERNATIVE MEDIA for " + std::string(w.name));
+                            w.videoPath = pseudoPath;
+                            w.mediaWidth = mediaWidth;
+                            w.mediaHeight = mediaHeight;
+                            LOG_DEBUG("ImagesOnly=ON → Using CACHED Alternative Media for " + std::string(w.name));
+                        } else {
+                            // Create NEW Alternative Media Player and inject dmdContentRenderer_ pointer
+                            player = VideoPlayerFactory::createAlternativeMediaPlayer(
+                                    w.renderer, mediaWidth, mediaHeight,
+                                    configManager_->getSettings().fontPath,
+                                    targetScreen,
+                                    targetText,
+                                    zone == "dmd" ? &dmdContentRenderer_ : nullptr // <-- INJECT POINTER
+                                );
+
+                            if (player) {
+                                // Cache the new player (Ownership is transferred out of 'player' here)
+                                videoPlayerCache_->cacheVideoPlayer(cacheKey, std::move(player), w.renderer, mediaWidth, mediaHeight);
+                                // Retrieve the player back from cache (safe ownership transfer back to w.videoPlayer)
+                                w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
+                                if (w.videoPlayer) w.videoPlayer->play();
+
+                                w.videoPath = pseudoPath;
+                                w.mediaWidth = mediaWidth;
+                                w.mediaHeight = mediaHeight;
+                                LOG_DEBUG("ImagesOnly=ON → Created NEW Alternative Media for " + std::string(w.name));
+                            } else {
+                                // Fall through to default media if creation failed
+                                goto default_media_fallback_images_only;
+                            }
                         }
                     // DEFAULT 'NO MEDIA' ROUTE
                     } else {
+                        default_media_fallback_images_only:
                         auto noMediaPlayer = VideoPlayerFactory::createDefaultMediaPlayer(
                             w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
                         if (noMediaPlayer) {
@@ -580,21 +623,55 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
                     targetScreen = zone;
                     targetText = table.title;
                 }
-                player = VideoPlayerFactory::createAlternativeMediaPlayer(
-                        w.renderer, mediaWidth, mediaHeight,
-                        configManager_->getSettings().fontPath,
-                        targetScreen,
-                        targetText
-                    );
-                // If any of the above succeeded, install player
-                if (player) {
-                    w.videoPlayer = std::move(player);
+
+                // CRITICAL: Generate a unique pseudoPath for DMD or default for others
+                std::string pseudoPath = "__ALTERNATIVE_MEDIA__";
+                if (zone == "dmd") {
+                    pseudoPath += ":" + targetText;
+                }
+
+                std::string backend = configManager_ ? configManager_->getSettings().videoBackend : "ffmpeg";
+                std::string cacheKey = backend + "_" + w.name + "_" + pseudoPath + "_" +
+                                       std::to_string(mediaWidth) + "x" + std::to_string(mediaHeight);
+
+                // Try Cache first
+                w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
+
+                if (w.videoPlayer) {
                     w.videoPlayer->play();
-                    w.videoPath = "__ALTERNATIVE_MEDIA__";
-                    LOG_DEBUG("No user media and ImagesOnly=OFF and chose alternative → Using ALTERNATIVE MEDIA for " + std::string(w.name));
+                    w.videoPath = pseudoPath;
+                    w.mediaWidth = mediaWidth;
+                    w.mediaHeight = mediaHeight;
+                    LOG_DEBUG("No user media and ImagesOnly=OFF → Using CACHED Alternative Media for " + std::string(w.name));
+                } else {
+                    // Create NEW Alternative Media Player and inject dmdContentRenderer_ pointer
+                    player = VideoPlayerFactory::createAlternativeMediaPlayer(
+                            w.renderer, mediaWidth, mediaHeight,
+                            configManager_->getSettings().fontPath,
+                            targetScreen,
+                            targetText,
+                            zone == "dmd" ? &dmdContentRenderer_ : nullptr // <-- INJECT POINTER
+                        );
+                    // If any of the above succeeded, install player
+                    if (player) {
+                        // Cache the new player (Ownership is transferred out of 'player' here)
+                        videoPlayerCache_->cacheVideoPlayer(cacheKey, std::move(player), w.renderer, mediaWidth, mediaHeight);
+                        // Retrieve the player back from cache (safe ownership transfer back to w.videoPlayer)
+                        w.videoPlayer = videoPlayerCache_->getVideoPlayer(cacheKey, w.renderer, mediaWidth, mediaHeight);
+                        if (w.videoPlayer) w.videoPlayer->play();
+
+                        w.videoPath = pseudoPath;
+                        w.mediaWidth = mediaWidth;
+                        w.mediaHeight = mediaHeight;
+                        LOG_DEBUG("No user media and ImagesOnly=OFF and chose alternative → Created NEW Alternative Media for " + std::string(w.name));
+                    } else {
+                        // Fall through to default media if creation failed
+                        goto default_media_fallback_final;
+                    }
                 }
             // DEFAULT 'NO MEDIA' ROUTE
             } else {
+                default_media_fallback_final:
                 auto noMediaPlayer = VideoPlayerFactory::createDefaultMediaPlayer(
                     w.renderer, mediaWidth, mediaHeight, configManager_->getSettings().fontPath, w.name);
                 if (noMediaPlayer) {

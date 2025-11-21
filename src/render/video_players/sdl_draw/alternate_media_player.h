@@ -27,6 +27,7 @@ public:
                            const std::string& fontPath,
                            const std::string& screenName,
                            const std::string& displayText,
+                           DmdSDLRenderer* sharedRenderer = nullptr,
                            int fontSize = 24)
         : renderer_(renderer),
           width_(width),
@@ -39,6 +40,7 @@ public:
           font_(nullptr),
           texture_(nullptr),
           last_update_time_(0.0f),
+          dmdRendererPtr_(sharedRenderer),
           last_counter_(0)
     {
         if (renderer_) {
@@ -57,6 +59,8 @@ public:
                 std::cerr << "Failed to load font: " << fontPath_ << " - " << TTF_GetError() << "\n";
             }
         }
+
+        dmdRendererPtr_ = sharedRenderer;
     }
 
     ~AlternativeMediaPlayer() override
@@ -95,7 +99,12 @@ public:
 
         if (screenName_ == "dmd") {
             defaultText_ = "INSERT COINS";
-            dmdRenderer_.render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+            if (dmdRendererPtr_) {
+                // Use the injected DmdSDLRenderer to handle asset lookup and rendering
+                dmdRendererPtr_->render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+            } else {
+                dmdRenderer_.render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+            }
         }
         else if (screenName_ == "topper") {
             defaultText_ = "ASAPCabinetFE";
@@ -134,6 +143,7 @@ private:
     TTF_Font* font_;
     SDL_Texture* texture_;
     float last_update_time_;
+    DmdSDLRenderer* dmdRendererPtr_;
     Uint64 last_counter_;
 
     DmdSDLRenderer dmdRenderer_;

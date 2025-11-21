@@ -15,6 +15,8 @@
 #include <memory>
 #include <string>
 
+class DmdSDLRenderer; // Forward declaration
+
 /**
  * @class IConfigService
  * @brief Interface for configuration services (forward declaration).
@@ -63,7 +65,8 @@ public:
     int height,
     std::string fontPath,
     std::string screenName,
-    std::string displayText);
+    std::string displayText,
+    DmdSDLRenderer* sharedDmdRenderer = nullptr);
 };
 
 #endif // VIDEO_PLAYER_FACTORY_H

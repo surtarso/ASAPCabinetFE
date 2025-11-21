@@ -144,14 +144,15 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createAlternativeMediaPlayer(
     int height,
     std::string fontPath,
     std::string screenName,
-    std::string displayText)
+    std::string displayText,
+    DmdSDLRenderer* sharedDmdRenderer)
 {
     if (!renderer || width <= 0 || height <= 0) {
         LOG_ERROR("Invalid parameters for createAlternativeMediaPlayer()");
         return nullptr;
     }
 
-    auto player = std::make_unique<AlternativeMediaPlayer>(renderer, width, height, fontPath, screenName, displayText);
+    auto player = std::make_unique<AlternativeMediaPlayer>(renderer, width, height, fontPath, screenName, displayText, sharedDmdRenderer);
 
     // Use empty path — DefaultMediaPlayer internally knows to use your animated fallback
     if (!player->setup(renderer, "", width, height)) {

@@ -4,8 +4,9 @@
 #include "tables/itable_loader.h"
 #include "tables/table_data.h"
 #include "sound/isound_manager.h"
-#include "render/ivideo_player.h"
 #include "render/iasset_manager.h"
+#include "render/ivideo_player.h"
+#include "render/video_players/sdl_draw/dmd_renderer.h"
 #include "texture_cache.h"
 #include "video_player_cache.h"
 #include "title_renderer.h"
@@ -87,6 +88,7 @@ private:
         const std::string& tableVideo;
     };
 
+    // Textures
     SDL_Texture* playfieldTexture;
     SDL_Texture* playfieldWheelTexture;
     SDL_Texture* playfieldTitleTexture;
@@ -99,21 +101,35 @@ private:
     SDL_Texture* topperTexture;
     SDL_Texture* topperWheelTexture;
     SDL_Texture* topperTitleTexture;
+
+    // Video Players
     std::unique_ptr<IVideoPlayer> playfieldVideoPlayer;
     std::unique_ptr<IVideoPlayer> backglassVideoPlayer;
     std::unique_ptr<IVideoPlayer> dmdVideoPlayer;
     std::unique_ptr<IVideoPlayer> topperVideoPlayer;
+
+    // Renderers (Pointers to WindowManager's renderers)
     SDL_Renderer* playfieldRenderer;
     SDL_Renderer* backglassRenderer;
     SDL_Renderer* dmdRenderer;
     SDL_Renderer* topperRenderer;
+    // DMD assets bank (manufacturer logos)
+    DmdSDLRenderer dmdContentRenderer_;
+
+    // Managers and Cache
     ISoundManager* soundManager_;
+    IConfigService* configManager_;
+    std::unique_ptr<TextureCache> textureCache_;
+    std::unique_ptr<VideoPlayerCache> videoPlayerCache_;
+    std::unique_ptr<TitleRenderer> titleRenderer_;
+
+    std::unique_ptr<ITableLoader> tableLoader_;
+
+    // Current asset paths (reload/cleanup)
     std::string currentPlayfieldVideoPath_;
     std::string currentBackglassVideoPath_;
     std::string currentDmdVideoPath_;
     std::string currentTopperVideoPath_;
-    IConfigService* configManager_;
-    std::unique_ptr<ITableLoader> tableLoader_;
     std::string currentPlayfieldImagePath_;
     std::string currentPlayfieldWheelImagePath_;
     std::string currentBackglassImagePath_;
@@ -131,9 +147,7 @@ private:
     int currentTopperMediaWidth_ = 0;
     int currentTopperMediaHeight_ = 0;
 
-    std::unique_ptr<TextureCache> textureCache_;
-    std::unique_ptr<VideoPlayerCache> videoPlayerCache_;
-    std::unique_ptr<TitleRenderer> titleRenderer_;
+
 };
 
 #endif // ASSET_MANAGER_H

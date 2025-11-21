@@ -1,5 +1,7 @@
 TODO
 
+- gather more 128x32 still logos (atari etc)
+
 FIX:
 - [FE] add feedback for table launch/failure
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
