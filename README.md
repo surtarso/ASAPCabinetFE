@@ -312,4 +312,4 @@ If you need help installing and configuring [Visual Pinball X](https://github.co
 Join the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions) page for questions and ideas!
 
 ## Legal
-“All trademarks and logos are the property of their respective owners and are used only for identification purposes. This project is not affiliated with or endorsed by any company whose logo appears here.”
+“All trademarks and logos are the property of their respective owners and are used only for identification purposes. This project is not affiliated with or endorsed by any company whose logo appears here. Manufacturer logos appear in low-resolution form strictly for identification of the associated tables.”
