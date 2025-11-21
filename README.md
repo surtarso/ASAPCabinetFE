@@ -302,7 +302,7 @@ You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/)
 - [Virtual Pinball Database](https://github.com/vpdb) team.
 - [Vpin Media Database](https://github.com/superhac/vpinmediadb) team.
 - [VPForums](https://www.vpforums.org/)/[VPUniverse](https://vpuniverse.com/) team.
-- A BIG THANK YOU to [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc).
+- A BIG THANK YOU to [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc) [@MikedaSpike](https://github.com/MikedaSpike).
 - And a special thanks to _Snortt_ for bearing with me thru all of this.
 - Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock!
 
@@ -310,3 +310,6 @@ You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/)
 If you need help installing and configuring [Visual Pinball X](https://github.com/vpinball/vpinball) check out [my wiki page](https://github.com/surtarso/vpx-gui-tools/wiki/Visual-Pinball-X-on-Debian-Linux).
 
 Join the [Discussions](https://github.com/surtarso/ASAPCabinetFE/discussions) page for questions and ideas!
+
+## Legal
+“All trademarks and logos are the property of their respective owners and are used only for identification purposes. This project is not affiliated with or endorsed by any company whose logo appears here.”
