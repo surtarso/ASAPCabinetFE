@@ -85,8 +85,8 @@ cd ~/ASAPCabinetFE
 - Keybind friendly and joystick support.
 - Extremely lightweight, blazing fast and fully customizable.
 - No need to download artpacks, **generate** your own. (See [tools](#generator-tools--debian))
-- Multiple animations based on metadata to indicate your missing media.
-- Computer generated Topper and DMD windows with metadata info.
+- Multiple animations indicate your missing media or use as default.
+- Procedural generated Topper info and DMD manufacturer logos with metadata info.
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
 
 ## Editor Features
