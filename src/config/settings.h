@@ -157,6 +157,7 @@ struct Settings {
     bool fetchVpinMediaDb = false; // download images from vpinmedia
     bool resizeToWindows = false; // resize images to windows sizes
     bool forceImagesOnly = false;
+    bool useGenArt = false;
 
     int wheelMediaHeight = 350;
     int wheelMediaWidth = 350;
@@ -231,7 +232,6 @@ struct Settings {
     // [Editor]
     bool showTableTooltips = true;
     std::string preferredCompressor = "auto"; // or "zip", "7z", etc.
-    bool useGenArt = false;
 
     // [Keybinds]
     std::map<std::string, std::string> keybinds_ = {
@@ -452,6 +452,7 @@ private:
                 {"fetchVpinMediaDb", s.fetchVpinMediaDb},
                 {"resizeToWindows", s.resizeToWindows},
                 {"forceImagesOnly", s.forceImagesOnly},
+                {"useGenArt", s.useGenArt},
                 {"wheelMediaHeight", s.wheelMediaHeight},
                 {"wheelMediaWidth", s.wheelMediaWidth},
                 {"wheelMediaX", s.wheelMediaX},
@@ -519,8 +520,7 @@ private:
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
-                {"preferredCompressor", s.preferredCompressor},
-                {"useGenArt", s.useGenArt}
+                {"preferredCompressor", s.preferredCompressor}
             }},
             {"Keybinds", s.keybinds_}
         };
@@ -662,6 +662,7 @@ private:
         s.fetchVpinMediaDb = j.value("MediaDimensions", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
         s.resizeToWindows = j.value("MediaDimensions", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceImagesOnly = j.value("MediaDimensions", nlohmann::json{}).value("forceImagesOnly", s.forceImagesOnly);
+        s.useGenArt = j.value("MediaDimensions", nlohmann::json{}).value("useGenArt", s.useGenArt);
         s.wheelMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaHeight", s.wheelMediaHeight);
         s.wheelMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaWidth", s.wheelMediaWidth);
         s.wheelMediaX = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaX", s.wheelMediaX);
@@ -730,7 +731,6 @@ private:
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
         s.preferredCompressor = j.value("Editor", nlohmann::json{}).value("preferredCompressor", s.preferredCompressor);
-        s.useGenArt = j.value("Editor", nlohmann::json{}).value("useGenArt", s.useGenArt);
 
         // [Keybinds]
         if (j.contains("Keybinds") && j["Keybinds"].is_object()) {
@@ -862,9 +862,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleY", {Settings::ReloadType::Title, "Vertical position (Y) for the title text."}},
 
     // Media dimensions and behavior
-    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download images from the VPin Media Database (requires VPSdb metadata)."}},
+    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download table images from the VPin Media Database.\nTo match it requires VPSdb ID metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
     {"forceImagesOnly", {Settings::ReloadType::Tables, "If enabled, the frontend will load images only and skip videos."}},
+    {"useGenArt", {Settings::ReloadType::None, "Use computer generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with procedural generated screens from metadata."}},
     {"wheelMediaHeight", {Settings::ReloadType::None, "Wheel image height in pixels."}},
     {"wheelMediaWidth", {Settings::ReloadType::None, "Wheel image width in pixels."}},
     {"wheelMediaX", {Settings::ReloadType::None, "Wheel image X coordinate inside its window."}},
@@ -934,7 +935,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},
     {"preferredCompressor", {Settings::ReloadType::None, "Tool used to compress table folders."}},
-    {"useGenArt", {Settings::ReloadType::None, "Use computer generated graphics for missing table art."}},
 
     // Keybind descriptions
     {"Previous Table", {Settings::ReloadType::None, "Key to select the previous table."}},
