@@ -294,8 +294,9 @@ https://github.com/user-attachments/assets/2a430103-da5d-49fc-95c0-c1ee10a280c1
 
 ## Contribute
 - Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
-- You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 - Contributions to `128x32` logos are highly appreciated. Open pull requests to the `assets/img/dmd_still/` folder.
+- If you're a *Dear ImGui* wizard, please contribute to UI polishing as I'm a complete loser for it, sorry.
+- You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ## Acknowledgments
 - [Visual Pinball X](https://github.com/vpinball/vpinball) team.
