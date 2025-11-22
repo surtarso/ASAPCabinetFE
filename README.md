@@ -30,7 +30,9 @@
 <p align="center"><i>"As Simple As Possible".</i></p>
 
 > [!TIP]
-> :godmode: Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start. Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md)
+> Grab precompiled builds from [Releases](https://github.com/surtarso/ASAPCabinetFE/releases) or [Actions](https://github.com/surtarso/ASAPCabinetFE/actions) page for the fastest start.
+>
+> Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md)
 
 ---
 
