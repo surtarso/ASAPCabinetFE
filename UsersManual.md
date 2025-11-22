@@ -132,13 +132,17 @@ The next time you scroll to a table, your custom media will appear.
 
 ### Default previews
 
-If you don't add anything, the app will use its default animations, which you can choose in the configuration menu between "No Media" animations for collectionists, or "computer generated" DMD's for Topper and DMD windows that will use the table metadata do display info and some placeholders for backglass and playfield!
+If you don't add anything, the app will use its default animations, which you can choose in the configuration menu between "No Media" animations for collectionists, or "computer generated" DMD's for Topper and DMD windows that will use the table metadata to display info and some placeholders for backglass and playfield!
+
+#### Default animations without metadata
 
 <img width="1032" height="263" alt="No Media default display" src="https://github.com/user-attachments/assets/1517e21b-be1d-4d64-ba8a-0253f7dd1981" />
 <p align="center"><i>Example 'No Media' default display animation on DMD screen</i></p>
 
 <img width="1028" height="263" alt="image" src="https://github.com/user-attachments/assets/ba0ad301-a782-443a-bffb-d57d63646025" />
 <p align="center"><i>Example 'Generated' DMD without metadata display on DMD screen</i></p>
+
+#### Default animations with metadata
 
 >[!IMPORTANT]
 >Logos are mapped to images comparing metadata 'manufacturer' field with /dmd_still/ filenames. If it can't match, it will type what's in 'manufacturer' like below. If that field is empty you get 'INSERT COINS' as above. To see those you need top opt-in or the default animation is shown. (first image)
