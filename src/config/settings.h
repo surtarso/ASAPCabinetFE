@@ -226,6 +226,7 @@ struct Settings {
     float configUIWidth = 0.7f;
     float configUIHeight = 0.5f;
     std::string defaultWheelImage = "/home/tarso/Development/ASAPCabinetFE/build/img/default_wheel.png";
+    std::string dmdStillImages = "img/dmd_still";
 
     // [Editor]
     bool showTableTooltips = true;
@@ -270,6 +271,7 @@ struct Settings {
 
             // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath",//"vpxtoolBin", "vpxtoolIndex", "vpxIniPath" // From Internal section
+            "dmdStillImages",
         };
 
         // Iterate through the list and resolve each path
@@ -289,6 +291,7 @@ struct Settings {
             else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, exeDir);
             else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, exeDir);
             else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
+            else if (field == "dmdStillImages") indexPath = resolvePath(indexPath, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -511,7 +514,8 @@ private:
                 {"screenshotWait", s.screenshotWait},
                 {"configUIWidth", s.configUIWidth},
                 {"configUIHeight", s.configUIHeight},
-                {"defaultWheelImage", s.defaultWheelImage}
+                {"defaultWheelImage", s.defaultWheelImage},
+                {"dmdStillImages", s.dmdStillImages}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -721,6 +725,7 @@ private:
         s.configUIHeight = j.value("Internal", nlohmann::json{}).value("configUIHeight", s.configUIHeight);
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
         s.defaultWheelImage = j.value("Internal", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
+        s.dmdStillImages = j.value("Internal", nlohmann::json{}).value("dmdStillImages", s.dmdStillImages);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -924,6 +929,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
     {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
+    {"dmdStillImages", {Settings::ReloadType::None, "Relative path to the default DMD images used when a table provides none."}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},

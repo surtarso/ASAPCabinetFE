@@ -51,7 +51,7 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
             // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
             LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
         #else
-            dmdContentRenderer_.loadAssetsFromDirectory("img/dmd_still", dmd);
+            dmdContentRenderer_.loadAssetsFromDirectory(configManager_->getSettings().dmdStillImages, dmd);
             LOG_INFO("DMD assets loaded succesfully.");
         #endif
     } else {
