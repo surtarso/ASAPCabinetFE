@@ -291,7 +291,7 @@ struct Settings {
             else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, exeDir);
             else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, exeDir);
             else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
-            else if (field == "dmdStillImages") indexPath = resolvePath(indexPath, exeDir);
+            else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
