@@ -46,9 +46,14 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       titleRenderer_(std::make_unique<TitleRenderer>(nullptr)) {
     titleRenderer_->setFont(f);
     if (dmd) {
-        dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmd);
-        // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
-        LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
+        #ifdef DEBUG_LOGGING
+            dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmd);
+            // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
+            LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
+        #else
+            dmdContentRenderer_.loadAssetsFromDirectory("img/dmd_still", dmd);
+            LOG_INFO("DMD assets loaded succesfully.");
+        #endif
     } else {
         LOG_WARN("DMD renderer is null, skipping DMD asset loading.");
     }
