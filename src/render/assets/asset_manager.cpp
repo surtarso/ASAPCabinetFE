@@ -45,18 +45,17 @@ AssetManager::AssetManager(SDL_Renderer* playfield, SDL_Renderer* backglass, SDL
       videoPlayerCache_(std::make_unique<VideoPlayerCache>()),
       titleRenderer_(std::make_unique<TitleRenderer>(nullptr)) {
     titleRenderer_->setFont(f);
-    if (dmd) {
-        #ifdef DEBUG_LOGGING
-            dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmd);
-            // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
-            LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
-        #else
-            dmdContentRenderer_.loadAssetsFromDirectory(configManager_->getSettings().dmdStillImages, dmd);
-            LOG_INFO("DMD assets loaded succesfully.");
-        #endif
-    } else {
-        LOG_WARN("DMD renderer is null, skipping DMD asset loading.");
-    }
+
+    #ifdef DEBUG_LOGGING
+        if (dmd) {
+                dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmd);
+                // dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_animated", dmd);  // TODO: add gif support!!!!
+                LOG_DEBUG("DMD assets loaded into dmdContentRenderer_.");
+
+        } else {
+            LOG_WARN("DMD renderer is null, skipping DMD asset loading.");
+        }
+    #endif
     LOG_INFO("AssetManager constructed.");
 }
 
@@ -85,6 +84,12 @@ void AssetManager::setSettingsManager(IConfigService* configService) {
     titleRenderer_->setTitlePosition(0, 0);
     titleRenderer_ = std::make_unique<TitleRenderer>(configService);
     //LOG_DEBUG("Settings manager set to " + std::to_string(reinterpret_cast<uintptr_t>(configService)));
+
+    // Relese DMD loading after config service for exeDir
+    if (dmdRenderer && configManager_) {
+        dmdContentRenderer_.loadAssetsFromDirectory(configManager_->getSettings().dmdStillImages, dmdRenderer);
+        LOG_INFO("DMD assets loaded succesfully.");
+    }
 }
 
 void AssetManager::reloadTitleTexture(const std::string& title, SDL_Color color, SDL_Rect& titleRect) {
