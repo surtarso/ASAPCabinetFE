@@ -107,7 +107,7 @@ void DmdSDLRenderer::loadAssetsFromDirectory(const std::string& directoryPath, S
         return;
     }
 
-    LOG_INFO("Loading DMD assets from directory: " + directoryPath);
+    LOG_DEBUG("Loading DMD assets from directory: " + directoryPath);
 
     try {
         for (const auto& entry : fs::directory_iterator(directoryPath)) {
