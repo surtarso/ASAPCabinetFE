@@ -140,6 +140,9 @@ If you don't add anything, the app will use its default animations, which you ca
 <img width="1028" height="263" alt="image" src="https://github.com/user-attachments/assets/ba0ad301-a782-443a-bffb-d57d63646025" />
 <p align="center"><i>Example 'Generated' DMD without metadata display on DMD screen</i></p>
 
+>[!IMPORTANT]
+>Logos are mapped to images comparing metadata 'manufacturer' field with /dmd_still/ filenames. If it can't match, it will type what's in 'manufacturer' like below. If that field is empty you get 'INSERT COINS' as above. To see those you need top opt-in or the default animation is shown. (first image)
+
 <img width="1034" height="268" alt="Generated DMD metadata display" src="https://github.com/user-attachments/assets/a089740d-431a-41d3-9dfb-7d044818eed0" />
 <p align="center"><i>Example 'Generated' DMD using metadata for display animation on DMD screen</i></p>
 
