@@ -7,8 +7,6 @@ FIX:
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 - log file for pathing and media downloading
-- move vpsdb cache folder to cache/vpsdb_thumbs/
-- rename cache/thumbs to cache/editor_thumbs (or panel_thumbs)
 
 QOL:
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
