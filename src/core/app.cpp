@@ -286,6 +286,24 @@ void App::initializeDependencies() {
     inputManager_->registerActions();
 
     LOG_INFO("Initialization completed.");
+
+    // Minimal update checker for frontend
+    std::string currentVersion = VersionChecker::normalizeVersion(ASAPCABINETFE_VERSION_STRING).c_str();
+    versionChecker_ = std::make_unique<VersionChecker>(
+        currentVersion,
+        "https://raw.githubusercontent.com/surtarso/ASAPCabinetFE/main/latest_version.txt"
+    );
+
+    // Only set the callback to flip a flag; no text, no UI
+    versionChecker_->setUpdateCallback([this](const std::string& /*latestVersion*/){
+        updateAvailable_ = true;
+    });
+
+    // Launch async check (non-blocking)
+    std::thread([checker=versionChecker_.get()]() {
+        checker->checkForUpdate();
+    }).detach();
+
 }
 
 void App::handleEvents() {
@@ -377,6 +395,24 @@ void App::render() {
         }
         if (showConfig_) {
             configEditor_->drawGUI();
+        }
+        // add green marker on top left corner if update available
+        if (updateAvailable_) {
+            SDL_SetRenderDrawColor(playfieldRenderer, 0, 255, 0, 255); // Green
+            int radius = 8;
+            int cx = 10 + radius;
+            int cy = 10 + radius;
+
+            // Draw a filled circle
+            for (int w = 0; w < radius * 2; w++) {
+                for (int h = 0; h < radius * 2; h++) {
+                    int dx = radius - w; // horizontal offset
+                    int dy = radius - h; // vertical offset
+                    if ((dx*dx + dy*dy) <= (radius * radius)) {
+                        SDL_RenderDrawPoint(playfieldRenderer, cx + dx, cy + dy);
+                    }
+                }
+            }
         }
         // Render TableOverrideEditor if toggled
         if (showEditor_ && currentIndex_ < tables_.size()) {

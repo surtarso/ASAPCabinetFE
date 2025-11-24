@@ -43,6 +43,9 @@
 #include "iapp_callbacks.h"
 #include "ui/loading_progress.h"
 #include "ui/loading_screen.h"
+#include "version.h"
+#include "utils/version_checker.h"
+
 struct Mix_Chunk;
 
 /**
@@ -156,6 +159,9 @@ private:
     std::thread loadingThread_;              // Added to store the loading thread
     std::mutex loadingMutex_;                // Added for synchronizing loading state
     std::condition_variable loadingCV_;      // Added to signal loading completion
+    // --- Update checker ---
+    std::unique_ptr<VersionChecker> versionChecker_;
+    std::atomic<bool> updateAvailable_{false};
 
     /**
      * @brief Gets the executable directory.
