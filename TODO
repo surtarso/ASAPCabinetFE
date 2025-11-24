@@ -1,12 +1,22 @@
 TODO
 
-- gather more 128x32 still logos (atari, playmatic etc)
-
 FIX:
-- [FE] add feedback for table launch/failure
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
+
+for 1.2.13
+- [FE] add feedback for table launch/failure
 - log file for pathing and media downloading
+
+for 1.3.0
+- [NEW] UPDATE MANAGER PANEL
+    - check for updates -> self, vpinballx (vpxtool, new std patches?)
+    - click to download (maybe easy-install?)
+    - notification even if not opened on scheduled check
+- gather more 128x32 still logos (atari, playmatic etc)
+- [ED] spreadsheet keyboard navigation
+- [ED] add option to resize vpindb images more obvious in editor
+- update header docs and user manual
 
 QOL:
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
@@ -15,8 +25,6 @@ QOL:
 - switch to flip DMD with topper (art related, as in play what would be in dmd in topper and vice versa)
 - (maybe) add title related dmd/topper features (would require the library of 2k+ dmd videos)
 - find and connect apis of dmd media things (i think i saw something...)
-- [ED] spreadsheet keyboard navigation
-- [ED] add option to resize vpindb images more obvious in editor
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
 - [!] add basic/advanced toggle for main config ui
 - [!] add instructions to the screenshot mode
@@ -34,7 +42,6 @@ On hold:
 - portability: embbed the UI sounds on binary
 - portability: embbed and pre-configure app icon?
 - screenshot mode using app size/pos as frame? kooha?
-- update header docs and user manual
 - [FE] make windows naturally draggable with mouse hold
 - [FE] make windows resizeable with mouse and pass to config
 - [FE] add attract mode (random table on a timer if idle) (optional)
@@ -46,12 +53,6 @@ On hold:
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
-
-
-- [NEW] UPDATE MANAGER PANEL
-    - check for updates -> self, vpinballx (vpxtool, new std patches?)
-    - click to download (maybe easy-install?)
-    - notification even if not opened on scheduled check
 
 
 - [NEW] STATISTICS PANEL
