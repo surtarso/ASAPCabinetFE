@@ -163,9 +163,10 @@ void DmdSDLRenderer::loadAssetsFromDirectory(const std::string& directoryPath, S
                 // 4. Copy pixel data into the streaming texture
                 if (SDL_UpdateTexture(tex, NULL, converted->pixels, converted->pitch) != 0) {
                     LOG_ERROR("Failed to update texture with surface data for " + filename + ": " + std::string(SDL_GetError()));
-                } else {
-                    LOG_DEBUG("Texture updated successfully for " + filename);
                 }
+                // else {
+                //     LOG_DEBUG("Texture updated successfully for " + filename);
+                // }
 
                 SDL_FreeSurface(converted);
 
