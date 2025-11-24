@@ -51,7 +51,6 @@ void VpsdbCatalog::startTableLoad(size_t index, const std::string& vpsdbImageCac
     isTableLoading_ = true;
 
     // 2. Pass the JSON object BY VALUE (copy) to the thread for safety.
-    //    Remove std::ref since we are passing a copy.
     tableLoadThread_ = std::thread(vpsdb::loadTableInBackground,
                                    fullJson, // <-- Pass by value (copy)
                                    index,

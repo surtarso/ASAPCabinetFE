@@ -16,7 +16,7 @@
 #include <nlohmann/json.hpp>
 #include "log/logging.h"
 
-namespace fs = std::filesystem; // Namespace alias for std::filesystem to simplify file operations
+namespace fs = std::filesystem;
 
 static size_t writeCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
     size_t realsize = size * nmemb;

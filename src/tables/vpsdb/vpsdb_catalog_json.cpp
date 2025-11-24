@@ -12,7 +12,6 @@ VpsdbJsonLoader::VpsdbJsonLoader(const Settings& settings)
       loaded_(false),
       isLoading_(true),
       progressStage_(0),
-    //   vpsdbFilePath_(settings.vpsDbPath),
       vpsDbClient_(std::make_unique<VpsDatabaseClient>(settings)) {
     initThread_ = std::thread(&VpsdbJsonLoader::initInBackground, this);
 }

@@ -13,10 +13,8 @@
 #include "vps_database_client.h"
 #include "log/logging.h"
 
-// VpsDatabaseClient::VpsDatabaseClient(const std::string& vpsDbPath, const Settings& settings)
 VpsDatabaseClient::VpsDatabaseClient(const Settings& settings)
     : settings_(settings),
-    //   vpsDbPath_(setting_.vpsDbPath), // Initialize with the provided VPS database path
       loader_(settings_.vpsDbPath), // Initialize loader with the same path
       matchmaker_(loader_.getVpsDb(), settings_), // Initialize matchmaker with the loaded database
       updater_(settings_.vpsDbPath) {} // Initialize updater with the same path

@@ -34,7 +34,6 @@ private:
     bool loaded_;
     std::atomic<bool> isLoading_;
     std::atomic<int> progressStage_; // 0: Not started, 1: Fetching, 2: Loading JSON, 3: Done
-    // std::string vpsdbFilePath_;
     std::unique_ptr<VpsDatabaseClient> vpsDbClient_;
     std::thread initThread_;
 

@@ -112,7 +112,7 @@ void loadTableInBackground(const nlohmann::json vpsdbJson,
     data.index = index;
 
     try {
-        // --- FIX: Handle both Array (normalized) and Object (raw) inputs ---
+        // --- Handle both Array (normalized) and Object (raw) inputs ---
         const nlohmann::json* tablesPtr = nullptr;
 
         if (vpsdbJson.is_array()) {
@@ -226,8 +226,6 @@ void loadTableInBackground(const nlohmann::json vpsdbJson,
         isTableLoading = false;
         return;
     }
-
-    // The rest of the function (image loading and queue push) remains the same
 
     if (data.table.id.empty()) {
         std::lock_guard<std::mutex> lock(mutex);
