@@ -25,7 +25,7 @@ void VpsdbImage::loadThumbnails(VpsdbCatalog& catalog) {
     } else {
         LOG_DEBUG("No playfield URL available");
     }
-    
+
     // Get image URLs (use first available tableFiles and b2sFiles)
     std::string playfieldUrl, backglassUrl;
     if (!catalog.currentTable_.tableFiles.empty() && !catalog.currentTable_.tableFiles[0].imgUrl.empty()) {
@@ -36,7 +36,7 @@ void VpsdbImage::loadThumbnails(VpsdbCatalog& catalog) {
     }
 
     // Ensure cache directory exists
-    fs::path cacheDir = "data/cache";
+    fs::path cacheDir = catalog.settings_.vpsdbImageCacheDir;  // "data/cache/vpsdb_thumbs"
     if (!fs::exists(cacheDir)) {
         try {
             fs::create_directories(cacheDir);
@@ -113,7 +113,7 @@ bool VpsdbImage::downloadImage(const std::string& url, const std::string& cacheP
         }
     }
 
-    std::ofstream file(cachePath, std::ios::binary);
+    std::ofstream file(cachePath, std::ios::binary | std::ios::trunc);
     if (!file.is_open()) {
         LOG_ERROR("Failed to open cache file: " + cachePath);
         curl_easy_cleanup(curl);
@@ -124,10 +124,16 @@ bool VpsdbImage::downloadImage(const std::string& url, const std::string& cacheP
     CURLcode res;
     for (int attempt = 1; attempt <= maxRetries; ++attempt) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
+
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "ASAPCabinetFE/1.0");
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 
         res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
@@ -150,7 +156,7 @@ bool VpsdbImage::downloadImage(const std::string& url, const std::string& cacheP
             file.clear(); // Reset error state
             file.seekp(0); // Rewind file
             file.close();
-            file.open(cachePath, std::ios::binary); // Reopen file
+            file.open(cachePath, std::ios::binary | std::ios::trunc); // Reopen file
             if (!file.is_open()) {
                 LOG_ERROR("Failed to reopen cache file: " + cachePath);
                 curl_easy_cleanup(curl);

@@ -103,9 +103,8 @@ PinballTable loadTableFromJson(const std::string& vpsdbFilePath, size_t index) {
 void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
                            std::mutex& mutex, std::atomic<bool>& isTableLoading,
-                           const std::string& exePath) {
+                           const std::string& vpsdbImageCacheDir) {
     LOG_DEBUG("Starting background load for index: " + std::to_string(index));
-    LOG_DEBUG("exePath = " + exePath);
     LoadedTableData data;
     data.index = index;
     data.table = loadTableFromJson(vpsdbFilePath, index);
@@ -127,8 +126,7 @@ void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
         LOG_DEBUG("Playfield URL for index " + std::to_string(index) + ": " + playfieldUrl);
     }
 
-    fs::path exeDir = fs::path(exePath).parent_path(); // Get directory of executable
-    fs::path cachePath = exeDir / "data/cache";
+    fs::path cachePath = vpsdbImageCacheDir;
     fs::create_directories(cachePath);
     LOG_DEBUG("Cache dir = " + cachePath.string());
 

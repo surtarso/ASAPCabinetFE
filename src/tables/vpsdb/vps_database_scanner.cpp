@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 static std::mutex mismatchLogMutex;
 
-VpsDataScanner::VpsDataScanner(const nlohmann::json& vpsDb) : vpsDb_(vpsDb), utils_() {}
+VpsDataScanner::VpsDataScanner(const nlohmann::json& vpsDb, const Settings& settings) : vpsDb_(vpsDb), utils_(), settings_(settings) {}
 
 bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress) const {
     if (!vpxTable.is_object()) {
@@ -260,7 +260,13 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     } else {
         {
             std::lock_guard<std::mutex> lock(mismatchLogMutex);
-            std::ofstream mismatchLog("logs/vpsdb_mismatches.log", std::ios::app);
+            // std::ofstream mismatchLog("logs/vpsdb_mismatches.log", std::ios::app);
+            fs::path logPath(settings_.vpsdbMissmatchLog);
+            fs::create_directories(logPath.parent_path());
+            // LOG_DEBUG("VPSDB Missmatch logPath: " + logPath.string()); // why not resolved?!
+            std::ofstream mismatchLog(settings_.vpsdbMissmatchLog, std::ios::app);
+            // LOG_DEBUG("VPSDB Missmatch log file: " + settings_.vpsdbMissmatchLog);  // not resolved?
+
             mismatchLog << "No match for: title='" << tableData.title << "', tableName='" << tableData.tableName
                         << "', romName='" << romName << "', filename='" << filename
                         << "', year='" << year << "', manufacturer='" << manufacturer

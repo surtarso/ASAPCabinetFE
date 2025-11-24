@@ -37,7 +37,7 @@ public:
      */
     static MediaPreview& instance();
 
-    void setExeDir(const std::string& exeDir) { exeDir_ = exeDir; }
+    void setCacheDir(const std::string& previewCacheDir) { previewCacheDir_ = previewCacheDir; }
 
 private:
     MediaPreview() = default;
@@ -59,5 +59,5 @@ private:
     SDL_Texture* loadTextureFromFile(SDL_Renderer* renderer,
                                      const std::string& path);
 
-    std::string exeDir_;
+    std::string previewCacheDir_;
 };

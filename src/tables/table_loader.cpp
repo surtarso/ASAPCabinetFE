@@ -254,7 +254,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numMatched = 0;
             progress->numNoMatch = 0;
         }
-        VpsDatabaseClient vpsClient(settings.vpsDbPath);
+        VpsDatabaseClient vpsClient(settings);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Checking for VPSDB updates...";

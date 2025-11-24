@@ -1,5 +1,5 @@
 #ifndef VPS_DATABASE_SCANNER_H
-#define VPS_DATABASE_SCANNER_H 
+#define VPS_DATABASE_SCANNER_H
 
 #include "tables/table_data.h"
 #include "core/ui/loading_progress.h"
@@ -23,7 +23,7 @@ public:
      *
      * @param vpsDb Reference to the parsed vpsdb.json data.
      */
-    VpsDataScanner(const nlohmann::json& vpsDb);
+    VpsDataScanner(const nlohmann::json& vpsDb, const Settings& settings);
 
     /**
      * @brief Matches a VPX table's metadata to a VPS database entry.
@@ -42,7 +42,7 @@ public:
 private:
     const nlohmann::json& vpsDb_; ///< Reference to the loaded VPS database.
     StringUtils utils_; ///< Utility functions for string processing.
-    Settings settings_; ///< For weight management
+    const Settings& settings_; ///< For weight management
 };
 
 #endif // VPS_DATABASE_SCANNER_H

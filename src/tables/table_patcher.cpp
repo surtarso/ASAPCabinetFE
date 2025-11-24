@@ -15,28 +15,29 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
 
 std::string TablePatcher::downloadHashesJson(const Settings& settings) {
     namespace fs = std::filesystem;
-    std::string cachePath = settings.exeDir + "data/hashes.json";
+    fs::path cacheFilePath = settings.vbsHashPath;
+    fs::path cacheDirPath = cacheFilePath.parent_path();
     std::string readBuffer;
 
     // Ensure data directory exists
     try {
-        fs::create_directories(settings.exeDir + "data/");
+        fs::create_directories(cacheDirPath);
     } catch (const fs::filesystem_error& e) {
         LOG_ERROR("Failed to create data directory: " + std::string(e.what()));
         return "";
     }
 
     // Check if forceRebuildMetadata is false and cached file exists
-    if (!settings.forceRebuildMetadata && fs::exists(cachePath)) {
-        std::ifstream cacheFile(cachePath, std::ios::binary);
+    if (!settings.forceRebuildMetadata && fs::exists(cacheFilePath)) {
+        std::ifstream cacheFile(cacheFilePath, std::ios::binary);
         if (cacheFile.is_open()) {
             readBuffer.assign((std::istreambuf_iterator<char>(cacheFile)), std::istreambuf_iterator<char>());
             cacheFile.close();
-            LOG_INFO("Loaded hashes.json from cache: " + cachePath);
+            LOG_INFO("Loaded hashes.json from cache: " + cacheFilePath.string());
 
             // Get file's last-modified time for If-Modified-Since
             try {
-                auto ftime = fs::last_write_time(cachePath);
+                auto ftime = fs::last_write_time(cacheFilePath);
                 auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
                 );
@@ -48,7 +49,7 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                 // curl_global_init(CURL_GLOBAL_DEFAULT);
                 curl = curl_easy_init();
                 if (curl) {
-                    curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json");
+                    curl_easy_setopt(curl, CURLOPT_URL, settings.vpxPatchesUrl.c_str());
                     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
                     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempBuffer);
                     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L); // HEAD request
@@ -73,10 +74,10 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
                 }
                 // curl_global_cleanup();
             } catch (const fs::filesystem_error& e) {
-                LOG_WARN("Failed to get last modified time for " + cachePath + ": " + std::string(e.what()));
+                LOG_WARN("Failed to get last modified time for " + cacheFilePath.string() + ": " + std::string(e.what()));
             }
         } else {
-            LOG_WARN("Failed to open cached hashes.json: " + cachePath);
+            LOG_WARN("Failed to open cached hashes.json: " + cacheFilePath.string());
         }
     }
 
@@ -87,20 +88,20 @@ std::string TablePatcher::downloadHashesJson(const Settings& settings) {
     // curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json");
+        curl_easy_setopt(curl, CURLOPT_URL, settings.vpxPatchesUrl.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
             LOG_INFO("Successfully downloaded VBScript patches database.");
             // Save to cache
-            std::ofstream outFile(cachePath, std::ios::binary);
+            std::ofstream outFile(cacheFilePath, std::ios::binary);
             if (outFile.is_open()) {
                 outFile.write(readBuffer.data(), readBuffer.size());
                 outFile.close();
-                LOG_DEBUG("Saved hashes.json to: " + cachePath);
+                LOG_DEBUG("Saved hashes.json to: " + cacheFilePath.string());
             } else {
-                LOG_ERROR("Failed to save hashes.json to " + cachePath);
+                LOG_ERROR("Failed to save hashes.json to " + cacheFilePath.string());
             }
         } else {
             LOG_ERROR("Failed to download hashes.json: " + std::string(curl_easy_strerror(res)));

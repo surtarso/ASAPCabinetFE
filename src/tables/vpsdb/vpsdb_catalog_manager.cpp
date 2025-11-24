@@ -11,9 +11,8 @@ namespace fs = std::filesystem;
 
 namespace vpsdb {
 
-VpsdbCatalog::VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader)
-    : vpsdbFilePath_(vpsdbFilePath),
-      renderer_(renderer),
+VpsdbCatalog::VpsdbCatalog(SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader)
+    : renderer_(renderer),
       currentIndex_(0),
       isTableLoading_(false),
       isOpen(false),
@@ -30,16 +29,16 @@ VpsdbCatalog::~VpsdbCatalog() {
     VpsdbImage::clearThumbnails(*this);
 }
 
-void VpsdbCatalog::startTableLoad(size_t index, const std::string& exePath) {
+void VpsdbCatalog::startTableLoad(size_t index, const std::string& vpsdbImageCacheDir) {
     if (tableLoadThread_.joinable()) {
         LOG_DEBUG("Joining existing thread before starting new load for index: " + std::to_string(index));
         tableLoadThread_.join();
     }
     LOG_DEBUG("Starting table load for index: " + std::to_string(index));
     isTableLoading_ = true;
-    tableLoadThread_ = std::thread(vpsdb::loadTableInBackground, vpsdbFilePath_, index,
+    tableLoadThread_ = std::thread(vpsdb::loadTableInBackground, settings_.vpsDbPath, index,
                                    std::ref(loadedTableQueue_), std::ref(mutex_),
-                                   std::ref(isTableLoading_), exePath);
+                                   std::ref(isTableLoading_), vpsdbImageCacheDir);
     LOG_DEBUG("Thread created for index: " + std::to_string(index));
 }
 
@@ -70,7 +69,7 @@ bool VpsdbCatalog::render() {
     if (!jsonLoader_.isLoaded()) {
         if (!jsonLoader_.isLoading() && jsonLoader_.getIndex().empty()) {
             ImGui::Text("Error: VPSDB JSON not loaded");
-            LOG_ERROR("JSON not loaded at " + vpsdbFilePath_);
+            LOG_ERROR("JSON not loaded at " + settings_.vpsDbPath);
         }
         return true;
     }
@@ -190,7 +189,7 @@ bool VpsdbCatalog::render() {
         (currentTable_.id.empty() || currentTable_.id != jsonLoader_.getIndex()[currentIndex_].id)) {
         LOG_DEBUG("Triggering initial load for index: " + std::to_string(currentIndex_));
         if (!isTableLoading_ && !tableLoadThread_.joinable()) {
-            startTableLoad(currentIndex_, settings_.exeDir);
+            startTableLoad(currentIndex_, settings_.vpsdbImageCacheDir);
             initialLoadAttempted = true;
         }
     }
@@ -444,7 +443,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = jsonLoader_.getIndex().size() - 1;
             }
-            startTableLoad(newIndex, settings_.exeDir);
+            startTableLoad(newIndex, settings_.vpsdbImageCacheDir);
             LOG_DEBUG("Navigated to previous table, index: " + std::to_string(newIndex));
         }
     }
@@ -468,7 +467,7 @@ bool VpsdbCatalog::render() {
             } else {
                 newIndex = 0;
             }
-            startTableLoad(newIndex, settings_.exeDir);
+            startTableLoad(newIndex, settings_.vpsdbImageCacheDir);
             LOG_DEBUG("Navigated to next table, index: " + std::to_string(newIndex));
         }
     }
@@ -544,7 +543,7 @@ void VpsdbCatalog::applySearchFilter(const char* searchTerm) {
             tableLoadThread_.join();
         }
         isTableLoading_ = true;
-        startTableLoad(newIndex, settings_.exeDir);
+        startTableLoad(newIndex, settings_.vpsdbImageCacheDir);
         LOG_DEBUG("Filtered to table at index: " + std::to_string(newIndex) + ", name: " + std::string(jsonLoader_.getIndex()[newIndex].name));
     }
 }

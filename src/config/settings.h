@@ -215,18 +215,26 @@ struct Settings {
     std::string exeDir;
     std::string vpxPlayCmd = "-Play";
     std::string vpxExtractCmd = "-ExtractVBS";
-    std::string vpsDbPath = "data/vpsdb.json";
+
+    std::string vpsDbPath = "data/cache/vpsdb.json";
     std::string vpsDbUpdateFrequency = "startup";
-    std::string vpsDbLastUpdated = "data/lastUpdated.json";
-    std::string vpxtoolBin = "";
+    std::string vpsDbLastUpdated = "data/cache/vpsdbLastUpdated.json";
+    std::string vpsdbImageCacheDir = "data/cache/vpsdb_thumbs";
+    std::string vpsdbMissmatchLog = "logs/vpsdb_mismatches.log";
+
+    std::string vpxtoolBin = ""; // absolute path
     std::string vpxtoolExtractCmd = "extractvbs";
-    std::string vpxtoolIndex = "vpxtool_index.json";
+    std::string vpxtoolIndex = "vpxtool_index.json"; //filename (not path)
     std::string indexPath = "data/asapcab_index.json";
+    std::string previewCacheDir = "data/cache/preview_thumbs";
+
+    std::string vbsHashPath = "data/cache/hashes.json";
+    std::string vpxPatchesUrl = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json";
     int screenshotWait = 4; // 0-60
     // defaults in ConfigUI::drawGUI(), these are for FE config panel
     float configUIWidth = 0.7f;
     float configUIHeight = 0.5f;
-    std::string defaultWheelImage = "/home/tarso/Development/ASAPCabinetFE/build/img/default_wheel.png";
+    std::string defaultWheelImage = "img/default_wheel.png";
     std::string dmdStillImages = "img/dmd_still";
 
     // [Editor]
@@ -264,19 +272,24 @@ struct Settings {
 
         // List all paths that need resolution
         std::vector<std::string> pathFields = {
+            // default images
+            "defaultWheelImage", "dmdStillImages",
+
             // UI Sounds Paths ("default sounds")
             "scrollNormalSound", "scrollFastSound", "scrollJumpSound",
             "scrollRandomSound", "launchTableSound", "launchScreenshotSound",
             "panelToggleSound", "screenshotTakeSound", "ambienceSound",
 
             // Other internal/external paths
-            "vpsDbPath", "vpsDbLastUpdated", "indexPath",//"vpxtoolBin", "vpxtoolIndex", "vpxIniPath" // From Internal section
-            "dmdStillImages",
+            "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
+            "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
         };
 
         // Iterate through the list and resolve each path
         for (const auto& field : pathFields) {
+            // Default images
             if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
+            else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, exeDir);
             // UI Sounds
             else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, exeDir);
             else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, exeDir);
@@ -291,7 +304,10 @@ struct Settings {
             else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, exeDir);
             else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, exeDir);
             else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
-            else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, exeDir);
+            else if (field == "vbsHashPath") vbsHashPath = resolvePath(vbsHashPath, exeDir);
+            else if (field == "vpsdbImageCacheDir") vpsdbImageCacheDir = resolvePath(vpsdbImageCacheDir, exeDir);
+            else if (field == "previewCacheDir") previewCacheDir = resolvePath(previewCacheDir, exeDir);
+            else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -516,7 +532,12 @@ private:
                 {"configUIWidth", s.configUIWidth},
                 {"configUIHeight", s.configUIHeight},
                 {"defaultWheelImage", s.defaultWheelImage},
-                {"dmdStillImages", s.dmdStillImages}
+                {"dmdStillImages", s.dmdStillImages},
+                {"vbsHashPath", s.vbsHashPath},
+                {"vpxPatchesUrl", s.vpxPatchesUrl},
+                {"vpsdbImageCacheDir", s.vpsdbImageCacheDir},
+                {"previewCacheDir", s.previewCacheDir},
+                {"vpsdbMissmatchLog", s.vpsdbMissmatchLog}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -727,6 +748,11 @@ private:
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
         s.defaultWheelImage = j.value("Internal", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
         s.dmdStillImages = j.value("Internal", nlohmann::json{}).value("dmdStillImages", s.dmdStillImages);
+        s.vbsHashPath = j.value("Internal", nlohmann::json{}).value("vbsHashPath", s.vbsHashPath);
+        s.vpxPatchesUrl = j.value("Internal", nlohmann::json{}).value("vpxPatchesUrl", s.vpxPatchesUrl);
+        s.vpsdbImageCacheDir = j.value("Internal", nlohmann::json{}).value("vpsdbImageCacheDir", s.vpsdbImageCacheDir);
+        s.previewCacheDir = j.value("Internal", nlohmann::json{}).value("previewCacheDir", s.previewCacheDir);
+        s.vpsdbMissmatchLog = j.value("Internal", nlohmann::json{}).value("vpsdbMissmatchLog", s.vpsdbMissmatchLog);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -921,16 +947,23 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"vpsDbPath", {Settings::ReloadType::None, "Full path to the VPS database file."}},
     {"vpsDbUpdateFrequency", {Settings::ReloadType::None, "When to check for VPSdb updates (e.g., 'startup')."}},
     {"vpsDbLastUpdated", {Settings::ReloadType::None, "Full path to the VPS database timestamp file."}},
+    {"vpsdbImageCacheDir", {Settings::ReloadType::None, "Relative path to the VPSdb image cache dir."}},
+    {"vpsdbMissmatchLog", {Settings::ReloadType::None, "Relative path to the VPSdb missmatch log file."}},
 
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file (defaults to vpxtool_index.json)."}},
     {"vpxtoolBin", {Settings::ReloadType::None, "Full path to the vpxtool binary, if it is not on your PATH."}},
     {"vpxtoolExtractCmd", {Settings::ReloadType::None, "The vpxtool subcommand for extracting VBScripts."}},
+    {"previewCacheDir", {Settings::ReloadType::None, "Relative path to the Editor metadata preview cache dir."}},
+
     {"indexPath", {Settings::ReloadType::None, "Full path to the main table index file."}},
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
-    {"defaultWheelImage", {Settings::ReloadType::Tables, "Absolute path to the default wheel image used when a table provides none."}},
+    {"defaultWheelImage", {Settings::ReloadType::Tables, "Relative path to the default wheel image used when a table provides none."}},
     {"dmdStillImages", {Settings::ReloadType::None, "Relative path to the default DMD images used when a table provides none."}},
+
+    {"vbsHashPath", {Settings::ReloadType::None, "Relative path to the table VBS script hashes for patching."}},
+    {"vpxPatchesUrl", {Settings::ReloadType::None, "URL for vpx standalone script hashes file"}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},

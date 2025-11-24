@@ -32,12 +32,11 @@ class VpsdbCatalog {
     friend class VpsdbImage; // Allow VpsdbImage to access private members
 
 public:
-    VpsdbCatalog(const std::string& vpsdbFilePath, SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader);
+    VpsdbCatalog(SDL_Renderer* renderer, const Settings& settings, VpsdbJsonLoader& jsonLoader);
     ~VpsdbCatalog();
     bool render();
 
 private:
-    std::string vpsdbFilePath_;
     SDL_Renderer* renderer_;
     PinballTable currentTable_;
     size_t currentIndex_;
@@ -49,6 +48,7 @@ private:
     std::string currentPlayfieldPath_;
     const Settings& settings_;
     VpsdbJsonLoader& jsonLoader_;
+    // std::string vpsdbFilePath_;
     std::thread tableLoadThread_;
     std::mutex mutex_;
     std::queue<LoadedTableData> loadedTableQueue_;
@@ -57,7 +57,7 @@ private:
     std::string join(const std::vector<std::string>& vec, const std::string& delim);
     void applySearchFilter(const char* searchTerm);
     void openUrl(const std::string& url);
-    void startTableLoad(size_t index, const std::string& exePath);
+    void startTableLoad(size_t index, const std::string& vpsdbImageCacheDir);
 };
 
 } // namespace vpsdb

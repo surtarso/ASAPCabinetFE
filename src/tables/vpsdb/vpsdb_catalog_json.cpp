@@ -7,13 +7,13 @@ namespace fs = std::filesystem;
 
 namespace vpsdb {
 
-VpsdbJsonLoader::VpsdbJsonLoader(const std::string& vpsdbFilePath, const Settings& settings)
-    : vpsdbFilePath_(vpsdbFilePath),
-      settings_(settings),
+VpsdbJsonLoader::VpsdbJsonLoader(const Settings& settings)
+    : settings_(settings),
       loaded_(false),
       isLoading_(true),
       progressStage_(0),
-      vpsDbClient_(std::make_unique<VpsDatabaseClient>(vpsdbFilePath)) {
+    //   vpsdbFilePath_(settings.vpsDbPath),
+      vpsDbClient_(std::make_unique<VpsDatabaseClient>(settings)) {
     initThread_ = std::thread(&VpsdbJsonLoader::initInBackground, this);
 }
 
@@ -34,7 +34,7 @@ void VpsdbJsonLoader::initInBackground() {
     progressStage_ = 1;
     LOG_DEBUG("VpsdbJsonLoader: Starting initialization in background");
 
-    if (!fs::exists(vpsdbFilePath_)) {
+    if (!fs::exists(settings_.vpsDbPath)) {
         LOG_DEBUG("VpsdbJsonLoader: vpsdb.json not found, initiating fetch");
         if (!vpsDbClient_->fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
             LOG_ERROR("VpsdbJsonLoader: Failed to fetch vpsdb.json");
@@ -57,9 +57,9 @@ void VpsdbJsonLoader::initInBackground() {
 
 void VpsdbJsonLoader::loadJson() {
     try {
-        std::ifstream file(vpsdbFilePath_);
+        std::ifstream file(settings_.vpsDbPath);
         if (!file.is_open()) {
-            LOG_ERROR("VpsdbJsonLoader: Failed to open JSON file: " + std::string(vpsdbFilePath_));
+            LOG_ERROR("VpsdbJsonLoader: Failed to open JSON file: " + std::string(settings_.vpsDbPath));
             loaded_ = false;
             return;
         }

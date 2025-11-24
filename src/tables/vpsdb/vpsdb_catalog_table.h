@@ -23,7 +23,7 @@ struct LoadedTableData {
 void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
                            std::mutex& mutex, std::atomic<bool>& isTableLoading,
-                        const std::string& exePath);
+                        const std::string& vpsdbImageCacheDir);
 
 } // namespace vpsdb
 

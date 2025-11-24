@@ -118,10 +118,10 @@ int main(int argc, char* argv[]) {
             std::cout << " (Repository has uncommitted changes)" << std::endl;
         }
 
-    // --- Version check ---
-    VersionChecker checker(ASAPCABINETFE_VERSION_STRING,
-                           "https://raw.githubusercontent.com/surtarso/ASAPCabinetFE/main/latest_version.txt");
-    checker.checkForUpdate();
+        // --- Version check ---
+        VersionChecker checker(ASAPCABINETFE_VERSION_STRING,
+                            "https://raw.githubusercontent.com/surtarso/ASAPCabinetFE/main/latest_version.txt");
+        checker.checkForUpdate();
 
         return 0;
     }
@@ -137,10 +137,10 @@ int main(int argc, char* argv[]) {
                 << "  ./ASAPCabinetFE [option]\n\n"
                 << "Options:\n"
                 << "  <no args>              Launch the main front-end\n"
-                << "  -e, --editor           Launch the Table Editor (not yet implemented)\n\n"
+                << "  -e, --editor           Launch the Table Editor\n\n"
                 << "  --software-renderer    Launch in software mode (debug only)\n"
                 << "  -r, --reset            Reset all configurations to default values\n"
-                << "  -v, --version          Display version information\n"
+                << "  -v, --version          Display version/update information\n"
                 << "  -h, --help             Show this help message\n\n"
                 << "Example:\n"
                 << "  ./ASAPCabinetFE --editor\n"

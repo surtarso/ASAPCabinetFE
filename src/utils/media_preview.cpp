@@ -30,7 +30,8 @@ std::string MediaPreview::computeThumbPath(const std::string& imagePath, int max
             << (int)hash[i];
 
     // Use exeDir_ instead of relative path
-    fs::path dir = fs::path(exeDir_) / "data" / "cache" / "thumbs";
+    fs::path dir = fs::path(previewCacheDir_); // /exeDir +  "data" / "cache" / "preview_thumbs";
+    LOG_DEBUG("cache dir: " + previewCacheDir_);
     if (!fs::exists(dir))
         fs::create_directories(dir);
 

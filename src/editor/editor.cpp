@@ -55,7 +55,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
     // Then pass it to screenshotManager if needed, or leave nullptr if not
     screenshotManager_ = DependencyFactory::createScreenshotManager(exeDir_, config_.get(), keybindProvider_.get(), soundManager_.get());
 
-    MediaPreview::instance().setExeDir(exeDir_);
+    MediaPreview::instance().setCacheDir(config_.get()->getSettings().previewCacheDir);
 
     // Create Editor UI
     editorUI_ = std::make_unique<EditorUI>(
@@ -256,10 +256,8 @@ void Editor::mainLoop() {
                 if (!vpsdbCatalog_) {
                     // Lazy initialization
                     LOG_DEBUG("Editor: Initializing VpsdbCatalog...");
-                    vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(config_->getSettings().vpsDbPath,
-                                                                            config_->getSettings());
-                    vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(config_->getSettings().vpsDbPath,
-                                                                        renderer_, // Use the Editor's main renderer
+                    vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(config_->getSettings());
+                    vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(renderer_, // Use the Editor's main renderer
                                                                         config_->getSettings(),
                                                                         *vpsdbJsonLoader_);
                     LOG_DEBUG("Editor: vpsdbCatalog and vpsdbJsonLoader initialized");

@@ -40,7 +40,8 @@ public:
      *
      * @param vpsDbPath The file path to the VPS database (vpsdb.json).
      */
-    VpsDatabaseClient(const std::string& vpsDbPath);
+    // VpsDatabaseClient(const std::string& vpsDbPath, const Settings& settings);
+    VpsDatabaseClient(const Settings& settings);
 
     /**
      * @brief Loads the VPS database from the specified file path.
@@ -83,7 +84,8 @@ public:
     bool fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress = nullptr);
 
 private:
-    std::string vpsDbPath_; ///< The file path to the VPS database (vpsdb.json).
+    // std::string vpsDbPath_; ///< The file path to the VPS database (vpsdb.json).
+    const Settings& settings_;
     VpsDatabaseLoader loader_; ///< The loader component for parsing the VPS database.
     VpsDataScanner matchmaker_; ///< The matchmaker component for updating table data.
     VpsDatabaseUpdater updater_; ///< The updater component for fetching database updates.

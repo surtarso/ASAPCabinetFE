@@ -399,10 +399,8 @@ void App::render() {
         // Render vpsdb catalog
         if (showVpsdb_) {
             if (!vpsdbCatalog_) {
-                vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(configManager_->getSettings().vpsDbPath,
-                                                                        configManager_->getSettings());
-                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(configManager_->getSettings().vpsDbPath,
-                                                                    windowManager_->getPlayfieldRenderer(),
+                vpsdbJsonLoader_ = std::make_unique<vpsdb::VpsdbJsonLoader>(configManager_->getSettings());
+                vpsdbCatalog_ = std::make_unique<vpsdb::VpsdbCatalog>(windowManager_->getPlayfieldRenderer(),
                                                                     configManager_->getSettings(),
                                                                     *vpsdbJsonLoader_);
                 LOG_DEBUG("vpsdbCatalog and vpsdbJsonLoader initialized");

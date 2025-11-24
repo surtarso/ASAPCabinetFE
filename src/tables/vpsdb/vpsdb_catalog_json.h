@@ -15,7 +15,7 @@ namespace vpsdb {
 
 class VpsdbJsonLoader {
 public:
-    VpsdbJsonLoader(const std::string& vpsdbFilePath, const Settings& settings);
+    VpsdbJsonLoader(const Settings& settings);
     ~VpsdbJsonLoader();
     void initialize();
     bool isLoaded() const { return loaded_; }
@@ -24,12 +24,12 @@ public:
     bool isLoading() const { return isLoading_; }
 
 private:
-    std::string vpsdbFilePath_;
     const Settings& settings_;
     std::vector<TableIndex> index_;
     bool loaded_;
     std::atomic<bool> isLoading_;
     std::atomic<int> progressStage_; // 0: Not started, 1: Fetching, 2: Loading JSON, 3: Done
+    // std::string vpsdbFilePath_;
     std::unique_ptr<VpsDatabaseClient> vpsDbClient_;
     std::thread initThread_;
 

@@ -394,12 +394,17 @@ public:
             "vpsDbPath",
             "vpsDbUpdateFrequency",
             "vpsDbLastUpdated",
+            "vpsdbImageCacheDir",
+            "vpsdbMissmatchLog",
             "vpxtoolBin",
             "vpxtoolExtractCmd",
             "vpxtoolIndex",
             "indexPath",
             "screenshotWait",
-            "defaultWheelImage"
+            "defaultWheelImage",
+            "vbsHashPath",
+            "vpxPatchesUrl",
+            "previewCacheDir"
         };
         keyDisplayNames_["Internal"] = {
             {"vpxPlayCmd", "VPinballX 'Play' Subcommand"},
@@ -407,12 +412,17 @@ public:
             {"vpsDbPath", "VPS Database Path"},
             {"vpsDbUpdateFrequency", "VPS Database Update Frequency"},
             {"vpsDbLastUpdated", "VPS Database Last Updated"},
+            {"vpsdbImageCacheDir", "VPS Database Cache Dir"},
+            {"vpsdbMissmatchLog", "VPS Database Missmatch Logfile"},
             {"vpxtoolBin", "VPXTool Binary Path"},
             {"vpxtoolExtractCmd", "VPXTool Extract Command"},
             {"vpxtoolIndex", "VPXTool Index File"},
             {"indexPath", "Index Path"},
             {"screenshotWait", "Screenshot Wait Time"},
-            {"defaultWheelImage", "Default wheel image"}
+            {"defaultWheelImage", "Default Wheel Image"},
+            {"vbsHashPath", "Script Hashes File for Patching"},
+            {"vpxPatchesUrl", "VBS Script Patches URL"},
+            {"previewCacheDir", "Editor Previews Cache Dir"}
         };
 
         keyOrders_["Editor"] = {
