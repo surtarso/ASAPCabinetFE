@@ -83,6 +83,12 @@ public:
      */
     bool fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress = nullptr);
 
+    /**
+     * @brief Retrieves the loaded VPS database JSON.
+     * @return A constant reference to the loaded VPS database JSON.
+     */
+    const nlohmann::json& getLoadedVpsDb() const;
+
 private:
     // std::string vpsDbPath_; ///< The file path to the VPS database (vpsdb.json).
     const Settings& settings_;

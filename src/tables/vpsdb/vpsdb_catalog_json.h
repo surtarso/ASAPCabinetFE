@@ -22,6 +22,11 @@ public:
     const std::vector<TableIndex>& getIndex() const { return index_; }
     int getProgressStage() const { return progressStage_; }
     bool isLoading() const { return isLoading_; }
+    const nlohmann::json& getVpsDb() const;
+    /**
+     * @brief Waits for the background loading to complete.
+     */
+    void waitForInit();
 
 private:
     const Settings& settings_;

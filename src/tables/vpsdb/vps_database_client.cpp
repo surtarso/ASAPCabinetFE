@@ -32,3 +32,7 @@ bool VpsDatabaseClient::matchMetadata(const nlohmann::json& vpxTable, TableData&
 bool VpsDatabaseClient::fetchIfNeeded(const std::string& lastUpdatedPath, const std::string& updateFrequency, LoadingProgress* progress) {
     return updater_.fetchIfNeeded(lastUpdatedPath, updateFrequency, progress); // Delegate update check to the updater component
 }
+
+const nlohmann::json& VpsDatabaseClient::getLoadedVpsDb() const {
+    return loader_.getVpsDb();
+}

@@ -41,11 +41,24 @@ void VpsdbCatalog::startTableLoad(size_t index, const std::string& vpsdbImageCac
         LOG_DEBUG("Joining existing thread before starting new load for index: " + std::to_string(index));
         tableLoadThread_.join();
     }
+
+    jsonLoader_.waitForInit();
+
+    // 1. Get the already loaded JSON (by const reference)
+    const nlohmann::json& fullJson = jsonLoader_.getVpsDb();
+
     LOG_DEBUG("Starting table load for index: " + std::to_string(index));
     isTableLoading_ = true;
-    tableLoadThread_ = std::thread(vpsdb::loadTableInBackground, settings_.vpsDbPath, index,
-                                   std::ref(loadedTableQueue_), std::ref(mutex_),
-                                   std::ref(isTableLoading_), vpsdbImageCacheDir);
+
+    // 2. Pass the JSON object BY VALUE (copy) to the thread for safety.
+    //    Remove std::ref since we are passing a copy.
+    tableLoadThread_ = std::thread(vpsdb::loadTableInBackground,
+                                   fullJson, // <-- Pass by value (copy)
+                                   index,
+                                   std::ref(loadedTableQueue_),
+                                   std::ref(mutex_),
+                                   std::ref(isTableLoading_),
+                                   vpsdbImageCacheDir);
     LOG_DEBUG("Thread created for index: " + std::to_string(index));
 }
 
