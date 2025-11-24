@@ -16,8 +16,8 @@ VpsdbCatalog::VpsdbCatalog(SDL_Renderer* renderer, const Settings& settings, Vps
       currentIndex_(0),
       isTableLoading_(false),
       isOpen(false),
-      backglassTexture_(nullptr, SDL_DestroyTexture),
-      playfieldTexture_(nullptr, SDL_DestroyTexture),
+      backglassTexture_(nullptr, [](SDL_Texture*){}),
+      playfieldTexture_(nullptr, [](SDL_Texture*){}),
       settings_(settings),
       jsonLoader_(jsonLoader) {
 }
@@ -26,6 +26,13 @@ VpsdbCatalog::~VpsdbCatalog() {
     if (tableLoadThread_.joinable()) {
         tableLoadThread_.join();
     }
+
+    // Free cached textures
+    for (auto& [path, tex] : textureCache_) {
+        SDL_DestroyTexture(tex);
+    }
+    textureCache_.clear();
+
     VpsdbImage::clearThumbnails(*this);
 }
 
@@ -142,16 +149,47 @@ bool VpsdbCatalog::render() {
             currentTable_ = std::move(data.table);
             VpsdbImage::clearThumbnails(*this);
 
+            // --- BACKGLASS ---
             if (!data.backglassPath.empty()) {
-                backglassTexture_.reset(VpsdbImage::loadTexture(*this, data.backglassPath));
+
+                // Check memory cache first
+                auto it = textureCache_.find(data.backglassPath);
+                if (it != textureCache_.end()) {
+                    // Already in memory = instant load
+                    backglassTexture_.reset(it->second);
+                    LOG_DEBUG("Using cached backglass texture: " + data.backglassPath);
+                } else {
+                    // Not cached = load from disk
+                    SDL_Texture* tex = VpsdbImage::loadTexture(*this, data.backglassPath);
+                    if (tex) {
+                        textureCache_[data.backglassPath] = tex; // ADD TO CACHE
+                        backglassTexture_.reset(tex);
+                        LOG_DEBUG("Loaded and cached backglass texture: " + data.backglassPath);
+                    }
+                }
+
                 currentBackglassPath_ = data.backglassPath;
-                LOG_DEBUG("Loaded backglass texture for index: " + std::to_string(data.index));
             }
+
+            // --- PLAYFIELD ---
             if (!data.playfieldPath.empty()) {
-                playfieldTexture_.reset(VpsdbImage::loadTexture(*this, data.playfieldPath));
+
+                auto it = textureCache_.find(data.playfieldPath);
+                if (it != textureCache_.end()) {
+                    playfieldTexture_.reset(it->second);
+                    LOG_DEBUG("Using cached playfield texture: " + data.playfieldPath);
+                } else {
+                    SDL_Texture* tex = VpsdbImage::loadTexture(*this, data.playfieldPath);
+                    if (tex) {
+                        textureCache_[data.playfieldPath] = tex;
+                        playfieldTexture_.reset(tex);
+                        LOG_DEBUG("Loaded and cached playfield texture: " + data.playfieldPath);
+                    }
+                }
+
                 currentPlayfieldPath_ = data.playfieldPath;
-                LOG_DEBUG("Loaded playfield texture for index: " + std::to_string(data.index));
             }
+
 
             isTableLoading_ = false;
             LOG_DEBUG("Processed loaded table, index: " + std::to_string(currentIndex_));

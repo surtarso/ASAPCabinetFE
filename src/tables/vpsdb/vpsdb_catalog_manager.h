@@ -48,7 +48,6 @@ private:
     std::string currentPlayfieldPath_;
     const Settings& settings_;
     VpsdbJsonLoader& jsonLoader_;
-    // std::string vpsdbFilePath_;
     std::thread tableLoadThread_;
     std::mutex mutex_;
     std::queue<LoadedTableData> loadedTableQueue_;
@@ -58,6 +57,13 @@ private:
     void applySearchFilter(const char* searchTerm);
     void openUrl(const std::string& url);
     void startTableLoad(size_t index, const std::string& vpsdbImageCacheDir);
+
+    // cache table textures in memory so re-opening a table is instant
+    struct CachedTextures {
+        SDL_Texture* backglass = nullptr;
+        SDL_Texture* playfield = nullptr;
+    };
+    std::unordered_map<std::string, SDL_Texture*> textureCache_;
 };
 
 } // namespace vpsdb

@@ -19,6 +19,25 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
 }
 
 void VpsdbImage::loadThumbnails(VpsdbCatalog& catalog) {
+
+    // Avoid reloading textures if paths did not change
+    static std::string lastLoadedPlayfield;
+    static std::string lastLoadedBackglass;
+
+    std::string expectedPlayfieldPath = catalog.settings_.vpsdbImageCacheDir + "/" +
+                                        catalog.currentTable_.id + "_playfield.webp";
+    std::string expectedBackglassPath = catalog.settings_.vpsdbImageCacheDir + "/" +
+                                        catalog.currentTable_.id + "_backglass.webp";
+
+    // If both match previous values, skip reload entirely
+    if (lastLoadedPlayfield == expectedPlayfieldPath &&
+        lastLoadedBackglass == expectedBackglassPath) {
+
+        // Just keep using existing textures
+        return;
+    }
+
+
     LOG_DEBUG("loadThumbnails called for table ID: " + catalog.currentTable_.id);
     if (!catalog.currentTable_.tableFiles.empty()) {
         LOG_DEBUG("Playfield URL: " + catalog.currentTable_.tableFiles[0].imgUrl);

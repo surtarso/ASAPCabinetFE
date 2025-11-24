@@ -103,60 +103,106 @@ PinballTable loadTableFromJson(const std::string& vpsdbFilePath, size_t index) {
 void loadTableInBackground(const std::string& vpsdbFilePath, size_t index,
                            std::queue<LoadedTableData>& loadedTableQueue,
                            std::mutex& mutex, std::atomic<bool>& isTableLoading,
-                           const std::string& vpsdbImageCacheDir) {
+                           const std::string& vpsdbImageCacheDir)
+{
     LOG_DEBUG("Starting background load for index: " + std::to_string(index));
+
     LoadedTableData data;
     data.index = index;
     data.table = loadTableFromJson(vpsdbFilePath, index);
+
     if (data.table.id.empty()) {
         std::lock_guard<std::mutex> lock(mutex);
         isTableLoading = false;
         LOG_ERROR("Failed to load table for index: " + std::to_string(index) + ", empty ID");
         return;
     }
+
     LOG_DEBUG("Loaded table data for index: " + std::to_string(index) + ", name: " + data.table.name);
 
-    std::string backglassUrl, playfieldUrl;
+    std::string backglassUrl;
+    std::string playfieldUrl;
+
     if (!data.table.b2sFiles.empty()) {
         backglassUrl = data.table.b2sFiles[0].imgUrl;
-        LOG_DEBUG("Backglass URL for index " + std::to_string(index) + ": " + backglassUrl);
+        LOG_DEBUG("Backglass URL: " + backglassUrl);
     }
+
     if (!data.table.tableFiles.empty()) {
         playfieldUrl = data.table.tableFiles[0].imgUrl;
-        LOG_DEBUG("Playfield URL for index " + std::to_string(index) + ": " + playfieldUrl);
+        LOG_DEBUG("Playfield URL: " + playfieldUrl);
     }
 
     fs::path cachePath = vpsdbImageCacheDir;
     fs::create_directories(cachePath);
+
     LOG_DEBUG("Cache dir = " + cachePath.string());
 
+    // =========================
+    // Utility lambdas
+    // =========================
+    auto fileOK = [&](const std::string& path) {
+        return fs::exists(path) && fs::file_size(path) > 0;
+    };
+
+    // =========================
+    // Backglass
+    // =========================
     if (!backglassUrl.empty()) {
         data.backglassPath = (cachePath / (data.table.id + "_backglass.webp")).string();
-        LOG_DEBUG("Resolved backglassPath = " + data.backglassPath);
-        if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
-            data.backglassPath.clear();
-            LOG_ERROR("Failed to download backglass for index: " + std::to_string(index));
+
+        bool cached = fileOK(data.backglassPath);
+
+        LOG_DEBUG("Backglass file = " + data.backglassPath +
+                  " | exists=" + std::to_string(fs::exists(data.backglassPath)) +
+                  " | size=" + (fs::exists(data.backglassPath) ? std::to_string(fs::file_size(data.backglassPath)) : "0"));
+
+        if (cached) {
+            LOG_DEBUG("Backglass cached, skipping download.");
         } else {
-            LOG_DEBUG("Downloaded backglass to: " + data.backglassPath);
-        }
-    }
-    if (!playfieldUrl.empty()) {
-        data.playfieldPath = (cachePath / (data.table.id + "_playfield.webp")).string();
-        LOG_DEBUG("Resolved playfieldPath = " + data.playfieldPath);
-        if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
-            data.playfieldPath.clear();
-            LOG_ERROR("Failed to download playfield for index: " + std::to_string(index));
-        } else {
-            LOG_DEBUG("Downloaded playfield to: " + data.playfieldPath);
+            LOG_DEBUG("Downloading BACKGLASS → " + backglassUrl);
+            if (!VpsdbImage::downloadImage(backglassUrl, data.backglassPath)) {
+                LOG_ERROR("Backglass download failed, clearing path.");
+                data.backglassPath.clear();
+            }
         }
     }
 
+    // =========================
+    // Playfield
+    // =========================
+    if (!playfieldUrl.empty()) {
+        data.playfieldPath = (cachePath / (data.table.id + "_playfield.webp")).string();
+
+        bool cached = fileOK(data.playfieldPath);
+
+        LOG_DEBUG("Playfield file = " + data.playfieldPath +
+                  " | exists=" + std::to_string(fs::exists(data.playfieldPath)) +
+                  " | size=" + (fs::exists(data.playfieldPath) ? std::to_string(fs::file_size(data.playfieldPath)) : "0"));
+
+        if (cached) {
+            LOG_DEBUG("Playfield cached, skipping download.");
+        } else {
+            LOG_DEBUG("Downloading PLAYFIELD → " + playfieldUrl);
+            if (!VpsdbImage::downloadImage(playfieldUrl, data.playfieldPath)) {
+                LOG_ERROR("Playfield download failed, clearing path.");
+                data.playfieldPath.clear();
+            }
+        }
+    }
+
+    // =========================
+    // Push into queue
+    // =========================
     {
         std::lock_guard<std::mutex> lock(mutex);
         loadedTableQueue.push(std::move(data));
         LOG_DEBUG("Enqueued table data for index: " + std::to_string(index));
     }
-    LOG_DEBUG("Background table load complete, index: " + std::to_string(index));
+
+    LOG_DEBUG("Background load complete for index: " + std::to_string(index));
+    isTableLoading = false;
 }
+
 
 } // namespace vpsdb
