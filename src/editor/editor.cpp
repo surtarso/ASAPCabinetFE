@@ -9,8 +9,11 @@
 #include "tables/vpsdb/vpsdb_catalog_manager.h"
 #include "tables/vpsdb/vpsdb_catalog_json.h"
 #include "config/ui/config_ui.h"
+#include "version.h"
+#include "utils/version_checker.h"
 #include <SDL.h>
 #include <stdexcept>
+#include <thread>
 
 Editor::Editor(const std::string& configPath, const std::string& exeDir)
     : showMetadataEditor_(false),
@@ -85,6 +88,20 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
     );
 
     LOG_INFO("Editor initialized successfully.");
+
+    // --- Version check ---
+    VersionChecker versionChecker(ASAPCABINETFE_VERSION_STRING,
+                                  "https://raw.githubusercontent.com/surtarso/ASAPCabinetFE/main/latest_version.txt");
+
+    versionChecker.setUpdateCallback([this](const std::string& latest){
+        this->latestVersion_ = latest;
+        this->showUpdateModal_ = true;
+    });
+
+    // Launch async so we don't block editor start
+    std::thread([vc = std::move(versionChecker)]() mutable {
+        vc.checkForUpdate();
+    }).detach();
 }
 
 Editor::~Editor() {
@@ -135,6 +152,30 @@ void Editor::mainLoop() {
         }
 
         imguiManager_->newFrame();
+
+        // ========================= Version update modal =========================
+        if (showUpdateModal_) {
+            ImGui::OpenPopup("Update Available!");
+        }
+
+        if (ImGui::BeginPopupModal("Update Available!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("A new version of ASAPCabinetFE is available!");
+            ImGui::Separator();
+            ImGui::Text("Current: %s", VersionChecker::normalizeVersion(ASAPCABINETFE_VERSION_STRING).c_str());
+            ImGui::Text("Latest: %s", latestVersion_.c_str());
+            ImGui::Separator();
+
+            if (ImGui::Button("Download")) {
+                SDL_OpenURL("https://github.com/surtarso/ASAPCabinetFE/releases/latest");
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close")) {
+                showUpdateModal_ = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
 
         // --- Choose which panel to render ---
         if (editorUI_->loading()) {

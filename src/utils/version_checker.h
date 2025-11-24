@@ -15,12 +15,12 @@ public:
 
     const std::string& latestVersion() const { return latestVersion_; }
 
+    // --- Helpers ---
+    static std::string normalizeVersion(const std::string& version);
+
 private:
     std::string currentVersion_;
     std::string versionUrl_;
     std::string latestVersion_;
     UpdateCallback updateCallback_;
-
-    // --- Helpers ---
-    std::string normalizeVersion(const std::string& version) const;
 };

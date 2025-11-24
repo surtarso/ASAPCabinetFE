@@ -17,7 +17,7 @@ VersionChecker::VersionChecker(const std::string& currentVersion, const std::str
     : currentVersion_(normalizeVersion(currentVersion)), versionUrl_(versionUrl) {}
 
 // --- Normalize version string ---
-std::string VersionChecker::normalizeVersion(const std::string& version) const {
+std::string VersionChecker::normalizeVersion(const std::string& version) {
     std::string v = version;
 
     // Strip leading 'v'

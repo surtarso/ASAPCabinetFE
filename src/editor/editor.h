@@ -94,4 +94,8 @@ private:
 
     std::unique_ptr<ISoundManager> soundManager_;
     std::unique_ptr<IScreenshotManager> screenshotManager_;
+
+    // Version check modal
+    bool showUpdateModal_ = false;
+    std::string latestVersion_;
 };
