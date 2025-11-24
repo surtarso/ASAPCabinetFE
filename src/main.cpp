@@ -12,6 +12,7 @@
 #include "core/app.h"
 #include "core/first_run.h"
 #include "editor/editor.h"
+#include "utils/version_checker.h"
 #include <curl/curl.h>
 #include "log/logging.h"
 #include "log/logger.h"
@@ -112,9 +113,16 @@ int main(int argc, char* argv[]) {
         std::cout << "ASAPCabinetFE version " << ASAPCABINETFE_VERSION_STRING << std::endl;
         std::cout << "Git Hash: " << ASAPCABINETFE_GIT_HASH << std::endl;
         std::cout << "Git Branch: " << ASAPCABINETFE_GIT_BRANCH << std::endl;
+
         if (std::string(ASAPCABINETFE_GIT_DIRTY) == "+dirty") {
             std::cout << " (Repository has uncommitted changes)" << std::endl;
         }
+
+    // --- Version check ---
+    VersionChecker checker(ASAPCABINETFE_VERSION_STRING,
+                           "https://raw.githubusercontent.com/surtarso/ASAPCabinetFE/main/latest_version.txt");
+    checker.checkForUpdate();
+
         return 0;
     }
 

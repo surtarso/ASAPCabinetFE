@@ -340,6 +340,7 @@ set(SOURCES
     src/utils/path_utils.cpp
     src/utils/sha_utils.cpp
     src/utils/string_utils.cpp
+    src/utils/version_checker.cpp
     src/utils/vpinballx_ini_reader.cpp
     # Dear ImGui sources added directly from FetchContent path
     "${imgui_SOURCE_DIR}/imgui.cpp"
