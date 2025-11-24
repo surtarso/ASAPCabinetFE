@@ -107,7 +107,7 @@ public:
             }
         }
         else if (screenName_ == "topper") {
-            defaultText_ = "ASAPCabinetFE";
+            defaultText_ = "ASAPCabinetFE"; //TODO: send asapcab dmd logo (embeded) instead of text.
             dmdRenderer_.render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
         }
         else if (screenName_ == "backglass") {

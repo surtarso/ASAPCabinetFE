@@ -1,13 +1,23 @@
 TODO
 
-- gather more 128x32 still logos (atari etc)
+- gather more 128x32 still logos (atari, playmatic etc)
 
 FIX:
 - [FE] add feedback for table launch/failure
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
+- log file for pathing and media downloading
+- move vpsdb cache folder to cache/vpsdb_thumbs/
+- rename cache/thumbs to cache/editor_thumbs (or panel_thumbs)
 
 QOL:
+- Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
+- on DMD/topper... respect user choice on image/video for still/animated dmds
+- custom text to send to dmd/topper (year, title etc)
+- switch to flip DMD with topper (art related, as in play what would be in dmd in topper and vice versa)
+- (maybe) add title related dmd/topper features (would require the library of 2k+ dmd videos)
+- find and connect apis of dmd media things (i think i saw something...)
+- [ED] spreadsheet keyboard navigation
 - [ED] add option to resize vpindb images more obvious in editor
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
 - [!] add basic/advanced toggle for main config ui
@@ -17,6 +27,8 @@ QOL:
 - ease overwhelm in FE, send to Editor!
 
 On hold:
+- switch to use real DMDs
+- embed LOGO and push instead of plain text
 - refactor the monoliths... interfaces, templates, factories...
 - [!] add single table scan (all, selectable)
 - add multi launchers (other emulators, other versions of vpx w.e.) '+' user add + dropdown

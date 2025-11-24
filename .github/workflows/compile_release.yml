@@ -250,8 +250,20 @@ jobs:
         body: |
           ### _As Simple As Possible Cabinet Front-End_ release ${{ github.ref_name }}
 
+          Unpack and run `./ASAPCabinetFE` or `./ASAPCabinetFE-Editor`
+          Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md)
+
+          **Changes**:
+            -
+
+          **Fixes**:
+            -
+
+          **Known bugs**:
+            -
+
           <details>
-          <summary>Ubuntu build compiled using...</summary>
+          <summary>Ubuntu/Debian build compiled using...</summary>
 
           - GLIBC: ${{ needs.build_ubuntu.outputs.glibc_version }}
           - SDL2: ${{ needs.build_ubuntu.outputs.sdl2_version }}
@@ -262,7 +274,7 @@ jobs:
           </details>
 
           <details>
-          <summary>Arch Linux build compiled using...</summary>
+          <summary>Arch build compiled using...</summary>
 
           - GLIBC: ${{ needs.build_arch.outputs.glibc_version }}
           - SDL2: ${{ needs.build_arch.outputs.sdl2_version }}
@@ -272,18 +284,6 @@ jobs:
 
           </details>
 
-          Unpack and run `./ASAPCabinetFE`
-          Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md)
-
-          **Changes**:
-            - This is an automated release, this will be filled soon.
-
-          **Fixes**:
-            - This is an automated release, this will be filled soon.
-
-          **Known bugs**:
-            - This is an automated release, this will be filled soon.
-
           **Full Changelog**: https://github.com/surtarso/ASAPCabinetFE/commits/${{ github.ref_name }}
         draft: true
         prerelease: false
@@ -292,6 +292,17 @@ jobs:
           artifacts/arch/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update latest_version.txt
+      run: |
+        git checkout main
+        echo "${GITHUB_REF_NAME}" > latest_version.txt
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add latest_version.txt
+        git commit -m "Update latest_version.txt for release ${GITHUB_REF_NAME} [skip ci]"
+        git push origin main
+
 
 #=============== DOXYGEN JOB ================
   doxygen_docs:

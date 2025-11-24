@@ -243,9 +243,7 @@ void DmdSDLRenderer::drawDmdAssetMasked(SDL_Renderer* renderer, SDL_Texture* ass
     // --- Step 3: Draw the DMD Dots by sampling the surface data ---
 
     const int ROWS = 32, COLS = 128;
-    // ... (rest of the dot drawing logic, unchanged)
-
-    const int BRIGHTNESS_THRESHOLD = 15;
+    const int BRIGHTNESS_THRESHOLD = 25;
 
     int ppd = std::max(1, std::min(width / COLS, height / ROWS));
     int radius = std::max(1, (ppd / 2) - 2);
@@ -382,8 +380,8 @@ void DmdSDLRenderer::renderProceduralText(SDL_Renderer* renderer, const std::str
     const SDL_Color AMBER_LIT = {255, 150, 0, 255};
     const SDL_Color UNLIT_GRAY = {40, 40, 40, 255};
 
-    float pulse = (std::sin(time * 7.0f) + 1.0f) / 2.0f;
-    Uint8 glowAlpha = static_cast<Uint8>(60 + pulse * 100);
+    float pulse = (std::sin(time * 6.0f) + 1.0f) / 2.0f;
+    Uint8 glowAlpha = static_cast<Uint8>(50 + pulse * 100);
 
     // 4. Background and Unlit Dots
     SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
@@ -449,12 +447,14 @@ void DmdSDLRenderer::renderProceduralText(SDL_Renderer* renderer, const std::str
     }
 }
 
-// Function to draw a filled circle
+// Midpoint circle algorithm
 void DmdSDLRenderer::drawFilledCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
-    for (int y = -radius; y <= radius; y++) {
-        for (int x = -radius; x <= radius; x++) {
-            if (x*x + y*y <= radius*radius) {
-                SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
+    for (int w = 0; w <= radius * 2; w++) {
+        for (int h = 0; h <= radius * 2; h++) {
+            int dx = radius - w; // horizontal offset
+            int dy = radius - h; // vertical offset
+            if ((dx*dx + dy*dy) <= (radius * radius)) {
+                SDL_RenderDrawPoint(renderer, centerX + dx, centerY + dy);
             }
         }
     }
