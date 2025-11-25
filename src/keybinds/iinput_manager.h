@@ -14,11 +14,13 @@
 #include "tables/table_data.h"
 #include "tables/itable_callbacks.h"
 #include "launcher/itable_launcher.h"
+#include "core/ui/launch_popup.h"
 #include <SDL_events.h>
 #include <string>
 #include <functional>
 #include <vector>
 #include <atomic>
+
 
 class IAppCallbacks;
 
@@ -151,6 +153,8 @@ public:
      * @return True if a quit action has been triggered, false otherwise.
      */
     virtual bool shouldQuit() const = 0;
+
+    const virtual LaunchPopup& getLaunchPopup() const = 0;
 };
 
 #endif // IINPUT_MANAGER_H

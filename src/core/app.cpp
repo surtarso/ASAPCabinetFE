@@ -414,6 +414,27 @@ void App::render() {
                 }
             }
         }
+        // Launching Table pop-up
+        const auto& popup = inputManager_->getLaunchPopup();
+        if (popup.active) {
+            ImGuiIO& io = ImGui::GetIO();
+            ImVec2 window_size = ImVec2(300, 50); // initial guess, auto-resize will adjust
+            ImVec2 center = ImVec2(io.DisplaySize.x * 0.5f - window_size.x * 0.5f,
+                                io.DisplaySize.y * 0.5f - window_size.y * 0.5f);
+            ImGui::SetNextWindowPos(center, ImGuiCond_Always);
+
+            ImGui::Begin("Launch Status", nullptr,
+                        ImGuiWindowFlags_AlwaysAutoResize |
+                        ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoCollapse |
+                        ImGuiWindowFlags_NoMove);
+
+            if (!popup.failed)
+                ImGui::Text("Launching %s...", popup.tableName.c_str());
+
+            ImGui::End();
+        }
+
         // Render TableOverrideEditor if toggled
         if (showEditor_ && currentIndex_ < tables_.size()) {
             if (!overrideEditor_ || lastTableIndex_ != currentIndex_) {

@@ -270,6 +270,10 @@ void InputManager::registerActions() {
         }
         const int launchedIndex = static_cast<int>(idxx);
 
+        launchPopup_.active = true;
+        launchPopup_.failed = false;
+        launchPopup_.tableName = tables_->at(launchedIndex).title;
+
         tableLauncher_->launchTableAsync(
             tables_->at(launchedIndex),
             [this, launchedIndex](int result, float timePlayed)
@@ -313,6 +317,13 @@ void InputManager::registerActions() {
                     }
                 } else {
                     LOG_ERROR("Cannot update table data, tableCallbacks_ is null");
+                }
+
+                // Update popup
+                launchPopup_.failed = (result != 0);
+
+                if (!launchPopup_.failed) {
+                    launchPopup_.active = false;
                 }
 
                 // Resume FE media
@@ -569,4 +580,8 @@ void InputManager::handleDoubleClick(const SDL_Event& event) {
             lastClickTimes_[windowID] = currentTime;
         }
     }
+}
+
+const LaunchPopup& InputManager::getLaunchPopup() const {
+    return launchPopup_;
 }

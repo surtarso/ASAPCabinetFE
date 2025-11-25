@@ -25,6 +25,8 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include "core/ui/launch_popup.h"
+
 
 /**
  * @class InputManager
@@ -123,6 +125,8 @@ public:
      */
     void setRuntimeEditor(ConfigUI* editor) override { runtimeEditor_ = editor; }
 
+    const LaunchPopup& getLaunchPopup() const override;
+
 private:
     /**
      * @brief Type alias for action handler functions.
@@ -173,6 +177,7 @@ private:
     std::atomic<bool>* isLoadingTables_; ///< Track loading state
     ITableLauncher* tableLauncher_;
     ITableCallbacks* tableCallbacks_ = nullptr;
+    LaunchPopup launchPopup_;
 };
 
 #endif // INPUT_MANAGER_H
