@@ -115,6 +115,7 @@ cd ~/ASAPCabinetFE
 - **Create** custom table overrides for media or metadata.
 - Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
 - Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb).
+- Update check and notifications to keep you up to date.
 
 >[!NOTE]
 >Check the [User's Manual](UsersManual.md) for more details.
