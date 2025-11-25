@@ -50,7 +50,6 @@ On hold:
 - add centralize colors in a /util/ for later theming support
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
 
-
 - [NEW] STATISTICS PANEL
     - add graphs/statistics panel about tables
     - played/unplayed count
