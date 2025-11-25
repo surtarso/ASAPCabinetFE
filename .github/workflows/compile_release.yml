@@ -296,7 +296,9 @@ jobs:
     - name: Checkout repo for latest_version.txt update
       uses: actions/checkout@v4
       with:
+        ref: main
         fetch-depth: 0
+        lfs: false
 
     - name: Update latest_version.txt
       run: |
