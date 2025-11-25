@@ -5,6 +5,7 @@ FIX:
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 for 1.3.0
+- implement the cache clear functions (single vs all)
 - [NEW] UPDATE MANAGER PANEL
     - check for updates -> self, vpinballx (vpxtool, new std patches?)
     - click to download (maybe easy-install?)

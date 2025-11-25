@@ -147,7 +147,21 @@ private:
     int currentTopperMediaWidth_ = 0;
     int currentTopperMediaHeight_ = 0;
 
+    size_t lastIndex = static_cast<size_t>(-1);
+    Settings lastSettings{};
 
+    void loadWindowAssets(SDL_Renderer* renderer, SDL_Texture*& tex, SDL_Texture*& wheelTex, SDL_Texture*& titleTex,
+                          std::unique_ptr<IVideoPlayer>& player, int forcedW, int forcedH, bool show,
+                          const std::string& name, const std::string& imagePath, const std::string& videoPath,
+                          const TableData& table);
+
+    void loadFallbackMedia(SDL_Renderer* renderer, std::unique_ptr<IVideoPlayer>& player,
+                           const std::string& name, const TableData& table, int w, int h);
+
+    void stopAllVideos();
+    void resumeVideos();
+    void cachePreviousPlayers();
+    void clearPreviousAssets();
 };
 
 #endif // ASSET_MANAGER_H
