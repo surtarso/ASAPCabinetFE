@@ -293,9 +293,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Checkout repo for latest_version.txt update
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Update latest_version.txt
       run: |
-        git checkout main
         echo "${GITHUB_REF_NAME}" > latest_version.txt
         git config user.name "github-actions"
         git config user.email "actions@github.com"
@@ -357,7 +361,7 @@ jobs:
 
     # Initialize CodeQL before build
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: cpp
 
@@ -375,6 +379,6 @@ jobs:
 
     # Run CodeQL analysis
     - name: Run CodeQL analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       with:
         category: "/language:cpp"
