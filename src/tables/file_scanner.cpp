@@ -18,6 +18,8 @@
 #include <chrono>
 #include <unordered_map>
 #include <fstream>
+#include <mutex>
+#include <atomic>
 
 namespace fs = std::filesystem;
 
@@ -65,35 +67,40 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 existingTableMap[table.vpxFile] = table;
     }
 
-    // --- Incremental VPX file discovery ---
+    // --- VPX file discovery ---
     std::vector<fs::path> vpx_files;
-    size_t discoveredFiles = 0;
-    for (auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".vpx") {
-            vpx_files.push_back(entry.path());
-            discoveredFiles++;
-            if (progress) {
-                std::lock_guard<std::mutex> lock(progress->mutex);
-                progress->totalTablesToLoad = discoveredFiles;
-                progress->currentTablesLoaded = 0; // will be incremented later
-                progress->currentTask = "Scanning VPX files...";
-            }
-        }
-    }
+    try {
+        for (const auto& entry : fs::recursive_directory_iterator(settings.VPXTablesPath))
+            if (entry.is_regular_file() && entry.path().extension() == ".vpx")
+                vpx_files.push_back(entry.path());
+    } catch (...) {}
 
     if (vpx_files.empty()) return tables;
 
-    std::regex year_regex(R"(\b(19|20)\d{2}\b)");
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->totalTablesToLoad = vpx_files.size();
+        progress->currentTablesLoaded = 0;
+        progress->currentStage = 0;
+        progress->currentTask = "Processing tables...";
+    }
 
-    // --- Folder last modified cache ---
+    tables.reserve(vpx_files.size());
+
     std::unordered_map<std::string, uint64_t> folderLastModCache;
+    std::mutex resultMutex;
+
+    // --- Year regex ---
+    std::regex year_regex(R"(\b(19|20)\d{2}\b)");
 
     // --- Parallel table processing ---
     std::vector<std::future<void>> futures;
-    for (const auto& vpx_path : vpx_files) {
-        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &tables, &tables_mutex,
-                                                         &existingTableMap, &folderLastModCache, progress](const fs::path& path) {
+    std::atomic<size_t> processed{0};
 
+    for (const auto& vpx_path : vpx_files) {
+        futures.push_back(std::async(std::launch::async, [&settings, &year_regex, &existingTableMap,
+                                                          &folderLastModCache, progress, &tables, &tables_mutex,
+                                                          &processed](const fs::path& path) {
             TableData table;
             table.vpxFile = path.string();
             table.folder = path.parent_path().string();
@@ -227,7 +234,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 }
             }
 
-            // --- Media paths (unchanged, could also cache defaults) ---
+            // --- Media paths ---
             table.music = PathUtils::getAudioPath(table.folder, settings.tableMusic);
             table.launchAudio = PathUtils::getAudioPath(table.folder, settings.customLaunchSound);
             table.playfieldImage = PathUtils::getImagePath(table.folder, settings.customPlayfieldImage, "");
@@ -274,20 +281,21 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.jsonOwner = "System File Scan";
 
             // --- Push result ---
+            std::string logName = table.title.empty() ? table.vpxFile : table.title;
             {
                 std::lock_guard<std::mutex> lock(tables_mutex);
-                tables.push_back(table);
+                tables.push_back(std::move(table));
             }
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTablesLoaded++;
-                progress->logMessages.push_back("Processed table: " + table.vpxFile);
+                progress->logMessages.push_back("Processed table: " + logName);
             }
 
         }, vpx_path));
     }
 
-    for (auto& future : futures) future.wait();
+    for (auto& f : futures) f.wait();
     LOG_INFO("Processed " + std::to_string(tables.size()) + " VPX tables (out of " + std::to_string(vpx_files.size()) + " found)");
     return tables;
 }
