@@ -308,9 +308,27 @@ void vpxtoolRun(EditorUI& ui, const std::string& commandWithSub) {
         {"Yes", "No"},
         [&ui](const std::string& choice) {
             if (choice == "Yes") {
-                LOG_INFO("Clearing caches...");
-                // TODO: actual cache clear logic
-                ui.modal().openInfo("Cache Cleared", "All caches were successfully cleared.");
+                try {
+                    const std::string cachePath = ui.configService()->getSettings().mainCacheDir;
+
+                    if (!std::filesystem::exists(cachePath)) {
+                        LOG_INFO("Cache folder doesn't exist — nothing to clear.");
+                        ui.modal().openInfo("Cache Cleared", "No cache folder found.");
+                        return;
+                    }
+
+                    std::filesystem::remove_all(cachePath);
+                    LOG_INFO("Successfully deleted cache folder: " + cachePath);
+
+                    // Optional: recreate empty folder
+                    std::filesystem::create_directories(cachePath);
+
+                    ui.modal().openInfo("Cache Cleared", "All cached data has been deleted.");
+                }
+                catch (const std::exception& e) {
+                    LOG_ERROR("Failed to clear cache: " + std::string(e.what()));
+                    ui.modal().openInfo("Error", "Failed to clear cache.\nCheck permissions or close running apps.");
+                }
             } else {
                 LOG_INFO("Cache clearing canceled.");
             }

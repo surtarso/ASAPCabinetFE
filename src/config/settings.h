@@ -213,6 +213,8 @@ struct Settings {
 
     // [Internal]
     std::string exeDir;
+    std::string mainCacheDir = "data/cache";
+
     std::string vpxPlayCmd = "-Play";
     std::string vpxExtractCmd = "-ExtractVBS";
 
@@ -236,9 +238,8 @@ struct Settings {
     std::string vpinmdbUrl = "https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json";
 
     int screenshotWait = 4; // 0-60
-    // defaults in ConfigUI::drawGUI(), these are for FE config panel
-    float configUIWidth = 0.7f;
-    float configUIHeight = 0.5f;
+    float configUIWidth = 0.7f;   // defaults in ConfigUI::drawGUI(), these are for FE config panel
+    float configUIHeight = 0.5f;  // defaults in ConfigUI::drawGUI(), these are for FE config panel
     std::string defaultWheelImage = "img/default_wheel.png";
     std::string dmdStillImages = "img/dmd_still";
 
@@ -288,7 +289,7 @@ struct Settings {
             // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
             "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
-            "vpinmdbPath",
+            "vpinmdbPath", "mainCacheDir",
         };
 
         // Iterate through the list and resolve each path
@@ -315,6 +316,7 @@ struct Settings {
             else if (field == "previewCacheDir") previewCacheDir = resolvePath(previewCacheDir, exeDir);
             else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, exeDir);
             else if (field == "vpinmdbPath") vpinmdbPath = resolvePath(vpinmdbPath, exeDir);
+            else if (field == "mainCacheDir") mainCacheDir = resolvePath(mainCacheDir, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -526,6 +528,7 @@ private:
             }},
             {"Internal", {
                 {"exeDir", s.exeDir},
+                {"mainCacheDir", s.mainCacheDir},
                 {"vpxPlayCmd", s.vpxPlayCmd},
                 {"vpxExtractCmd", s.vpxExtractCmd},
                 {"vpsDbPath", s.vpsDbPath},
@@ -743,6 +746,7 @@ private:
 
         // Internal
         s.exeDir = j.value("Internal", nlohmann::json{}).value("exeDir", s.exeDir);
+        s.mainCacheDir = j.value("Internal", nlohmann::json{}).value("mainCacheDir", s.mainCacheDir);
         s.vpxPlayCmd = j.value("Internal", nlohmann::json{}).value("vpxPlayCmd", s.vpxPlayCmd);
         s.vpxExtractCmd = j.value("Internal", nlohmann::json{}).value("vpxExtractCmd", s.vpxExtractCmd);
         s.vpsDbPath = j.value("Internal", nlohmann::json{}).value("vpsDbPath", s.vpsDbPath);
@@ -953,6 +957,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
 
     // Internal paths and timing
     {"exeDir", {Settings::ReloadType::None, "Path to the application executable directory."}},
+    {"mainCacheDir", {Settings::ReloadType::None, "Path to the main cache directory."}},
     {"vpxPlayCmd", {Settings::ReloadType::None, "VPinballX command used to play .vpx tables (internal helper)."}},
     {"vpxExtractCmd", {Settings::ReloadType::None, "VPinballX command used to extract .vbs scripts from tables (internal helper)."}},
     {"vpsDbPath", {Settings::ReloadType::None, "Full path to the VPS database file."}},
