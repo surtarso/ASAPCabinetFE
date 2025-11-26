@@ -59,18 +59,7 @@ public:
      */
     std::vector<TableData> loadTableList(const Settings& settings, LoadingProgress* progress = nullptr) override;
 
-    /**
-     * @brief Retrieves the letter-based index for table navigation.
-     *
-     * Returns a map where keys are the first characters (uppercased letters or digits)
-     * of table titles, and values are the corresponding indices in the sorted table list.
-     *
-     * @return A constant reference to the letter index map.
-     */
-    const std::map<char, int>& getLetterIndex() const override { return letterIndex; }
-
 private:
-    std::map<char, int> letterIndex; ///< Map of first characters (letters or digits) to indices for quick table navigation, built during sorting.
     /**
      * @brief Sorts the table list and rebuilds the letter index.
      *

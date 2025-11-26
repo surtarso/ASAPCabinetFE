@@ -28,16 +28,6 @@ public:
      * @return A vector containing the loaded TableData objects.
      */
     virtual std::vector<TableData> loadTableList(const Settings& settings, LoadingProgress* progress = nullptr) = 0;
-
-    /**
-     * @brief Retrieves the letter-to-index mapping.
-     *
-     * This pure virtual function returns a constant reference to a mapping between characters and their corresponding integer indices.
-     * The map is typically used to associate specific letters with positions or identifiers within a rendering context.
-     *
-     * @return const std::map<char, int>& A constant reference to the mapping from letters to their indices.
-     */
-    virtual const std::map<char, int>& getLetterIndex() const = 0;
 };
 
 #endif // ITABLE_LOADER_H

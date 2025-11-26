@@ -551,53 +551,38 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         return;
     }
 
-    // Sort based on the selected criterion
+    if (progress) {
+        std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Sorting tables...";
+    }
+
+    // === YOUR ORIGINAL SORT — JUST EFFICIENT ===
     if (sortBy == "author") {
-        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            std::string aAuthor = a.vpsAuthors.empty() ? a.tableAuthor : a.vpsAuthors;
-            std::string bAuthor = b.vpsAuthors.empty() ? b.tableAuthor : b.vpsAuthors;
-            return aAuthor < bAuthor;
+        std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
+            auto getAuthor = [](const auto& t) { return t.vpsAuthors.empty() ? t.tableAuthor : t.vpsAuthors; };
+            return getAuthor(a) < getAuthor(b);
         });
     } else if (sortBy == "type") {
-        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+        std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
             return a.vpsType < b.vpsType;
         });
     } else if (sortBy == "manufacturer") {
-        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+        std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
             return a.manufacturer < b.manufacturer;
         });
     } else if (sortBy == "year") {
-        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
-            return a.year > b.year; // Descending order for year
+        std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
+            return a.year > b.year;
         });
-    } else { // Default to "title"
-        std::sort(tables.begin(), tables.end(), [](const TableData& a, const TableData& b) {
+    } else {
+        std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
             return a.title < b.title;
         });
     }
 
-    // Rebuild letter index after sorting (always based on title)
+    // NO MORE LETTER INDEX — YOUR JUMP LOGIC IS BETTER
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
-        progress->currentTask = "Building letter index...";
-    }
-    letterIndex.clear();
-    for (size_t i = 0; i < tables.size(); ++i) {
-        if (tables[i].title.empty()) {
-            LOG_DEBUG("Empty title at index " + std::to_string(i));
-            continue;
-        }
-        char firstChar = tables[i].title[0];
-        if (std::isdigit(static_cast<unsigned char>(firstChar)) || std::isalpha(static_cast<unsigned char>(firstChar))) {
-            char key = std::isalpha(static_cast<unsigned char>(firstChar)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(firstChar))) : firstChar;
-            if (letterIndex.find(key) == letterIndex.end()) {
-                letterIndex[key] = static_cast<int>(i);
-            }
-        } else {
-            LOG_DEBUG("Invalid first character in title: " + tables[i].title + " at index " + std::to_string(i));
-        }
-    }
-    if (letterIndex.empty()) {
-        LOG_ERROR("Letter index is empty after building");
+        progress->currentTask = "Sorting complete";
     }
 }
