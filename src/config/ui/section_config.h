@@ -404,6 +404,8 @@ public:
             "defaultWheelImage",
             "vbsHashPath",
             "vpxPatchesUrl",
+            "vpinmdbPath",
+            "vpinmdbUrl",
             "previewCacheDir"
         };
         keyDisplayNames_["Internal"] = {
@@ -422,6 +424,8 @@ public:
             {"defaultWheelImage", "Default Wheel Image"},
             {"vbsHashPath", "Script Hashes File for Patching"},
             {"vpxPatchesUrl", "VBS Script Patches URL"},
+            {"vpinmdbPath", "VPin Media Database File for Images"},
+            {"vpinmdbUrl", "VPin Media Database URL"},
             {"previewCacheDir", "Editor Previews Cache Dir"}
         };
 

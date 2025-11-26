@@ -16,7 +16,8 @@ namespace fs = std::filesystem;
 
 VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress, const nlohmann::json* mediaDb)
     : settings_(settings), progress_(progress) {
-    fs::path dbPath = settings_.resolvePath("data/vpinmdb.json", settings_.exeDir);
+    fs::path dbPath = settings_.vpinmdbPath;
+    const std::string url = settings_.vpinmdbUrl;
 
     if (mediaDb) {
         mediaDb_ = *mediaDb;
@@ -24,7 +25,6 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
     }
 
     if (!fs::exists(dbPath)) {
-        const std::string url = "https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json";
         if (!fs::exists(dbPath.parent_path())) {
             try {
                 fs::create_directories(dbPath.parent_path());

@@ -225,11 +225,16 @@ struct Settings {
     std::string vpxtoolBin = ""; // absolute path
     std::string vpxtoolExtractCmd = "extractvbs";
     std::string vpxtoolIndex = "vpxtool_index.json"; //filename (not path)
+
     std::string indexPath = "data/asapcab_index.json";
     std::string previewCacheDir = "data/cache/preview_thumbs";
 
     std::string vbsHashPath = "data/cache/hashes.json";
     std::string vpxPatchesUrl = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json";
+
+    std::string vpinmdbPath = "data/cache/vpinmdb.json";
+    std::string vpinmdbUrl = "https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json";
+
     int screenshotWait = 4; // 0-60
     // defaults in ConfigUI::drawGUI(), these are for FE config panel
     float configUIWidth = 0.7f;
@@ -283,6 +288,7 @@ struct Settings {
             // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
             "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
+            "vpinmdbPath",
         };
 
         // Iterate through the list and resolve each path
@@ -308,6 +314,7 @@ struct Settings {
             else if (field == "vpsdbImageCacheDir") vpsdbImageCacheDir = resolvePath(vpsdbImageCacheDir, exeDir);
             else if (field == "previewCacheDir") previewCacheDir = resolvePath(previewCacheDir, exeDir);
             else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, exeDir);
+            else if (field == "vpinmdbPath") vpinmdbPath = resolvePath(vpinmdbPath, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -537,7 +544,9 @@ private:
                 {"vpxPatchesUrl", s.vpxPatchesUrl},
                 {"vpsdbImageCacheDir", s.vpsdbImageCacheDir},
                 {"previewCacheDir", s.previewCacheDir},
-                {"vpsdbMissmatchLog", s.vpsdbMissmatchLog}
+                {"vpsdbMissmatchLog", s.vpsdbMissmatchLog},
+                {"vpinmdbPath", s.vpinmdbPath},
+                {"vpinmdbUrl", s.vpinmdbUrl}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -753,6 +762,8 @@ private:
         s.vpsdbImageCacheDir = j.value("Internal", nlohmann::json{}).value("vpsdbImageCacheDir", s.vpsdbImageCacheDir);
         s.previewCacheDir = j.value("Internal", nlohmann::json{}).value("previewCacheDir", s.previewCacheDir);
         s.vpsdbMissmatchLog = j.value("Internal", nlohmann::json{}).value("vpsdbMissmatchLog", s.vpsdbMissmatchLog);
+        s.vpinmdbPath = j.value("Internal", nlohmann::json{}).value("vpinmdbPath", s.vpinmdbPath);
+        s.vpinmdbUrl = j.value("Internal", nlohmann::json{}).value("vpinmdbUrl", s.vpinmdbUrl);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -963,7 +974,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"dmdStillImages", {Settings::ReloadType::None, "Relative path to the default DMD images used when a table provides none."}},
 
     {"vbsHashPath", {Settings::ReloadType::None, "Relative path to the table VBS script hashes for patching."}},
-    {"vpxPatchesUrl", {Settings::ReloadType::None, "URL for vpx standalone script hashes file"}},
+    {"vpxPatchesUrl", {Settings::ReloadType::None, "URL for vpx standalone script hashes file."}},
+
+    {"vpinmdbPath", {Settings::ReloadType::None, "Relative path to the VPin Media Database file for image downloading."}},
+    {"vpinmdbUrl", {Settings::ReloadType::None, "URL for the VPin Media Database file."}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},
