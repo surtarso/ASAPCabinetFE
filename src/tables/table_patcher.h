@@ -30,6 +30,11 @@ private:
 
     /** Downloads a .vbs file from a URL and saves it to the specified path. */
     void downloadAndSaveVbs(const std::string& url, const std::string& savePath);
+
+    // In-memory cache — never download twice in one run
+    static inline std::string cachedHashesJson;
+    // static inline std::chrono::steady_clock::time_point lastCacheTime;
+    static inline bool hasCachedHashes = false;
 };
 
 #endif // TABLE_PATCHER_H

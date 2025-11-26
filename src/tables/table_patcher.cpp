@@ -7,112 +7,75 @@
 #include <thread>
 #include <chrono>
 
+namespace fs = std::filesystem;
+
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s) {
-    size_t totalSize = size * nmemb;
-    s->append(static_cast<char*>(contents), totalSize);
-    return totalSize;
+    s->append((char*)contents, size * nmemb);
+    return size * nmemb;
 }
 
 std::string TablePatcher::downloadHashesJson(const Settings& settings) {
-    namespace fs = std::filesystem;
+    // 1. IN-MEMORY CACHE — INSTANT RETURN
+    if (hasCachedHashes) {
+        LOG_DEBUG("Using in-memory cached hashes.json");
+        return cachedHashesJson;
+    }
+
     fs::path cacheFilePath = settings.vbsHashPath;
-    fs::path cacheDirPath = cacheFilePath.parent_path();
-    std::string readBuffer;
+    fs::create_directories(cacheFilePath.parent_path());
 
-    // Ensure data directory exists
-    try {
-        fs::create_directories(cacheDirPath);
-    } catch (const fs::filesystem_error& e) {
-        LOG_ERROR("Failed to create data directory: " + std::string(e.what()));
-        return "";
-    }
+    std::string buffer;
+    CURL* curl = curl_easy_init();
+    if (!curl) return "";
 
-    // Check if forceRebuildMetadata is false and cached file exists
+    curl_easy_setopt(curl, CURLOPT_URL, settings.vpxPatchesUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+
+    // Use cache + 304 Not Modified
     if (!settings.forceRebuildMetadata && fs::exists(cacheFilePath)) {
-        std::ifstream cacheFile(cacheFilePath, std::ios::binary);
-        if (cacheFile.is_open()) {
-            readBuffer.assign((std::istreambuf_iterator<char>(cacheFile)), std::istreambuf_iterator<char>());
-            cacheFile.close();
-            LOG_INFO("Loaded hashes.json from cache: " + cacheFilePath.string());
-
-            // Get file's last-modified time for If-Modified-Since
-            try {
-                auto ftime = fs::last_write_time(cacheFilePath);
-                auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-                    ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
-                );
-                auto lastModified = std::chrono::system_clock::to_time_t(sctp);
-
-                CURL* curl;
-                CURLcode res;
-                std::string tempBuffer;
-                // curl_global_init(CURL_GLOBAL_DEFAULT);
-                curl = curl_easy_init();
-                if (curl) {
-                    curl_easy_setopt(curl, CURLOPT_URL, settings.vpxPatchesUrl.c_str());
-                    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-                    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempBuffer);
-                    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L); // HEAD request
-                    curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
-                    curl_easy_setopt(curl, CURLOPT_TIMEVALUE, lastModified);
-                    res = curl_easy_perform(curl);
-                    if (res == CURLE_OK) {
-                        long responseCode;
-                        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-                        if (responseCode == 304) { // Not Modified
-                            LOG_DEBUG("Cached hashes.json is up-to-date");
-                            curl_easy_cleanup(curl);
-                            // curl_global_cleanup();
-                            return readBuffer;
-                        }
-                    } else {
-                        LOG_WARN("Failed to check hashes.json modification: " + std::string(curl_easy_strerror(res)));
-                    }
-                    curl_easy_cleanup(curl);
-                } else {
-                    LOG_ERROR("Failed to initialize curl for modification check");
-                }
-                // curl_global_cleanup();
-            } catch (const fs::filesystem_error& e) {
-                LOG_WARN("Failed to get last modified time for " + cacheFilePath.string() + ": " + std::string(e.what()));
-            }
-        } else {
-            LOG_WARN("Failed to open cached hashes.json: " + cacheFilePath.string());
-        }
+        auto ftime = fs::last_write_time(cacheFilePath);
+        auto secs = std::chrono::duration_cast<std::chrono::seconds>(
+            ftime.time_since_epoch()).count();
+        curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+        curl_easy_setopt(curl, CURLOPT_TIMEVALUE, (long)secs);
     }
 
-    // Download fresh copy
-    CURL* curl;
-    CURLcode res;
-    readBuffer.clear();
-    // curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, settings.vpxPatchesUrl.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-        res = curl_easy_perform(curl);
-        if (res == CURLE_OK) {
-            LOG_INFO("Successfully downloaded VBScript patches database.");
-            // Save to cache
-            std::ofstream outFile(cacheFilePath, std::ios::binary);
-            if (outFile.is_open()) {
-                outFile.write(readBuffer.data(), readBuffer.size());
-                outFile.close();
-                LOG_DEBUG("Saved hashes.json to: " + cacheFilePath.string());
-            } else {
-                LOG_ERROR("Failed to save hashes.json to " + cacheFilePath.string());
-            }
-        } else {
-            LOG_ERROR("Failed to download hashes.json: " + std::string(curl_easy_strerror(res)));
-            readBuffer.clear();
-        }
-        curl_easy_cleanup(curl);
-    } else {
-        LOG_ERROR("Failed to initialize curl");
+    long response = 0;
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response);
+    curl_easy_cleanup(curl);
+
+    // 200 = fresh download
+    if (res == CURLE_OK && response == 200) {
+        std::ofstream(cacheFilePath, std::ios::binary) << buffer;
+        cachedHashesJson = std::move(buffer);
+        hasCachedHashes = true;
+        LOG_INFO("Downloaded fresh hashes.json");
+        return cachedHashesJson;
     }
-    // curl_global_cleanup();
-    return readBuffer;
+
+    // 304 = not modified → use cache
+    if (res == CURLE_OK && response == 304 && fs::exists(cacheFilePath)) {
+        std::ifstream f(cacheFilePath);
+        cachedHashesJson.assign((std::istreambuf_iterator<char>(f)), {});
+        hasCachedHashes = true;
+        LOG_INFO("Using cached hashes.json (304 Not Modified)");
+        return cachedHashesJson;
+    }
+
+    // Fallback: try cache even if network failed
+    if (fs::exists(cacheFilePath)) {
+        std::ifstream f(cacheFilePath);
+        cachedHashesJson.assign((std::istreambuf_iterator<char>(f)), {});
+        hasCachedHashes = true;
+        LOG_WARN("Using stale cache due to network failure");
+        return cachedHashesJson;
+    }
+
+    return "";
 }
 
 nlohmann::json TablePatcher::parseHashesJson(const std::string& jsonContent) {
@@ -222,21 +185,24 @@ void TablePatcher::downloadAndSaveVbs(const std::string& url, const std::string&
 void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>& tables, LoadingProgress* progress) {
     std::string jsonContent = downloadHashesJson(settings);
     if (jsonContent.empty()) {
-        LOG_ERROR("Aborting patch process due to empty hashes.json content");
+        LOG_ERROR("Failed to obtain hashes.json");
         return;
     }
 
     nlohmann::json hashes = parseHashesJson(jsonContent);
     if (hashes.is_null() || !hashes.is_array()) {
-        LOG_ERROR("Aborting patch process due to invalid hashes.json");
+        LOG_ERROR("Invalid hashes.json format");
         return;
     }
 
+    size_t patched = 0;
+    size_t checked = 0;
+
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
+        progress->currentTask = "Patching tables...";
         progress->totalTablesToLoad = tables.size();
         progress->currentTablesLoaded = 0;
-        progress->currentTask = "Patching tables...";
     }
 
     for (auto& table : tables) {
@@ -249,28 +215,24 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
                     downloadAndSaveVbs(url, savePath);
 
                     std::string computedHash = compute_file_sha256(savePath);
-                    if (!computedHash.empty()) {
-                        std::string expectedHash = entry["patched"]["sha256"];
-                        if (computedHash == expectedHash) {
-                            table.hashFromVbs = computedHash;
-                            table.isPatched = true;
-                            LOG_DEBUG("Updated hashFromVbs for " + table.title + ": " + table.hashFromVbs);
-                        } else {
-                            LOG_ERROR("Hash mismatch for downloaded .vbs for " + table.title + ", computed: " + computedHash + ", expected: " + expectedHash);
-                        }
-                    } else {
-                        LOG_ERROR("Failed to compute hash for downloaded .vbs: " + savePath);
+                    if (!computedHash.empty() && computedHash == entry["patched"]["sha256"].get<std::string>()) {
+                        table.hashFromVbs = computedHash;
+                        table.isPatched = true;
+                        patched++;
                     }
                     break;
                 }
             }
         }
+
+        checked++;
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTablesLoaded++;
+            progress->currentTablesLoaded = checked;
         }
     }
-    LOG_INFO("Patch process completed");
+
+    LOG_INFO("Patch process completed: " + std::to_string(patched) + " tables patched");
 }
 
 
