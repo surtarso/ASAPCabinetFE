@@ -51,22 +51,22 @@ namespace
         std::sort(tables.begin(), tables.end(), [sortColumn, sortAscending](const TableData &a, const TableData &b) {
 
             // Check if the current sort column is one of the complex text fields
-            if (sortColumn == 1 || sortColumn == 3 || sortColumn == 4 || sortColumn == 6) {
+            if (sortColumn == 1 || sortColumn == 4 || sortColumn == 5 || sortColumn == 7) {
                 // Name (ID 1) should use 'title'
                 if (sortColumn == 1) {
                     return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
                 }
-                // Author (ID 3) should use all table authors
-                if (sortColumn == 3) {
+                // Author (ID 4) should use all table authors
+                if (sortColumn == 4) {
                     return compareTextField(a.tableAuthor, b.tableAuthor, sortAscending, a, b);
                 }
-                // Manufacturer (ID 4) should use 'manufacturer'
-                if (sortColumn == 4) {
+                // Manufacturer (ID 5) should use 'manufacturer'
+                if (sortColumn == 5) {
                     return compareWithTieBreaker(a.manufacturer, b.manufacturer, sortAscending, a, b);
                 }
 
-                // ROM (ID 6) should use 'romName'
-                if (sortColumn == 6) {
+                // ROM (ID 7) should use 'romName'
+                if (sortColumn == 7) {
                     return compareWithTieBreaker(a.romName, b.romName, sortAscending, a, b);
                 }
             }
@@ -76,43 +76,46 @@ namespace
                 case 0: // Year
                     return compareWithTieBreaker(a.year, b.year, sortAscending, a, b);
 
-                case 2: // Version
+                case 2: // Type
+                    return compareWithTieBreaker(a.vpsType, b.vpsType, sortAscending, a, b); //TODO: accout for tableType too
+
+                case 3: // Version
                     return compareWithTieBreaker(a.tableVersion, b.tableVersion, sortAscending, a, b);
 
-                case 5: { // Extra Files: I / V / B
+                case 6: { // Extra Files: I / V / B
                     int ca = countTrue({ a.hasINI, a.hasVBS, a.hasB2S });
                     int cb = countTrue({ b.hasINI, b.hasVBS, b.hasB2S });
                     return compareWithTieBreaker(ca, cb, sortAscending, a, b);
                 }
 
-                case 7: { // Media Extras: S C P U M
+                case 8: { // Media Extras: S C P U M
                     int ca = countTrue({ a.hasAltSound, a.hasAltColor, a.hasPup, a.hasUltraDMD, a.hasAltMusic });
                     int cb = countTrue({ b.hasAltSound, b.hasAltColor, b.hasPup, b.hasUltraDMD, b.hasAltMusic });
                     return compareWithTieBreaker(ca, cb, sortAscending, a, b);
                 }
 
-                case 8: { // Images: P B D T W
+                case 9: { // Images: P B D T W
                     int ca = countTrue({ a.hasPlayfieldImage, a.hasBackglassImage, a.hasDmdImage, a.hasTopperImage, a.hasWheelImage });
                     int cb = countTrue({ b.hasPlayfieldImage, b.hasBackglassImage, b.hasDmdImage, b.hasTopperImage, b.hasWheelImage });
                     return compareWithTieBreaker(ca, cb, sortAscending, a, b);
                 }
 
-                case 9: { // Videos: P B D T
+                case 10: { // Videos: P B D T
                     int ca = countTrue({ a.hasPlayfieldVideo, a.hasBackglassVideo, a.hasDmdVideo, a.hasTopperVideo });
                     int cb = countTrue({ b.hasPlayfieldVideo, b.hasBackglassVideo, b.hasDmdVideo, b.hasTopperVideo });
                     return compareWithTieBreaker(ca, cb, sortAscending, a, b);
                 }
 
-                case 10: { // Sounds: M L
+                case 11: { // Sounds: M L
                     int ca = countTrue({ a.hasTableMusic, a.hasLaunchAudio });
                     int cb = countTrue({ b.hasTableMusic, b.hasLaunchAudio });
                     return compareWithTieBreaker(ca, cb, sortAscending, a, b);
                 }
 
-                case 11: // Patched
+                case 12: // Patched
                     return compareWithTieBreaker((int)a.isPatched, (int)b.isPatched, sortAscending, a, b);
 
-                case 12: // Broken
+                case 13: // Broken
                     return compareWithTieBreaker((int)a.isBroken, (int)b.isBroken, sortAscending, a, b);
 
                 default:

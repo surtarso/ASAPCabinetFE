@@ -12,6 +12,7 @@ namespace editor_body {
 // Forward declarations for all tooltip helpers
 static void drawYearTooltip(const TableData& t);
 static void drawNameTooltip(const TableData& t);
+static void drawTypeTooltip(const TableData& t);
 static void drawAuthorTooltip(const TableData& t);
 static void drawFilesTooltip(const TableData& t);
 static void drawRomTooltip(const TableData& t);
@@ -47,15 +48,16 @@ static void drawTooltipForColumn(int column, const TableData& t, EditorUI& ui) {
     switch (column) {
         case 0: drawYearTooltip(t); break;
         case 1: drawNameTooltip(t); break;
-        case 2: drawVersionTooltip(t); break;
-        case 3: drawAuthorTooltip(t); break;
-        case 4: drawManufacturerTooltip(t); break;
-        case 5: drawFilesTooltip(t); break;
-        case 6: drawRomTooltip(t); break;
-        case 7: drawExtrasTooltip(t); break;
-        case 8: drawAssetsTooltip(t); break;
-        case 9: drawVideosTooltip(t); break;
-        case 10: drawSoundsTooltip(t); break;
+        case 2: drawTypeTooltip(t); break;
+        case 3: drawVersionTooltip(t); break;
+        case 4: drawAuthorTooltip(t); break;
+        case 5: drawManufacturerTooltip(t); break;
+        case 6: drawFilesTooltip(t); break;
+        case 7: drawRomTooltip(t); break;
+        case 8: drawExtrasTooltip(t); break;
+        case 9: drawAssetsTooltip(t); break;
+        case 10: drawVideosTooltip(t); break;
+        case 11: drawSoundsTooltip(t); break;
         default:
             ImGui::TextDisabled("No tooltip defined.");
             break;
@@ -82,6 +84,13 @@ static void drawNameTooltip(const TableData& t) {
 
     ImGui::Separator();
     ImGui::Text("Best match: %s (%.0f%%)", t.title.c_str(), t.matchConfidence * 100.0f);
+}
+
+// ------------------------------------------------------------------
+// TYPE column
+static void drawTypeTooltip(const TableData& t) {
+    ImGui::Text("Metadata: %s", t.tableType.empty() ? "-" : t.tableType.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsType.empty() ? "-" : t.vpsType.c_str());
 }
 
 // ------------------------------------------------------------------
@@ -207,21 +216,22 @@ void drawBody(EditorUI& ui) {
                                     ImGuiTableFlags_Hideable |
                                     ImGuiTableFlags_Sortable;
 
-            if (ImGui::BeginTable("table_list", 13, flags, tableSize)) {
+            if (ImGui::BeginTable("table_list", 14, flags, tableSize)) {
                 ImGui::TableSetupScrollFreeze(0,1);
-                ImGui::TableSetupColumn("Year",        ImGuiTableColumnFlags_WidthFixed,   30.0f, 0);
+                ImGui::TableSetupColumn("Year",        ImGuiTableColumnFlags_WidthFixed,  30.0f, 0);
                 ImGui::TableSetupColumn("Name",        ImGuiTableColumnFlags_WidthStretch,  0.0f,1);
-                ImGui::TableSetupColumn("Version",     ImGuiTableColumnFlags_WidthFixed,   75.0f,2);
-                ImGui::TableSetupColumn("Author",      ImGuiTableColumnFlags_WidthFixed,  100.0f,3);
-                ImGui::TableSetupColumn("Manufacturer",ImGuiTableColumnFlags_WidthFixed,   80.0f,4);
-                ImGui::TableSetupColumn("Files",       ImGuiTableColumnFlags_WidthFixed,   50.0f,5);
-                ImGui::TableSetupColumn("ROM",         ImGuiTableColumnFlags_WidthFixed,   75.0f,6);
-                ImGui::TableSetupColumn("Extras",      ImGuiTableColumnFlags_WidthFixed,   75.0f,7);
-                ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   75.0f,8);
-                ImGui::TableSetupColumn("Videos",      ImGuiTableColumnFlags_WidthFixed,   55.0f,9);
-                ImGui::TableSetupColumn("Sounds",      ImGuiTableColumnFlags_WidthFixed,   30.0f,10);
-                ImGui::TableSetupColumn("Patched",     ImGuiTableColumnFlags_WidthFixed,   30.0f,11);
-                ImGui::TableSetupColumn("Broken",      ImGuiTableColumnFlags_WidthFixed,   30.0f,12);
+                ImGui::TableSetupColumn("Type",        ImGuiTableColumnFlags_WidthFixed,   30.0f,2);
+                ImGui::TableSetupColumn("Version",     ImGuiTableColumnFlags_WidthFixed,   75.0f,3);
+                ImGui::TableSetupColumn("Author",      ImGuiTableColumnFlags_WidthFixed,  100.0f,4);
+                ImGui::TableSetupColumn("Manufacturer",ImGuiTableColumnFlags_WidthFixed,   80.0f,5);
+                ImGui::TableSetupColumn("Files",       ImGuiTableColumnFlags_WidthFixed,   50.0f,6);
+                ImGui::TableSetupColumn("ROM",         ImGuiTableColumnFlags_WidthFixed,   75.0f,7);
+                ImGui::TableSetupColumn("Extras",      ImGuiTableColumnFlags_WidthFixed,   75.0f,8);
+                ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   75.0f,9);
+                ImGui::TableSetupColumn("Videos",      ImGuiTableColumnFlags_WidthFixed,   55.0f,10);
+                ImGui::TableSetupColumn("Sounds",      ImGuiTableColumnFlags_WidthFixed,   30.0f,11);
+                ImGui::TableSetupColumn("Patched",     ImGuiTableColumnFlags_WidthFixed,   30.0f,12);
+                ImGui::TableSetupColumn("Broken",      ImGuiTableColumnFlags_WidthFixed,   30.0f,13);
 
                 ImGui::TableHeadersRow();
 
@@ -248,6 +258,10 @@ void drawBody(EditorUI& ui) {
                                             : !t.tableName.empty() ? t.tableName
                                             : !t.title.empty() ? t.title
                                             : "-";
+
+                    std::string displayType = !t.vpsType.empty() ? t.vpsType
+                                             : !t.tableType.empty() ? t.tableType
+                                             : "-";
 
                     std::string displayAuthor = !t.vpsAuthors.empty() ? t.vpsAuthors
                                              : !t.tableAuthor.empty() ? t.tableAuthor
@@ -319,8 +333,18 @@ void drawBody(EditorUI& ui) {
 
                     ImGui::PopID();}
 
-                    // ----------------------------------------- VERSION
+                    // ----------------------------------------- TYPE
                     {ImGui::TableSetColumnIndex(2);
+
+                    ImGui::TextUnformatted(displayType.c_str());
+
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(2, t, ui);}
+
+                    // ----------------------------------------- VERSION
+                    {ImGui::TableSetColumnIndex(3);
 
                     if (!t.tableVersion.empty()) {
                         ImGui::TextUnformatted(t.tableVersion.c_str());
@@ -330,26 +354,26 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(2, t, ui);}
-
-                    // ----------------------------------------- AUTHOR
-                    {ImGui::TableSetColumnIndex(3);
-                    ImGui::TextUnformatted(displayAuthor.c_str());
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
                        drawTooltipForColumn(3, t, ui);}
 
-                    // ----------------------------------------- MANUFACTURER
+                    // ----------------------------------------- AUTHOR
                     {ImGui::TableSetColumnIndex(4);
-                    ImGui::TextUnformatted(displayManufacturer.c_str());
+                    ImGui::TextUnformatted(displayAuthor.c_str());
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
                        drawTooltipForColumn(4, t, ui);}
 
-                    // ----------------------------------------- Extra Files
+                    // ----------------------------------------- MANUFACTURER
                     {ImGui::TableSetColumnIndex(5);
+                    ImGui::TextUnformatted(displayManufacturer.c_str());
+                    ImVec2 min = ImGui::GetItemRectMin();
+                    ImVec2 max = ImGui::GetItemRectMax();
+                    if (ImGui::IsMouseHoveringRect(min, max))
+                       drawTooltipForColumn(5, t, ui);}
+
+                    // ----------------------------------------- Extra Files
+                    {ImGui::TableSetColumnIndex(6);
 
                     // Start text line
                     if (t.hasINI)
@@ -382,11 +406,11 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(5, t, ui);}
+                       drawTooltipForColumn(6, t, ui);}
 
 
                     // ----------------------------------------- ROM Name
-                    {ImGui::TableSetColumnIndex(6);
+                    {ImGui::TableSetColumnIndex(7);
 
                     if (!t.romName.empty()) {
                         ImGui::TextUnformatted(t.romName.c_str());
@@ -396,10 +420,10 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(6, t, ui);}
+                       drawTooltipForColumn(7, t, ui);}
 
                     // ----------------------------------------- Media Extras
-                    {ImGui::TableSetColumnIndex(7);
+                    {ImGui::TableSetColumnIndex(8);
 
                     ImGui::Text("%s%s%s%s%s",
                                 t.hasAltSound ? "S " : "- ",
@@ -410,10 +434,10 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(7, t, ui);}
+                       drawTooltipForColumn(8, t, ui);}
 
                     // ----------------------------------------- Media Assets - Images
-                    {ImGui::TableSetColumnIndex(8);
+                    {ImGui::TableSetColumnIndex(9);
 
                     ImGui::Text("%s%s%s%s%s",
                                 t.hasPlayfieldImage ? "P " : "- ",
@@ -424,10 +448,10 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(8, t, ui);}
+                       drawTooltipForColumn(9, t, ui);}
 
                     // ----------------------------------------- Media Assets - Videos
-                    {ImGui::TableSetColumnIndex(9);
+                    {ImGui::TableSetColumnIndex(10);
 
                     ImGui::Text("%s%s%s%s",
                                 t.hasPlayfieldVideo ? "P " : "- ",
@@ -437,10 +461,10 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(9, t, ui);}
+                       drawTooltipForColumn(10, t, ui);}
 
                     // ----------------------------------------- Media Assets - Sounds
-                    {ImGui::TableSetColumnIndex(10);
+                    {ImGui::TableSetColumnIndex(11);
 
                     ImGui::Text("%s%s",
                                 t.hasTableMusic ? "M " : "- ",
@@ -448,10 +472,10 @@ void drawBody(EditorUI& ui) {
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(10, t, ui);}
+                       drawTooltipForColumn(11, t, ui);}
 
                     // ----------------------------------------- Patch Status
-                    {ImGui::TableSetColumnIndex(11);
+                    {ImGui::TableSetColumnIndex(12);
 
                         if (t.isPatched) {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.20f, 1.0f, 0.20f, 1.0f)); // green
@@ -465,7 +489,7 @@ void drawBody(EditorUI& ui) {
                     }
 
                     // ----------------------------------------- Launch Status
-                    {ImGui::TableSetColumnIndex(12);
+                    {ImGui::TableSetColumnIndex(13);
 
                         if (t.isBroken) {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.20f, 0.20f, 1.0f)); // red
