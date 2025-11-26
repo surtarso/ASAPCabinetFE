@@ -125,9 +125,55 @@ public:
      */
     void setRuntimeEditor(ConfigUI* editor) override { runtimeEditor_ = editor; }
 
-    const LaunchPopup& getLaunchPopup() const override;
+    const LaunchPopup& getLaunchPopup() const override { return launchPopup_; }
 
 private:
+    // Dependencies
+    IAppCallbacks* callbacks_;
+    IKeybindProvider* keybindProvider_; ///< Keybind provider for input mappings.
+    IAssetManager* assets_;             ///< Asset manager for textures and video players.
+    ISoundManager* soundManager_;       ///< Sound manager for UI sounds.
+    IConfigService* settingsManager_;   ///< Configuration service for settings.
+    IWindowManager* windowManager_;     ///< Window manager for renderer access.
+    size_t* currentIndex_;              ///< Pointer to the current table index.
+    std::vector<TableData>* tables_; ///< Pointer to the table data list.
+    bool* showConfig_;                  ///< Pointer to the configuration UI visibility flag.
+    bool* showEditor_;
+    bool* showVpsdb_;
+    std::string exeDir_;                ///< Executable directory for path resolution.
+    IScreenshotManager* screenshotManager_; ///< Screenshot manager for screenshot mode.
+    ConfigUI* runtimeEditor_;           ///< Configuration UI editor for runtime settings.
+
+    using Handler = std::function<void()>;
+    std::unordered_map<std::string, Handler> actionHandlers_;
+    std::map<char, size_t> letterIndex_; ///< Map of letters to table indices for navigation.
+
+    bool quit_;                         ///< Flag indicating if the application should quit.
+    bool screenshotModeActive_;         ///< Flag indicating if screenshot mode is active.
+    std::unordered_map<Uint32, Uint32> lastClickTimes_; ///< Timestamps for double-click detection.
+    bool inExternalAppMode_;            ///< Flag indicating if an external application is running.
+    Uint32 lastExternalAppReturnTime_;  ///< Timestamp of the last external application return.
+    static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< Debounce time (ms) after external app return.
+    std::atomic<bool>* isLoadingTables_; ///< Track loading state
+    ITableLauncher* tableLauncher_;
+    ITableCallbacks* tableCallbacks_ = nullptr;
+    LaunchPopup launchPopup_;
+
+    void onPreviousTable();
+    void onNextTable();
+    void onFastPreviousTable();
+    void onFastNextTable();
+    void onJumpNextLetter();
+    void onJumpPreviousLetter();
+    void onRandomTable();
+    void onLaunchTable();
+    void onToggleConfig();
+    void onQuit();
+    void onScreenshotMode();
+    void onToggleEditor();
+    void onToggleMetadata();
+    void onToggleCatalog();
+
     /**
      * @brief Type alias for action handler functions.
      */
@@ -151,33 +197,6 @@ private:
      * @param event The SDL event to process.
      */
     void handleDoubleClick(const SDL_Event& event);
-
-    IAppCallbacks* callbacks_;
-    IKeybindProvider* keybindProvider_; ///< Keybind provider for input mappings.
-    IAssetManager* assets_;             ///< Asset manager for textures and video players.
-    ISoundManager* soundManager_;       ///< Sound manager for UI sounds.
-    IConfigService* settingsManager_;   ///< Configuration service for settings.
-    IWindowManager* windowManager_;     ///< Window manager for renderer access.
-    size_t* currentIndex_;              ///< Pointer to the current table index.
-    std::vector<TableData>* tables_; ///< Pointer to the table data list.
-    bool* showConfig_;                  ///< Pointer to the configuration UI visibility flag.
-    bool* showEditor_;
-    bool* showVpsdb_;
-    std::string exeDir_;                ///< Executable directory for path resolution.
-    IScreenshotManager* screenshotManager_; ///< Screenshot manager for screenshot mode.
-    ConfigUI* runtimeEditor_;           ///< Configuration UI editor for runtime settings.
-    std::map<std::string, ActionHandler> actionHandlers_; ///< Map of actions to handler functions.
-    std::map<char, size_t> letterIndex_; ///< Map of letters to table indices for navigation.
-    bool quit_;                         ///< Flag indicating if the application should quit.
-    bool screenshotModeActive_;         ///< Flag indicating if screenshot mode is active.
-    std::unordered_map<Uint32, Uint32> lastClickTimes_; ///< Timestamps for double-click detection.
-    bool inExternalAppMode_;            ///< Flag indicating if an external application is running.
-    Uint32 lastExternalAppReturnTime_;  ///< Timestamp of the last external application return.
-    static const Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< Debounce time (ms) after external app return.
-    std::atomic<bool>* isLoadingTables_; ///< Track loading state
-    ITableLauncher* tableLauncher_;
-    ITableCallbacks* tableCallbacks_ = nullptr;
-    LaunchPopup launchPopup_;
 };
 
 #endif // INPUT_MANAGER_H
