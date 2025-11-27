@@ -13,13 +13,12 @@ for 1.3.0
 
 - color letter when theres more than 1 media file (ex: table.png, table2.png)
 
-(use current manufacturer logic for topper, game name on dmd using logo?)
-- use new 128x32 logos for topper table names using ID mapping
+- switchable topper/dmd or selectable stat per window?
+- use new 128x32 logos for topper(dmd?) table names using ID mapping
 - gather more 128x32 still logos (atari, playmatic etc)
 - grab stuff from launchbox media (platform: pinball) [done]
-    - clear logo (substitute wheel?? artwork4dmd??)
-    - panflets (metadata panel(fe) or own panel?)
-
+    - clear logo (keep a high res copy for FE display?)
+    - panflets (metadata panel display FE+ED)
 
 QOL:
 - update header docs and user manual
