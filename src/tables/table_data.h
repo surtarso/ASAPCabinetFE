@@ -138,8 +138,8 @@ struct TableData {
     bool hasTopperVideo = false;     ///< True if found a custom topper video
     bool hasTableMusic = false;      ///< True if found a custom table music file
     bool hasLaunchAudio = false;     ///< True if found a custom launch audio file
-    bool hasFlyerFront = false;
-    bool hasFlyerBack = false;
+    bool hasFlyerFront = false;      ///< True if found a custom flyer image (front)
+    bool hasFlyerBack = false;       ///< True if found a custom flyer image (back)
 
     uint64_t folderLastModified = 0;
     uint64_t fileLastModified = 0;   ///< Timestamp of the last modification of the .vpx file

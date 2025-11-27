@@ -130,6 +130,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("playTimeTotal") && table["playTimeTotal"].is_number_float()) tableData.playTimeTotal = table["playTimeTotal"].get<float>();
             if (table.contains("isBroken") && table["isBroken"].is_boolean()) tableData.isBroken = table["isBroken"].get<bool>();
             if (table.contains("fileLastModified") && table["fileLastModified"].is_number_unsigned()) tableData.fileLastModified = table["fileLastModified"].get<uint64_t>();
+            if (table.contains("folderLastModified") && table["folderLastModified"].is_number_unsigned()) tableData.folderLastModified = table["folderLastModified"].get<uint64_t>();
             if (table.contains("hashFromVpx") && table["hashFromVpx"].is_string()) tableData.hashFromVpx = table["hashFromVpx"].get<std::string>();
             if (table.contains("hashFromVbs") && table["hashFromVbs"].is_string()) tableData.hashFromVbs = table["hashFromVbs"].get<std::string>();
             if (table.contains("hasDiffVbs") && table["hasDiffVbs"].is_boolean()) tableData.hasDiffVbs = table["hasDiffVbs"].get<bool>();
@@ -265,6 +266,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["playTimeTotal"] = table.playTimeTotal;
         tableJson["isBroken"] = table.isBroken;
         tableJson["fileLastModified"] = table.fileLastModified;
+        tableJson["folderLastModified"] = table.folderLastModified;
         tableJson["hashFromVpx"] = table.hashFromVpx;
         tableJson["hashFromVbs"] = table.hashFromVbs;
         tableJson["hasDiffVbs"] = table.hasDiffVbs;
