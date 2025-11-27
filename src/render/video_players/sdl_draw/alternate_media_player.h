@@ -12,6 +12,7 @@
 #include "dmd_renderer.h"
 #include "playfield_renderer.h"
 #include "backglass_renderer.h"
+#include "embedded_fallbacks.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -96,6 +97,26 @@ public:
 
         SDL_SetRenderDrawColor(renderer_, 20, 20, 20, 255);
         SDL_RenderClear(renderer_);
+
+        // Embedded fallback images
+        if ((screenName_ == "dmd" || screenName_ == "topper") &&
+            (displayText_.empty() || displayText_ == "__ALTERNATIVE_MEDIA__" ||
+            displayText_ == "__ALTERNATIVE_MEDIA__:"))
+        {
+            const unsigned char* data = (screenName_ == "dmd") ? EMBED_DMD_PNG : EMBED_TOPPER_PNG;
+            size_t size               = (screenName_ == "dmd") ? EMBED_DMD_PNG_SIZE : EMBED_TOPPER_PNG_SIZE;
+
+            SDL_Texture* raw = loadEmbeddedPNG(renderer_, data, size);
+            if (raw) {
+                DmdSDLRenderer& dmd = dmdRendererPtr_ ? *dmdRendererPtr_ : dmdRenderer_;
+                dmd.renderTextureAsDmd(renderer_, raw, width_, height_, last_update_time_);
+
+                SDL_DestroyTexture(raw);
+                SDL_SetRenderTarget(renderer_, nullptr);
+                return;
+            }
+        }
+        // Embedding end
 
         if (screenName_ == "dmd") {
             defaultText_ = "INSERT COINS";

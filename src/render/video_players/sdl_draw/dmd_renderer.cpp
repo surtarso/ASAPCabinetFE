@@ -190,6 +190,41 @@ SDL_Texture* DmdSDLRenderer::getAsset(const std::string& name) const {
     return nullptr;
 }
 
+
+SDL_Texture* DmdSDLRenderer::renderEmbeddedTexture(SDL_Renderer* renderer,
+                                                   SDL_Texture* src,
+                                                   int width,
+                                                   int height,
+                                                   float time)
+{
+    if (!renderer || !src) return nullptr;
+
+    // Create target texture for DMD output
+    SDL_Texture* tgt = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        width,
+        height
+    );
+    if (!tgt) return nullptr;
+
+    // Render to it
+    SDL_SetRenderTarget(renderer, tgt);
+
+    // Clear background
+    SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
+    SDL_RenderClear(renderer);
+
+    // DMD-dot sampling pass
+    drawDmdAssetMasked(renderer, src, width, height, time);
+
+    // Restore rendering target
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    return tgt;
+}
+
 // =========================================================================
 // 3. Asset Masking Implementation
 // =========================================================================

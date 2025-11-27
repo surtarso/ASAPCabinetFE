@@ -20,6 +20,21 @@ public:
     DmdSDLRenderer();
     ~DmdSDLRenderer();
 
+    void renderTextureAsDmd(SDL_Renderer* renderer,
+                        SDL_Texture* sourceTexture,
+                        int width, int height,
+                        float time)
+    {
+        if (!sourceTexture) return;
+        drawDmdAssetMasked(renderer, sourceTexture, width, height, time);
+    }
+
+    SDL_Texture* renderEmbeddedTexture(SDL_Renderer* renderer,
+                                   SDL_Texture* src,
+                                   int width,
+                                   int height,
+                                   float time = 0.f);
+
     /**
      * @brief Loads assets (images and GIFs) from a directory into the internal cache.
      * @param directoryPath The path to the asset directory (e.g., "assets/img/dmd_still").
