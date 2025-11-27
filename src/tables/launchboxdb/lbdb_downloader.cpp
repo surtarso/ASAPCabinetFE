@@ -1,5 +1,6 @@
 // src/tables/launchboxdb/lbdb_downloader.cpp
 #include "lbdb_downloader.h"
+#include "lbdb_image.h"
 #include "lbdb_builder.h"
 #include "log/logging.h"
 #include "tables/vpinmdb/vpinmdb_downloader.h"
@@ -136,7 +137,7 @@ void LbdbDownloader::downloadClearLogo(const std::string& gameId,
 
     LOG_INFO("Downloaded Clear Logo → " + table.title + " → " + output.string());
 
-    if (!vpinmdb::resizeImage(output, 128, 32)) {
+    if (!lbdb::resizeClearLogo(output, 128, 32)) {
         LOG_WARN("Resize failed for Clear Logo → " + output.string());
         return;
     }

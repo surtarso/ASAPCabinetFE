@@ -332,6 +332,7 @@ set(SOURCES
     src/tables/vpxtool_scanner.cpp
     src/tables/launchboxdb/lbdb_builder.cpp
     src/tables/launchboxdb/lbdb_downloader.cpp
+    src/tables/launchboxdb/lbdb_image.cpp
     src/tables/overrides/table_override_manager.cpp
     src/tables/overrides/table_override_editor.cpp
     src/tables/vpinmdb/vpinmdb_client.cpp
