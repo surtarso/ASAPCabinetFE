@@ -2,6 +2,7 @@ TODO
 
 FIX:
 - [!] loading screen pipeline ordering/numbering
+- texture reload problem when toggling new windows (restarting ap works...)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
