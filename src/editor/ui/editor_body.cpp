@@ -158,12 +158,14 @@ static void drawExtrasTooltip(const TableData& t) {
 // ------------------------------------------------------------------
 // ASSETS column (Images)
 static void drawAssetsTooltip(const TableData& t) {
-    ImGui::Text("Legend: P=Playfield, B=Backglass, D=DMD, T=Topper, W=Wheel");
+    ImGui::Text("Legend: P=Playfield, B=Backglass, D=DMD, T=Topper\nW=Wheel, F=Flyer (front), Fb=Flyer(Back)");
     ImGui::Text("Playfield: %s", t.hasPlayfieldImage ? t.playfieldImage.c_str() : "-");
     ImGui::Text("Backglass: %s", t.hasBackglassImage ? t.backglassImage.c_str() : "-");
     ImGui::Text("DMD: %s", t.hasDmdImage ? t.dmdImage.c_str() : "-");
     ImGui::Text("Topper: %s", t.hasTopperImage ? t.topperImage.c_str() : "-");
     ImGui::Text("Wheel: %s", t.hasWheelImage ? t.wheelImage.c_str() : "-");
+    ImGui::Text("Flyer (front): %s", t.hasFlyerFront ? t.flyerFront.c_str() : "-");
+    ImGui::Text("Flyer (back): %s", t.hasFlyerBack ? t.flyerBack.c_str() : "-");
 }
 
 // ------------------------------------------------------------------
@@ -220,14 +222,14 @@ void drawBody(EditorUI& ui) {
                 ImGui::TableSetupScrollFreeze(0,1);
                 ImGui::TableSetupColumn("Year",        ImGuiTableColumnFlags_WidthFixed,  30.0f, 0);
                 ImGui::TableSetupColumn("Name",        ImGuiTableColumnFlags_WidthStretch,  0.0f,1);
-                ImGui::TableSetupColumn("Type",        ImGuiTableColumnFlags_WidthFixed,   30.0f,2);
+                ImGui::TableSetupColumn("Type",        ImGuiTableColumnFlags_WidthFixed,   20.0f,2);
                 ImGui::TableSetupColumn("Version",     ImGuiTableColumnFlags_WidthFixed,   75.0f,3);
                 ImGui::TableSetupColumn("Author",      ImGuiTableColumnFlags_WidthFixed,  100.0f,4);
                 ImGui::TableSetupColumn("Manufacturer",ImGuiTableColumnFlags_WidthFixed,   80.0f,5);
                 ImGui::TableSetupColumn("Files",       ImGuiTableColumnFlags_WidthFixed,   50.0f,6);
-                ImGui::TableSetupColumn("ROM",         ImGuiTableColumnFlags_WidthFixed,   75.0f,7);
-                ImGui::TableSetupColumn("Extras",      ImGuiTableColumnFlags_WidthFixed,   75.0f,8);
-                ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   75.0f,9);
+                ImGui::TableSetupColumn("ROM",         ImGuiTableColumnFlags_WidthFixed,   70.0f,7);
+                ImGui::TableSetupColumn("Extras",      ImGuiTableColumnFlags_WidthFixed,   65.0f,8);
+                ImGui::TableSetupColumn("Images",      ImGuiTableColumnFlags_WidthFixed,   100.0f,9);
                 ImGui::TableSetupColumn("Videos",      ImGuiTableColumnFlags_WidthFixed,   55.0f,10);
                 ImGui::TableSetupColumn("Sounds",      ImGuiTableColumnFlags_WidthFixed,   30.0f,11);
                 ImGui::TableSetupColumn("Patched",     ImGuiTableColumnFlags_WidthFixed,   30.0f,12);
@@ -439,12 +441,14 @@ void drawBody(EditorUI& ui) {
                     // ----------------------------------------- Media Assets - Images
                     {ImGui::TableSetColumnIndex(9);
 
-                    ImGui::Text("%s%s%s%s%s",
+                    ImGui::Text("%s%s%s%s%s%s%s",
                                 t.hasPlayfieldImage ? "P " : "- ",
                                 t.hasBackglassImage ? "B " : "- ",
                                 t.hasDmdImage ? "D " : "- ",
                                 t.hasTopperImage ? "T " : "- ",
-                                t.hasWheelImage ? "W " : "- ");
+                                t.hasWheelImage ? "W " : "- ",
+                                t.hasFlyerFront ? "F " : "- ",
+                                t.hasFlyerBack ? "Fb" : "-");
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))

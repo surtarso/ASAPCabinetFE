@@ -1,19 +1,15 @@
 TODO
 
-
-
 FIX:
-- loading screen pipeline ordering/numbering
+- [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 for 1.3.0
-- add new media to media column (flyers)
-- fix matchmaking on launchboxdb
+- [!] fix matchmaking on launchboxdb
 
 - [ED] spreadsheet keyboard navigation
 - [ED] add option to resize vpindb images more obvious in editor
-- update header docs and user manual
 
 - color letter when theres more than 1 media file (ex: table.png, table2.png)
 
@@ -26,6 +22,7 @@ for 1.3.0
 
 
 QOL:
+- update header docs and user manual
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
 - on DMD/topper... respect user choice on image/video for still/animated dmds
 - custom text to send to dmd/topper (year, title etc)
