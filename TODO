@@ -4,6 +4,7 @@ FIX:
 - [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
+- clear ibdb ID when missmatch or new match etc (so missmatches dont keep wrg ID)
 
 for 1.3.0
 - [!] fix matchmaking on launchboxdb

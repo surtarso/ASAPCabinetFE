@@ -2,23 +2,281 @@
 #include "lbdb_downloader.h"
 #include "lbdb_image.h"
 #include "lbdb_builder.h"
+#include "utils/string_utils.h"
+#include "utils/manufacturers.h"
 #include "log/logging.h"
 #include "tables/vpinmdb/vpinmdb_downloader.h"
 #include "tables/vpinmdb/vpinmdb_image.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
+#include <mutex>
+#include <memory>
 
 namespace fs = std::filesystem;
 
-void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
-    fs::path jsonPath = settings_.lbdbPath; // "data/cache/launchbox_pinball.json";
+// ---------------------------------------------------------
+// INDEX TYPES & BUILDER (file-scope static helpers)
+// ---------------------------------------------------------
+struct LBIndex {
+    // compact representation for each LB entry we care about
+    struct Entry {
+        const nlohmann::json* jsonPtr;   // pointer into the loaded DB
+        std::string normTitle;           // normalized title (less aggressive)
+        std::vector<std::string> tokens; // tokenized normTitle
+        std::string year;
+        std::string manuNorm;            // normalized manufacturer (canonical from list if possible)
+    };
 
-    // First-run behavior → auto-build DB
+    std::vector<Entry> entries;
+
+    // maps for fast candidate lookup
+    std::unordered_map<std::string, std::vector<size_t>> byNormTitle; // exact norm title -> indices
+    std::unordered_map<std::string, std::vector<size_t>> byToken;     // token -> indices
+    std::unordered_map<std::string, std::vector<size_t>> byYear;      // year -> indices
+    std::unordered_map<std::string, std::vector<size_t>> byManufacturer; // manu -> indices
+
+    void clear() {
+        entries.clear();
+        byNormTitle.clear();
+        byToken.clear();
+        byYear.clear();
+        byManufacturer.clear();
+    }
+};
+
+static LBIndex s_index;                // single global index for this compilation unit
+static bool s_indexBuilt = false;
+static std::mutex s_indexMutex;
+
+// Helper: split tokens (simple)
+static inline std::vector<std::string> tokenizeSimple(const std::string& s) {
+    std::vector<std::string> out;
+    std::istringstream iss(s);
+    std::string w;
+    while (iss >> w) out.push_back(w);
+    return out;
+}
+
+// Build the index from the in-memory DB (call once)
+static void buildLbIndex(const nlohmann::json& db, const StringUtils& util) {
+    std::lock_guard<std::mutex> lk(s_indexMutex);
+    if (s_indexBuilt) return; // double-check inside lock
+
+    s_index.clear();
+    s_index.entries.reserve(db.size());
+
+    size_t idx = 0;
+    for (const auto& game : db) {
+        LBIndex::Entry e;
+        e.jsonPtr = &game;
+
+        // name/year/manu safe extraction
+        std::string title = util.safeGetString(game, "Name", "");
+        std::string year  = util.safeGetString(game, "Year", "");
+        std::string manu  = util.safeGetString(game, "Developer", "");
+
+        std::string cleanB = util.extractCleanTitle(title);
+        e.normTitle = util.normalizeStringLessAggressive(cleanB);
+        e.tokens = tokenizeSimple(e.normTitle);
+        e.year = year;
+        std::string manuLower = util.toLower(manu);
+
+        // canonicalize using manufacturers list if possible
+        bool manuFound = false;
+        for (const auto& m : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+            if (manuLower.find(m) != std::string::npos) {
+                e.manuNorm = m;
+                manuFound = true;
+                break;
+            }
+        }
+        if (!manuFound) e.manuNorm = util.toLower(manu);
+
+        s_index.entries.push_back(std::move(e));
+
+        // populate maps using index 'idx'
+        const LBIndex::Entry& entryRef = s_index.entries.back();
+        if (!entryRef.normTitle.empty()) {
+            s_index.byNormTitle[entryRef.normTitle].push_back(idx);
+        }
+        for (const auto& t : entryRef.tokens) {
+            if (t.size() > 1) s_index.byToken[t].push_back(idx);
+        }
+        if (!entryRef.year.empty()) s_index.byYear[entryRef.year].push_back(idx);
+        if (!entryRef.manuNorm.empty()) s_index.byManufacturer[entryRef.manuNorm].push_back(idx);
+
+        ++idx;
+    }
+
+    s_indexBuilt = true;
+}
+
+
+std::optional<std::string> LbdbDownloader::findBestMatch(const TableData& table) {
+    static StringUtils util;
+    static nlohmann::json db;
+
+    // Load DB once if needed (mirror previous behavior)
+    if (db.empty()) {
+        std::ifstream f(settings_.lbdbPath);
+        if (!f.is_open()) return std::nullopt;
+        try { f >> db; } catch (...) { return std::nullopt; }
+    }
+
+    // Ensure index is built (thread-safe)
+    if (!s_indexBuilt) {
+        buildLbIndex(db, util);
+    }
+
+    // ------------------------------------------
+    // CLEAN ASAP TITLE (aggressive, VPS-style)
+    // ------------------------------------------
+    std::string cleanA = util.extractCleanTitle(table.title);
+    std::string normA  = util.normalizeStringLessAggressive(cleanA);
+    auto tokensA = tokenizeSimple(normA);
+
+    // Normalize year and manufacturer
+    std::string yearA = table.year;
+    std::string manuA = util.toLower(table.manufacturer);
+    bool manuKnown = false;
+    for (const auto& m : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+        if (manuA.find(m) != std::string::npos) {
+            manuKnown = true;
+            manuA = m;
+            break;
+        }
+    }
+
+    // -----------------------
+    // Gather candidate indices
+    // -----------------------
+    std::unordered_set<size_t> candidates;
+
+    // 1) exact title candidates
+    if (!normA.empty()) {
+        auto it = s_index.byNormTitle.find(normA);
+        if (it != s_index.byNormTitle.end()) {
+            for (size_t i : it->second) candidates.insert(i);
+        }
+    }
+
+    // 2) token candidates (collect from first few tokens; prioritized)
+    int tokenCount = 0;
+    for (const auto& t : tokensA) {
+        if (t.size() <= 2) continue; // skip tiny noise tokens
+        auto it = s_index.byToken.find(t);
+        if (it != s_index.byToken.end()) {
+            for (size_t i : it->second) candidates.insert(i);
+        }
+        if (++tokenCount >= 6) break; // don't query too many tokens
+    }
+
+    // 3) year candidates
+    if (!yearA.empty()) {
+        auto it = s_index.byYear.find(yearA);
+        if (it != s_index.byYear.end()) {
+            for (size_t i : it->second) candidates.insert(i);
+        }
+    }
+
+    // 4) manufacturer candidates
+    if (manuKnown) {
+        auto it = s_index.byManufacturer.find(manuA);
+        if (it != s_index.byManufacturer.end()) {
+            for (size_t i : it->second) candidates.insert(i);
+        }
+    }
+
+    // If no candidates found by index, fall back to a narrow global pass:
+    // search by first meaningful token across entire DB (fast compared to brute force)
+    if (candidates.empty() && !tokensA.empty()) {
+        const std::string& firstTok = tokensA.front();
+        if (!firstTok.empty()) {
+            auto it = s_index.byToken.find(firstTok);
+            if (it != s_index.byToken.end()) {
+                for (size_t i : it->second) candidates.insert(i);
+            }
+        }
+    }
+
+    // If still empty, give up (avoid full DB scan)
+    if (candidates.empty()) {
+        return std::nullopt;
+    }
+
+    // -----------------------
+    // Score candidates only
+    // -----------------------
+    int bestScore = 0;
+    std::string bestId;
+
+    for (size_t idx : candidates) {
+        const auto& e = s_index.entries[idx];
+        int score = 0;
+
+        const std::string& normB = e.normTitle;
+        const std::vector<std::string>& tokensB = e.tokens;
+        const std::string& yearB = e.year;
+        const std::string& manuBnorm = e.manuNorm;
+
+        // EXACT TITLE MATCH
+        if (!normA.empty() && normA == normB) score += 200;
+
+        // SUBSTRING MATCH
+        if (normA.size() > 3 && normB.size() > 3) {
+            if (normA.find(normB) != std::string::npos ||
+                normB.find(normA) != std::string::npos) score += 120;
+        }
+
+        // WORD INTERSECTION
+        int commonWords = 0;
+        for (const auto& wa : tokensA) {
+            for (const auto& wb : tokensB) {
+                if (wa == wb && wa.size() > 2) commonWords++;
+            }
+        }
+        score += commonWords * 40;
+
+        // YEAR MATCH
+        if (!yearA.empty() && !yearB.empty() && yearA == yearB) score += 70;
+
+        // MANUFACTURER MATCH
+        if (manuKnown && !manuBnorm.empty() && manuA == manuBnorm) score += 60;
+
+        if (!manuBnorm.empty()) score += 5;
+        if (!yearB.empty()) score += 5;
+
+        if (score > bestScore) {
+            bestScore = score;
+            // retrieve ID from the json pointer
+            if (e.jsonPtr && e.jsonPtr->contains("Id") && (*e.jsonPtr)["Id"].is_string()) {
+                bestId = (*e.jsonPtr)["Id"].get<std::string>();
+            } else {
+                bestId.clear();
+            }
+        }
+    }
+
+    if (bestScore >= 120 && !bestId.empty()) return bestId;
+    return std::nullopt;
+}
+
+
+// ------------------------------------------------------
+// downloadArtForTables()
+// now using findBestMatch()
+// ------------------------------------------------------
+void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
+    fs::path jsonPath = settings_.lbdbPath;
+
+    // Auto-build database on first run
     if (!fs::exists(jsonPath)) {
         LOG_WARN("LaunchBox DB missing — building automatically...");
 
-        // Blocking: user sees progress UI, avoids silent confusion
         bool success = launchbox::build_pinball_database(settings_);
         if (!success) {
             LOG_ERROR("LaunchBox DB auto-build failed");
@@ -27,6 +285,7 @@ void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
         LOG_INFO("LaunchBox DB auto-build succeeded");
     }
 
+    // Load full DB once in static JSON
     static nlohmann::json pinballDb;
     if (pinballDb.empty()) {
         LOG_INFO("Loading launchbox_pinball.json...");
@@ -40,51 +299,35 @@ void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
             LOG_ERROR("Invalid JSON in launchbox_pinball.json");
             return;
         }
-        LOG_INFO("Loaded " + std::to_string(pinballDb.size()) + " pinball games from LaunchBox DB");
     }
 
+    // Process each table
     size_t processed = 0;
+
     for (auto& table : tables) {
-        std::string key = table.title;
-        if (!table.year.empty()) key += " " + table.year;
-        if (!table.manufacturer.empty()) key += " " + table.manufacturer;
-        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
-        std::string bestId;
-        int bestScore = 0;
+        // clear previous ID BEFORE matching
+        table.lbdbID.clear();
 
-        for (const auto& game : pinballDb) {
-            std::string gtitle = game["Name"].get<std::string>();
-            std::string gyear  = game.value("Year", "");
-            std::string gdev   = game.value("Developer", "");
+        // ------------------------------------------------------
+        // perform robust match using findBestMatch()
+        // ------------------------------------------------------
+        auto best = findBestMatch(table);
+        if (!best.has_value()) {
+            LOG_WARN("LaunchBox: NO MATCH → " + table.title);
+        } else {
+            std::string bestId = best.value();
+            table.lbdbID = bestId; // store clean new ID
 
-            std::string gkey = gtitle;
-            if (!gyear.empty()) gkey += " " + gyear;
-            if (!gdev.empty()) gkey += " " + gdev;
-            std::transform(gkey.begin(), gkey.end(), gkey.begin(), ::tolower);
+            LOG_INFO("LaunchBox MATCH → " + table.title +
+                    " (ID: " + bestId + ")");
 
-            int score = 0;
-            if (gkey.find(key) != std::string::npos || key.find(gkey) != std::string::npos) score += 100;
-            if (!table.year.empty() && gyear == table.year) score += 80;
-            if (!table.manufacturer.empty() && !gdev.empty() &&
-                (gdev.find(table.manufacturer) != std::string::npos || table.manufacturer.find(gdev) != std::string::npos))
-                score += 60;
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestId = game["Id"].get<std::string>();
-            }
-        }
-
-        if (bestScore >= 100 && !bestId.empty()) {
-            LOG_INFO("LaunchBox MATCH → " + table.title + " (score: " + std::to_string(bestScore) + ")");
-
-            table.lbdbID = bestId;
-
+            // Download images
             downloadClearLogo(bestId, table, pinballDb);
             downloadFlyersFromJson(bestId, table, pinballDb);
         }
 
+        // Update UI progress
         processed++;
         if (progress_) {
             std::lock_guard<std::mutex> l(progress_->mutex);
