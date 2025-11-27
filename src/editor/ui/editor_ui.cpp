@@ -166,7 +166,7 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 settings.titleSource = "metadata";
                 settings.fetchVPSdb = true;
                 settings.autoPatchTables = true;
-                settings.fetchVpinMediaDb = true;
+                settings.fetchMediaOnline = true;
                 break;
         }
 

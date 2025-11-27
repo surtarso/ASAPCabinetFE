@@ -74,6 +74,8 @@ struct Settings {
     std::string customTopperVideo = "images/topper.mp4";
     std::string tableMusic = "audio/music.mp3";
     std::string customLaunchSound = "audio/launch.mp3";
+    std::string customFlyerFrontImage = "flyers/flyer-front.png";
+    std::string customFlyerBackImage = "flyers/flyer-back.png";
 
     // [WindowSettings]
     std::string videoBackend = "ffmpeg"; // + 'vlc', 'novideo', 'software'
@@ -154,7 +156,7 @@ struct Settings {
     int titleY = 1850;
 
     // [MediaDimensions]
-    bool fetchVpinMediaDb = false; // download images from vpinmedia
+    bool fetchMediaOnline = false; // download images from vpinmedia
     bool resizeToWindows = false; // resize images to windows sizes
     bool forceImagesOnly = false;
     bool useGenArt = false;
@@ -237,11 +239,17 @@ struct Settings {
     std::string vpinmdbPath = "data/cache/vpinmdb.json";
     std::string vpinmdbUrl = "https://raw.githubusercontent.com/superhac/vpinmediadb/refs/heads/main/vpinmdb.json";
 
+    std::string lbdbImgUrl = "https://images.launchbox-app.com/";
+    std::string lbdbZipUrl = "https://gamesdb.launchbox-app.com/Metadata.zip";
+    std::string lbdbZipPath = "data/cache/Metadata.zip";
+    std::string lbdbPath = "data/cache/launchbox_pinball.json";
+
     int screenshotWait = 4; // 0-60
     float configUIWidth = 0.7f;   // defaults in ConfigUI::drawGUI(), these are for FE config panel
     float configUIHeight = 0.5f;  // defaults in ConfigUI::drawGUI(), these are for FE config panel
     std::string defaultWheelImage = "img/default_wheel.png";
     std::string dmdStillImages = "img/dmd_still";
+    std::string topperStillImages = "img/topper_still";
 
     // [Editor]
     bool showTableTooltips = true;
@@ -279,7 +287,7 @@ struct Settings {
         // List all paths that need resolution
         std::vector<std::string> pathFields = {
             // default images
-            "defaultWheelImage", "dmdStillImages",
+            "defaultWheelImage", "dmdStillImages", "topperStillImages",
 
             // UI Sounds Paths ("default sounds")
             "scrollNormalSound", "scrollFastSound", "scrollJumpSound",
@@ -289,7 +297,7 @@ struct Settings {
             // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
             "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
-            "vpinmdbPath", "mainCacheDir",
+            "vpinmdbPath", "mainCacheDir", "lbdbPath", "lbdbZipPath"
         };
 
         // Iterate through the list and resolve each path
@@ -297,6 +305,7 @@ struct Settings {
             // Default images
             if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
             else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, exeDir);
+            else if (field == "topperStillImages") topperStillImages = resolvePath(topperStillImages, exeDir);
             // UI Sounds
             else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, exeDir);
             else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, exeDir);
@@ -317,6 +326,8 @@ struct Settings {
             else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, exeDir);
             else if (field == "vpinmdbPath") vpinmdbPath = resolvePath(vpinmdbPath, exeDir);
             else if (field == "mainCacheDir") mainCacheDir = resolvePath(mainCacheDir, exeDir);
+            else if (field == "lbdbPath") lbdbPath = resolvePath(lbdbPath, exeDir);
+            else if (field == "lbdbZipPath") lbdbZipPath = resolvePath(lbdbZipPath, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -401,7 +412,9 @@ private:
                 {"customDmdVideo", s.customDmdVideo},
                 {"customTopperVideo", s.customTopperVideo},
                 {"tableMusic", s.tableMusic},
-                {"customLaunchSound", s.customLaunchSound}
+                {"customLaunchSound", s.customLaunchSound},
+                {"customFlyerFrontImage", s.customFlyerFrontImage},
+                {"customFlyerBackImage", s.customFlyerBackImage},
             }},
             {"WindowSettings", {
                 {"videoBackend", s.videoBackend},
@@ -474,7 +487,7 @@ private:
                 {"titleY", s.titleY}
             }},
             {"MediaDimensions", {
-                {"fetchVpinMediaDb", s.fetchVpinMediaDb},
+                {"fetchMediaOnline", s.fetchMediaOnline},
                 {"resizeToWindows", s.resizeToWindows},
                 {"forceImagesOnly", s.forceImagesOnly},
                 {"useGenArt", s.useGenArt},
@@ -543,13 +556,18 @@ private:
                 {"configUIHeight", s.configUIHeight},
                 {"defaultWheelImage", s.defaultWheelImage},
                 {"dmdStillImages", s.dmdStillImages},
+                {"topperStillImages", s.topperStillImages},
                 {"vbsHashPath", s.vbsHashPath},
                 {"vpxPatchesUrl", s.vpxPatchesUrl},
                 {"vpsdbImageCacheDir", s.vpsdbImageCacheDir},
                 {"previewCacheDir", s.previewCacheDir},
                 {"vpsdbMissmatchLog", s.vpsdbMissmatchLog},
                 {"vpinmdbPath", s.vpinmdbPath},
-                {"vpinmdbUrl", s.vpinmdbUrl}
+                {"vpinmdbUrl", s.vpinmdbUrl},
+                {"lbdbImgUrl", s.lbdbImgUrl},
+                {"lbdbZipUrl", s.lbdbZipUrl},
+                {"lbdbPath", s.lbdbPath},
+                {"lbdbZipPath", s.lbdbZipPath}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -584,6 +602,8 @@ private:
         s.customTopperVideo = j.value("CustomMedia", nlohmann::json{}).value("customTopperVideo", s.customTopperVideo);
         s.tableMusic = j.value("CustomMedia", nlohmann::json{}).value("tableMusic", s.tableMusic);
         s.customLaunchSound = j.value("CustomMedia", nlohmann::json{}).value("customLaunchSound", s.customLaunchSound);
+        s.customFlyerFrontImage = j.value("CustomMedia", nlohmann::json{}).value("customFlyerFrontImage", s.customFlyerFrontImage);
+        s.customFlyerBackImage = j.value("CustomMedia", nlohmann::json{}).value("customFlyerBackImage", s.customFlyerBackImage);
 
         // WindowSettings
         s.videoBackend = j.value("WindowSettings", nlohmann::json{}).value("videoBackend", s.videoBackend);
@@ -692,7 +712,7 @@ private:
         s.titleY = j.value("TitleDisplay", nlohmann::json{}).value("titleY", s.titleY);
 
         // MediaDimensions
-        s.fetchVpinMediaDb = j.value("MediaDimensions", nlohmann::json{}).value("fetchVpinMediaDb", s.fetchVpinMediaDb);
+        s.fetchMediaOnline = j.value("MediaDimensions", nlohmann::json{}).value("fetchMediaOnline", s.fetchMediaOnline);
         s.resizeToWindows = j.value("MediaDimensions", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceImagesOnly = j.value("MediaDimensions", nlohmann::json{}).value("forceImagesOnly", s.forceImagesOnly);
         s.useGenArt = j.value("MediaDimensions", nlohmann::json{}).value("useGenArt", s.useGenArt);
@@ -761,6 +781,7 @@ private:
         s.screenshotWait = j.value("Internal", nlohmann::json{}).value("screenshotWait", s.screenshotWait);
         s.defaultWheelImage = j.value("Internal", nlohmann::json{}).value("defaultWheelImage", s.defaultWheelImage);
         s.dmdStillImages = j.value("Internal", nlohmann::json{}).value("dmdStillImages", s.dmdStillImages);
+        s.topperStillImages = j.value("Internal", nlohmann::json{}).value("topperStillImages", s.topperStillImages);
         s.vbsHashPath = j.value("Internal", nlohmann::json{}).value("vbsHashPath", s.vbsHashPath);
         s.vpxPatchesUrl = j.value("Internal", nlohmann::json{}).value("vpxPatchesUrl", s.vpxPatchesUrl);
         s.vpsdbImageCacheDir = j.value("Internal", nlohmann::json{}).value("vpsdbImageCacheDir", s.vpsdbImageCacheDir);
@@ -768,6 +789,10 @@ private:
         s.vpsdbMissmatchLog = j.value("Internal", nlohmann::json{}).value("vpsdbMissmatchLog", s.vpsdbMissmatchLog);
         s.vpinmdbPath = j.value("Internal", nlohmann::json{}).value("vpinmdbPath", s.vpinmdbPath);
         s.vpinmdbUrl = j.value("Internal", nlohmann::json{}).value("vpinmdbUrl", s.vpinmdbUrl);
+        s.lbdbImgUrl = j.value("Internal", nlohmann::json{}).value("lbdbImgUrl", s.lbdbImgUrl);
+        s.lbdbZipUrl = j.value("Internal", nlohmann::json{}).value("lbdbZipUrl", s.lbdbZipUrl);
+        s.lbdbPath = j.value("Internal", nlohmann::json{}).value("lbdbPath", s.lbdbPath);
+        s.lbdbZipPath = j.value("Internal", nlohmann::json{}).value("lbdbZipPath", s.lbdbZipPath);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -824,6 +849,10 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"customTopperVideo", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the Topper preview video."}},
     {"tableMusic", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to optional table music."}},
     {"customLaunchSound", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to a custom launch sound file."}},
+
+    {"customFlyerFrontImage", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the flyer front image."}},
+    {"customFlyerBackImage", {Settings::ReloadType::Tables, "Relative path (inside a table folder) to the flyer back image."}},
+
 
     // Window and renderer settings
     {"videoBackend", {Settings::ReloadType::Assets, "Choose which video backend to use for in-app previews and table media:\n\n"
@@ -903,7 +932,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleY", {Settings::ReloadType::Title, "Vertical position (Y) for the title text."}},
 
     // Media dimensions and behavior
-    {"fetchVpinMediaDb", {Settings::ReloadType::Tables, "Download table images from the VPin Media Database.\nTo match it requires VPSdb ID metadata."}},
+    {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download table images from the VPin Media Database.\nTo match it requires VPSdb ID metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
     {"forceImagesOnly", {Settings::ReloadType::Tables, "If enabled, the frontend will load images only and skip videos."}},
     {"useGenArt", {Settings::ReloadType::None, "Use computer generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with procedural generated screens from metadata."}},
@@ -977,12 +1006,19 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
     {"defaultWheelImage", {Settings::ReloadType::Tables, "Relative path to the default wheel image used when a table provides none."}},
     {"dmdStillImages", {Settings::ReloadType::None, "Relative path to the default DMD images used when a table provides none."}},
+    {"topperStillImages", {Settings::ReloadType::None, "Relative path to the default Topper images used when a table provides none."}},
 
     {"vbsHashPath", {Settings::ReloadType::None, "Relative path to the table VBS script hashes for patching."}},
     {"vpxPatchesUrl", {Settings::ReloadType::None, "URL for vpx standalone script hashes file."}},
 
     {"vpinmdbPath", {Settings::ReloadType::None, "Relative path to the VPin Media Database file for image downloading."}},
     {"vpinmdbUrl", {Settings::ReloadType::None, "URL for the VPin Media Database file."}},
+
+    {"lbdbImgUrl", {Settings::ReloadType::None, "URL for Launchbox Image Download."}},
+    {"lbdbZipUrl", {Settings::ReloadType::None, "URL for the Launchbox Database file."}},
+
+    {"lbdbPath", {Settings::ReloadType::None, "Relative path to the Launchbox Database JSON for image downloading."}},
+    {"lbdbZipPath", {Settings::ReloadType::None, "Relative path to the Launchbox Main Database file."}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},

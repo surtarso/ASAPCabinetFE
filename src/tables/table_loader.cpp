@@ -17,6 +17,7 @@
 #include "vpin_scanner.h"
 #include "vpxtool_scanner.h"
 #include "vpinmdb/vpinmdb_client.h"
+#include "launchboxdb/lbdb_downloader.h"
 #include "vpsdb/vps_database_client.h"
 #include "table_patcher.h"
 #include "log/logging.h"
@@ -418,8 +419,8 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 6: Download media
-    if (settings.fetchVpinMediaDb) {
+    // Stage 6: Media download
+    if (settings.fetchMediaOnline) {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Downloading table media...";
@@ -429,11 +430,28 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numMatched = 0;
             progress->numNoMatch = 0;
         }
-        VpinMdbClient downloader(settings, progress);
-        bool downloaded = downloader.downloadMedia(tables);
+
+        // PARALLEL: VPinMediaDB + LaunchboxDB — COMPLEMENTARY, NEVER CONFLICT
+        std::vector<std::future<void>> tasks;
+
+        // 1. VPinMediaDB — your existing, proven downloader
+        tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+            VpinMdbClient vpdownloader(settings, progress);
+            vpdownloader.downloadMedia(tables);
+        }));
+
+        // 2. LaunchboxDB — new, for clear logos + flyers
+        tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+            LbdbDownloader lbdownloader(settings, progress);
+            lbdownloader.downloadArtForTables(tables);
+        }));
+
+        // Wait for both — UI stays smooth
+        for (auto& f : tasks) f.wait();
+
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
-            progress->currentTask = downloaded ? "Media downloading complete" : "No media downloaded";
+            progress->currentTask = "All media downloaded";
             progress->currentTablesLoaded = tables.size();
         }
     }

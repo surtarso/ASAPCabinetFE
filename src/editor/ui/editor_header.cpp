@@ -1,5 +1,7 @@
 #include "editor/ui/editor_header.h"
 #include "editor/header_actions.h"
+#include "tables/launchboxdb/lbdb_builder.h"
+#include <thread>
 #include <imgui.h>
 #include <filesystem>
 
@@ -155,9 +157,36 @@ void drawHeader(EditorUI& ui) {
 
         // --- Maintenance submenu
         if (ImGui::BeginMenu("Maintenance")) {
+            // CLEAR CACHE
             if (ImGui::MenuItem("Clear All Caches")) {
                 header_actions::clearAllCaches(ui);
             }
+            // REBUILD LAUNCHBOX DATABASE
+            if (ImGui::MenuItem("(Re)Build Launchbox DB")) {
+
+                // show blocking modal immediately
+                ui.modal().openProgress("Building LaunchBox DB",
+                                        "Working...\nThis may take a few minutes.");
+
+                std::thread([settings, &ui] { // capture ui to close modal later
+
+                    bool success = launchbox::build_pinball_database(
+                        settings,
+                        nullptr // no progress callback
+                    );
+
+                    // close modal when finished
+                    ui.modal().finishProgress("Launchbox Database is now available!");
+
+                    if (!success) {
+                        LOG_ERROR("LaunchBox DB rebuild failed");
+                    } else {
+                        LOG_INFO("LaunchBox DB rebuild complete");
+                    }
+
+                }).detach();
+            }
+
             ImGui::EndMenu();
         }
 

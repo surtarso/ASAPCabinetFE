@@ -11,3 +11,4 @@ nlohmann-json
 cargo
 xdotool
 imagemagick
+libzip

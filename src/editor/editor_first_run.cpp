@@ -14,7 +14,7 @@ void drawFirstRun(EditorUI& ui)
     if (!ui.isConfigValid())
     {
         ImGui::Separator();
-        ImGui::Text("Quick Setup: Check your paths, click Save and then Rescan to continue.");
+        ImGui::Text("Quick Setup: Check your paths and click Save continue.");
 
         Settings& mutableSettings = ui.configService()->getMutableSettings();
 

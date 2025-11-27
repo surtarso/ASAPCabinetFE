@@ -76,6 +76,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("topperVideo") && table["topperVideo"].is_string()) tableData.topperVideo = table["topperVideo"].get<std::string>();
             if (table.contains("music") && table["music"].is_string()) tableData.music = table["music"].get<std::string>();
             if (table.contains("launchAudio") && table["launchAudio"].is_string()) tableData.launchAudio = table["launchAudio"].get<std::string>();
+            if (table.contains("flyerFront") && table["flyerFront"].is_string()) tableData.flyerFront = table["flyerFront"].get<std::string>();
+            if (table.contains("flyerBack") && table["flyerBack"].is_string()) tableData.flyerBack = table["flyerBack"].get<std::string>();
 
             // ------------ FILE METADATA (vpin/vpxtool) -----------
             if (table.contains("tableName") && table["tableName"].is_string()) tableData.tableName = table["tableName"].get<std::string>();
@@ -116,6 +118,9 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("vpsB2SUrl") && table["vpsB2SUrl"].is_string()) tableData.vpsB2SUrl = table["vpsB2SUrl"].get<std::string>();
             if (table.contains("vpsFormat") && table["vpsFormat"].is_string()) tableData.vpsFormat = table["vpsFormat"].get<std::string>();
 
+            // Launchbox DB ID
+            if (table.contains("lbdbID") && table["lbdbID"].is_string()) tableData.lbdbID = table["lbdbID"].get<std::string>();
+
 
             // --------------- OPERATIONAL TAGS ------------------
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();
@@ -151,6 +156,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("hasTopperVideo") && table["hasTopperVideo"].is_boolean()) tableData.hasTopperVideo = table["hasTopperVideo"].get<bool>();
             if (table.contains("hasTableMusic") && table["hasTableMusic"].is_boolean()) tableData.hasTableMusic = table["hasTableMusic"].get<bool>();
             if (table.contains("hasLaunchAudio") && table["hasLaunchAudio"].is_boolean()) tableData.hasLaunchAudio = table["hasLaunchAudio"].get<bool>();
+            if (table.contains("hasFlyerFront") && table["hasFlyerFront"].is_boolean()) tableData.hasFlyerFront = table["hasFlyerFront"].get<bool>();
+            if (table.contains("hasFlyerBack") && table["hasFlyerBack"].is_boolean()) tableData.hasFlyerBack = table["hasFlyerBack"].get<bool>();
 
 
             tables.push_back(tableData);
@@ -205,6 +212,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["topperVideo"] = table.topperVideo;
         tableJson["music"] = table.music;
         tableJson["launchAudio"] = table.launchAudio;
+        tableJson["flyerFront"] = table.flyerFront;
+        tableJson["flyerBack"] = table.flyerBack;
 
         // ------------ FILE METADATA (vpin/vpxtool) -----------
         tableJson["tableName"] = table.tableName;
@@ -245,6 +254,9 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["vpsB2SUrl"] = table.vpsB2SUrl;
         tableJson["vpsFormat"] = table.vpsFormat;
 
+        // Launchbox ID
+        tableJson["lbdbID"] = table.lbdbID;
+
         // --------------- OPERATIONAL TAGS ------------------
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["jsonOwner"] = table.jsonOwner;
@@ -279,6 +291,8 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["hasTopperVideo"] = table.hasTopperVideo;
         tableJson["hasTableMusic"] = table.hasTableMusic;
         tableJson["hasLaunchAudio"] = table.hasLaunchAudio;
+        tableJson["hasFlyerFront"] = table.hasFlyerFront;
+        tableJson["hasFlyerBack"] = table.hasFlyerBack;
 
         asapIndex["tables"].push_back(tableJson);
         if (progress) {

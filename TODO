@@ -1,19 +1,29 @@
 TODO
 
+
+
 FIX:
+- loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
 
 for 1.3.0
-- implement the cache clear functions (single vs all)
-- [NEW] UPDATE MANAGER PANEL
-    - check for updates -> self, vpinballx (vpxtool, new std patches?)
-    - click to download (maybe easy-install?)
-    - notification even if not opened on scheduled check
-- gather more 128x32 still logos (atari, playmatic etc)
+- add new media to media column (flyers)
+- fix matchmaking on launchboxdb
+
 - [ED] spreadsheet keyboard navigation
 - [ED] add option to resize vpindb images more obvious in editor
 - update header docs and user manual
+
+- color letter when theres more than 1 media file (ex: table.png, table2.png)
+
+(use current manufacturer logic for topper, game name on dmd using logo?)
+- use new 128x32 logos for topper table names using ID mapping
+- gather more 128x32 still logos (atari, playmatic etc)
+- grab stuff from launchbox media (platform: pinball) [done]
+    - clear logo (substitute wheel?? artwork4dmd??)
+    - panflets (metadata panel(fe) or own panel?)
+
 
 QOL:
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
@@ -50,6 +60,13 @@ On hold:
 - add editor cli helpers (see editor_binary.cpp for details)
 - add centralize colors in a /util/ for later theming support
 - use new utils / media preview for vpsdb panel (unify thumbnail logic)
+
+
+- [NEW] UPDATE MANAGER PANEL
+    - check for updates -> self, vpinballx (vpxtool, new std patches?)
+    - click to download (maybe easy-install?)
+    - notification even if not opened on scheduled check, like a text on adv menu or something
+
 
 - [NEW] STATISTICS PANEL
     - add graphs/statistics panel about tables

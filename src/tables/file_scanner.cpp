@@ -246,6 +246,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.backglassVideo = PathUtils::getVideoPath(table.folder, settings.customBackglassVideo);
             table.dmdVideo = PathUtils::getVideoPath(table.folder, settings.customDmdVideo);
             table.topperVideo = PathUtils::getVideoPath(table.folder, settings.customTopperVideo);
+            table.flyerFront = PathUtils::getImagePath(table.folder, settings.customFlyerFrontImage, "");
+            table.flyerBack = PathUtils::getImagePath(table.folder, settings.customFlyerBackImage, "");
 
             auto markUserAsset = [&](const std::string& assetpath, const std::string& defaultPath){
                 return !assetpath.empty() && assetpath != defaultPath;
@@ -262,6 +264,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.hasBackglassVideo = !table.backglassVideo.empty();
             table.hasDmdVideo = !table.dmdVideo.empty();
             table.hasTopperVideo = !table.topperVideo.empty();
+            table.hasFlyerFront = !table.flyerFront.empty();
+            table.hasFlyerBack = !table.flyerBack.empty();
 
             // --- Folder assets ---
             table.hasPup = PathUtils::getPupPath(table.folder);

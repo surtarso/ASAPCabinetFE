@@ -129,6 +129,15 @@ include(FetchContent)
 
 # Allow legacy FetchContent_Populate usage for libraries without CMake targets
 cmake_policy(SET CMP0169 OLD)
+cmake_policy(SET CMP0135 NEW) # Use extraction time for timestamps
+
+# -------------------- pugixml (header-only) ---------------------
+FetchContent_Declare(
+    pugixml
+    URL https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
+)
+
+FetchContent_MakeAvailable(pugixml)
 
 # -------------------- ImGui ---------------------
 FetchContent_Declare(
@@ -321,6 +330,8 @@ set(SOURCES
     src/tables/table_patcher.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
+    src/tables/launchboxdb/lbdb_builder.cpp
+    src/tables/launchboxdb/lbdb_downloader.cpp
     src/tables/overrides/table_override_manager.cpp
     src/tables/overrides/table_override_editor.cpp
     src/tables/vpinmdb/vpinmdb_client.cpp
@@ -413,6 +424,7 @@ pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
+pkg_check_modules(LIBZIP REQUIRED libzip)
 find_package(CURL REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -422,6 +434,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
+    ${LIBZIP_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
 )
 
@@ -442,6 +455,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${FFMPEG_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
+    zip
+    pugixml::pugixml
 )
 # --- Dependencies End ---
 

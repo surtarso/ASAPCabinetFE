@@ -261,7 +261,7 @@ public:
         };
 
         keyOrders_["MediaDimensions"] = {
-            "fetchVpinMediaDb",
+            "fetchMediaOnline",
             "resizeToWindows",
             "forceImagesOnly",
             "useGenArt",
@@ -291,7 +291,7 @@ public:
             "topperRotation"
         };
         keyDisplayNames_["MediaDimensions"] = {
-            {"fetchVpinMediaDb", "Use VPinMedia DB"},
+            {"fetchMediaOnline", "Use VPinMedia DB"},
             {"resizeToWindows", "Resize media to window"},
             {"forceImagesOnly", "Force images only"},
             {"useGenArt", "Use generated 'no media' art"},

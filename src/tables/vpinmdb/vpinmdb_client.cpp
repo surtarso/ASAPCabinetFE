@@ -85,11 +85,11 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
 }
 
 bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
-    if (!settings_.fetchVpinMediaDb) {
-        LOG_WARN("Media downloading disabled (fetchVpinMediaDb=false)");
+    if (!settings_.fetchMediaOnline) {
+        LOG_WARN("Media downloading disabled (fetchMediaOnline=false)");
         if (progress_) {
             std::lock_guard<std::mutex> lock(progress_->mutex);
-            progress_->logMessages.push_back("Media downloading disabled (fetchVpinMediaDb=false)");
+            progress_->logMessages.push_back("Media downloading disabled (fetchMediaOnline=false)");
         }
         return false;
     }

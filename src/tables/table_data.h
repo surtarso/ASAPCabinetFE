@@ -99,6 +99,11 @@ struct TableData {
     std::string vpsB2SUrl;       ///< table URL to download (from b2sFiles[].urls[0].url).
     std::string vpsFormat;       ///< table format (VPX etc) (from tableFiles[].tableFormat)
 
+    // --------------- Launchbox DB METADATA ---------------
+    std::string flyerFront;      ///< Path to the static flyer front image.
+    std::string flyerBack;       ///< Path to the static flyer back image.
+    std::string lbdbID;          ///< lbdb game ID to match against clear logos
+
     // --------------- OPERATIONAL TAGS ------------------
     float matchConfidence = 0.0f;///< Confidence score of match with vpsdb
     // vbs script patcher related
@@ -133,6 +138,8 @@ struct TableData {
     bool hasTopperVideo = false;     ///< True if found a custom topper video
     bool hasTableMusic = false;      ///< True if found a custom table music file
     bool hasLaunchAudio = false;     ///< True if found a custom launch audio file
+    bool hasFlyerFront = false;
+    bool hasFlyerBack = false;
 
     uint64_t folderLastModified = 0;
     uint64_t fileLastModified = 0;   ///< Timestamp of the last modification of the .vpx file
