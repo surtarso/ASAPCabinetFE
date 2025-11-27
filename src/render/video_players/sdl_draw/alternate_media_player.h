@@ -98,10 +98,46 @@ public:
         SDL_SetRenderDrawColor(renderer_, 20, 20, 20, 255);
         SDL_RenderClear(renderer_);
 
+        // --- START NEW/MODIFIED LOGIC: Pre-Check Asset Existence ---
+        bool assetLookupFailed = false;
+
+        if (screenName_ == "dmd" || screenName_ == "topper") {
+            // Check if displayText is an asset ID (i.e., not empty/sentinel)
+            if (!displayText_.empty() &&
+                displayText_ != "__ALTERNATIVE_MEDIA__" &&
+                displayText_ != "__ALTERNATIVE_MEDIA__:")
+            {
+                DmdSDLRenderer& dmd = dmdRendererPtr_ ? *dmdRendererPtr_ : dmdRenderer_;
+
+                // 1. Try exact lookup (like render does for toppers/non-manufacturer)
+                SDL_Texture* foundAsset = dmd.getAsset(displayText_ + ".png");
+                if (!foundAsset) {
+                    foundAsset = dmd.getAsset(displayText_ + ".gif");
+                }
+
+                // 2. Try manufacturer logic (like render does for DMD)
+                if (!foundAsset) {
+                    std::string manufacturer = displayText_;
+                    std::transform(manufacturer.begin(), manufacturer.end(), manufacturer.begin(), ::tolower);
+
+                    foundAsset = dmd.getAsset(manufacturer + ".png");
+                    if (!foundAsset) {
+                        foundAsset = dmd.getAsset(manufacturer + ".gif");
+                    }
+                }
+
+                // If after all lookups, the texture is still NULL, the asset is missing.
+                if (!foundAsset) {
+                    assetLookupFailed = true;
+                }
+            }
+        }
+        // --- END NEW/MODIFIED LOGIC ---
+
         // Embedded fallback images
         if ((screenName_ == "dmd" || screenName_ == "topper") &&
             (displayText_.empty() || displayText_ == "__ALTERNATIVE_MEDIA__" ||
-            displayText_ == "__ALTERNATIVE_MEDIA__:"))
+            displayText_ == "__ALTERNATIVE_MEDIA__:" || assetLookupFailed))
         {
             const unsigned char* data = (screenName_ == "dmd") ? EMBED_DMD_PNG : EMBED_TOPPER_PNG;
             size_t size               = (screenName_ == "dmd") ? EMBED_DMD_PNG_SIZE : EMBED_TOPPER_PNG_SIZE;
@@ -113,7 +149,13 @@ public:
 
                 SDL_DestroyTexture(raw);
                 SDL_SetRenderTarget(renderer_, nullptr);
-                return;
+                return; // Successful embedded image render.
+            }
+            // If we reach here, we tried to load the embedded image (because assetLookupFailed was true),
+            // but loadEmbeddedPNG failed (raw is nullptr).
+            // The *only* way to prevent the ID from being printed is to clear the ID now.
+            if (assetLookupFailed) {
+                displayText_.clear();
             }
         }
         // Embedding end
@@ -129,7 +171,7 @@ public:
             }
         }
         else if (screenName_ == "topper") {
-            defaultText_ = "ASAPCabinetFE"; //TODO: send asapcab dmd logo (embeded) instead of text.
+            defaultText_ = "ASAPCabinetFE";
 
             if (dmdRendererPtr_) {
                 dmdRendererPtr_->render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);

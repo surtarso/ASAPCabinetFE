@@ -314,6 +314,7 @@ void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
         // ------------------------------------------------------
         auto best = findBestMatch(table);
         if (!best.has_value()) {
+            table.lbdbID = "";
             LOG_WARN("LaunchBox: NO MATCH → " + table.title);
         } else {
             std::string bestId = best.value();

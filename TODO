@@ -4,15 +4,13 @@ FIX:
 - [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 - [FE] live reload font (along with windows) on dpi changes (recheck)
-- fallback to something if ID has no image (dont just print ID to topper...)
 
 for 1.3.0
-- [!] fix matchmaking on launchboxdb
-
 - [ED] spreadsheet keyboard navigation
 - [ED] add option to resize vpindb images more obvious in editor
 
 - color letter when theres more than 1 media file (ex: table.png, table2.png)
+- user control what to download (media-> pf, bg, dmd, flyter etc)
 
 - gather more 128x32 still logos (atari, playmatic etc)
 - grab stuff from launchbox media (platform: pinball) [done]
@@ -36,7 +34,6 @@ QOL:
 
 On hold:
 - switch to use real DMDs
-- embed LOGO and push instead of plain text
 - refactor the monoliths... interfaces, templates, factories...
 - [!] add single table scan (all, selectable)
 - add multi launchers (other emulators, other versions of vpx w.e.) '+' user add + dropdown
