@@ -31,6 +31,7 @@ public:
              bool& showView,
              bool& showBrowser,
              bool& showSettings,
+             bool& hotReload,
              IConfigService* config,
              ITableLoader* tableLoader,
              ITableLauncher* launcher,
@@ -96,6 +97,9 @@ public:
     bool showEditorSettings() const { return showEditorSettings_; }
     void setShowEditorSettings(bool v) { showEditorSettings_ = v; }
 
+    bool showHotReloadStatus() const { return hotReload_; }
+    void setHotReloadStatus(bool v) { hotReload_ = v; }
+
     bool isConfigValid() const { return configValid_; }
     void setConfigValid(bool v) { configValid_ = v; }
 
@@ -148,6 +152,8 @@ private:
     bool& showMetadataView_;
     bool& showVpsdbBrowser_;
     bool& showEditorSettings_;
+
+    bool& hotReload_;
 
     ModalDialog modal_;
     IScreenshotManager* screenshotManager_;

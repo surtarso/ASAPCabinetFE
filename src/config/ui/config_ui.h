@@ -100,6 +100,8 @@ public:
 
     void refreshUIState();
 
+    void restartApp(const std::string& exePath);
+
 private:
     IConfigService* configService_;                 ///< Pointer to the configuration service.
     IKeybindProvider* keybindProvider_;             ///< Pointer to the keybind provider.
@@ -138,8 +140,6 @@ private:
      * @param bind The new keybind value.
      */
     void updateKeybind(const std::string& action, const std::string& bind);
-
-    void restartApp(const std::string& exePath);
 };
 
 #endif // CONFIG_UI_H

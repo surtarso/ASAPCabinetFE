@@ -55,6 +55,8 @@ private:
     bool showVpsdbBrowser_ = false;
     bool showEditorSettings_ = false;
 
+    bool hotReload_ = false;
+
     // --- Core state ---
     std::string configPath_;
     std::string exeDir_;

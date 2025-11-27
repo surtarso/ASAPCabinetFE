@@ -20,6 +20,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
       showMetadataView_(false),
       showVpsdbBrowser_(false),
       showEditorSettings_(false),
+      hotReload_(false),
       configPath_(configPath),
       exeDir_(exeDir),
       window_(nullptr),
@@ -66,6 +67,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
         showMetadataView_,
         showVpsdbBrowser_,
         showEditorSettings_,
+        hotReload_,
         config_.get(),
         tableLoader_.get(),
         tableLauncher_.get(),
@@ -152,6 +154,11 @@ void Editor::mainLoop() {
         }
 
         imguiManager_->newFrame();
+
+        if (hotReload_) {
+            std::string exePath = config_->getSettings().exeDir + "ASAPCabinetFE";
+            configUI_->restartApp(exePath.c_str());
+        }
 
         // ========================= Version update modal =========================
         if (showUpdateModal_) {

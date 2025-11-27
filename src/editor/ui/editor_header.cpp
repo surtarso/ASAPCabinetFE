@@ -156,6 +156,7 @@ void drawHeader(EditorUI& ui) {
         ImGui::Separator();
 
         // --- Maintenance submenu
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f,0.7f,0.3f,0.85f)); //yellow
         if (ImGui::BeginMenu("Maintenance")) {
             // CLEAR CACHE
             if (ImGui::MenuItem("Clear All Caches")) {
@@ -189,8 +190,16 @@ void drawHeader(EditorUI& ui) {
 
             ImGui::EndMenu();
         }
-
+        ImGui::PopStyleColor();
         ImGui::Separator();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.20f, 0.65f, 0.30f, 1.0f));  //green
+        if (ImGui::Selectable("Switch to Frontend")){
+            LOG_INFO("Frontend requested from Advanced Menu");
+            ui.setHotReloadStatus(true);
+        }
+        ImGui::PopStyleColor();
+
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
         if (ImGui::Selectable("Exit Editor", false)) {
             LOG_INFO("Exit Editor requested from Advanced Menu");
