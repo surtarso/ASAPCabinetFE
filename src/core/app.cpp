@@ -62,12 +62,6 @@ void App::run() {
     }
 }
 
-void App::reloadWindows() {
-    LOG_DEBUG("Config saved detected, updating windows");
-    windowManager_->updateWindows(configManager_->getSettings());
-    LOG_DEBUG("Windows updated after config save");
-}
-
 void App::reloadFont(bool isStandalone) {
     LOG_DEBUG("Config saved detected, updating font");
     if (!isStandalone) {
@@ -91,17 +85,6 @@ void App::reloadFont(bool isStandalone) {
 
 ISoundManager* App::getSoundManager() {
     return soundManager_.get();
-}
-
-void App::reloadAssetsAndRenderers() {
-    reloadWindows();
-    assets_->reloadAssets(windowManager_.get(), font_.get(), tables_, currentIndex_);
-    renderer_->setRenderers(windowManager_.get());
-    // Rebind ImGui backends to any newly created windows/renderers so UI remains visible
-    if (imGuiManager_) {
-        imGuiManager_->reinitialize();
-    }
-    LOG_DEBUG("Assets and renderers reloaded after config saved");
 }
 
 void App::reloadTablesAndTitle() {

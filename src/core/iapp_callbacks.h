@@ -11,8 +11,6 @@ class ISoundManager; // Forward declaration
  *
  * Methods include:
  * - reloadFont(bool standaloneMode): Reloads the application's font resources.
- * - reloadWindows(): Refreshes the layout or states of any existing windows.
- * - reloadAssetsAndRenderers(): Reloads asset and renderer configurations.
  * - reloadTablesAndTitle(): Updates the display tables and application title.
  * - reloadOverlaySettings(): Reapplies settings for overlays.
  * - getSoundManager(): Retrieves the ISoundManager instance for real-time updates.
@@ -22,8 +20,6 @@ class ISoundManager; // Forward declaration
 class IAppCallbacks {
 public:
     virtual void reloadFont(bool standaloneMode) = 0;
-    virtual void reloadWindows() = 0;
-    virtual void reloadAssetsAndRenderers() = 0;
     virtual void reloadTablesAndTitle() = 0;
     virtual void reloadOverlaySettings() = 0;
     virtual ISoundManager* getSoundManager() = 0; // Changed to ISoundManager*

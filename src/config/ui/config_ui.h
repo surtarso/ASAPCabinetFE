@@ -48,8 +48,8 @@ public:
      * @param showConfig Reference to a flag indicating if the UI should be shown.
      * @param standaloneMode Optional flag for standalone mode (default: false).
      */
-    ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-             IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
+    ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
+             IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables,
              IAppCallbacks* appCallbacks, bool& showConfig, bool standaloneMode = false);
 
     /**
@@ -101,7 +101,7 @@ public:
     void refreshUIState();
 
 private:
-    IConfigService* configService_;                  ///< Pointer to the configuration service.
+    IConfigService* configService_;                 ///< Pointer to the configuration service.
     IKeybindProvider* keybindProvider_;             ///< Pointer to the keybind provider.
     IAssetManager* assets_;                         ///< Pointer to the asset manager.
     IAppCallbacks* appCallbacks_;                   ///< Pointer to the application callbacks.
@@ -138,6 +138,8 @@ private:
      * @param bind The new keybind value.
      */
     void updateKeybind(const std::string& action, const std::string& bind);
+
+    void restartApp(const std::string& exePath);
 };
 
 #endif // CONFIG_UI_H

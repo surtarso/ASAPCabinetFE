@@ -15,11 +15,10 @@ struct Settings {
         None,           // No reload needed
         Title,          // Title position
         Tables,         // Reload table related files
-        Assets,         // Full table reloads/renderers
-        Windows,        // Window reloads
         Overlay,        // UI widget reloads
         Audio,          // Audio settings reload
-        Font            // Font for title display reload
+        Font,           // Font for title display reload
+        Full
     };
 
     // Enum to define UI widgets to use on config panel in settingsMetadata(TODO)
@@ -832,9 +831,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"autoPatchTables",{Settings::ReloadType::Tables, "Automatically download and apply community VBScript patch files when scanning tables."}},
 
     // DPI settings
-    {"dpiScale", {Settings::ReloadType::Windows, "Manual DPI scale (used only when automatic DPI scaling is disabled).\n\n"
+    {"dpiScale", {Settings::ReloadType::Full, "Manual DPI scale (used only when automatic DPI scaling is disabled).\n\n"
                                                 "Use 1.0 for 100%, 1.5 for 150%, etc. Adjust if UI elements look too small or too large."}},
-    {"enableDpiScaling", {Settings::ReloadType::Windows, "When enabled, the frontend will scale the UI automatically based on your monitor DPI.\n\n"
+    {"enableDpiScaling", {Settings::ReloadType::Full, "When enabled, the frontend will scale the UI automatically based on your monitor DPI.\n\n"
                                                         "Disable this to set a custom DPI with 'dpiScale'."}},
 
     // Custom media per-table (relative to each table folder)
@@ -855,32 +854,32 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
 
 
     // Window and renderer settings
-    {"videoBackend", {Settings::ReloadType::Assets, "Choose which video backend to use for in-app previews and table media:\n\n"
+    {"videoBackend", {Settings::ReloadType::Full, "Choose which video backend to use for in-app previews and table media:\n\n"
                                                    "vlc - libVLC-based playback: broad codec support and good compatibility.\n"
                                                    "ffmpeg - internal FFmpeg playback: usually faster and lighter on modern Linux systems.\n"
                                                    "novideo - disable all in-app video (useful for debugging or low-power setups).\n"
                                                    "software - force SDL software rendering for window renderers (diagnostic/testing only)."}},
-    {"useVPinballXIni", {Settings::ReloadType::Windows, "If enabled, read sizes and positions from ~/.vpinball/VPinballX.ini.\n\n"
+    {"useVPinballXIni", {Settings::ReloadType::Full, "If enabled, read sizes and positions from ~/.vpinball/VPinballX.ini.\n\n"
                                                        "NOTE: This will override the manual window position/size settings below."}},
-    {"playfieldWindowWidth", {Settings::ReloadType::Assets, "Playfield window width in pixels (match this to your playfield media for best results)."}},
-    {"playfieldWindowHeight", {Settings::ReloadType::Assets, "Playfield window height in pixels (match this to your playfield media for best results)."}},
-    {"playfieldX", {Settings::ReloadType::Assets, "Playfield window X position on screen.\n\nDrag a window and double-click to save its position."}},
-    {"playfieldY", {Settings::ReloadType::Assets, "Playfield window Y position on screen.\n\nDrag a window and double-click to save its position."}},
-    {"showBackglass", {Settings::ReloadType::Assets, "Show or hide the Backglass window."}},
-    {"backglassWindowWidth", {Settings::ReloadType::Assets, "Backglass window width in pixels."}},
-    {"backglassWindowHeight", {Settings::ReloadType::Assets, "Backglass window height in pixels."}},
-    {"backglassX", {Settings::ReloadType::Assets, "Backglass window X position on screen.\n\nDrag and double-click a window to save position."}},
-    {"backglassY", {Settings::ReloadType::Assets, "Backglass window Y position on screen.\n\nDrag and double-click a window to save position."}},
-    {"showDMD", {Settings::ReloadType::Assets, "Show or hide the DMD window."}},
-    {"dmdWindowWidth", {Settings::ReloadType::Assets, "DMD window width in pixels."}},
-    {"dmdWindowHeight", {Settings::ReloadType::Assets, "DMD window height in pixels."}},
-    {"dmdX", {Settings::ReloadType::Assets, "DMD window X position on screen."}},
-    {"dmdY", {Settings::ReloadType::Assets, "DMD window Y position on screen."}},
-    {"showTopper", {Settings::ReloadType::Assets, "Show or hide the Topper window."}},
-    {"topperWindowWidth", {Settings::ReloadType::Assets, "Topper window width in pixels."}},
-    {"topperWindowHeight", {Settings::ReloadType::Assets, "Topper window height in pixels."}},
-    {"topperWindowX", {Settings::ReloadType::Assets, "Topper window X position on screen."}},
-    {"topperWindowY", {Settings::ReloadType::Assets, "Topper window Y position on screen."}},
+    {"playfieldWindowWidth", {Settings::ReloadType::Full, "Playfield window width in pixels (match this to your playfield media for best results)."}},
+    {"playfieldWindowHeight", {Settings::ReloadType::Full, "Playfield window height in pixels (match this to your playfield media for best results)."}},
+    {"playfieldX", {Settings::ReloadType::Full, "Playfield window X position on screen.\n\nDrag a window and double-click to save its position."}},
+    {"playfieldY", {Settings::ReloadType::Full, "Playfield window Y position on screen.\n\nDrag a window and double-click to save its position."}},
+    {"showBackglass", {Settings::ReloadType::Full, "Show or hide the Backglass window."}},
+    {"backglassWindowWidth", {Settings::ReloadType::Full, "Backglass window width in pixels."}},
+    {"backglassWindowHeight", {Settings::ReloadType::Full, "Backglass window height in pixels."}},
+    {"backglassX", {Settings::ReloadType::Full, "Backglass window X position on screen.\n\nDrag and double-click a window to save position."}},
+    {"backglassY", {Settings::ReloadType::Full, "Backglass window Y position on screen.\n\nDrag and double-click a window to save position."}},
+    {"showDMD", {Settings::ReloadType::Full, "Show or hide the DMD window."}},
+    {"dmdWindowWidth", {Settings::ReloadType::Full, "DMD window width in pixels."}},
+    {"dmdWindowHeight", {Settings::ReloadType::Full, "DMD window height in pixels."}},
+    {"dmdX", {Settings::ReloadType::Full, "DMD window X position on screen."}},
+    {"dmdY", {Settings::ReloadType::Full, "DMD window Y position on screen."}},
+    {"showTopper", {Settings::ReloadType::Full, "Show or hide the Topper window."}},
+    {"topperWindowWidth", {Settings::ReloadType::Full, "Topper window width in pixels."}},
+    {"topperWindowHeight", {Settings::ReloadType::Full, "Topper window height in pixels."}},
+    {"topperWindowX", {Settings::ReloadType::Full, "Topper window X position on screen."}},
+    {"topperWindowY", {Settings::ReloadType::Full, "Topper window Y position on screen."}},
 
     // Table metadata matching and scanning
     {"titleSource", {Settings::ReloadType::Tables, "Choose how table metadata is found:\n\n"
@@ -935,7 +934,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download table images from the VPin Media Database.\nTo match it requires VPSdb ID metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
     {"forceImagesOnly", {Settings::ReloadType::Tables, "If enabled, the frontend will load images only and skip videos."}},
-    {"useGenArt", {Settings::ReloadType::None, "Use computer generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with procedural generated screens from metadata."}},
+    {"useGenArt", {Settings::ReloadType::Full, "Use computer generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with procedural generated screens from metadata."}},
     {"wheelMediaHeight", {Settings::ReloadType::None, "Wheel image height in pixels."}},
     {"wheelMediaWidth", {Settings::ReloadType::None, "Wheel image width in pixels."}},
     {"wheelMediaX", {Settings::ReloadType::None, "Wheel image X coordinate inside its window."}},

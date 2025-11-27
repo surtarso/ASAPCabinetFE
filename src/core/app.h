@@ -94,20 +94,6 @@ public:
     void reloadFont(bool isStandalone = false) override;
 
     /**
-     * @brief Reloads window configurations.
-     *
-     * Updates SDL windows and renderers using current settings.
-     */
-    void reloadWindows() override;
-
-    /**
-     * @brief Reloads assets and renderers.
-     *
-     * Reinitializes asset manager and renderer with current settings and table data.
-     */
-    void reloadAssetsAndRenderers() override;
-
-    /**
      * @brief Reloads table data and window title.
      *
      * Reloads table data from the table loader and updates the window title.

@@ -9,6 +9,10 @@
 #include "log/logging.h"
 #include <set>
 #include <string>
+#include <cstring>
+#include <iostream>
+#include <unistd.h>   // execv
+#include <vector>
 
 ConfigUI::ConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
                    IAssetManager* assets, [[maybe_unused]] size_t* currentIndex,
@@ -448,18 +452,6 @@ void ConfigUI::saveConfig() {
                         LOG_DEBUG("Triggered reloadFont for ReloadType " + std::to_string(static_cast<int>(reloadType)));
                     }
                     break;
-                case Settings::ReloadType::Windows:
-                    if (appCallbacks_) {
-                        appCallbacks_->reloadWindows();
-                        LOG_DEBUG("Triggered reloadWindows");
-                    }
-                    break;
-                case Settings::ReloadType::Assets:
-                    if (appCallbacks_) {
-                        appCallbacks_->reloadAssetsAndRenderers();
-                        LOG_DEBUG("Triggered reloadAssetsAndRenderers for ReloadType " + std::to_string(static_cast<int>(reloadType)));
-                    }
-                    break;
                 case Settings::ReloadType::Tables:
                     if (appCallbacks_) {
                         appCallbacks_->reloadTablesAndTitle();
@@ -483,6 +475,14 @@ void ConfigUI::saveConfig() {
                             assets_->applyVideoAudioSettings();
                             LOG_DEBUG("AudioSettings changed and saved, updated AssetManager");
                         }
+                    }
+                    break;
+                case Settings::ReloadType::Full:
+                    {
+                        settings.ignoreScanners = true;
+                        configService_->saveConfig();
+                        std::string exePath = settings.exeDir + "ASAPCabinetFE";
+                        restartApp(exePath.c_str());
                     }
                     break;
                 default:
@@ -520,4 +520,14 @@ void ConfigUI::refreshUIState() {
     } catch (const std::exception& e) {
         LOG_ERROR("Error refreshing UI state: " + std::string(e.what()));
     }
+}
+
+void ConfigUI::restartApp(const std::string& exePath) {
+    std::cout << "Restarting application..." << std::endl;
+
+    char* args[] = { const_cast<char*>(exePath.c_str()), nullptr };
+    execv(exePath.c_str(), args);
+
+    perror("execv failed");
+    exit(1);
 }
