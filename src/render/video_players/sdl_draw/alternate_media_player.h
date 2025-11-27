@@ -99,6 +99,7 @@ public:
 
         if (screenName_ == "dmd") {
             defaultText_ = "INSERT COINS";
+
             if (dmdRendererPtr_) {
                 // Use the injected DmdSDLRenderer to handle asset lookup and rendering
                 dmdRendererPtr_->render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
@@ -108,7 +109,12 @@ public:
         }
         else if (screenName_ == "topper") {
             defaultText_ = "ASAPCabinetFE"; //TODO: send asapcab dmd logo (embeded) instead of text.
-            dmdRenderer_.render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+
+            if (dmdRendererPtr_) {
+                dmdRendererPtr_->render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+            } else {
+                dmdRenderer_.render(renderer_, displayText_, width_, height_, last_update_time_, defaultText_);
+            }
         }
         else if (screenName_ == "backglass") {
             defaultText_ = "ASAPCabinetFE";

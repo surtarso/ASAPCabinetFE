@@ -316,32 +316,41 @@ void DmdSDLRenderer::drawDmdAssetMasked(SDL_Renderer* renderer, SDL_Texture* ass
 // 4. Main Render Function and Procedural Helper Functions
 // =========================================================================
 
-void DmdSDLRenderer::render(SDL_Renderer* renderer, const std::string& displayText, int width, int height, float time, std::string defaultText) {
+void DmdSDLRenderer::render(SDL_Renderer* renderer, const std::string& displayText,
+                            int width, int height, float time, std::string defaultText)
+{
     if (!renderer || width <= 0 || height <= 0) return;
 
-    // 1. Asset Check (Priority 1: Manufacturer Logo/Asset)
-    std::string manufacturer = displayText;
-    std::transform(manufacturer.begin(), manufacturer.end(), manufacturer.begin(), ::tolower);
-
-    // Check for PNG and GIF/Animation versions
-    SDL_Texture* assetTexture = getAsset(manufacturer + ".png");
+    // First try exact lookup for toppers and other non-manufacturer assets
+    SDL_Texture* assetTexture = getAsset(displayText + ".png");
     if (!assetTexture) {
-      assetTexture = getAsset(manufacturer + ".gif");
+        assetTexture = getAsset(displayText + ".gif");
     }
 
     if (assetTexture) {
-      // Render the Asset Texture using the DMD dot mask
-      drawDmdAssetMasked(renderer, assetTexture, width, height, time);
-    //   LOG_DEBUG("DmdSDLRenderer found and rendered asset with COLOR DMD dot mask for: " + manufacturer);
-      return;
+        drawDmdAssetMasked(renderer, assetTexture, width, height, time);
+        return;
     }
 
-    // 2. Procedural Text Fallback (Priority 2: Text Display)
-    std::string textToDisplay = displayText.empty() ? defaultText : displayText;
+    // ORIGINAL manufacturer logic (for DMD)
+    std::string manufacturer = displayText;
+    std::transform(manufacturer.begin(), manufacturer.end(), manufacturer.begin(), ::tolower);
 
-    // Use the procedural text renderer if no asset was found
+    assetTexture = getAsset(manufacturer + ".png");
+    if (!assetTexture) {
+        assetTexture = getAsset(manufacturer + ".gif");
+    }
+
+    if (assetTexture) {
+        drawDmdAssetMasked(renderer, assetTexture, width, height, time);
+        return;
+    }
+
+    // Fallback to text
+    std::string textToDisplay = displayText.empty() ? defaultText : displayText;
     renderProceduralText(renderer, textToDisplay, width, height, time);
 }
+
 
 void DmdSDLRenderer::renderProceduralText(SDL_Renderer* renderer, const std::string& textToDisplay, int width, int height, float time) {
 

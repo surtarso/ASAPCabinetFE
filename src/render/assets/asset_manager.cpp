@@ -37,11 +37,8 @@ void AssetManager::setSettingsManager(IConfigService* configService)
     titleRenderer_ = std::make_unique<TitleRenderer>(configService);
 
     if (dmdRenderer && configManager_) {
-#ifdef DEBUG_LOGGING
-        dmdContentRenderer_.loadAssetsFromDirectory("assets/img/dmd_still", dmdRenderer);
-#else
         dmdContentRenderer_.loadAssetsFromDirectory(configManager_->getSettings().dmdStillImages, dmdRenderer);
-#endif
+        dmdContentRenderer_.loadAssetsFromDirectory(configManager_->getSettings().topperStillImages, topperRenderer);
     }
 }
 
@@ -246,10 +243,15 @@ void AssetManager::loadFallbackMedia(SDL_Renderer* renderer, std::unique_ptr<IVi
 {
     const Settings& s = configManager_->getSettings();
     std::string text = (name == "dmd" ? table.manufacturer :
-                       name == "topper" ? table.year :
+                       name == "topper" ? table.lbdbID :
                        name == "backglass" ? table.title : "ASAPCabinetFE");
 
-    std::string pseudo = "__ALTERNATIVE_MEDIA__" + (name == "dmd" ? ":" + text : "");
+    // std::string pseudo = "__ALTERNATIVE_MEDIA__" + (name == "dmd" ? ":" + text : "");
+    std::string pseudo = "__ALTERNATIVE_MEDIA__";
+
+    if (name == "dmd" || name == "topper")
+        pseudo += ":" + text;
+
     std::string key = s.videoBackend + "_" + name + "_" + pseudo + "_" + std::to_string(w) + "x" + std::to_string(h);
 
     player = videoPlayerCache_->getVideoPlayer(key, renderer, w, h);
@@ -257,7 +259,8 @@ void AssetManager::loadFallbackMedia(SDL_Renderer* renderer, std::unique_ptr<IVi
 
     if (s.useGenArt) {
         auto p = VideoPlayerFactory::createAlternativeMediaPlayer(renderer, w, h, s.fontPath, name, text,
-            name == "dmd" ? &dmdContentRenderer_ : nullptr);
+            // name == "dmd" ? &dmdContentRenderer_ : nullptr);
+            (name == "dmd" || name == "topper") ? &dmdContentRenderer_ : nullptr);
         if (p) {
             videoPlayerCache_->cacheVideoPlayer(key, std::move(p), renderer, w, h);
             player = videoPlayerCache_->getVideoPlayer(key, renderer, w, h);
