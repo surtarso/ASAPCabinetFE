@@ -1,6 +1,7 @@
 TODO
 
 FIX:
+- flatpak
 - [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
