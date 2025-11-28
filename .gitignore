@@ -46,5 +46,6 @@ create_codebase.sh
 codebase.txt
 codebase-*.txt
 build/
+build-dir/
 Doxyfile.bak
 *instructions.md
