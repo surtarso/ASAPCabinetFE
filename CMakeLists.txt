@@ -1,11 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
-unset(CMAKE_INSTALL_PREFIX CACHE)
+# Detect if building inside Flatpak (not working)
+if("$ENV{FLATPAK_BUILD}" STREQUAL "1")
+    # Flatpak build: do NOT unset, just force /app
+    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
 
-# Set default install prefix to user's home directory if not specified
-if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/${PROJECT_NAME}" CACHE PATH "Installation prefix for ASAPCabinetFE")
+else()
+    # Normal build: unset cached prefix first
+    unset(CMAKE_INSTALL_PREFIX CACHE)
+
+    # Then set default prefix under $HOME
+    set(CMAKE_INSTALL_PREFIX
+        "$ENV{HOME}/${PROJECT_NAME}"
+        CACHE PATH "Installation prefix for ASAPCabinetFE"
+    )
 endif()
 
 # --- Git Versioning Start ---

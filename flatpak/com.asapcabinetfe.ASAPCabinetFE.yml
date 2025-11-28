@@ -1,0 +1,55 @@
+id: io.asapcabinet.ASAPCabinetFE
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: ASAPCabinetFE
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --device=dri
+  - --filesystem=host
+  - --socket=pulseaudio
+  - --socket=wayland
+  - --socket=x11
+  - --talk-name=org.freedesktop.Flatpak
+  - --system-talk-name=org.freedesktop.login1
+  - --env=SDL_JOYSTICK_WGI=1
+
+cleanup:
+  - /include
+  - '*.la'
+  - '*.a'
+
+modules:
+  - name: asapcabinetfe
+    buildsystem: cmake
+    builddir: true
+
+    # build-env:
+    #   FLATPAK_BUILD: "1"
+
+    build-options:
+      env:
+        FLATPAK_BUILD: "1"  # not working =( cmakelists ignoring....
+      share-network: true   # not working, no internet on fetch?!
+
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+
+    sources:
+      - type: git
+        url: https://github.com/surtarso/ASAPCabinetFE.git
+        tag: v1.2.13  #can I make this dynamic?
+
+    post-install:
+      - install -Dm644 flatpak/io.asapcabinet.ASAPCabinetFE.svg \
+          /app/share/icons/hicolor/scalable/apps/io.asapcabinet.ASAPCabinetFE.svg
+      - desktop-file-install --dir=/app/share/applications/ \
+          flatpak/io.asapcabinet.ASAPCabinetFE.desktop
+      - install -Dm644 flatpak/io.asapcabinet.ASAPCabinetFE.metainfo.xml \
+          /app/share/metainfo/io.asapcabinet.ASAPCabinetFE.metainfo.xml
