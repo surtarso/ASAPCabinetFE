@@ -77,6 +77,10 @@ cd ~/ASAPCabinetFE
 
 ## Front-End Features
 
+| Topper/DMD without Metadata | Topper/DMD with Metadata |
+|------------|----------|
+| <img src="https://github.com/user-attachments/assets/cde5972e-80fe-4d2d-abd0-aaa41691a882" width="400"> | <img src="https://github.com/user-attachments/assets/933508dd-72e3-464f-9eae-2a651c8aaeed" width="400"> |
+
 - Full screen multi monitor display of table playfield, backglass, topper and DMD.
 - Tailored to mimic [Visual Pinball X](https://github.com/vpinball/vpinball) cabinet setup for seamless transitions.
 - Use `VPinballX.ini` for size and position auto-configuration.
@@ -88,8 +92,8 @@ cd ~/ASAPCabinetFE
 - Extremely lightweight, blazing fast and fully customizable.
 - No need to download artpacks, **generate** your own. (See [tools](#generator-tools--debian))
 - Multiple animations to indicate your missing media or to use as default.
-- Procedural generated Topper with table information.
-- Procedural generated DMD with manufacturer logos based on metadata info. (see [Legal](#legal))
+- Procedural generated DMDs with table title or manufacturer logos based on metadata info. (see [Legal](#legal))
+- Use you own **128x32 real DMD** images _(animations not yet implemented)_
 - Fully compatible with VPX Standalone _v10.8.0_ and _v10.8.1_
 
 ## Editor Features
@@ -108,13 +112,13 @@ cd ~/ASAPCabinetFE
 - Mark tables you have overrided metadata.
 - Advanced menu for file operations (delete, backup, override metadata).
 - Manage media cache with a single click.
+- **Create** custom table overrides for media or metadata.
 - Advanced menu for [VpxTool](https://github.com/francisdb/vpxtool) --flags.
 - Use [VPin](https://github.com/francisdb/vpin) to **retrieve** table file metadata.
 - **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API with visual feedback.
 - Browse [VPSDb](https://virtual-pinball-spreadsheet.web.app/) to **find and download** new tables.
-- **Create** custom table overrides for media or metadata.
 - Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
-- Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb).
+- Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb) and [Launchbox Database](https://gamesdb.launchbox-app.com/games/results/?platform=pinball).
 - Update check and notifications to keep you up to date.
 
 >[!NOTE]
@@ -282,6 +286,7 @@ We’re dreaming big! Help us bring these features to life:
 - Media manipulation.
 - Attract Mode.
 - Custom collections.
+- Real DMD connection.
 - CLI automation.
 - Highscore tracking.
 - Tournaments. (maybe)
