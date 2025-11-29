@@ -142,12 +142,6 @@ If you don't add anything, the app will use its default animations, which you ca
 
 <img width="1043" height="537" alt="image" src="https://github.com/user-attachments/assets/09cd4c34-07ec-4897-af91-4e420c998867" />
 
-<!-- <img width="1032" height="263" alt="No Media default display" src="https://github.com/user-attachments/assets/1517e21b-be1d-4d64-ba8a-0253f7dd1981" />
-<p align="center"><i>Example 'No Media' default display animation on DMD screen</i></p>
-
-<img width="1028" height="263" alt="image" src="https://github.com/user-attachments/assets/ba0ad301-a782-443a-bffb-d57d63646025" />
-<p align="center"><i>Example 'Generated' DMD without metadata display on DMD screen</i></p> -->
-
 #### Default animations with metadata using generated DMD's
 
 >[!IMPORTANT]
@@ -155,14 +149,10 @@ If you don't add anything, the app will use its default animations, which you ca
 
 <img width="1039" height="533" alt="image" src="https://github.com/user-attachments/assets/9d8c3c84-f59f-4ae8-8262-fa37d68a580c" />
 
-<!-- <img width="1034" height="268" alt="Generated DMD metadata display" src="https://github.com/user-attachments/assets/a089740d-431a-41d3-9dfb-7d044818eed0" />
-<p align="center"><i>Example 'Generated' DMD using metadata for display animation on DMD screen</i></p>
-
-<img width="1032" height="263" alt="image" src="https://github.com/user-attachments/assets/d675d28b-f54d-4499-a17e-c5a712091384" />
-<p align="center"><i>Example 'Generated' DMD using metadata with logo display animation on DMD screen</i></p> -->
-
 >[!NOTE]
 >The preference will always be Custom Videos -> Custom Images -> Default Animations. You can skip videos by using the "Images Only" option in the configuration menu.
+>
+>`dmd_still/` and `topper_still/` images are cached in memory on load, so adding new DMD images for the generated DMD's requires a restart of the frontend.
 
 ### Moving Around the Table List
 
