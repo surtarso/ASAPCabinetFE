@@ -98,7 +98,9 @@ cd ~/ASAPCabinetFE
 
 ## Editor Features
 
-<img width="644" alt="ASAPCabinetFE Editor" src="https://github.com/user-attachments/assets/96d311ad-5027-4a48-b979-314e9e75f2e6" />
+| The Editor |
+| ----- |
+| <img src="https://github.com/user-attachments/assets/96d311ad-5027-4a48-b979-314e9e75f2e6" width="900" /> |
 
 - Spreadsheet view of all owned tables.
 - Row recolor on successful and failure launches for easy ID.
