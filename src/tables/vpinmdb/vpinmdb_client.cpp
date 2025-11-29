@@ -94,6 +94,21 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
         return false;
     }
 
+    bool noMediaSelected =
+        !settings_.downloadPlayfieldImage &&
+        !settings_.downloadBackglassImage &&
+        !settings_.downloadDmdImage &&
+        !settings_.downloadWheelImage;
+
+    if (noMediaSelected) {
+        LOG_WARN("No Media selected to download, skipping VPin Media Database.");
+        if (progress_) {
+            std::lock_guard<std::mutex> lock(progress_->mutex);
+            progress_->logMessages.push_back("Media downloading disabled (fetchMediaOnline=false)");
+        }
+        return false;
+    }
+
     if (mediaDb_.empty()) {
         LOG_ERROR("vpinmdb.json not loaded");
         if (progress_) {
@@ -135,15 +150,16 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
             int playfieldTargetWidth = settings_.playfieldWindowWidth;
             int playfieldTargetHeight = settings_.playfieldWindowHeight;
 
-            mediaTypes.push_back({"table", &table.playfieldImage, settings_.customPlayfieldImage, playfieldTargetWidth, playfieldTargetHeight});
-
-            if (settings_.showBackglass) {
+            if (settings_.downloadPlayfieldImage) {
+                mediaTypes.push_back({"table", &table.playfieldImage, settings_.customPlayfieldImage, playfieldTargetWidth, playfieldTargetHeight});
+            }
+            if (settings_.downloadBackglassImage) {
                 mediaTypes.push_back({"bg", &table.backglassImage, settings_.customBackglassImage, settings_.backglassMediaWidth, settings_.backglassMediaHeight});
             }
-            if (settings_.showDMD) {
+            if (settings_.downloadDmdImage) {
                 mediaTypes.push_back({"dmd", &table.dmdImage, settings_.customDmdImage, settings_.dmdMediaWidth, settings_.dmdMediaHeight});
             }
-            if (settings_.showWheel) {
+            if (settings_.downloadWheelImage) {
                 mediaTypes.push_back({"wheel", &table.wheelImage, settings_.customWheelImage, settings_.wheelMediaWidth, settings_.wheelMediaHeight});
             }
 

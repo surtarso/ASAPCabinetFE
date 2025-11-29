@@ -31,6 +31,7 @@ public:
              bool& showView,
              bool& showBrowser,
              bool& showSettings,
+             bool& showDownloadMediaPanel,
              bool& hotReload,
              IConfigService* config,
              ITableLoader* tableLoader,
@@ -97,6 +98,9 @@ public:
     bool showEditorSettings() const { return showEditorSettings_; }
     void setShowEditorSettings(bool v) { showEditorSettings_ = v; }
 
+    bool showDownloadMediaPanel() const { return showDownloadMediaPanel_; }
+    void setShowDownloadMediaPanel(bool v) { showDownloadMediaPanel_ = v; }
+
     bool showHotReloadStatus() const { return hotReload_; }
     void setHotReloadStatus(bool v) { hotReload_ = v; }
 
@@ -152,6 +156,7 @@ private:
     bool& showMetadataView_;
     bool& showVpsdbBrowser_;
     bool& showEditorSettings_;
+    bool& showDownloadMediaPanel_;
 
     bool& hotReload_;
 

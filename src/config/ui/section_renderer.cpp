@@ -339,7 +339,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "UISounds" || sectionName == "DefaultMedia" || sectionName == "CustomMedia") {
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
-                    } else if (sectionName == "TitleDisplay" && key == "fontPath") {
+                    } else if (sectionName == "UIWidgets" && key == "fontPath") {
                         renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                     } else if (sectionName == "Keybinds") {
                         renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);
@@ -417,7 +417,7 @@ void SectionRenderer::render(const std::string& sectionName, nlohmann::json& sec
                 } else if (sectionName == "VPX" && (key == "VPXTablesPath" || key == "VPinballXPath" || key == "vpxIniPath")) {
                     //LOG_DEBUG("Rendering path for key " << key << " in section " << sectionName);
                     renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
-                } else if (sectionName == "TitleDisplay" && key == "fontPath") {
+                } else if (sectionName == "UIWidgets" && key == "fontPath") {
                     renderPathOrExecutable(key, value, sectionName, fileDialog, isDialogOpen, dialogKey);
                 } else if (sectionName == "Keybinds") {
                     renderKeybind(keyDisplayName, value, sectionName, isCapturing, capturingKeyName);

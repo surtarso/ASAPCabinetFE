@@ -54,6 +54,7 @@ private:
     bool showMetadataView_ = false;
     bool showVpsdbBrowser_ = false;
     bool showEditorSettings_ = false;
+    bool showDownloadMediaPanel_ = false;
 
     bool hotReload_ = false;
 

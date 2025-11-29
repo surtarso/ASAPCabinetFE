@@ -14,6 +14,7 @@ EditorUI::EditorUI(bool& showMeta,
                    bool& showView,
                    bool& showBrowser,
                    bool& showSettings,
+                   bool& showDownloadMediaPanel,
                    bool& hotReload,
                    IConfigService* config,
                    ITableLoader* tableLoader,
@@ -34,6 +35,7 @@ EditorUI::EditorUI(bool& showMeta,
       showMetadataView_(showView),
       showVpsdbBrowser_(showBrowser),
       showEditorSettings_(showSettings),
+      showDownloadMediaPanel_(showDownloadMediaPanel),
       hotReload_(hotReload),
       screenshotManager_(screenshotManager),
       tablePatcher_(patcher)
@@ -167,7 +169,6 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 settings.ignoreScanners = false;
                 settings.titleSource = "metadata";
                 settings.fetchVPSdb = true;
-                settings.autoPatchTables = true;
                 settings.fetchMediaOnline = true;
                 break;
         }

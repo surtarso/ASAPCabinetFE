@@ -5,14 +5,13 @@ FIX:
 - [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
+- Topper window size not saving, not changing. stuck. (media size ok)
+    - ok it was just 'use vpinballx ini' option turned on.
+    - it was confusing and looked like a bug, need feedback for users.
+
 for 1.3.0
-- [ED] spreadsheet keyboard navigation
-- [ED] add option to resize vpindb images more obvious in editor
-
-- user control what to download (media-> pf, bg, dmd, flyter etc)
-
-- gather more 128x32 still logos (atari, playmatic etc)
 - panflets (metadata panel display FE+ED)
+- [ED] spreadsheet keyboard navigation
 
 QOL:
 - update header docs and user manual

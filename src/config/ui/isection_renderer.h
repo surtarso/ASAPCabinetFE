@@ -208,7 +208,7 @@ protected:
             }
 
             // FONT File Picker (.ttf)
-            else if (sectionName == "TitleDisplay" && key == "fontPath"){
+            else if (sectionName == "UIWidgets" && key == "fontPath"){
                 fileDialog->SetFileStyle(IGFD_FileStyleByExtention, ".ttf", ImVec4(0.7f, 0.1f, 0.9f, 0.9f));
                 fileDialog->OpenDialog("FileDlg_FontPath", "Select Font", ".ttf", config);
             }

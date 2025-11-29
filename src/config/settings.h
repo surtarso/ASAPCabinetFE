@@ -142,7 +142,6 @@ struct Settings {
     SDL_Color scrollbarColor = {50, 50, 50, 200};
     SDL_Color scrollbarThumbColor = {50, 150, 150, 255};
 
-    // [TitleDisplay]
     bool showWheel = true;
     std::string wheelWindow = "playfield"; // + 'backglass', 'dmd', 'topper'
     bool showTitle = true;
@@ -154,11 +153,19 @@ struct Settings {
     int titleX = 30;
     int titleY = 1850;
 
+    // [MediaSources]
+    bool useGenArt = false;                 // Use generated DMD/Topper arts
+    bool fetchMediaOnline = false;          // Download images online (vpinmedia/launchbox)
+    bool resizeToWindows = false;           // Resize VPIN images to current windows sizes
+    bool downloadTopperLogoImage = false;   // Launchbox (for Topper Logos)
+    bool downloadFlyersImage = false;       // Launchbox Flyers (front/back)
+    bool downloadPlayfieldImage = false;    // Vpin Playfield
+    bool downloadBackglassImage = false;    // Vpin Backglass
+    bool downloadDmdImage = false;          // Vpin DMD
+    bool downloadWheelImage = false;        // VPin Wheel
+
     // [MediaDimensions]
-    bool fetchMediaOnline = false; // download images from vpinmedia
-    bool resizeToWindows = false; // resize images to windows sizes
-    bool forceImagesOnly = false;
-    bool useGenArt = false;
+    bool forceImagesOnly = false;           // skip all videos
 
     int wheelMediaHeight = 350;
     int wheelMediaWidth = 350;
@@ -471,9 +478,7 @@ private:
                 {"thumbWidth", s.thumbWidth},
                 {"scrollbarLength", s.scrollbarLength},
                 {"scrollbarColor", {s.scrollbarColor.r, s.scrollbarColor.g, s.scrollbarColor.b, s.scrollbarColor.a}},
-                {"scrollbarThumbColor", {s.scrollbarThumbColor.r, s.scrollbarThumbColor.g, s.scrollbarThumbColor.b, s.scrollbarThumbColor.a}}
-            }},
-            {"TitleDisplay", {
+                {"scrollbarThumbColor", {s.scrollbarThumbColor.r, s.scrollbarThumbColor.g, s.scrollbarThumbColor.b, s.scrollbarThumbColor.a}},
                 {"showWheel", s.showWheel},
                 {"wheelWindow", s.wheelWindow},
                 {"showTitle", s.showTitle},
@@ -485,11 +490,19 @@ private:
                 {"titleX", s.titleX},
                 {"titleY", s.titleY}
             }},
-            {"MediaDimensions", {
+            {"MediaSources", {
+                {"useGenArt", s.useGenArt},
                 {"fetchMediaOnline", s.fetchMediaOnline},
                 {"resizeToWindows", s.resizeToWindows},
+                {"downloadTopperLogoImage", s.downloadTopperLogoImage},
+                {"downloadFlyersImage", s.downloadFlyersImage},
+                {"downloadPlayfieldImage", s.downloadPlayfieldImage},
+                {"downloadBackglassImage", s.downloadBackglassImage},
+                {"downloadDmdImage", s.downloadDmdImage},
+                {"downloadWheelImage", s.downloadWheelImage}
+            }},
+            {"MediaDimensions", {
                 {"forceImagesOnly", s.forceImagesOnly},
-                {"useGenArt", s.useGenArt},
                 {"wheelMediaHeight", s.wheelMediaHeight},
                 {"wheelMediaWidth", s.wheelMediaWidth},
                 {"wheelMediaX", s.wheelMediaX},
@@ -687,34 +700,40 @@ private:
                                      static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][2]),
                                      static_cast<Uint8>(j["UIWidgets"]["scrollbarThumbColor"][3])};
         }
+        s.showWheel = j.value("UIWidgets", nlohmann::json{}).value("showWheel", s.showWheel);
+        s.wheelWindow = j.value("UIWidgets", nlohmann::json{}).value("wheelWindow", s.wheelWindow);
+        s.showTitle = j.value("UIWidgets", nlohmann::json{}).value("showTitle", s.showTitle);
+        s.titleWindow = j.value("UIWidgets", nlohmann::json{}).value("titleWindow", s.titleWindow);
+        s.fontPath = j.value("UIWidgets", nlohmann::json{}).value("fontPath", s.fontPath);
+        if (j.value("UIWidgets", nlohmann::json{}).contains("fontColor") && j["UIWidgets"]["fontColor"].is_array() && j["UIWidgets"]["fontColor"].size() == 4) {
+            s.fontColor = {static_cast<Uint8>(j["UIWidgets"]["fontColor"][0]),
+                           static_cast<Uint8>(j["UIWidgets"]["fontColor"][1]),
+                           static_cast<Uint8>(j["UIWidgets"]["fontColor"][2]),
+                           static_cast<Uint8>(j["UIWidgets"]["fontColor"][3])};
+        }
+        if (j.value("UIWidgets", nlohmann::json{}).contains("fontBgColor") && j["UIWidgets"]["fontBgColor"].is_array() && j["UIWidgets"]["fontBgColor"].size() == 4) {
+            s.fontBgColor = {static_cast<Uint8>(j["UIWidgets"]["fontBgColor"][0]),
+                             static_cast<Uint8>(j["UIWidgets"]["fontBgColor"][1]),
+                             static_cast<Uint8>(j["UIWidgets"]["fontBgColor"][2]),
+                             static_cast<Uint8>(j["UIWidgets"]["fontBgColor"][3])};
+        }
+        s.fontSize = j.value("UIWidgets", nlohmann::json{}).value("fontSize", s.fontSize);
+        s.titleX = j.value("UIWidgets", nlohmann::json{}).value("titleX", s.titleX);
+        s.titleY = j.value("UIWidgets", nlohmann::json{}).value("titleY", s.titleY);
 
-        // TitleDisplay
-        s.showWheel = j.value("TitleDisplay", nlohmann::json{}).value("showWheel", s.showWheel);
-        s.wheelWindow = j.value("TitleDisplay", nlohmann::json{}).value("wheelWindow", s.wheelWindow);
-        s.showTitle = j.value("TitleDisplay", nlohmann::json{}).value("showTitle", s.showTitle);
-        s.titleWindow = j.value("TitleDisplay", nlohmann::json{}).value("titleWindow", s.titleWindow);
-        s.fontPath = j.value("TitleDisplay", nlohmann::json{}).value("fontPath", s.fontPath);
-        if (j.value("TitleDisplay", nlohmann::json{}).contains("fontColor") && j["TitleDisplay"]["fontColor"].is_array() && j["TitleDisplay"]["fontColor"].size() == 4) {
-            s.fontColor = {static_cast<Uint8>(j["TitleDisplay"]["fontColor"][0]),
-                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][1]),
-                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][2]),
-                           static_cast<Uint8>(j["TitleDisplay"]["fontColor"][3])};
-        }
-        if (j.value("TitleDisplay", nlohmann::json{}).contains("fontBgColor") && j["TitleDisplay"]["fontBgColor"].is_array() && j["TitleDisplay"]["fontBgColor"].size() == 4) {
-            s.fontBgColor = {static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][0]),
-                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][1]),
-                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][2]),
-                             static_cast<Uint8>(j["TitleDisplay"]["fontBgColor"][3])};
-        }
-        s.fontSize = j.value("TitleDisplay", nlohmann::json{}).value("fontSize", s.fontSize);
-        s.titleX = j.value("TitleDisplay", nlohmann::json{}).value("titleX", s.titleX);
-        s.titleY = j.value("TitleDisplay", nlohmann::json{}).value("titleY", s.titleY);
+        // MediaSources
+        s.useGenArt = j.value("MediaSources", nlohmann::json{}).value("useGenArt", s.useGenArt);
+        s.fetchMediaOnline = j.value("MediaSources", nlohmann::json{}).value("fetchMediaOnline", s.fetchMediaOnline);
+        s.resizeToWindows = j.value("MediaSources", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
+        s.downloadTopperLogoImage = j.value("MediaSources", nlohmann::json{}).value("downloadTopperLogoImage", s.downloadTopperLogoImage);
+        s.downloadFlyersImage = j.value("MediaSources", nlohmann::json{}).value("downloadFlyersImage", s.downloadFlyersImage);
+        s.downloadPlayfieldImage = j.value("MediaSources", nlohmann::json{}).value("downloadPlayfieldImage", s.downloadPlayfieldImage);
+        s.downloadBackglassImage = j.value("MediaSources", nlohmann::json{}).value("downloadBackglassImage", s.downloadBackglassImage);
+        s.downloadDmdImage = j.value("MediaSources", nlohmann::json{}).value("downloadDmdImage", s.downloadDmdImage);
+        s.downloadWheelImage = j.value("MediaSources", nlohmann::json{}).value("downloadWheelImage", s.downloadWheelImage);
 
         // MediaDimensions
-        s.fetchMediaOnline = j.value("MediaDimensions", nlohmann::json{}).value("fetchMediaOnline", s.fetchMediaOnline);
-        s.resizeToWindows = j.value("MediaDimensions", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.forceImagesOnly = j.value("MediaDimensions", nlohmann::json{}).value("forceImagesOnly", s.forceImagesOnly);
-        s.useGenArt = j.value("MediaDimensions", nlohmann::json{}).value("useGenArt", s.useGenArt);
         s.wheelMediaHeight = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaHeight", s.wheelMediaHeight);
         s.wheelMediaWidth = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaWidth", s.wheelMediaWidth);
         s.wheelMediaX = j.value("MediaDimensions", nlohmann::json{}).value("wheelMediaX", s.wheelMediaX);
@@ -917,8 +936,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"scrollbarLength", {Settings::ReloadType::None, "Scrollbar length as a fraction of the window (0.1-1.0)."}},
     {"scrollbarColor", {Settings::ReloadType::None, "Scrollbar color (RGBA)."}},
     {"scrollbarThumbColor", {Settings::ReloadType::None, "Scrollbar thumb color (RGBA)."}},
-
-    // Title display
     {"showWheel", {Settings::ReloadType::None, "Show or hide the wheel artwork in it's window."}},
     {"wheelWindow", {Settings::ReloadType::Tables, "Which window should display the wheel artwork."}},
     {"showTitle", {Settings::ReloadType::None, "Show or hide the table title text in it's window."}},
@@ -930,11 +947,19 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"titleX", {Settings::ReloadType::Title, "Horizontal position (X) for the title text."}},
     {"titleY", {Settings::ReloadType::Title, "Vertical position (Y) for the title text."}},
 
-    // Media dimensions and behavior
-    {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download table images from the VPin Media Database.\nTo match it requires VPSdb ID metadata."}},
+    // Media Sources
+    {"useGenArt", {Settings::ReloadType::Full, "Use generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with generated screens from metadata."}},
+    {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download images from the VPin and Launchbox Media Databases.\nTo match a table we require VPSdb ID metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
+    {"downloadTopperLogoImage", {Settings::ReloadType::Tables, "Launchbox Game logos for generated Topper dot matrix display."}},
+    {"downloadFlyersImage", {Settings::ReloadType::Tables, "Launchbox Flyer images (front and back) to display on metadata panel."}},
+    {"downloadPlayfieldImage", {Settings::ReloadType::Tables, "Vpin's Playfield images auto-rotated to current settings."}},
+    {"downloadBackglassImage", {Settings::ReloadType::Tables, "VPin's Backglass images."}},
+    {"downloadDmdImage", {Settings::ReloadType::Tables, "VPin's Full-DMD images (4:3)."}},
+    {"downloadWheelImage", {Settings::ReloadType::Tables, "Wheel/Marquee from VPin Media Database"}},
+
+    // Media dimensions and behavior
     {"forceImagesOnly", {Settings::ReloadType::Tables, "If enabled, the frontend will load images only and skip videos."}},
-    {"useGenArt", {Settings::ReloadType::Full, "Use computer generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with procedural generated screens from metadata."}},
     {"wheelMediaHeight", {Settings::ReloadType::None, "Wheel image height in pixels."}},
     {"wheelMediaWidth", {Settings::ReloadType::None, "Wheel image width in pixels."}},
     {"wheelMediaX", {Settings::ReloadType::None, "Wheel image X coordinate inside its window."}},

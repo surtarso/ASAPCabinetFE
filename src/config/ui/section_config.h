@@ -15,29 +15,29 @@ public:
         // ----------------- SECTIONS ------------------
         sectionOrder_ = {
             "TableMetadata",
-            "TitleDisplay",
             "UIWidgets",
             "AudioSettings",
             "Keybinds",
             "DPISettings",
             "WindowSettings",
             "MediaDimensions",
+            "MediaSources",
             "CustomMedia",
-            "VPX",
             "DefaultMedia",
             "UISounds",
+            "VPX",
             "Internal",
             "Editor"
         };
         sectionDisplayNames_ = {
             {"TableMetadata", "Table matching & metadata (source, indexing)"},
-            {"TitleDisplay", "On-screen titles & wheel (font, position)"},
-            {"UIWidgets", "UI elements (arrows, scrollbars, visuals)"},
+            {"UIWidgets", "On-screen UI elements, titles & wheel (font, position)"},
             {"AudioSettings", "Global audio levels and mutes"},
             {"Keybinds", "Keyboard / Controller shortcuts"},
             {"DPISettings", "Display scale / DPI behavior"},
-            {"WindowSettings", "Renderer, window & placement settings"},
+            {"WindowSettings", "Window & placement settings, renderer"},
             {"MediaDimensions", "Media sizing & placement for each window"},
+            {"MediaSources", "Media Downloads & Art settings"},
             {"CustomMedia", "Per-table custom media paths"},
             {"VPX", "VPX integration paths & launch options"},
             {"DefaultMedia", "Fallback default media (used when table media missing)"},
@@ -79,7 +79,7 @@ public:
             {"titleSortBy", {"title", "author", "type", "year", "manufacturer"}}
         };
 
-        keyOrders_["TitleDisplay"] = {
+        keyOrders_["UIWidgets"] = {
             "showWheel",
             "wheelWindow",
             "showTitle",
@@ -89,26 +89,7 @@ public:
             "fontBgColor",
             "fontSize",
             "titleX",
-            "titleY"
-        };
-        keyDisplayNames_["TitleDisplay"] = {
-            {"showWheel", "Show wheel"},
-            {"wheelWindow", "Wheel window"},
-            {"showTitle", "Show title"},
-            {"titleWindow", "Title window"},
-            {"fontPath", "Font path"},
-            {"fontColor", "Font color"},
-            {"fontBgColor", "Font BG color"},
-            {"fontSize", "Font size"},
-            {"titleX", "Title X"},
-            {"titleY", "Title Y"}
-        };
-        keyDropdownOptions_["TitleDisplay"] = {
-            {"wheelWindow", {"playfield", "backglass", "dmd", "topper"}},
-            {"titleWindow", {"playfield", "backglass", "dmd", "topper"}}
-        };
-
-        keyOrders_["UIWidgets"] = {
+            "titleY",
             "showMetadata",
             "metadataPanelWidth",
             "metadataPanelHeight",
@@ -148,7 +129,21 @@ public:
             {"thumbWidth", "Thumb width"},
             {"scrollbarLength", "Scrollbar length"},
             {"scrollbarColor", "Scrollbar color"},
-            {"scrollbarThumbColor", "Scrollbar thumb color"}
+            {"scrollbarThumbColor", "Scrollbar thumb color"},
+            {"showWheel", "Show wheel"},
+            {"wheelWindow", "Wheel window"},
+            {"showTitle", "Show title"},
+            {"titleWindow", "Title window"},
+            {"fontPath", "Font path"},
+            {"fontColor", "Font color"},
+            {"fontBgColor", "Font BG color"},
+            {"fontSize", "Font size"},
+            {"titleX", "Title X"},
+            {"titleY", "Title Y"}
+        };
+        keyDropdownOptions_["UIWidgets"] = {
+            {"wheelWindow", {"playfield", "backglass", "dmd", "topper"}},
+            {"titleWindow", {"playfield", "backglass", "dmd", "topper"}}
         };
 
         keyOrders_["AudioSettings"] = {
@@ -260,11 +255,32 @@ public:
             {"videoBackend", {"vlc", "ffmpeg", "novideo", "software"}}
         };
 
-        keyOrders_["MediaDimensions"] = {
+        keyOrders_["MediaSources"] = {
+            "useGenArt",
             "fetchMediaOnline",
             "resizeToWindows",
+            "downloadTopperLogoImage",
+            "downloadFlyersImage",
+            "downloadPlayfieldImage",
+            "downloadBackglassImage",
+            "downloadDmdImage",
+            "downloadWheelImage"
+        };
+        keyDisplayNames_["MediaSources"] = {
+            {"useGenArt", "Generate Topper and DMD from Metadata."},
+            {"fetchMediaOnline", "Download Table Images."},
+            {"resizeToWindows", "Resize downloaded images to current window sizes."},
+            {"downloadTopperLogoImage", "Download Game Logo Images for Topper."},
+            {"downloadFlyersImage", "Download Flyers Images."},
+            {"downloadPlayfieldImage", "Download Playfield Images."},
+            {"downloadBackglassImage", "Download Backglass Images."},
+            {"downloadDmdImage", "Download Full-DMD Images."},
+            {"downloadWheelImage", "Download Wheel Images."}
+        };
+
+        keyOrders_["MediaDimensions"] = {
+
             "forceImagesOnly",
-            "useGenArt",
             "wheelMediaWidth",
             "wheelMediaHeight",
             "wheelMediaX",
@@ -291,10 +307,7 @@ public:
             "topperRotation"
         };
         keyDisplayNames_["MediaDimensions"] = {
-            {"fetchMediaOnline", "Use VPinMedia DB"},
-            {"resizeToWindows", "Resize media to window"},
             {"forceImagesOnly", "Force images only"},
-            {"useGenArt", "Use generated 'no media' art"},
             {"wheelMediaWidth", "Wheel width"},
             {"wheelMediaHeight", "Wheel height"},
             {"wheelMediaX", "Wheel X"},

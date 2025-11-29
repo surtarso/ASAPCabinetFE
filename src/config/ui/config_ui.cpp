@@ -310,8 +310,8 @@ void ConfigUI::drawGUI() {
                     if (fileDialog->IsOk())
                     {
                         // Determine the correct section
-                        jsonData_["TitleDisplay"][dialogKey_] = fileDialog->GetFilePathName();
-                        LOG_INFO("Selected fontPath: " + jsonData_["TitleDisplay"]["fontPath"].get<std::string>());
+                        jsonData_["UIWidgets"][dialogKey_] = fileDialog->GetFilePathName();
+                        LOG_INFO("Selected fontPath: " + jsonData_["UIWidgets"]["fontPath"].get<std::string>());
                     }
 
                     fileDialog->Close();

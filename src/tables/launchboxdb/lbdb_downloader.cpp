@@ -273,6 +273,11 @@ std::optional<std::string> LbdbDownloader::findBestMatch(const TableData& table)
 void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
     fs::path jsonPath = settings_.lbdbPath;
 
+    if (!settings_.downloadFlyersImage && !settings_.downloadTopperLogoImage){
+        LOG_WARN("No Media selected to download, skipping Launchbox Database.");
+        return;
+    }
+
     // Auto-build database on first run
     if (!fs::exists(jsonPath)) {
         LOG_WARN("LaunchBox DB missing — building automatically...");
@@ -324,8 +329,10 @@ void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
                     " (ID: " + bestId + ")");
 
             // Download images
-            downloadClearLogo(bestId, table, pinballDb);
-            downloadFlyersFromJson(bestId, table, pinballDb);
+            if (settings_.downloadTopperLogoImage)
+                downloadClearLogo(bestId, table, pinballDb);
+            if (settings_.downloadFlyersImage)
+                downloadFlyersFromJson(bestId, table, pinballDb);
         }
 
         // Update UI progress
@@ -387,9 +394,6 @@ void LbdbDownloader::downloadClearLogo(const std::string& gameId,
     }
 
     LOG_INFO("Resized Clear Logo to 128x32 → " + output.string());
-
-    // store path in metadata
-    // table.clearLogo = output.string();
 }
 
 

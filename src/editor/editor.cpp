@@ -20,6 +20,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
       showMetadataView_(false),
       showVpsdbBrowser_(false),
       showEditorSettings_(false),
+      showDownloadMediaPanel_(false),
       hotReload_(false),
       configPath_(configPath),
       exeDir_(exeDir),
@@ -67,6 +68,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
         showMetadataView_,
         showVpsdbBrowser_,
         showEditorSettings_,
+        showDownloadMediaPanel_,
         hotReload_,
         config_.get(),
         tableLoader_.get(),
@@ -207,6 +209,62 @@ void Editor::mainLoop() {
                 ImGui::CloseCurrentPopup();
             }
 
+            ImGui::EndPopup();
+        }
+
+        //
+        if (showDownloadMediaPanel_) {
+            ImGui::OpenPopup("Media Download");
+        }
+        if (ImGui::BeginPopupModal("Media Download", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Select Options:");
+            ImGui::Separator();
+
+            // Resize VPIN images to current windows sizes
+            ImGui::Checkbox("Resize VPinMedia Images to current Windows Settings.",
+                &config_->getMutableSettings().resizeToWindows);
+
+            ImGui::Text("Select Media to Download:");
+            ImGui::Separator();
+
+            // Launchbox (for Topper Logos)
+            ImGui::Checkbox("Download Game Logo for Metadata based Topper",
+                &config_->getMutableSettings().downloadTopperLogoImage);
+
+            // Launchbox Flyers (front/back)
+            ImGui::Checkbox("Download Flyer Images (Front/Back)",
+                &config_->getMutableSettings().downloadFlyersImage);
+
+            // Vpin Playfield
+            ImGui::Checkbox("Download Playfield Images",
+                &config_->getMutableSettings().downloadPlayfieldImage);
+
+            // This was already correct
+            ImGui::Checkbox("Download Backglass Images" ,
+                &config_->getMutableSettings().downloadBackglassImage);
+
+            // Vpin DMD
+            ImGui::Checkbox("Download Full-DMD Images (4:3)",
+                &config_->getMutableSettings().downloadDmdImage);
+
+            // VPin Wheel
+            ImGui::Checkbox("Download Wheel Images",
+                &config_->getMutableSettings().downloadWheelImage);
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Download")) {
+                // configUI_->saveConfig(); (we dont save here or we override user options)
+                editorUI_->setScannerMode(ScannerMode::MediaDb);
+                showDownloadMediaPanel_ = false;
+                ImGui::CloseCurrentPopup();
+                editorUI_->rescanAsyncPublic(editorUI_->scannerMode());
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close")) {
+                showDownloadMediaPanel_ = false;
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
 

@@ -75,25 +75,45 @@ void drawFooter(EditorUI& ui) {
 
         // ---------- Rescan Options Combo ----------
         if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
+            // ImGui::TextDisabled("Scanner Mode");
+            // if (ImGui::Selectable("File Scanner", ui.scannerMode() == ScannerMode::File))
+            //     ui.setScannerMode(ScannerMode::File);
+            // if (ImGui::Selectable("VPin Scanner", ui.scannerMode() == ScannerMode::VPin))
+            //     ui.setScannerMode(ScannerMode::VPin);
+            // if (ImGui::Selectable("VPSDb Scanner", ui.scannerMode() == ScannerMode::VPSDb))
+            //     ui.setScannerMode(ScannerMode::VPSDb);
+
+            // Flag to keep the popup open after clicking a selectable item
+            const ImGuiSelectableFlags keepOpenFlags = ImGuiSelectableFlags_DontClosePopups;
+
             ImGui::TextDisabled("Scanner Mode");
-            if (ImGui::Selectable("File Scanner", ui.scannerMode() == ScannerMode::File))
+
+            // --- File Scanner ---
+            bool isFileSelected = ui.scannerMode() == ScannerMode::File;
+            const char* fileLabel = isFileSelected ? "File Scanner \t\t\t\t\t\t «" : "File Scanner";
+
+            if (ImGui::Selectable(fileLabel, isFileSelected, keepOpenFlags)) {
                 ui.setScannerMode(ScannerMode::File);
-            if (ImGui::Selectable("VPin Scanner", ui.scannerMode() == ScannerMode::VPin))
+            }
+
+            // --- VPin Scanner ---
+            bool isVPinSelected = ui.scannerMode() == ScannerMode::VPin;
+            const char* vpinLabel = isVPinSelected ? "VPin Scanner \t\t\t\t\t\t «" : "VPin Scanner";
+
+            if (ImGui::Selectable(vpinLabel, isVPinSelected, keepOpenFlags)) {
                 ui.setScannerMode(ScannerMode::VPin);
-            if (ImGui::Selectable("VPSDb Scanner", ui.scannerMode() == ScannerMode::VPSDb))
+            }
+
+            // --- VPSDb Scanner ---
+            bool isVPSDbSelected = ui.scannerMode() == ScannerMode::VPSDb;
+            const char* vpsDbLabel = isVPSDbSelected ? "VPSDb Scanner \t\t\t\t\t «" : "VPSDb Scanner";
+
+            if (ImGui::Selectable(vpsDbLabel, isVPSDbSelected, keepOpenFlags)) {
                 ui.setScannerMode(ScannerMode::VPSDb);
+            }
 
             ImGui::TextDisabled("Options");
             Settings& settings = ui.configService()->getMutableSettings();
-
-            bool cleanIndex = settings.forceRebuildMetadata;
-            if (ImGui::Checkbox("Rebuild Metadata", &cleanIndex)) {
-                settings.forceRebuildMetadata = cleanIndex;
-                if (settings.forceRebuildMetadata){
-                    settings.ignoreScanners = false;
-                }
-                ui.configService()->saveConfig();
-            }
 
             // Use external VPXTOOLS
             bool wantsVpxtool = settings.useVpxtool;
@@ -104,12 +124,43 @@ void drawFooter(EditorUI& ui) {
 
             // Auto patch tables
             bool autoPatch = settings.autoPatchTables;
-            if (ImGui::Checkbox("Auto-Patch tables", &autoPatch)) {
+            if (ImGui::Checkbox("Patch All Tables", &autoPatch)) {
                 LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
                 settings.autoPatchTables = autoPatch;  // invert
                 ui.configService()->saveConfig();
             }
 
+            // // Auto media download
+            // bool autoMedia = settings.fetchMediaOnline;
+            // bool autoLogo = settings.downloadTopperLogoImage;   // Launchbox (for Topper Logos)
+            // bool autoFlyer = settings.downloadFlyersImage;       // Launchbox Flyers (front/back)
+            // bool autoPlayf = settings.downloadPlayfieldImage;    // Vpin Playfield
+            // bool autoBackg = settings.downloadBackglassImage;    // Vpin Backglass
+            // bool autoDmd = settings.downloadDmdImage;          // Vpin DMD
+            // bool autoWheel = settings.downloadWheelImage;        // VPin Wheel
+            // if (ImGui::Checkbox("Download All Media", &autoMedia)) {
+            //     LOG_INFO(std::string("Download All Media on Rescan toggled: ") + (autoMedia ? "ON" : "OFF"));
+            //     settings.fetchMediaOnline = autoMedia;  // invert
+            //     settings.downloadTopperLogoImage = autoLogo;   // Launchbox (for Topper Logos)
+            //     settings.downloadFlyersImage = autoFlyer;       // Launchbox Flyers (front/back)
+            //     settings.downloadPlayfieldImage = autoPlayf;    // Vpin Playfield
+            //     settings.downloadBackglassImage = autoBackg;    // Vpin Backglass
+            //     settings.downloadDmdImage = autoDmd;          // Vpin DMD
+            //     settings.downloadWheelImage = autoWheel;        // VPin Wheel
+            //     // ui.configService()->saveConfig();
+            // }
+
+            // Rebuild Metadata
+            bool cleanIndex = settings.forceRebuildMetadata;
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.4f, 1.0f));
+            if (ImGui::Checkbox("Rebuild Metadata", &cleanIndex)) {
+                settings.forceRebuildMetadata = cleanIndex;
+                if (settings.forceRebuildMetadata){
+                    settings.ignoreScanners = false;
+                }
+                ui.configService()->saveConfig();
+            }
+            ImGui::PopStyleColor(1);
             ImGui::EndCombo();
         }
         ImGui::SameLine();
@@ -274,28 +325,31 @@ void drawFooter(EditorUI& ui) {
     if (ImGui::Button("Download Media")) {
         if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
             const auto& t = ui.filteredTables()[ui.selectedIndex()];
-            LOG_WARN("[Placeholder] downloading media for table: " + t.vpxFile);
+            LOG_DEBUG("[Placeholder] downloading media for table: " + t.vpxFile);
             ui.modal().openWarning(
                 "A Table is Selected",
                 "Please unselect a table first and try again."
                 "Single table media downloading is not yet implemented."
             );
         } else {
+            LOG_INFO("Opening Download Media Panel");
+            ui.setShowDownloadMediaPanel(true);
             // Open confirm dialog before media downloading for all tables
-            ui.modal().openConfirm(
-                "Confirm Download All?",
-                "This will download images for all tables it finds.\nAre you sure you want to continue?",
-                {"No", "Yes"},
-                [&ui](const std::string& choice) {
-                    if (choice == "Yes") {
-                        LOG_DEBUG("Confirmed: Downloading tables to all tables found (hashed and matched)");
-                        ui.setScannerMode(ScannerMode::MediaDb);
-                        ui.rescanAsyncPublic(ui.scannerMode());
-                    } else {
-                        LOG_INFO("Download Media (all) canceled by user.");
-                    }
-                }
-            );
+            // ui.modal().openConfirm(
+            //     "Confirm Download All?",
+            //     "This will download images for all tables it finds.\nAre you sure you want to continue?",
+            //     {"No", "Yes"},
+            //     [&ui](const std::string& choice) {
+            //         if (choice == "Yes") {
+            //             LOG_DEBUG("Confirmed: Downloading tables to all tables found (hashed and matched)");
+            //             ui.setScannerMode(ScannerMode::MediaDb);
+            //             ui.rescanAsyncPublic(ui.scannerMode());
+            //         } else {
+            //             LOG_INFO("Download Media (all) canceled by user.");
+
+            //         }
+            //     }
+            // );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

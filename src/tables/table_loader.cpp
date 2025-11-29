@@ -431,23 +431,34 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numNoMatch = 0;
         }
 
-        // PARALLEL: VPinMediaDB + LaunchboxDB — COMPLEMENTARY, NEVER CONFLICT
-        std::vector<std::future<void>> tasks;
-
-        // 1. VPinMediaDB — your existing, proven downloader
-        tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+        // NON PARALLEL VERSION:
+        {
             VpinMdbClient vpdownloader(settings, progress);
             vpdownloader.downloadMedia(tables);
-        }));
-
-        // 2. LaunchboxDB — new, for clear logos + flyers
-        tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+        }
+        {
             LbdbDownloader lbdownloader(settings, progress);
             lbdownloader.downloadArtForTables(tables);
-        }));
+        }
 
-        // Wait for both — UI stays smooth
-        for (auto& f : tasks) f.wait();
+        // Might be the cause of missing ID bug, on trials.
+        // // PARALLEL: VPinMediaDB + LaunchboxDB — COMPLEMENTARY, NEVER CONFLICT
+        // std::vector<std::future<void>> tasks;
+
+        // // 1. VPinMediaDB — your existing, proven downloader
+        // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+        //     VpinMdbClient vpdownloader(settings, progress);
+        //     vpdownloader.downloadMedia(tables);
+        // }));
+
+        // // 2. LaunchboxDB — new, for clear logos + flyers
+        // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
+        //     LbdbDownloader lbdownloader(settings, progress);
+        //     lbdownloader.downloadArtForTables(tables);
+        // }));
+
+        // // Wait for both — UI stays smooth
+        // for (auto& f : tasks) f.wait();
 
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
