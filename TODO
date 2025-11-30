@@ -29,6 +29,9 @@ QOL:
 On hold:
 - switch to use real DMDs
 - refactor the monoliths... interfaces, templates, factories...
+- refactor editor tooltips to centralized helpers
+- refactor lots of shit to centralized helpers
+- organize current utils (maybe center data in data/ folder?)
 - [!] add single table scan (all, selectable)
 - add multi launchers (other emulators, other versions of vpx w.e.) '+' user add + dropdown
 - portability: SDL drawn default wheel (simple logo)
