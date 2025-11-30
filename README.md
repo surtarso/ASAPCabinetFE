@@ -90,7 +90,7 @@ cd ~/ASAPCabinetFE
 - Extended settings for many display configuration arrangements.
 - Keybind friendly and joystick support.
 - Extremely lightweight, blazing fast and fully customizable.
-- No need to download artpacks, **generate** your own. (See [tools](#generator-tools--debian))
+- No need to download artpacks, **generate** your own.
 - Multiple animations to indicate your missing media or to use as default.
 - Procedural generated DMDs with table title or manufacturer logos based on metadata info. (see [Legal](#legal))
 - Use you own **128x32 real DMD** images _(animations not yet implemented)_
