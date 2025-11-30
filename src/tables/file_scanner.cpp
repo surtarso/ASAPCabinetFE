@@ -81,7 +81,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->totalTablesToLoad = vpx_files.size();
         progress->currentTablesLoaded = 0;
-        progress->currentStage = 0;
+        progress->currentStage = 2;
         progress->currentTask = "Processing tables...";
     }
 
@@ -161,10 +161,12 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     // Force rescan if override exists in previous metadata OR new override is detected
                     bool mustRescan = existingTable.hasOverride || table.hasOverride;
 
+                    std::string skipName = table.title.empty() ? table.vpxFile : table.title;
                     if (unchanged && !mustRescan) {
                         if (progress) {
                             std::lock_guard<std::mutex> lock(progress->mutex);
                             progress->currentTablesLoaded++;
+                            progress->logMessages.push_back("Skipped unchanged table: " + skipName);
                         }
                         return;
                     }

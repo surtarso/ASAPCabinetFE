@@ -2,7 +2,6 @@ TODO
 
 FIX:
 - flatpak
-- [!] loading screen pipeline ordering/numbering
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
 - Topper window size not saving, not changing. stuck. (media size ok)
