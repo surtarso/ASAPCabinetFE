@@ -158,6 +158,24 @@ If you don't add anything, the app will use its default animations, which you ca
 
 Use the default keys (**Left Shift** and **Right Shift**) to navigate through your list of tables. As you browse, you'll see previews—like the playfield or backglass—appear on screen, helping you decide which table to play. You can also customize these keys in the in-app configuration menu.
 
+#### Front-End Default Keymap
+Customize these keybinds to fit your cabinet’s controls—because every setup is unique.
+
+| Action             |        Key       | Description                               |
+|--------------------|------------------|-------------------------------------------|
+| Scroll Table (One) | Left/Right Shift | Move to the previous/next table.          |
+| Scroll Table (Tens)| Left/Right Ctrl  | Move 10 tables backward/forward.          |
+| Scroll by Letter   | z and /          | Scroll tables alphabetically (prev/next). |
+| Scroll Random      | r                | Move to a random table.                   |
+| Launch Table       | Enter            | Launch the selected table with VPinballX  |
+| Launch SShot mode  | s                | Launch the table in screenshot mode.      |
+| Config Panel       | c                | Toggle config panel.                      |
+| Save window pos.   | left doubleclick | Saves current window positions in config. |
+| Metadata Editor    | e                | Toggle Metadata Editor in current table.  |
+| Metadata Panel     | m                | View current table Metadata Panel         |
+| VPSdb Catalog      | n                | Toggle VPSdb catalog for browsing tables. |
+| Quit               | q                | Exit the application.                     |
+
 ### Playing a Table
 
 Found a table you want to play? Just hit **Enter** to launch it directly in Visual Pinball X.
