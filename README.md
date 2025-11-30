@@ -310,11 +310,11 @@ https://github.com/user-attachments/assets/2a430103-da5d-49fc-95c0-c1ee10a280c1
 
 ## Acknowledgments
 - [Visual Pinball X](https://github.com/vpinball/vpinball) team.
-- [VPin](https://github.com/francisdb/vpin)/[VPXTool](https://github.com/francisdb/vpxtool) team.
+- [VPin](https://github.com/francisdb/vpin) / [VPXTool](https://github.com/francisdb/vpxtool) team.
 - [Virtual Pinball Database](https://github.com/vpdb) team.
 - [Vpin Media Database](https://github.com/superhac/vpinmediadb) team.
-- [Launchbox Databse](https://gamesdb.launchbox-app.com/) team.
-- [VPForums](https://www.vpforums.org/)/[VPUniverse](https://vpuniverse.com/) team.
+- [Launchbox Database](https://gamesdb.launchbox-app.com/) team.
+- [VPForums](https://www.vpforums.org/) / [VPUniverse](https://vpuniverse.com/) team.
 - A BIG THANK YOU to [@jsm174](https://github.com/jsm174/) [@francisdb](https://github.com/francisdb/) [@superhac](https://github.com/superhac/) [@Toxieainc](https://github.com/toxieainc) [@MikedaSpike](https://github.com/MikedaSpike).
 - And a special thanks to _Snortt_ for bearing with me thru all of this.
 - Thanks everyone who helped making Visual Pinball X for Linux a reality. Really, you guys rock!
