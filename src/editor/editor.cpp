@@ -2,7 +2,7 @@
 #include "log/logging.h"
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
-#include "core/ui/metadata_panel.h"
+#include "editor/ui/metadata_view.h"
 #include "tables/table_loader.h"
 #include "tables/asap_index_manager.h"
 #include "tables/table_patcher.h"
@@ -333,7 +333,7 @@ void Editor::mainLoop() {
             // ========================= METADATA VIEW PANEL =========================
             } else if (showMetadataView_) {
 
-                static MetadataPanel metadataPanel;
+                static MetadataViewPanel metadataPanel;
 
                 int filteredIndex = editorUI_->selectedIndex();
                 TableData* realTable = nullptr;

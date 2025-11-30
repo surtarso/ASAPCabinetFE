@@ -1,9 +1,9 @@
-#include "metadata_panel.h"
+#include "metadata_view.h"
 #include <filesystem>
 #include <cmath>
 #include <algorithm>
 
-void MetadataPanel::render(const TableData& currentTable,
+void MetadataViewPanel::render(const TableData& currentTable,
                            int playfieldWidth,
                            int playfieldHeight,
                            const Settings& settings)
@@ -12,7 +12,7 @@ void MetadataPanel::render(const TableData& currentTable,
     render(currentTable, playfieldWidth, playfieldHeight, settings, nullptr);
 }
 
-void MetadataPanel::render(const TableData& currentTable,
+void MetadataViewPanel::render(const TableData& currentTable,
                            int playfieldWidth,
                            int playfieldHeight,
                            const Settings& settings,
@@ -60,7 +60,7 @@ void MetadataPanel::render(const TableData& currentTable,
         // ======== BASIC TABLE INFO ========
         std::filesystem::path filePath(currentTable.vpxFile);
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "TABLE INFO");
-        ImGui::Text("File: %s", filePath.filename().string().c_str());
+        ImGui::Text("File Name: %s", filePath.filename().string().c_str());
         if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string())
             ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
         if (!currentTable.vpsName.empty())

@@ -314,6 +314,7 @@ set(SOURCES
     src/editor/ui/editor_header.cpp
     src/editor/ui/editor_body.cpp
     src/editor/ui/editor_footer.cpp
+    src/editor/ui/metadata_view.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
