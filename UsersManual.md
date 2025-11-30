@@ -103,7 +103,43 @@ If you've already set up your window positions within VPinballX, and your `VPinb
 <img width="730" height="720" alt="image" src="https://github.com/user-attachments/assets/22534397-ac84-4f1e-8206-3fdd43c217ad" />
 
 >[!WARNING]
->In Hyprland, positioning will be handled by Hyprland's window rules.
+>**Window positioning won't work in Hyprland**
+>
+>Use `hyprctl clients` to check exact titles or classes.
+
+<details>
+<summary>You can add window rules like this</summary>
+  
+```
+# ----------- ASAPCabinetFE + VPinballX
+# Playfield
+windowrule = workspace 4, title:Playfield
+windowrule = fullscreen, title:Playfield
+windowrule = workspace 4, title:^(Visual Pinball Player)$
+windowrule = fullscreen, title:^(Visual Pinball Player)$
+
+# ASAPCabinetFE Backglass
+windowrule = workspace 3, title:Backglass
+windowrule = move 45% 3%, title:Backglass
+# VPinballX Backglass
+windowrule = workspace 3, initialTitle:^(.*Backglass)$
+windowrule = workspace 3, title:^(Visual Pinball - Backglass)$
+windowrule = move 45% 3%, initialTitle:^(.*Backglass)$
+windowrule = move 45% 3%, title:^(Visual Pinball - Backglass)$
+
+# DMD/Score
+windowrule = workspace 3, title:DMD
+windowrule = move 45% 75%, title:DMD
+windowrule = workspace 3, title:^(Visual Pinball - Score)$
+windowrule = move 45% 75%, title:^(Visual Pinball - Score)$
+
+# Screenshot window
+windowrule = float, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
+windowrule = center, initialClass:^(ASAPCabinetFE)$, initialTitle:^(VPX Screenshot)$
+windowrule = float, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
+windowrule = center, class:^(ASAPCabinetFE)$, title:^(VPX Screenshot)$
+```
+</details>
 
 ### Media sizing
 
@@ -202,9 +238,28 @@ While in screenshot mode, press **S** again to capture the visible screens (play
 
 Finished capturing? Press **Q** to exit screenshot mode and close the table.
 
-### Generate Videos
+### Generate Videos (<img src="https://cdn.simpleicons.org/debian/CE0056" alt="Debian" width="15"/> Debian)
 
 If still images aren't enough, you can use the `generate_media.sh` tool to record videos instead! Simply run `generate_media.sh --missing`. Depending on the size of your collection, this process might take some time, so feel free to take a break while it works.
+
+> [!IMPORTANT]
+> Make sure your paths are properly configured before generating media.
+
+**1.** Use the screenshot tool to take planned screenshots
+
+Start the table in "Screenshot Mode" (default: s) and follow the on-screen instructions.
+
+**2.** Use the generator to record your screen and create media (PNGs or MP4s) for the frontend, saved to paths specified in `settings.json`.
+```sh
+./generate_media.sh --help
+```
+
+**3.** Use the missing media tool to find those sneaky tables without art.
+```sh
+./missing_media.sh --help
+```
+>[!WARNING]
+>Use __--vpx-version__ depending on your setup, ex: `./generate_media.sh --vpx-version 10.8.1 -d -f`
 
 ## Tweaking Stuff with the Configuration Menu
 
