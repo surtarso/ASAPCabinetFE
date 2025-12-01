@@ -4,29 +4,31 @@ TODO [NEW]-> Feature/Idea
      [!]  -> Important/Attention
       -   -> General/Logic
 
-WHAT DID I GET INTO:
-[fuck] matchmaking all dbs for unified master DB
-[shit] unify file scan and vpin scan (w/ vpxtool toggle) single pass!
-[master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
-    - ship unified DB?
-
 FIX:
 - flatpak
 - add failsafe when there is no audio (card)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
 for 1.3.0
+
+WHAT DID I GET INTO:
+[fuck] matchmaking all dbs for unified master DB
+[shit] unify file scan and vpin scan (w/ vpxtool toggle) single pass!
+[master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
+    - ship unified DB?
+
 - finish advanced menu database updater
 - Topper window size was not saving, not changing. stuck. (media size ok)
     - ok it was just 'use vpinballx ini' option turned on.
     - it was confusing and looked like a bug, need feedback for users.
 
-- panels are split now, need to reformulate them:
+- panels are split now, need to reformulate them: (waiting on new DB...)
     - [ED]: complete metadata, everything + all media.
     - [FE]: basic (best) info + flyers only. optional fields
 
-- [ED] spreadsheet keyboard navigation
+- [ED] spreadsheet keyboard navigation (polish)
 - [ED] gray on all white '-' (eyesore)
+- add new vars to settings menu w/ clear names etc
 
 QOL:
 - [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)
