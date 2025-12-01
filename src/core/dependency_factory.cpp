@@ -22,7 +22,7 @@
 #include "capture/screenshot_manager.h"
 #include "keybinds/keybind_manager.h"
 #include "keybinds/input_manager.h"
-#include "data/asapcab/asap_index_manager.h"
+#include "data/asapcab/asapcab_index_manager.h"
 #include "launcher/table_launcher.h"
 #include "log/logging.h"
 

@@ -237,6 +237,7 @@ struct Settings {
     std::string vpxtoolIndex = "vpxtool_index.json"; //filename (not path)
 
     std::string indexPath = "data/asapcab_index.json";
+    std::string mainDbPath = "data/asapcab_database.json";
     std::string previewCacheDir = "data/cache/preview_thumbs";
 
     std::string vbsHashPath = "data/cache/hashes.json";
@@ -249,6 +250,9 @@ struct Settings {
     std::string lbdbZipUrl = "https://gamesdb.launchbox-app.com/Metadata.zip";
     std::string lbdbZipPath = "data/cache/Metadata.zip";
     std::string lbdbPath = "data/cache/launchbox_pinball.json";
+
+    std::string ipdbPath = "data/cache/ipdbdatabase.json";
+    std::string ipdbUrl = "https://raw.githubusercontent.com/xantari/Ipdb.Database/master/Ipdb.Database/Database/ipdbdatabase.json";
 
     int screenshotWait = 4; // 0-60
     float configUIWidth = 0.7f;   // defaults in ConfigUI::drawGUI(), these are for FE config panel
@@ -303,7 +307,8 @@ struct Settings {
             // Other internal/external paths
             "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
             "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
-            "vpinmdbPath", "mainCacheDir", "lbdbPath", "lbdbZipPath"
+            "vpinmdbPath", "mainCacheDir", "lbdbPath", "lbdbZipPath",
+            "mainDbPath", "ipdbPath",
         };
 
         // Iterate through the list and resolve each path
@@ -334,6 +339,8 @@ struct Settings {
             else if (field == "mainCacheDir") mainCacheDir = resolvePath(mainCacheDir, exeDir);
             else if (field == "lbdbPath") lbdbPath = resolvePath(lbdbPath, exeDir);
             else if (field == "lbdbZipPath") lbdbZipPath = resolvePath(lbdbZipPath, exeDir);
+            else if (field == "mainDbPath") mainDbPath = resolvePath(mainDbPath, exeDir);
+            else if (field == "ipdbPath") ipdbPath = resolvePath(ipdbPath, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -579,7 +586,10 @@ private:
                 {"lbdbImgUrl", s.lbdbImgUrl},
                 {"lbdbZipUrl", s.lbdbZipUrl},
                 {"lbdbPath", s.lbdbPath},
-                {"lbdbZipPath", s.lbdbZipPath}
+                {"lbdbZipPath", s.lbdbZipPath},
+                {"mainDbPath", s.mainDbPath},
+                {"ipdbPath", s.ipdbPath},
+                {"ipdbUrl", s.ipdbUrl}
             }},
             {"Editor", {
                 {"showTableTooltips", s.showTableTooltips},
@@ -811,6 +821,9 @@ private:
         s.lbdbZipUrl = j.value("Internal", nlohmann::json{}).value("lbdbZipUrl", s.lbdbZipUrl);
         s.lbdbPath = j.value("Internal", nlohmann::json{}).value("lbdbPath", s.lbdbPath);
         s.lbdbZipPath = j.value("Internal", nlohmann::json{}).value("lbdbZipPath", s.lbdbZipPath);
+        s.mainDbPath = j.value("Internal", nlohmann::json{}).value("mainDbPath", s.mainDbPath);
+        s.ipdbPath = j.value("Internal", nlohmann::json{}).value("ipdbPath", s.ipdbPath);
+        s.ipdbUrl = j.value("Internal", nlohmann::json{}).value("ipdbUrl", s.ipdbUrl);
 
         // Editor
         s.showTableTooltips = j.value("Editor", nlohmann::json{}).value("showTableTooltips", s.showTableTooltips);
@@ -1025,6 +1038,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"previewCacheDir", {Settings::ReloadType::None, "Relative path to the Editor metadata preview cache dir."}},
 
     {"indexPath", {Settings::ReloadType::None, "Full path to the main table index file."}},
+    {"mainDbPath", {Settings::ReloadType::None, "Full path to the main database file."}},
     {"screenshotWait", {Settings::ReloadType::None, "Seconds to wait for visible windows when using the screenshot tool."}},
     {"configUIWidth", {Settings::ReloadType::None, "Configuration UI width (fraction of screen)."}},
     {"configUIHeight", {Settings::ReloadType::None, "Configuration UI height (fraction of screen)."}},
@@ -1035,14 +1049,17 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"vbsHashPath", {Settings::ReloadType::None, "Relative path to the table VBS script hashes for patching."}},
     {"vpxPatchesUrl", {Settings::ReloadType::None, "URL for vpx standalone script hashes file."}},
 
-    {"vpinmdbPath", {Settings::ReloadType::None, "Relative path to the VPin Media Database file for image downloading."}},
+    {"vpinmdbPath", {Settings::ReloadType::None, "Relative path to the VPin Media Database file."}},
     {"vpinmdbUrl", {Settings::ReloadType::None, "URL for the VPin Media Database file."}},
 
     {"lbdbImgUrl", {Settings::ReloadType::None, "URL for Launchbox Image Download."}},
     {"lbdbZipUrl", {Settings::ReloadType::None, "URL for the Launchbox Database file."}},
 
-    {"lbdbPath", {Settings::ReloadType::None, "Relative path to the Launchbox Database JSON for image downloading."}},
+    {"lbdbPath", {Settings::ReloadType::None, "Relative path to the Launchbox Database file."}},
     {"lbdbZipPath", {Settings::ReloadType::None, "Relative path to the Launchbox Main Database file."}},
+
+    {"ipdbPath", {Settings::ReloadType::None, "Relative path to the Internet Pinball Database file."}},
+    {"ipdbUrl", {Settings::ReloadType::None, "URL for the Internet Pinball Database file."}},
 
     // Editor
     {"showTableTooltips", {Settings::ReloadType::None, "Show/Hide the table metadata tooltips on editor.\nHold CTRL to hide tooltips"}},

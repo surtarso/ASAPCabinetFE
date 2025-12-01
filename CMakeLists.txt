@@ -290,8 +290,12 @@ set(SOURCES
     src/core/ui/modal_dialog.cpp
     src/core/ui/playfield_overlay.cpp
     # data
-    src/data/asapcab/asap_index_manager.cpp
+    src/data/asapcab/asapcab_index_manager.cpp
+    src/data/asapcab/asapcab_database_manager.cpp
     src/data/asapcab/table_override_manager.cpp
+    src/data/ipdb/ipdb_downloader.cpp
+    src/data/ipdb/ipdb_loader.cpp
+    src/data/ipdb/ipdb_updater.cpp
     src/data/lbdb/lbdb_builder.cpp
     src/data/lbdb/lbdb_loader.cpp
     src/data/lbdb/lbdb_updater.cpp

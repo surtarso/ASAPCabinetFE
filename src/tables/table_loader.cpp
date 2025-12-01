@@ -18,7 +18,7 @@
 #include "table_patcher.h"
 #include "vpinmdb/vpinmdb_scanner.h"
 #include "launchboxdb/lbdb_scanner.h"
-#include "data/asapcab/asap_index_manager.h"
+#include "data/asapcab/asapcab_index_manager.h"
 #include "data/vpsdb/vps_database_client.h"
 #include "log/logging.h"
 #include "nlohmann/json.hpp"

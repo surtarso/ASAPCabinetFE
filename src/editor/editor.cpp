@@ -2,7 +2,7 @@
 #include "log/logging.h"
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
-#include "data/asapcab/asap_index_manager.h"
+#include "data/asapcab/asapcab_index_manager.h"
 #include "editor/ui/metadata_view.h"
 #include "tables/table_loader.h"
 #include "tables/table_patcher.h"
