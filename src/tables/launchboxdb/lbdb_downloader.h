@@ -1,7 +1,7 @@
 // src/tables/launchboxdb/lbdb_downloader.h
 #pragma once
 #include "config/settings.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "core/ui/loading_progress.h"
 #include <string>
 #include <optional>

@@ -12,8 +12,8 @@
 #ifndef TABLE_OVERRIDE_EDITOR_H
 #define TABLE_OVERRIDE_EDITOR_H
 
-#include "tables/table_data.h"
-#include "table_override_manager.h"
+#include "data/table_data.h"
+#include "data/asapcab/table_override_manager.h"
 #include <map>
 #include <string>
 

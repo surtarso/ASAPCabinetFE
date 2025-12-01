@@ -16,7 +16,7 @@
 #include "render/iasset_manager.h"
 #include "sound/isound_manager.h"
 #include "config/iconfig_service.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "capture/iscreenshot_manager.h"
 #include "config/ui/config_ui.h"
 #include "core/iwindow_manager.h"

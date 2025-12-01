@@ -1,4 +1,4 @@
-#include "metadata_panel.h"
+#include "panels/metadata_display/metadata_panel.h"
 #include <filesystem>
 #include <cmath>
 #include <algorithm>

@@ -11,8 +11,8 @@
 #ifndef IWINDOW_MANAGER_H
 #define IWINDOW_MANAGER_H
 
-#include <SDL2/SDL.h>
 #include "config/settings.h"
+#include <SDL2/SDL.h>
 
 /**
  * @class IWindowManager

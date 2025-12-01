@@ -11,15 +11,15 @@
  * it skips all scanning and processing, loading only from asapcab_index.json for faster startup.
  */
 
-#include "table_loader.h"
-#include "asap_index_manager.h"
 #include "file_scanner.h"
+#include "table_loader.h"
+#include "table_patcher.h"
 #include "vpin_scanner.h"
 #include "vpxtool_scanner.h"
 #include "vpinmdb/vpinmdb_client.h"
 #include "launchboxdb/lbdb_downloader.h"
-#include "vpsdb/vps_database_client.h"
-#include "table_patcher.h"
+#include "data/asapcab/asap_index_manager.h"
+#include "data/vpsdb/vps_database_client.h"
 #include "log/logging.h"
 #include "nlohmann/json.hpp"
 #include <algorithm>

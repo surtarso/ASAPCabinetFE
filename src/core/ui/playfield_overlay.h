@@ -2,7 +2,7 @@
 #define PLAYFIELD_OVERLAY_H
 
 #include "imgui.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "config/iconfig_service.h"
 #include "core/iwindow_manager.h"
 #include "render/iasset_manager.h"

@@ -1,6 +1,6 @@
 #include "editor/ui/editor_header.h"
 #include "editor/header_actions.h"
-#include "tables/launchboxdb/lbdb_builder.h"
+#include "data/lbdb/lbdb_builder.h"
 #include <thread>
 #include <imgui.h>
 #include <filesystem>

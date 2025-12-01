@@ -11,10 +11,10 @@
 #ifndef ASAP_INDEX_MANAGER_H
 #define ASAP_INDEX_MANAGER_H
 
-#include "table_data.h"
-#include "itable_callbacks.h"
-#include "config/settings.h"
 #include "core/ui/loading_progress.h"
+#include "config/settings.h"
+#include "data/table_data.h"
+#include "tables/itable_callbacks.h"
 #include <vector>
 
 /**

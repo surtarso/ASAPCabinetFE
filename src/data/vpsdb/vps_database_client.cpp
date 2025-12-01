@@ -10,7 +10,7 @@
  * settings (e.g., update frequency or matchmaking rules) in the future.
  */
 
-#include "vps_database_client.h"
+#include "data/vpsdb/vps_database_client.h"
 #include "log/logging.h"
 
 VpsDatabaseClient::VpsDatabaseClient(const Settings& settings)

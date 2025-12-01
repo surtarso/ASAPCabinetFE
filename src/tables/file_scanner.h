@@ -13,7 +13,7 @@
 #ifndef FILE_SCANNER_H
 #define FILE_SCANNER_H
 
-#include "table_data.h"
+#include "data/table_data.h"
 #include "config/settings.h"
 #include "core/ui/loading_progress.h"
 #include <vector>
@@ -46,7 +46,7 @@ public:
      * @param existingTables Optional vector of existing TableData for incremental scanning.
      * @return A vector of TableData objects representing the scanned tables.
      */
-    static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr, 
+    static std::vector<TableData> scan(const Settings& settings, LoadingProgress* progress = nullptr,
                                        const std::vector<TableData>* existingTables = nullptr);
 private:
     static const std::vector<std::string> MANUFACTURERS_LOWERCASE;

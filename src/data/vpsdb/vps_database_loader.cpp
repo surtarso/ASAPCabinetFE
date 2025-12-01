@@ -9,7 +9,7 @@
  * for custom validation rules (e.g., additional JSON structure checks) in the future.
  */
 
-#include "vps_database_loader.h"
+#include "data/vpsdb/vps_database_loader.h"
 #include <filesystem>
 #include <fstream>
 #include "log/logging.h"

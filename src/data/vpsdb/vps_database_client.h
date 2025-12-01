@@ -13,10 +13,10 @@
 #define VPS_DATABASE_CLIENT_H // Header guard to prevent multiple inclusions
 
 #include <string> // For std::string to handle file paths
-#include "tables/table_data.h" // Structure for storing table data
-#include "vps_database_loader.h" // Class for loading the VPS database
-#include "vps_database_scanner.h" // Class for matchmaking table data with VPS data
-#include "vps_database_updater.h" // Class for updating the VPS database
+#include "data/table_data.h" // Structure for storing table data
+#include "data/vpsdb/vps_database_loader.h" // Class for loading the VPS database
+#include "tables/vps_database_scanner.h" // Class for matchmaking table data with VPS data
+#include "data/vpsdb/vps_database_updater.h" // Class for updating the VPS database
 #include "core/ui/loading_progress.h" // Structure for tracking progress
 
 /**

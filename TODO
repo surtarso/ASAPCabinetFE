@@ -1,22 +1,33 @@
-TODO
+TODO [NEW]-> Feature/Idea
+     [ED] -> Editor Specifics
+     [FE] -> Frontend Specifics
+     [!]  -> Important/Attention
+      -   -> General/Logic
 
 FIX:
 - flatpak
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
 for 1.3.0
-
-- Topper window size not saving, not changing. stuck. (media size ok)
+- Topper window size was not saving, not changing. stuck. (media size ok)
     - ok it was just 'use vpinballx ini' option turned on.
     - it was confusing and looked like a bug, need feedback for users.
 
 - panels are split now, need to reformulate them:
-    - editor: complete metadata, everything + all media.
-    - frontend: basic (best) indo + flyers only.
+    - [ED]: complete metadata, everything + all media.
+    - [FE]: basic (best) info + flyers only. optional fields
 
 - [ED] spreadsheet keyboard navigation
+- [ED] add all ID's no name tooltip
+- [ED] gray on all white '-' (eyesore)
+- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips
 
 QOL:
+- improve all matchmaking (slow vs fast(current) modes?)
+- some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
+- add ipdb to the mix, change ids to ID_xxx (from xxxID)
+- (maybe) create a "fixed" correlation table of ID's (vpsdb, ipdb, launchbox)
+- prompt user on media download (when unmatched/unsure, give options to chose)
 - update header docs and user manual
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
@@ -31,6 +42,7 @@ On hold:
 - refactor the monoliths... interfaces, templates, factories...
 - refactor editor tooltips to centralized helpers
 - refactor lots of shit to centralized helpers
+- abstract matchmaking process to re-use
 - organize current utils (maybe center data in data/ folder?)
 - [!] add single table scan (all, selectable)
 - add multi launchers (other emulators, other versions of vpx w.e.) '+' user add + dropdown

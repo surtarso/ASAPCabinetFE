@@ -2,7 +2,7 @@
 #define VPSDB_CATALOG_JSON_H
 
 #include "vpsdb_metadata.h"
-#include "vps_database_client.h"
+#include "data/vpsdb/vps_database_client.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <string>

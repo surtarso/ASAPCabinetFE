@@ -11,7 +11,7 @@
 #ifndef ITABLE_CALLBACKS_H
 #define ITABLE_CALLBACKS_H
 
-#include "table_data.h"
+#include "data/table_data.h"
 #include "config/settings.h"
 #include "core/ui/loading_progress.h"
 #include <vector>

@@ -8,7 +8,7 @@
 #ifndef ITABLE_LAUNCHER_H
 #define ITABLE_LAUNCHER_H
 
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include <string>
 #include <utility>
 #include <functional>

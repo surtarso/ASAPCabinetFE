@@ -10,7 +10,7 @@
  * configUI enhancements (e.g., custom URLs or frequency settings) in the future.
  */
 
-#include "vps_database_updater.h"
+#include "data/vpsdb/vps_database_updater.h"
 #include <curl/curl.h>
 #include <filesystem>
 #include <nlohmann/json.hpp>

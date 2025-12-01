@@ -1,11 +1,11 @@
 #ifndef ITABLE_LOADER_H
 #define ITABLE_LOADER_H
 
+#include "core/ui/loading_progress.h"
+#include "config/settings.h"
+#include "data/table_data.h"
 #include <vector>
 #include <map>
-#include "table_data.h"
-#include "config/settings.h"
-#include "core/ui/loading_progress.h"
 
 /**
  * @brief Interface for loading table data.

@@ -6,7 +6,7 @@
 #include <functional>
 #include "config/iconfig_service.h" // for IConfigService interface
 #include "launcher/itable_launcher.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "tables/itable_callbacks.h"  // to call save() after updating stats
 
 /**

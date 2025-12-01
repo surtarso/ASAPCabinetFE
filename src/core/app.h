@@ -20,31 +20,31 @@
 #include <condition_variable>
 #include <SDL_events.h>
 #include "iapp.h"
+#include "iapp_callbacks.h"
+#include "dependency_factory.h"
+#include "iwindow_manager.h"
+#include "joystick_manager.h"
+#include "capture/iscreenshot_manager.h"
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
+#include "data/asapcab/table_override_manager.h"
+#include "data/table_data.h"
 #include "keybinds/iinput_manager.h"
 #include "render/irenderer.h"
 #include "render/iasset_manager.h"
 #include "launcher/itable_launcher.h"
 #include "tables/itable_loader.h"
 #include "tables/itable_callbacks.h"
-#include "tables/table_data.h"
-#include "tables/overrides/table_override_editor.h"
-#include "tables/overrides/table_override_manager.h"
-#include "tables/vpsdb/vpsdb_catalog_manager.h"
-#include "tables/vpsdb/vpsdb_catalog_table.h" // Added for VpsdbJsonLoader
+#include "panels/override_editor/table_override_editor.h"
+#include "panels/vpsdb_catalog/vpsdb_catalog_manager.h"
+#include "panels/vpsdb_catalog/vpsdb_catalog_table.h" // Added for VpsdbJsonLoader
 #include "sound/isound_manager.h"
-#include "capture/iscreenshot_manager.h"
-#include "iwindow_manager.h"
-#include "joystick_manager.h"
 #include "ui/playfield_overlay.h"
 #include "ui/imgui_manager.h"
-#include "dependency_factory.h"
-#include "iapp_callbacks.h"
 #include "ui/loading_progress.h"
 #include "ui/loading_screen.h"
-#include "version.h"
 #include "utils/version_checker.h"
+#include "version.h"
 
 struct Mix_Chunk;
 

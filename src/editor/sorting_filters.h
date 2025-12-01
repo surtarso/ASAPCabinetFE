@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include <vector>
 #include <string>
 

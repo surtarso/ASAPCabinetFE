@@ -1,5 +1,5 @@
 #include "playfield_overlay.h"
-#include "metadata_panel.h"
+#include "panels/metadata_display/metadata_panel.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <SDL.h>

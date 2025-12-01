@@ -22,7 +22,7 @@
 #include "capture/screenshot_manager.h"
 #include "keybinds/keybind_manager.h"
 #include "keybinds/input_manager.h"
-#include "tables/asap_index_manager.h"
+#include "data/asapcab/asap_index_manager.h"
 #include "launcher/table_launcher.h"
 #include "log/logging.h"
 
@@ -74,12 +74,12 @@ std::unique_ptr<ImGuiManager> DependencyFactory::createImGuiManager(IWindowManag
  * @param soundManager The sound manager for handling audio assets.
  * @return A unique pointer to an IAssetManager instance.
  */
-std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
+std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowManager* windowManager, TTF_Font* font,
                                                                     IConfigService* configService,
-                                                                    [[maybe_unused]] size_t index, 
+                                                                    [[maybe_unused]] size_t index,
                                                                     [[maybe_unused]] const std::vector<TableData>& tables,
                                                                     ISoundManager* soundManager) {
-    auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(), 
+    auto assets = std::make_unique<AssetManager>(windowManager->getPlayfieldRenderer(),
                                                  windowManager->getBackglassRenderer(),
                                                  windowManager->getDMDRenderer(),
                                                  windowManager->getTopperRenderer(),
@@ -99,7 +99,7 @@ std::unique_ptr<IAssetManager> DependencyFactory::createAssetManager(IWindowMana
  * @return A unique pointer to a Renderer instance.
  */
 std::unique_ptr<IRenderer> DependencyFactory::createRenderer(IWindowManager* windowManager) {
-    return std::make_unique<Renderer>(windowManager->getPlayfieldRenderer(), 
+    return std::make_unique<Renderer>(windowManager->getPlayfieldRenderer(),
                                       windowManager->getBackglassRenderer(),
                                       windowManager->getDMDRenderer(),
                                       windowManager->getTopperRenderer());
@@ -116,7 +116,7 @@ std::unique_ptr<IRenderer> DependencyFactory::createRenderer(IWindowManager* win
  */
 std::unique_ptr<ISoundManager> DependencyFactory::createSoundManager(const Settings& settings) {
     auto sound = std::make_unique<PulseAudioPlayer>(settings);
-    sound->loadSounds(); 
+    sound->loadSounds();
     return sound;
 }
 
@@ -145,7 +145,7 @@ std::unique_ptr<IConfigService> DependencyFactory::createConfigService(
  * @return A unique pointer to an IScreenshotManager instance.
  */
 std::unique_ptr<IScreenshotManager> DependencyFactory::createScreenshotManager(const std::string& exeDir,
-                                                                                IConfigService* configService, 
+                                                                                IConfigService* configService,
                                                                                 IKeybindProvider* keybindProvider,
                                                                                 ISoundManager* soundManager) {
     return std::make_unique<ScreenshotManager>(exeDir, configService, keybindProvider, soundManager);
@@ -177,8 +177,8 @@ std::unique_ptr<IInputManager> DependencyFactory::createInputManager(IKeybindPro
  * @param showConfig Reference to the configuration UI visibility flag.
  * @return A unique pointer to a ConfigUI instance.
  */
-std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-                                                            IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
+std::unique_ptr<ConfigUI> DependencyFactory::createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
+                                                            IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables,
                                                             App* app, bool& showConfig) {
     return std::make_unique<ConfigUI>(configService, keybindProvider, assets, currentIndex, tables, app, showConfig, false);
 }

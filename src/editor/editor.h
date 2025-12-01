@@ -3,12 +3,12 @@
 #include "editor/ui/editor_ui.h"
 #include "core/iapp.h"
 #include "core/dependency_factory.h"
-#include "launcher/itable_launcher.h"
-#include "tables/itable_callbacks.h"
-#include "tables/overrides/table_override_manager.h"
-#include "tables/overrides/table_override_editor.h"
 #include "core/ui/loading_progress.h"
 #include "core/ui/loading_screen.h"
+#include "data/asapcab/table_override_manager.h"
+#include "panels/override_editor/table_override_editor.h"
+#include "launcher/itable_launcher.h"
+#include "tables/itable_callbacks.h"
 #include "sound/isound_manager.h"
 #include <SDL2/SDL.h>
 #include <thread>

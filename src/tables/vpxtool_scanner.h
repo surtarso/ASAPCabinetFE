@@ -1,9 +1,9 @@
 #ifndef VPXTOOL_SCANNER_H
 #define VPXTOOL_SCANNER_H
 
-#include "table_data.h"
-#include "config/settings.h"
 #include "core/ui/loading_progress.h"
+#include "config/settings.h"
+#include "data/table_data.h"
 #include <vector>
 #include <string>
 

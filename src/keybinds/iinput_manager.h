@@ -11,7 +11,7 @@
 #ifndef IINPUT_MANAGER_H
 #define IINPUT_MANAGER_H
 
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "tables/itable_callbacks.h"
 #include "launcher/itable_launcher.h"
 #include "core/ui/launch_popup.h"

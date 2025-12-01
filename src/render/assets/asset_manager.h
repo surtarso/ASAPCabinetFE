@@ -2,7 +2,7 @@
 #define ASSET_MANAGER_H
 
 #include "tables/itable_loader.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "sound/isound_manager.h"
 #include "render/iasset_manager.h"
 #include "render/ivideo_player.h"

@@ -4,7 +4,7 @@
 #include "editor/sorting_filters.h"
 #include "config/iconfig_service.h"
 #include "tables/itable_loader.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "tables/itable_callbacks.h"
 #include "launcher/itable_launcher.h"
 #include "capture/iscreenshot_manager.h"

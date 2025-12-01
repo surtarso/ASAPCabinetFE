@@ -2,7 +2,7 @@
 #define METADATA_VIEW_H
 
 #include "imgui.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "config/settings.h"
 #include "utils/media_preview.h"
 #include "sound/isound_manager.h"  // ← include ISoundManager

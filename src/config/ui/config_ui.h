@@ -13,7 +13,7 @@
 #include "config/iconfig_service.h"
 #include "keybinds/ikeybind_provider.h"
 #include "render/iasset_manager.h"
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include "core/iapp_callbacks.h"
 #include "isection_renderer.h"
 #include "section_config.h"

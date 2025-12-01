@@ -1,9 +1,9 @@
 #ifndef TABLE_PATCHER_H
 #define TABLE_PATCHER_H
 
-#include "table_data.h"
-#include "config/settings.h"
 #include "core/ui/loading_progress.h"
+#include "config/settings.h"
+#include "data/table_data.h"
 #include <nlohmann/json.hpp>
 #include <string>
 #include <vector>

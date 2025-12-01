@@ -12,7 +12,7 @@
 #ifndef TABLE_OVERRIDE_MANAGER_H
 #define TABLE_OVERRIDE_MANAGER_H
 
-#include "tables/table_data.h"
+#include "data/table_data.h"
 #include <nlohmann/json.hpp>
 #include <string>
 
@@ -55,7 +55,7 @@ public:
      * @param overrides Map of field names to edited values.
      */
     void saveOverride(const TableData& table, const std::map<std::string, std::string>& overrides) const;
-    
+
     /**
      * @brief Deletes the override JSON file for a table if it exists.
      *

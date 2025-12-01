@@ -287,9 +287,15 @@ set(SOURCES
     src/core/window_manager.cpp
     src/core/ui/imgui_manager.cpp
     src/core/ui/loading_screen.cpp
-    src/core/ui/metadata_panel.cpp
     src/core/ui/modal_dialog.cpp
     src/core/ui/playfield_overlay.cpp
+    # data
+    src/data/asapcab/asap_index_manager.cpp
+    src/data/asapcab/table_override_manager.cpp
+    src/data/lbdb/lbdb_builder.cpp
+    src/data/vpsdb/vps_database_client.cpp
+    src/data/vpsdb/vps_database_loader.cpp
+    src/data/vpsdb/vps_database_updater.cpp
     # launcher
     src/launcher/table_launcher.cpp
     # sound
@@ -321,6 +327,13 @@ set(SOURCES
     #l log
     src/log/logger.cpp
     src/log/logger_proxy.cpp
+    # panels
+    src/panels/metadata_display/metadata_panel.cpp
+    src/panels/override_editor/table_override_editor.cpp
+    src/panels/vpsdb_catalog/vpsdb_catalog_manager.cpp
+    src/panels/vpsdb_catalog/vpsdb_catalog_image.cpp
+    src/panels/vpsdb_catalog/vpsdb_catalog_json.cpp
+    src/panels/vpsdb_catalog/vpsdb_catalog_table.cpp
     # render
     src/render/renderer.cpp
     src/render/assets/asset_manager.cpp
@@ -335,28 +348,17 @@ set(SOURCES
     src/render/video_players/sdl_draw/embedded_fallbacks.cpp
     src/render/video_players/vlc/vlc_player.cpp
     # tables
-    src/tables/asap_index_manager.cpp
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
     src/tables/table_patcher.cpp
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
-    src/tables/launchboxdb/lbdb_builder.cpp
+    src/tables/vps_database_scanner.cpp
     src/tables/launchboxdb/lbdb_downloader.cpp
     src/tables/launchboxdb/lbdb_image.cpp
-    src/tables/overrides/table_override_manager.cpp
-    src/tables/overrides/table_override_editor.cpp
     src/tables/vpinmdb/vpinmdb_client.cpp
     src/tables/vpinmdb/vpinmdb_downloader.cpp
     src/tables/vpinmdb/vpinmdb_image.cpp
-    src/tables/vpsdb/vps_database_scanner.cpp
-    src/tables/vpsdb/vps_database_client.cpp
-    src/tables/vpsdb/vps_database_loader.cpp
-    src/tables/vpsdb/vps_database_updater.cpp
-    src/tables/vpsdb/vpsdb_catalog_manager.cpp
-    src/tables/vpsdb/vpsdb_catalog_image.cpp
-    src/tables/vpsdb/vpsdb_catalog_json.cpp
-    src/tables/vpsdb/vpsdb_catalog_table.cpp
     # utils
     src/utils/media_preview.cpp
     src/utils/os_utils.cpp

@@ -17,17 +17,17 @@
 #include <memory>
 #include <string> // For std::string in file paths and settings
 #include "iwindow_manager.h" // Interface for window management
-#include "ui/imgui_manager.h" // GUI manager for ImGui rendering
-#include "render/iasset_manager.h" // Interface for asset management
-#include "tables/table_data.h" // Table data structure for asset loading
-#include "render/irenderer.h" // Renderer for playfield, backglass, and DMD
-#include "keybinds/iinput_manager.h" // Input manager for keybind handling
-#include "config/iconfig_service.h" // Interface for configuration service
-#include "config/ui/config_ui.h" // Configuration UI for user settings
 #include "capture/iscreenshot_manager.h" // Interface for screenshot management
-#include "sound/isound_manager.h" // Interface for sound management
+#include "config/ui/config_ui.h" // Configuration UI for user settings
+#include "config/iconfig_service.h" // Interface for configuration service
+#include "data/table_data.h" // Table data structure for asset loading
+#include "keybinds/iinput_manager.h" // Input manager for keybind handling
 #include "keybinds/ikeybind_provider.h"
 #include "launcher/itable_launcher.h" // Interface for launching tables
+#include "render/iasset_manager.h" // Interface for asset management
+#include "render/irenderer.h" // Renderer for playfield, backglass, and DMD
+#include "sound/isound_manager.h" // Interface for sound management
+#include "ui/imgui_manager.h" // GUI manager for ImGui rendering
 
 /**
  * @class App
@@ -96,8 +96,8 @@ public:
      * @param soundManager The sound manager for handling audio assets.
      * @return A unique pointer to an IAssetManager instance.
      */
-    static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font, 
-                                                            IConfigService* configService, size_t index, 
+    static std::unique_ptr<IAssetManager> createAssetManager(IWindowManager* windowManager, TTF_Font* font,
+                                                            IConfigService* configService, size_t index,
                                                             const std::vector<TableData>& tables,
                                                             ISoundManager* soundManager);
 
@@ -149,7 +149,7 @@ public:
      * @param soundManager The sound manager for screenshot-related sounds.
      * @return A unique pointer to an IScreenshotManager instance.
      */
-    static std::unique_ptr<IScreenshotManager> createScreenshotManager(const std::string& exeDir, IConfigService* configService, 
+    static std::unique_ptr<IScreenshotManager> createScreenshotManager(const std::string& exeDir, IConfigService* configService,
                                                                       IKeybindProvider* keybindProvider, ISoundManager* soundManager);
 
     /**
@@ -176,11 +176,11 @@ public:
      * @param showConfig Reference to the configuration UI visibility flag.
      * @return A unique pointer to a ConfigUI instance.
      */
-    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider, 
-                                                    IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables, 
+    static std::unique_ptr<ConfigUI> createConfigUI(IConfigService* configService, IKeybindProvider* keybindProvider,
+                                                    IAssetManager* assets, size_t* currentIndex, std::vector<TableData>* tables,
                                                     App* app, bool& showConfig);
 
-    static std::unique_ptr<ITableLauncher> createTableLauncher(IConfigService* configService);                                                    
+    static std::unique_ptr<ITableLauncher> createTableLauncher(IConfigService* configService);
 
     /**
      * @brief Creates a table callbacks instance.

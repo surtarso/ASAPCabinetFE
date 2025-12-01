@@ -1,7 +1,7 @@
 // src/tables/launchboxdb/lbdb_downloader.cpp
 #include "lbdb_downloader.h"
 #include "lbdb_image.h"
-#include "lbdb_builder.h"
+#include "data/lbdb/lbdb_builder.h"
 #include "utils/string_utils.h"
 #include "utils/manufacturers.h"
 #include "log/logging.h"
