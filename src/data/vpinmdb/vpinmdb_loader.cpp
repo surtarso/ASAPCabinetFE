@@ -3,8 +3,8 @@
  *
  * Implementation of VpinMdbLoader::load().
  * Reads the JSON file from disk, parses it with nlohmann::json and returns it.
- * Preserves original logging and progress messages; exceptions propagate for caller to handle,
- * which matches previous constructor behavior (constructor returned early on parse error).
+ * Logging and progress messages; exceptions propagate for caller to handle.
+ *
  */
 
 #include "vpinmdb_loader.h"

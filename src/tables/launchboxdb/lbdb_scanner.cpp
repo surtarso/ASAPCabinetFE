@@ -1,11 +1,13 @@
 // src/tables/launchboxdb/lbdb_downloader.cpp
-#include "lbdb_downloader.h"
+#include "lbdb_scanner.h"
 #include "lbdb_image.h"
 #include "data/lbdb/lbdb_builder.h"
-#include "utils/string_utils.h"
+#include "data/lbdb/lbdb_updater.h"
+#include "data/lbdb/lbdb_loader.h"
 #include "data/manufacturers.h"
-#include "log/logging.h"
 #include "data/vpinmdb/vpinmdb_downloader.h"
+#include "utils/string_utils.h"
+#include "log/logging.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <sstream>
@@ -115,7 +117,7 @@ static void buildLbIndex(const nlohmann::json& db, const StringUtils& util) {
 }
 
 
-std::optional<std::string> LbdbDownloader::findBestMatch(const TableData& table) {
+std::optional<std::string> LbdbScanner::findBestMatch(const TableData& table) {
     static StringUtils util;
     static nlohmann::json db;
 
@@ -266,43 +268,46 @@ std::optional<std::string> LbdbDownloader::findBestMatch(const TableData& table)
 
 
 // ------------------------------------------------------
-// downloadArtForTables()
+// scanForMedia()
 // now using findBestMatch()
 // ------------------------------------------------------
-void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
-    fs::path jsonPath = settings_.lbdbPath;
+void LbdbScanner::scanForMedia(std::vector<TableData>& tables) {
 
-    if (!settings_.downloadFlyersImage && !settings_.downloadTopperLogoImage){
-        LOG_WARN("No Media selected to download, skipping Launchbox Database.");
+    if (!settings_.downloadFlyersImage && !settings_.downloadTopperLogoImage) {
+        LOG_WARN("No LaunchBox media enabled. Skipping LBDB.");
         return;
     }
 
-    // Auto-build database on first run
-    if (!fs::exists(jsonPath)) {
-        LOG_WARN("LaunchBox DB missing — building automatically...");
-
-        bool success = launchbox::build_pinball_database(settings_);
-        if (!success) {
-            LOG_ERROR("LaunchBox DB auto-build failed");
+    // ---------------------------
+    // Ensure DB exists (new)
+    // ---------------------------
+    {
+        data::lbdb::LbdbUpdater updater(settings_, progress_);
+        if (!updater.ensureAvailable()) {
+            LOG_ERROR("LaunchBox DB not available");
             return;
         }
-        LOG_INFO("LaunchBox DB auto-build succeeded");
     }
 
-    // Load full DB once in static JSON
+    // ---------------------------
+    // Load DB (new)
+    // ---------------------------
     static nlohmann::json pinballDb;
     if (pinballDb.empty()) {
-        LOG_INFO("Loading launchbox_pinball.json...");
-        std::ifstream f(jsonPath);
-        if (!f.is_open()) {
-            LOG_ERROR("Failed to open launchbox_pinball.json");
+        data::lbdb::LbdbLoader loader(settings_, progress_);
+        pinballDb = loader.load();
+        if (pinballDb.empty()) {
+            LOG_ERROR("LaunchBox DB failed to load");
             return;
         }
-        try { f >> pinballDb; }
-        catch (...) {
-            LOG_ERROR("Invalid JSON in launchbox_pinball.json");
-            return;
-        }
+    }
+
+    // -----------------------------------
+    // Build index once (existing behavior)
+    // -----------------------------------
+    static StringUtils util;
+    if (!s_indexBuilt) {
+        buildLbIndex(pinballDb, util);
     }
 
     // Process each table
@@ -345,7 +350,7 @@ void LbdbDownloader::downloadArtForTables(std::vector<TableData>& tables) {
 }
 
 // Classic DMD logo (always just gameId.png)
-void LbdbDownloader::downloadClearLogo(const std::string& gameId,
+void LbdbScanner::downloadClearLogo(const std::string& gameId,
                                        TableData& table,
                                        const nlohmann::json& db) {
     auto it = std::find_if(db.begin(), db.end(),
@@ -396,7 +401,7 @@ void LbdbDownloader::downloadClearLogo(const std::string& gameId,
 }
 
 
-void LbdbDownloader::downloadFlyersFromJson(const std::string& gameId,
+void LbdbScanner::downloadFlyersFromJson(const std::string& gameId,
                                             TableData& table,
                                             const nlohmann::json& db) {
     auto it = std::find_if(db.begin(), db.end(),

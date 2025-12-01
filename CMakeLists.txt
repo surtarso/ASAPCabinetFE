@@ -293,6 +293,8 @@ set(SOURCES
     src/data/asapcab/asap_index_manager.cpp
     src/data/asapcab/table_override_manager.cpp
     src/data/lbdb/lbdb_builder.cpp
+    src/data/lbdb/lbdb_loader.cpp
+    src/data/lbdb/lbdb_updater.cpp
     src/data/vpsdb/vps_database_client.cpp
     src/data/vpsdb/vps_database_loader.cpp
     src/data/vpsdb/vps_database_updater.cpp
@@ -357,9 +359,9 @@ set(SOURCES
     src/tables/vpin_scanner.cpp
     src/tables/vpxtool_scanner.cpp
     src/tables/vps_database_scanner.cpp
-    src/tables/launchboxdb/lbdb_downloader.cpp
+    src/tables/launchboxdb/lbdb_scanner.cpp
     src/tables/launchboxdb/lbdb_image.cpp
-    src/tables/vpinmdb/vpinmdb_client.cpp
+    src/tables/vpinmdb/vpinmdb_scanner.cpp
     src/tables/vpinmdb/vpinmdb_image.cpp
     # utils
     src/utils/media_preview.cpp

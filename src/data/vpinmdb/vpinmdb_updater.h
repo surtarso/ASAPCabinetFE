@@ -2,12 +2,9 @@
 /**
  * vpinmdb_updater.h
  *
- * Small, single-responsibility class extracted from VpinMdbClient constructor.
  * Responsible only for ensuring the local vpinmdb.json exists (and downloading it
- * if missing). Uses existing vpinmdb::downloadFile(url, path) call so no network
- * implementation changes are required.
+ * if missing). Uses existing vpinmdb::downloadFile(url, path) call.
  *
- * This class intentionally DOES NOT parse JSON or perform any media logic.
  */
 
 #include <string>

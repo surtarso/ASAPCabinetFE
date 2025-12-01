@@ -6,12 +6,12 @@
 #include <string>
 #include <optional>
 
-class LbdbDownloader {
+class LbdbScanner {
 public:
-    LbdbDownloader(const Settings& s, LoadingProgress* p = nullptr)
+    LbdbScanner(const Settings& s, LoadingProgress* p = nullptr)
         : settings_(s), progress_(p) {}
 
-    void downloadArtForTables(std::vector<TableData>& tables);
+    void scanForMedia(std::vector<TableData>& tables);
 
 private:
     const Settings& settings_;

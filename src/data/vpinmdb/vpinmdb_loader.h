@@ -5,7 +5,6 @@
  * Small loader that reads local vpinmdb.json and returns nlohmann::json.
  * Throws std::runtime_error on fatal I/O or parsing errors.
  *
- * This class intentionally DOES NOT download anything.
  */
 
 #include <nlohmann/json.hpp>

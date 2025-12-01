@@ -1,14 +1,14 @@
 /**
  * @file vpinmdb_client.h
- * @brief Defines the VpinMdbClient class for orchestrating table media downloads in ASAPCabinetFE.
+ * @brief Defines the VpinMdbScanner class for orchestrating table media downloads in ASAPCabinetFE.
  *
- * This header provides the VpinMdbClient class, which coordinates downloading media
+ * This header provides the VpinMdbScanner class, which coordinates downloading media
  * from vpinmdb.json for tables with valid VPSDB IDs. It uses vpinmdb_downloader and vpinmdb_image
  * components, integrating with TableLoader, Settings, and LoadingProgress.
  */
 
-#ifndef VPINMDB_CLIENT_H
-#define VPINMDB_CLIENT_H
+#ifndef VPINMDB_SCANNER_H
+#define VPINMDB_SCANNER_H
 
 #include "config/settings.h"
 #include "data/vpinmdb/vpinmdb_updater.h"
@@ -25,22 +25,22 @@
 
 namespace fs = std::filesystem;
 
-class VpinMdbClient {
+class VpinMdbScanner {
 public:
     /**
-     * @brief Constructs a VpinMdbClient instance.
+     * @brief Constructs a VpinMdbScanner instance.
      * @param settings Application settings controlling download behavior.
      * @param progress Optional pointer to LoadingProgress for updates.
      * @param mediaDb Optional pre-loaded vpinmdb.json (if null, loads from data/vpinmdb.json).
      */
-    VpinMdbClient(const Settings& settings, LoadingProgress* progress = nullptr, const nlohmann::json* mediaDb = nullptr);
+    VpinMdbScanner(const Settings& settings, LoadingProgress* progress = nullptr, const nlohmann::json* mediaDb = nullptr);
 
     /**
      * @brief Downloads media for a list of tables and updates their media paths.
      * @param tables Vector of TableData to process (updated with new media paths).
      * @return True if any media was successfully downloaded.
      */
-    bool downloadMedia(std::vector<TableData>& tables);
+    bool scanForMedia(std::vector<TableData>& tables);
 
 private:
     const Settings& settings_; ///< Reference to application settings.
@@ -55,4 +55,4 @@ private:
     std::string selectResolution() const;
 };
 
-#endif // VPINMDB_CLIENT_H
+#endif // VPINMDB_SCANNER_H

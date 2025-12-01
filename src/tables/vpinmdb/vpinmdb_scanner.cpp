@@ -1,19 +1,19 @@
 /**
  * @file vpinmdb_client.cpp
- * @brief Implements the VpinMdbClient class for orchestrating table media downloads.
+ * @brief Implements the VpinMdbScanner class for orchestrating table media downloads.
  *
  * This file provides the implementation for coordinating media downloads using vpinmdb_downloader
  * and vpinmdb_image components, parsing vpinmdb.json, and updating TableData media paths.
  */
 
-#include "vpinmdb_client.h"
+#include "vpinmdb_scanner.h"
 #include "vpinmdb_image.h"
 #include <fstream>
 #include <future>
 
 namespace fs = std::filesystem;
 
-VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress, const nlohmann::json* mediaDb)
+VpinMdbScanner::VpinMdbScanner(const Settings& settings, LoadingProgress* progress, const nlohmann::json* mediaDb)
     : settings_(settings), progress_(progress) {
     fs::path dbPath = settings_.vpinmdbPath;
     const std::string url = settings_.vpinmdbUrl;
@@ -38,7 +38,7 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
     }
 }
 
-bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
+bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
     if (!settings_.fetchMediaOnline) {
         LOG_WARN("Media downloading disabled (fetchMediaOnline=false)");
         if (progress_) {
@@ -245,7 +245,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
     return downloadedCount > 0;
 }
 
-std::string VpinMdbClient::selectResolution() const {
+std::string VpinMdbScanner::selectResolution() const {
     int maxPlayfieldDim = std::max(settings_.playfieldWindowWidth, settings_.playfieldWindowHeight);
     int maxBackglassDim = std::max(settings_.backglassWindowWidth, settings_.backglassWindowHeight);
     int maxDmdDim = std::max(settings_.dmdWindowWidth, settings_.dmdWindowHeight);

@@ -3,11 +3,8 @@
  *
  * Implementation of VpinMdbUpdater.
  *
- * This is a near-line-for-line move of the download/directory logic from the previous
- * VpinMdbClient constructor. Behavior is preserved: if the local path doesn't exist it
+ * This is the download/directory logic, if the local path doesn't exist it
  * attempts to create parent directories and download the file using vpinmdb::downloadFile.
- *
- * No JSON parsing or other logic happens here.
  */
 
 #include "vpinmdb_updater.h"

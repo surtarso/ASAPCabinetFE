@@ -11,13 +11,13 @@
  * it skips all scanning and processing, loading only from asapcab_index.json for faster startup.
  */
 
-#include "file_scanner.h"
 #include "table_loader.h"
-#include "table_patcher.h"
+#include "file_scanner.h"
 #include "vpin_scanner.h"
 #include "vpxtool_scanner.h"
-#include "vpinmdb/vpinmdb_client.h"
-#include "launchboxdb/lbdb_downloader.h"
+#include "table_patcher.h"
+#include "vpinmdb/vpinmdb_scanner.h"
+#include "launchboxdb/lbdb_scanner.h"
 #include "data/asapcab/asap_index_manager.h"
 #include "data/vpsdb/vps_database_client.h"
 #include "log/logging.h"
@@ -433,12 +433,12 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
 
         // NON PARALLEL VERSION:
         {
-            VpinMdbClient vpdownloader(settings, progress);
-            vpdownloader.downloadMedia(tables);
+            VpinMdbScanner vpdownloader(settings, progress);
+            vpdownloader.scanForMedia(tables);
         }
         {
-            LbdbDownloader lbdownloader(settings, progress);
-            lbdownloader.downloadArtForTables(tables);
+            LbdbScanner lbdownloader(settings, progress);
+            lbdownloader.scanForMedia(tables);
         }
 
         // Might be the cause of missing ID bug, on trials.
@@ -447,14 +447,14 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
 
         // // 1. VPinMediaDB — your existing, proven downloader
         // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
-        //     VpinMdbClient vpdownloader(settings, progress);
-        //     vpdownloader.downloadMedia(tables);
+        //     VpinMdbScanner vpdownloader(settings, progress);
+        //     vpdownloader.scanForMedia(tables);
         // }));
 
         // // 2. LaunchboxDB — new, for clear logos + flyers
         // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
-        //     LbdbDownloader lbdownloader(settings, progress);
-        //     lbdownloader.downloadArtForTables(tables);
+        //     LbdbScanner lbdownloader(settings, progress);
+        //     lbdownloader.scanForMedia(tables);
         // }));
 
         // // Wait for both — UI stays smooth
