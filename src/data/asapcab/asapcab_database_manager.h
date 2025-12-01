@@ -23,8 +23,7 @@ namespace data::asapcabdb {
 
 class AsapCabDatabaseManager {
 public:
-    AsapCabDatabaseManager(const Settings& settings,
-                           LoadingProgress* progress);
+    AsapCabDatabaseManager(const Settings& settings);
 
     // Ensures asapcab_database.json is present.
     bool ensureAvailable();
@@ -41,9 +40,7 @@ private:
 
 private:
     const Settings settings_;
-    LoadingProgress* progress_;
-
-    std::filesystem::path masterPath_;
+    std::filesystem::path asapcabDbPath_;
 };
 
 } // namespace data::asapcabdb

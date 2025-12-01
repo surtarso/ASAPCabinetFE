@@ -34,8 +34,15 @@ nlohmann::json IpdbLoader::load() {
         return {};
     }
 
-    LOG_INFO("IPDB loaded successfully (" + std::to_string(db.size()) + " entries)");
-    return db;
+    if (!db.contains("Data") || !db["Data"].is_array()) {
+        LOG_ERROR("IPDB JSON missing 'Data' array");
+        return {};
+    }
+
+    size_t count = db["Data"].size();
+    LOG_INFO("IPDB loaded successfully (" + std::to_string(count) + " entries)");
+
+    return db["Data"];
 }
 
 } // namespace data::ipdb

@@ -1,6 +1,7 @@
 #include "editor/ui/editor_header.h"
 #include "editor/header_actions.h"
 #include "data/lbdb/lbdb_builder.h"
+#include "data/asapcab/asapcab_database_manager.h"
 #include <thread>
 #include <imgui.h>
 #include <filesystem>
@@ -66,6 +67,7 @@ void drawHeader(EditorUI& ui) {
 
     // ------------------------------ ADVANCED DROPMENU ------------------------------
     if (ImGui::BeginCombo("##advanced_combo", "Advanced", ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
+        Settings& settings = ui.configService()->getMutableSettings();
 
         ImGui::TextDisabled("Selected Table Actions");
         if (ImGui::BeginMenu("VPXTool")) {
@@ -117,6 +119,8 @@ void drawHeader(EditorUI& ui) {
             }
         }
 
+        ImGui::Separator();
+
         // --- Delete submenu
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
         if (ImGui::BeginMenu("Delete")) {
@@ -128,11 +132,109 @@ void drawHeader(EditorUI& ui) {
         }
         ImGui::PopStyleColor();
 
+        // --- Maintenance submenu (colored title)
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.7f, 0.3f, 0.85f));
+        if (ImGui::BeginMenu("Maintenance")) {
+
+            // ----------------------------
+            // CACHE SUBMENU
+            // ----------------------------
+            if (ImGui::BeginMenu("Cache")) {
+
+                // CLEAR ALL CACHES
+                if (ImGui::MenuItem("Clear All Caches")) {
+                    header_actions::clearAllCaches(ui);
+                }
+                // CLEAR PREVIEW CACHE
+                if (ImGui::MenuItem("Clear Metadata Preview Cache")) {
+                    header_actions::clearPreviewCache(ui);
+                }
+                // CLEAR VPSDB CACHE
+                if (ImGui::MenuItem("Clear VPSDB Image Cache")) {
+                    header_actions::clearVpsDbImageCache(ui);
+                }
+
+                ImGui::EndMenu(); // Cache
+            }
+
+            // ----------------------------
+            // DATABASE SUBMENU
+            // ----------------------------
+            if (ImGui::BeginMenu("Database")) {
+
+                // REBUILD MAIN DATABASE
+                if (ImGui::MenuItem("Rebuild AsapCab's Main Database")) {
+                    // Immediately shows modal so the user knows it's working
+                    ui.modal().openProgress(
+                        "Building AsapCab's DB",
+                        "Working...\nThis may take several minutes."
+                    );
+                    // Background thread to avoid blocking ImGui
+                    std::thread([settings, &ui] {
+
+                        // Create manager instance
+                        data::asapcabdb::AsapCabDatabaseManager dbManager(settings);
+
+                        bool success = dbManager.ensureAvailable();
+                        // Close modal when finished
+                        ui.modal().finishProgress("AsapCab's Database is now available!");
+
+                        if (!success) {
+                            LOG_ERROR("AsapCab's DB rebuild failed");
+                        } else {
+                            LOG_INFO("AsapCab's DB rebuild complete");
+                        }
+                    }).detach();
+                }
+
+                // REBUILD LAUNCHBOX DB
+                if (ImGui::MenuItem("Rebuild Launchbox DB")) {
+                    // Immediately shows modal so the user knows it's working
+                    ui.modal().openProgress(
+                        "Building LaunchBox DB",
+                        "Working...\nThis may take a few minutes."
+                    );
+                    // Background thread to avoid blocking ImGui
+                    std::thread([settings, &ui] {
+
+                        bool success = launchbox::build_pinball_database(
+                            settings,
+                            nullptr // no progress callback
+                        );
+                        // Close modal when finished
+                        ui.modal().finishProgress("Launchbox Database is now available!");
+
+                        if (!success) {
+                            LOG_ERROR("LaunchBox DB rebuild failed");
+                        } else {
+                            LOG_INFO("LaunchBox DB rebuild complete");
+                        }
+                    }).detach();
+                }
+                // REBUILD IPDB (STUB)
+                if (ImGui::MenuItem("Rebuild Internet Pinball DB")) {
+                    // data::ipdb ensureAvailable()
+                    LOG_INFO("Stub: Rebuild IPDB triggered");
+                }
+                // REBUILD VPSDB (STUB)
+                if (ImGui::MenuItem("Update Virtual Pinball Spreadsheet DB")) {
+                    // VpsDatabaseUpdater::fetchIfNeeded()
+                    LOG_INFO("Stub: Update VPSDB triggered");
+                }
+                // REBUILD VPINMDB (STUB)
+                if (ImGui::MenuItem("Update VPin Media DB")) {
+                    // data::vpinmdb ensureAvailable()
+                    LOG_INFO("Stub: Update VPinMDB triggered");
+                }
+                ImGui::EndMenu(); // Database
+            }
+            ImGui::EndMenu(); // Maintenance
+        }
+        ImGui::PopStyleColor();
         ImGui::Separator();
 
         // ------------------------------
         ImGui::TextDisabled("System");
-        Settings& settings = ui.configService()->getMutableSettings();
 
         // toggle table tooltips
         bool showTooltips = settings.showTableTooltips;
@@ -153,44 +255,6 @@ void drawHeader(EditorUI& ui) {
             ui.configService()->saveConfig();
         }
 
-        ImGui::Separator();
-
-        // --- Maintenance submenu
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f,0.7f,0.3f,0.85f)); //yellow
-        if (ImGui::BeginMenu("Maintenance")) {
-            // CLEAR CACHE
-            if (ImGui::MenuItem("Clear All Caches")) {
-                header_actions::clearAllCaches(ui);
-            }
-            // REBUILD LAUNCHBOX DATABASE
-            if (ImGui::MenuItem("(Re)Build Launchbox DB")) {
-
-                // show blocking modal immediately
-                ui.modal().openProgress("Building LaunchBox DB",
-                                        "Working...\nThis may take a few minutes.");
-
-                std::thread([settings, &ui] { // capture ui to close modal later
-
-                    bool success = launchbox::build_pinball_database(
-                        settings,
-                        nullptr // no progress callback
-                    );
-
-                    // close modal when finished
-                    ui.modal().finishProgress("Launchbox Database is now available!");
-
-                    if (!success) {
-                        LOG_ERROR("LaunchBox DB rebuild failed");
-                    } else {
-                        LOG_INFO("LaunchBox DB rebuild complete");
-                    }
-
-                }).detach();
-            }
-
-            ImGui::EndMenu();
-        }
-        ImGui::PopStyleColor();
         ImGui::Separator();
 
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.20f, 0.65f, 0.30f, 1.0f));  //green

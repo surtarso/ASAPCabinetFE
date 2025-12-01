@@ -45,7 +45,17 @@ namespace header_actions {
     void vpxtoolRun(EditorUI& ui, const std::string& command);
 
     /**
-     * @brief Clears all caches (textures, metadata, temp, etc.)
+     * @brief Clears preview cache
+     */
+    void clearVpsDbImageCache(EditorUI& ui);
+
+    /**
+     * @brief Clears preview cache
+     */
+    void clearPreviewCache(EditorUI& ui);
+
+    /**
+     * @brief Clears all caches (textures, metadata, dbs, etc.)
      */
     void clearAllCaches(EditorUI& ui);
 

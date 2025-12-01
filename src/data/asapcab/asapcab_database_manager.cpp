@@ -22,17 +22,15 @@ using json = nlohmann::json;
 
 namespace data::asapcabdb {
 
-AsapCabDatabaseManager::AsapCabDatabaseManager(const Settings& settings,
-                                               LoadingProgress* progress)
-    : settings_(settings),
-      progress_(progress)
+AsapCabDatabaseManager::AsapCabDatabaseManager(const Settings& settings)
+    : settings_(settings)
 {
     // keep using the Settings-backed path; it's trivial to change later
-    masterPath_ = settings_.mainDbPath;
+    asapcabDbPath_ = settings_.mainDbPath;
 }
 
 bool AsapCabDatabaseManager::ensureAvailable() {
-    if (fs::exists(masterPath_) && isUpToDate()) {
+    if (fs::exists(asapcabDbPath_) && isUpToDate()) {
         LOG_INFO("Master ASAPCab DB exists and appears up to date");
         return true;
     }
@@ -48,14 +46,14 @@ bool AsapCabDatabaseManager::isUpToDate() const {
 }
 
 json AsapCabDatabaseManager::load() {
-    if (!fs::exists(masterPath_)) {
-        LOG_ERROR("Master DB missing: " + masterPath_.string());
+    if (!fs::exists(asapcabDbPath_)) {
+        LOG_ERROR("Master DB missing: " + asapcabDbPath_.string());
         return {};
     }
 
-    std::ifstream f(masterPath_);
+    std::ifstream f(asapcabDbPath_);
     if (!f.is_open()) {
-        LOG_ERROR("Cannot open master DB: " + masterPath_.string());
+        LOG_ERROR("Cannot open master DB: " + asapcabDbPath_.string());
         return {};
     }
 
@@ -64,7 +62,7 @@ json AsapCabDatabaseManager::load() {
         f >> j;
         return j;
     } catch (...) {
-        LOG_ERROR("Master DB JSON invalid: " + masterPath_.string());
+        LOG_ERROR("Master DB JSON invalid: " + asapcabDbPath_.string());
         return {};
     }
 }
@@ -81,7 +79,7 @@ bool AsapCabDatabaseManager::build() {
         // VpsDatabaseUpdater expects the vpsdb path string (see vps_database_updater.h/.cpp).
         VpsDatabaseUpdater vpsUpdater(settings_.vpsDbPath);
         // fetchIfNeeded expects (lastUpdatedPath, updateFrequency, LoadingProgress*)
-        if (!vpsUpdater.fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, progress_)) {
+        if (!vpsUpdater.fetchIfNeeded(settings_.vpsDbLastUpdated, settings_.vpsDbUpdateFrequency, nullptr)) {
             LOG_ERROR("VPS DB unavailable");
             return false;
         }
@@ -89,7 +87,7 @@ bool AsapCabDatabaseManager::build() {
 
     // LaunchBox (lbdb) - namespaced updater that takes Settings + progress
     {
-        data::lbdb::LbdbUpdater lbUpdater(settings_, progress_);
+        data::lbdb::LbdbUpdater lbUpdater(settings_, nullptr);
         if (!lbUpdater.ensureAvailable()) {
             LOG_ERROR("LaunchBox DB unavailable");
             return false;
@@ -98,7 +96,7 @@ bool AsapCabDatabaseManager::build() {
 
     // VPinMDB (media DB) - namespaced updater
     {
-        data::vpinmdb::VpinMdbUpdater vpinUpdater(settings_, progress_);
+        data::vpinmdb::VpinMdbUpdater vpinUpdater(settings_, nullptr);
         if (!vpinUpdater.ensureAvailable()) {
             LOG_ERROR("VPinMDB unavailable");
             return false;
@@ -107,7 +105,7 @@ bool AsapCabDatabaseManager::build() {
 
     // IPDB - namespaced updater (data::ipdb::IpdbUpdater)
     {
-        data::ipdb::IpdbUpdater ipdbUpdater(settings_, progress_);
+        data::ipdb::IpdbUpdater ipdbUpdater(settings_, nullptr);
         if (!ipdbUpdater.ensureAvailable()) {
             LOG_ERROR("IPDB unavailable");
             return false;
@@ -125,7 +123,7 @@ bool AsapCabDatabaseManager::build() {
     // VPS loader (path-based)
     {
         VpsDatabaseLoader loader(settings_.vpsDbPath);
-        if (!loader.load(progress_)) {
+        if (!loader.load(nullptr)) {
             LOG_ERROR("Failed to load VPSDB");
             return false;
         }
@@ -134,7 +132,7 @@ bool AsapCabDatabaseManager::build() {
 
     // LaunchBox loader
     {
-        data::lbdb::LbdbLoader loader(settings_, progress_);
+        data::lbdb::LbdbLoader loader(settings_, nullptr);
         db_lbdb = loader.load();
         if (db_lbdb.empty()) {
             LOG_ERROR("Failed to load LaunchBox DB");
@@ -144,7 +142,7 @@ bool AsapCabDatabaseManager::build() {
 
     // VPinMDB loader
     {
-        data::vpinmdb::VpinMdbLoader loader(settings_, progress_);
+        data::vpinmdb::VpinMdbLoader loader(settings_, nullptr);
         try {
             db_vpinmdb = loader.load();
         } catch (const std::exception& e) {
@@ -159,7 +157,7 @@ bool AsapCabDatabaseManager::build() {
 
     // IPDB loader
     {
-        data::ipdb::IpdbLoader loader(settings_, progress_);
+        data::ipdb::IpdbLoader loader(settings_, nullptr);
         db_ipdb = loader.load();
         if (db_ipdb.empty()) {
             LOG_ERROR("Failed to load IPDB");
@@ -202,8 +200,8 @@ bool AsapCabDatabaseManager::build() {
 
 bool AsapCabDatabaseManager::writeMasterJson(const json& j) {
     try {
-        fs::create_directories(masterPath_.parent_path());
-        std::ofstream f(masterPath_);
+        fs::create_directories(asapcabDbPath_.parent_path());
+        std::ofstream f(asapcabDbPath_);
         if (!f.is_open()) return false;
         f << j.dump(2);
         return true;

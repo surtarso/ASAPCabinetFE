@@ -298,10 +298,88 @@ void vpxtoolRun(EditorUI& ui, const std::string& commandWithSub) {
 }
 
 // ---------------------------------------------------------------------------
-// Clear Caches (placeholder)
+// Clear VPSDB Image Cache
 // ---------------------------------------------------------------------------
-    void clearAllCaches(EditorUI& ui) {
-        LOG_WARN("Clear All Caches requested [Confirmation]");
+void clearVpsDbImageCache(EditorUI& ui) {
+    LOG_WARN("Clear VpsDb Cache requested [Confirmation]");
+    ui.modal().openConfirm(
+        "Clear VpsDB Image Cache?",
+        "This will remove all cached data. Continue?",
+        {"Yes", "No"},
+        [&ui](const std::string& choice) {
+            if (choice == "Yes") {
+                try {
+                    const std::string cachePath = ui.configService()->getSettings().vpsdbImageCacheDir;
+
+                    if (!std::filesystem::exists(cachePath)) {
+                        LOG_INFO("Cache folder doesn't exist — nothing to clear.");
+                        ui.modal().openInfo("Cache Cleared", "No cache folder found.");
+                        return;
+                    }
+
+                    std::filesystem::remove_all(cachePath);
+                    LOG_INFO("Successfully deleted cache folder: " + cachePath);
+
+                    // Optional: recreate empty folder
+                    std::filesystem::create_directories(cachePath);
+
+                    ui.modal().openInfo("Cache Cleared", "All cached data has been deleted.");
+                }
+                catch (const std::exception& e) {
+                    LOG_ERROR("Failed to clear cache: " + std::string(e.what()));
+                    ui.modal().openInfo("Error", "Failed to clear cache.\nCheck permissions or close running apps.");
+                }
+            } else {
+                LOG_INFO("Cache clearing canceled.");
+            }
+        }
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Clear Preview Cache
+// ---------------------------------------------------------------------------
+void clearPreviewCache(EditorUI& ui) {
+    LOG_WARN("Clear Preview Cache requested [Confirmation]");
+    ui.modal().openConfirm(
+        "Clear Preview Cache?",
+        "This will remove all cached data. Continue?",
+        {"Yes", "No"},
+        [&ui](const std::string& choice) {
+            if (choice == "Yes") {
+                try {
+                    const std::string cachePath = ui.configService()->getSettings().previewCacheDir;
+
+                    if (!std::filesystem::exists(cachePath)) {
+                        LOG_INFO("Cache folder doesn't exist — nothing to clear.");
+                        ui.modal().openInfo("Cache Cleared", "No cache folder found.");
+                        return;
+                    }
+
+                    std::filesystem::remove_all(cachePath);
+                    LOG_INFO("Successfully deleted cache folder: " + cachePath);
+
+                    // Optional: recreate empty folder
+                    std::filesystem::create_directories(cachePath);
+
+                    ui.modal().openInfo("Cache Cleared", "All cached data has been deleted.");
+                }
+                catch (const std::exception& e) {
+                    LOG_ERROR("Failed to clear cache: " + std::string(e.what()));
+                    ui.modal().openInfo("Error", "Failed to clear cache.\nCheck permissions or close running apps.");
+                }
+            } else {
+                LOG_INFO("Cache clearing canceled.");
+            }
+        }
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Clear Caches
+// ---------------------------------------------------------------------------
+void clearAllCaches(EditorUI& ui) {
+    LOG_WARN("Clear All Caches requested [Confirmation]");
     ui.modal().openConfirm(
         "Clear Cache?",
         "This will remove all cached data. Continue?",
