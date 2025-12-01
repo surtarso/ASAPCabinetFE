@@ -15,7 +15,7 @@
 
 namespace fs = std::filesystem;
 
-namespace vpinmdb {
+namespace data::filedownloader {
 
 /**
  * @brief Downloads a single file using libcurl.

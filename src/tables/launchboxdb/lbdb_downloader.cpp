@@ -5,8 +5,7 @@
 #include "utils/string_utils.h"
 #include "data/manufacturers.h"
 #include "log/logging.h"
-#include "tables/vpinmdb/vpinmdb_downloader.h"
-#include "tables/vpinmdb/vpinmdb_image.h"
+#include "data/vpinmdb/vpinmdb_downloader.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <sstream>
@@ -381,7 +380,7 @@ void LbdbDownloader::downloadClearLogo(const std::string& gameId,
         return;
     }
 
-    if (!vpinmdb::downloadFile(url, output)) {
+    if (!data::filedownloader::downloadFile(url, output)) {
         LOG_ERROR("Failed to download clear logo → " + url);
         return;
     }
@@ -421,7 +420,7 @@ void LbdbDownloader::downloadFlyersFromJson(const std::string& gameId,
         }
 
         std::string url = settings_.lbdbImgUrl + filename;  // lbdbImgUrl = "https://images.launchbox-app.com/";
-        return vpinmdb::downloadFile(url, localPath);
+        return data::filedownloader::downloadFile(url, localPath);
     };
 
     if (images.contains("Advertisement Flyer - Front") &&

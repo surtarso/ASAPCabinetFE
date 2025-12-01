@@ -7,7 +7,6 @@
  */
 
 #include "vpinmdb_client.h"
-#include "vpinmdb_downloader.h"
 #include "vpinmdb_image.h"
 #include <fstream>
 #include <future>
@@ -24,63 +23,18 @@ VpinMdbClient::VpinMdbClient(const Settings& settings, LoadingProgress* progress
         return;
     }
 
-    if (!fs::exists(dbPath)) {
-        if (!fs::exists(dbPath.parent_path())) {
-            try {
-                fs::create_directories(dbPath.parent_path());
-                LOG_INFO("Created directory " + dbPath.parent_path().string());
-                if (progress_) {
-                    std::lock_guard<std::mutex> lock(progress_->mutex);
-                    progress_->logMessages.push_back("Created directory " + dbPath.parent_path().string());
-                }
-            } catch (const fs::filesystem_error& e) {
-                LOG_ERROR("Failed to create directory " + dbPath.parent_path().string() + ": " + std::string(e.what()));
-                if (progress_) {
-                    std::lock_guard<std::mutex> lock(progress_->mutex);
-                    progress_->logMessages.push_back("Failed to create directory for vpinmdb.json: " + std::string(e.what()));
-                }
-                return;
-            }
-        }
-
-        if (vpinmdb::downloadFile(url, dbPath)) {
-            LOG_INFO("Downloaded VPin Media Database to " + dbPath.string());
-            if (progress_) {
-                std::lock_guard<std::mutex> lock(progress_->mutex);
-                progress_->logMessages.push_back("Downloaded vpinmdb.json to " + dbPath.string());
-            }
-        } else {
-            LOG_ERROR("Failed to download vpinmdb.json from " + url);
-            if (progress_) {
-                std::lock_guard<std::mutex> lock(progress_->mutex);
-                progress_->logMessages.push_back("Failed to download vpinmdb.json");
-            }
-            return;
-        }
-    }
-
-    std::ifstream file(dbPath);
-    if (!file.is_open()) {
-        LOG_ERROR("Failed to open " + dbPath.string());
-        if (progress_) {
-            std::lock_guard<std::mutex> lock(progress_->mutex);
-            progress_->logMessages.push_back("Failed to open vpinmdb.json: " + dbPath.string());
-        }
+    // Delegate download/update to the new updater class
+    data::vpinmdb::VpinMdbUpdater updater(settings_, progress_);
+    if (!updater.ensureAvailable()) {
         return;
     }
+
+    // Delegate JSON loading to loader
+    data::vpinmdb::VpinMdbLoader loader(settings_, progress_);
     try {
-        file >> mediaDb_;
-        LOG_INFO("Loaded VPin Media Database from " + dbPath.string());
-        if (progress_) {
-            std::lock_guard<std::mutex> lock(progress_->mutex);
-            progress_->logMessages.push_back("Loaded vpinmdb.json from " + dbPath.string());
-        }
-    } catch (const std::exception& e) {
-        LOG_ERROR("Failed to parse vpinmdb.json: " + std::string(e.what()));
-        if (progress_) {
-            std::lock_guard<std::mutex> lock(progress_->mutex);
-            progress_->logMessages.push_back("Failed to parse vpinmdb.json: " + std::string(e.what()));
-        }
+        mediaDb_ = loader.load();
+    } catch (const std::exception& /*ex*/) {
+        return;
     }
 }
 
@@ -232,7 +186,7 @@ bool VpinMdbClient::downloadMedia(std::vector<TableData>& tables) {
                     }
                 }
 
-                if (vpinmdb::downloadFile(url, destPath)) {
+                if (data::filedownloader::downloadFile(url, destPath)) {
                     bool isPlayfieldImage = (media.type == "table");
                     bool isVerticalMonitor = settings_.playfieldWindowHeight > settings_.playfieldWindowWidth;
                     bool shouldAttemptRotation = isPlayfieldImage && isVerticalMonitor;

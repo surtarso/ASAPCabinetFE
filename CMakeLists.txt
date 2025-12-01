@@ -296,6 +296,9 @@ set(SOURCES
     src/data/vpsdb/vps_database_client.cpp
     src/data/vpsdb/vps_database_loader.cpp
     src/data/vpsdb/vps_database_updater.cpp
+    src/data/vpinmdb/vpinmdb_downloader.cpp
+    src/data/vpinmdb/vpinmdb_loader.cpp
+    src/data/vpinmdb/vpinmdb_updater.cpp
     # launcher
     src/launcher/table_launcher.cpp
     # sound
@@ -357,7 +360,6 @@ set(SOURCES
     src/tables/launchboxdb/lbdb_downloader.cpp
     src/tables/launchboxdb/lbdb_image.cpp
     src/tables/vpinmdb/vpinmdb_client.cpp
-    src/tables/vpinmdb/vpinmdb_downloader.cpp
     src/tables/vpinmdb/vpinmdb_image.cpp
     # utils
     src/utils/media_preview.cpp

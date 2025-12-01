@@ -11,6 +11,9 @@
 #define VPINMDB_CLIENT_H
 
 #include "config/settings.h"
+#include "data/vpinmdb/vpinmdb_updater.h"
+#include "data/vpinmdb/vpinmdb_loader.h"
+#include "data/vpinmdb/vpinmdb_downloader.h"
 #include "data/table_data.h"
 #include "core/ui/loading_progress.h"
 #include "log/logging.h"
