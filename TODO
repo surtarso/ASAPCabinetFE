@@ -4,6 +4,15 @@ TODO [NEW]-> Feature/Idea
      [!]  -> Important/Attention
       -   -> General/Logic
 
+WHAT DID I GET INTO:
+[fuck] extract downloader/loaders logic from vpin/lbdb to data/
+[fuck] unified central database downloader (urls curl etc)
+[fuck] matchmaking all dbs for unified master DB
+[shit] unify file scan and vpin scan (w/ vpxtool toggle) single pass!
+[master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
+    - ship unified DB
+    - option to rebuild (each/all)
+
 FIX:
 - flatpak
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
@@ -18,11 +27,11 @@ for 1.3.0
     - [FE]: basic (best) info + flyers only. optional fields
 
 - [ED] spreadsheet keyboard navigation
-- [ED] add all ID's no name tooltip
 - [ED] gray on all white '-' (eyesore)
-- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips
 
 QOL:
+- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)
+- [ED] add all ID's no name tooltip
 - improve all matchmaking (slow vs fast(current) modes?)
 - some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
 - add ipdb to the mix, change ids to ID_xxx (from xxxID)
@@ -67,6 +76,7 @@ On hold:
     - check for updates -> self, vpinballx (vpxtool, new std patches?)
     - click to download (maybe easy-install?)
     - notification even if not opened on scheduled check, like a text on adv menu or something
+    - database updaters
 
 
 - [NEW] STATISTICS PANEL
@@ -75,6 +85,7 @@ On hold:
     - most played
     - total playtime for all tables
     - disk space for core files/media files
+    - database ages/size/count
 
 
 - [NEW] MEDIA TOOLS PANEL — BLUEPRINT

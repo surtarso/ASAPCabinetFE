@@ -4,7 +4,7 @@
  */
 
 #include "file_scanner.h"
-#include "utils/manufacturers.h"
+#include "data/manufacturers.h"
 #include "utils/path_utils.h"
 #include "utils/string_utils.h"
 #include "utils/sha_utils.h"

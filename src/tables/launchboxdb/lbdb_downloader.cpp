@@ -3,7 +3,7 @@
 #include "lbdb_image.h"
 #include "data/lbdb/lbdb_builder.h"
 #include "utils/string_utils.h"
-#include "utils/manufacturers.h"
+#include "data/manufacturers.h"
 #include "log/logging.h"
 #include "tables/vpinmdb/vpinmdb_downloader.h"
 #include "tables/vpinmdb/vpinmdb_image.h"
