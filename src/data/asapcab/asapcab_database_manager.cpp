@@ -41,9 +41,9 @@ bool AsapCabDatabaseManager::ensureAvailable() {
 }
 
 bool AsapCabDatabaseManager::isUpToDate() const {
-    // MVP: always false → always rebuild
+    // MVP: always true → never rebuild unless missingn
     // Later: check timestamps or metadata checksums
-    return false;
+    return true;
 }
 
 json AsapCabDatabaseManager::load() {

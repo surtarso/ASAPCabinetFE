@@ -177,7 +177,7 @@ void drawHeader(EditorUI& ui) {
 
                         bool success = dbManager.ensureAvailable();
                         // Close modal when finished
-                        ui.modal().finishProgress("AsapCab's Database is now available!");
+                        ui.modal().finishProgress("AsapCab's Database is now available!"); // TODO: not showing up...
 
                         if (!success) {
                             LOG_ERROR("AsapCab's DB rebuild failed");
