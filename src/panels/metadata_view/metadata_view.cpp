@@ -3,36 +3,27 @@
 #include <cmath>
 #include <algorithm>
 
-void MetadataViewPanel::render(const TableData& currentTable,
-                           int playfieldWidth,
-                           int playfieldHeight,
-                           const Settings& settings)
+void MetadataView::render(const TableData& currentTable,
+                          int playfieldWidth,
+                          int playfieldHeight,
+                          const Settings& settings)
 {
-    // FE version → explicitly forward to the main implementation with uiRenderer = nullptr
     render(currentTable, playfieldWidth, playfieldHeight, settings, nullptr);
 }
 
-void MetadataViewPanel::render(const TableData& currentTable,
-                           int playfieldWidth,
-                           int playfieldHeight,
-                           const Settings& settings,
-                           SDL_Renderer* uiRenderer)
+void MetadataView::render(const TableData& currentTable,
+                          int playfieldWidth,
+                          int playfieldHeight,
+                          const Settings& settings,
+                          SDL_Renderer* uiRenderer)
 {
     ImGuiIO& io = ImGui::GetIO();
-    bool isLandscape = io.DisplaySize.x > io.DisplaySize.y;
+    bool isLandscape = true;
 
-    // Panel sizing
-    float panelWidth  = static_cast<float>(playfieldWidth)  * settings.metadataPanelWidth;
-    float panelHeight = static_cast<float>(playfieldHeight) * settings.metadataPanelHeight;
-    float posX = (static_cast<float>(playfieldWidth)  - panelWidth)  / 2.0f;
-    float posY = (static_cast<float>(playfieldHeight) - panelHeight) / 2.0f;
-
-    if (isLandscape) {
-        posX = 0.0f;
-        posY = 0.0f;
-        panelWidth  = static_cast<float>(playfieldWidth);
-        panelHeight = static_cast<float>(playfieldHeight);
-    }
+    float panelWidth  = static_cast<float>(playfieldWidth);
+    float panelHeight = static_cast<float>(playfieldHeight);
+    float posX = 0.0f;
+    float posY = 0.0f;
 
     ImGui::SetNextWindowPos(ImVec2(posX, posY));
     ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight));
@@ -54,13 +45,10 @@ void MetadataViewPanel::render(const TableData& currentTable,
 
     wasOpen_ = true;
 
-    // --- 1. METADATA TEXT CONTENT DRAWING LAMBDA ---
-    // Contains all the basic info and VPS details.
     auto DrawInfoContent = [&]() {
-        // ======== BASIC TABLE INFO ========
         std::filesystem::path filePath(currentTable.vpxFile);
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "TABLE INFO");
-        ImGui::Text("File Name: %s", filePath.filename().string().c_str());
+        ImGui::Text("File: %s", filePath.filename().string().c_str());
         if (!currentTable.tableName.empty() && currentTable.tableName != filePath.stem().string())
             ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
         if (!currentTable.vpsName.empty())
@@ -92,7 +80,6 @@ void MetadataViewPanel::render(const TableData& currentTable,
         }
         ImGui::Text("Source: %s", currentTable.jsonOwner.c_str());
 
-        // ======== VPSDB DETAILS ========
         if (!currentTable.vpsId.empty() || !currentTable.vpsManufacturer.empty() ||
             !currentTable.vpsYear.empty() || !currentTable.vpsType.empty() ||
             !currentTable.vpsThemes.empty() || !currentTable.vpsDesigners.empty() ||
@@ -117,19 +104,13 @@ void MetadataViewPanel::render(const TableData& currentTable,
         if (!currentTable.vpsFeatures.empty()) ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
         if (!currentTable.vpsFormat.empty()) ImGui::Text("Format: %s", currentTable.vpsFormat.c_str());
 
-        // ADD FLYER IMAGES HERE (shown only in portrait mode)
-
-        // We now call this lambda in both modes, so we keep the condition to prevent showing it in FE.
         if (!currentTable.vpsComment.empty() && isLandscape)
             ImGui::TextWrapped("Comment: %s", currentTable.vpsComment.c_str());
     };
 
-    // --- 2. MEDIA PREVIEW AND AUDIO DRAWING LAMBDA (Used only in Landscape/Editor) ---
     auto DrawMediaContent = [&]() {
-
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "MEDIA PREVIEW");
 
-        // Helper to draw media (image and/or video) side-by-side or stacked
         auto drawMediaPair = [&](const char* label,
                                  const std::string& imagePath, const std::string& videoPath,
                                  bool hasImage, bool hasVideo,
@@ -149,10 +130,9 @@ void MetadataViewPanel::render(const TableData& currentTable,
             const int thumbHeight = 160;
 
             if (sideBySide) {
-                ImGui::BeginGroup(); // Group 1 (Image)
+                ImGui::BeginGroup();
             }
 
-            // --------------------------------- IMAGE PREVIEW ----------------------------------
             if (hasImage) {
                 ImGui::Text("Image:");
                 SDL_Texture* tex = MediaPreview::instance().getThumbnail(uiRenderer, imagePath, thumbHeight);
@@ -167,14 +147,13 @@ void MetadataViewPanel::render(const TableData& currentTable,
                 }
             }
 
-            // --------------------------------- VIDEO PREVIEW -----------------------------------
             if (hasVideo) {
                 if (sideBySide && hasImage) {
                     ImGui::SameLine();
                 }
 
                 if (sideBySide) {
-                    ImGui::BeginGroup(); // Group 2 (Video)
+                    ImGui::BeginGroup();
                 }
 
                 ImGui::Text("Video:");
@@ -190,34 +169,30 @@ void MetadataViewPanel::render(const TableData& currentTable,
                 }
 
                 if (sideBySide) {
-                    ImGui::EndGroup(); // End Group 2
+                    ImGui::EndGroup();
                 }
             }
 
             if (sideBySide) {
-                ImGui::EndGroup(); // End Group 1 (or the outer group)
+                ImGui::EndGroup();
             }
         };
 
-        // ---------------------- Media Layout Configuration ----------------------
-        // Playfield, Backglass, Topper: Side-by-Side
         drawMediaPair("Playfield", currentTable.playfieldImage, currentTable.playfieldVideo,
-                        currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo, true);
+                      currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo, true);
 
         drawMediaPair("Backglass", currentTable.backglassImage, currentTable.backglassVideo,
-                        currentTable.hasBackglassImage, currentTable.hasBackglassVideo, true);
+                      currentTable.hasBackglassImage, currentTable.hasBackglassVideo, true);
 
         drawMediaPair("Topper", currentTable.topperImage, currentTable.topperVideo,
-                        currentTable.hasTopperImage, currentTable.hasTopperVideo, true);
+                      currentTable.hasTopperImage, currentTable.hasTopperVideo, true);
 
-        // DMD: Stacked (since art is "ultrawide")
         drawMediaPair("DMD", currentTable.dmdImage, currentTable.dmdVideo,
-                        currentTable.hasDmdImage, currentTable.hasDmdVideo, false);
+                      currentTable.hasDmdImage, currentTable.hasDmdVideo, false);
 
         drawMediaPair("Flyer", currentTable.flyerFront, currentTable.flyerBack,
-                        currentTable.hasFlyerFront, currentTable.hasFlyerBack, true);
+                      currentTable.hasFlyerFront, currentTable.hasFlyerBack, true);
 
-        // Wheel (stacked)
         if (currentTable.hasWheelImage && uiRenderer) {
             ImGui::Separator();
             ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "Wheel");
@@ -234,32 +209,29 @@ void MetadataViewPanel::render(const TableData& currentTable,
             }
         }
 
-        // --------------------------- AUDIO PREVIEW SECTION ------------------------------------
         if (currentTable.hasTableMusic || currentTable.hasLaunchAudio) {
             ImGui::Separator();
             ImGui::TextColored(ImVec4(1.0f, 0.9f, 0.6f, 1.0f), "AUDIO PREVIEW");
 
-            // Table Music
             if (currentTable.hasTableMusic) {
                 ImGui::Text("Table Music:");
                 ImGui::SameLine();
 
-                if (ImGui::Button("Play##Music")) { // Play
+                if (ImGui::Button("Play##Music")) {
                     if (!currentTable.music.empty() && std::filesystem::exists(currentTable.music))
                         soundManager_->playTableMusic(currentTable.music);
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Stop##Music")) { // Stop
+                if (ImGui::Button("Stop##Music")) {
                     soundManager_->stopMusic();
                 }
             }
 
-            // Launch Audio
             if (currentTable.hasLaunchAudio) {
                 ImGui::Text("Launch Audio:");
                 ImGui::SameLine();
 
-                if (ImGui::Button("Play##Launch")) { // Play
+                if (ImGui::Button("Play##Launch")) {
                     if (!currentTable.launchAudio.empty() && std::filesystem::exists(currentTable.launchAudio))
                         soundManager_->playCustomLaunch(currentTable.launchAudio);
                 }
@@ -267,37 +239,22 @@ void MetadataViewPanel::render(const TableData& currentTable,
         }
     };
 
-    // --- 3. CONDITIONAL RENDERING ---
-    if (isLandscape) {
-        // EDITOR MODE (Landscape: 40/60 Split View)
+    ImGui::Columns(2, "metadata_landscape_split", true);
 
-        // Start two columns (with a visible border)
-        ImGui::Columns(2, "metadata_landscape_split", true);
+    float infoColumnWidth = panelWidth * 0.40f;
+    ImGui::SetColumnWidth(0, infoColumnWidth);
 
-        // Set the width of the first column (e.g., 40% for info, 60% for media)
-        float infoColumnWidth = panelWidth * 0.40f;
-        ImGui::SetColumnWidth(0, infoColumnWidth);
+    ImGui::BeginChild("metadata_info_scroll", ImVec2(0, -1), false, ImGuiWindowFlags_HorizontalScrollbar);
+    DrawInfoContent();
+    ImGui::EndChild();
 
-        // --- COLUMN 1: INFO ---
-        // Use ImGui::BeginChild to allow the info column to scroll independently
-        ImGui::BeginChild("metadata_info_scroll", ImVec2(0, -1), false, ImGuiWindowFlags_HorizontalScrollbar);
-        DrawInfoContent();
-        ImGui::EndChild();
+    ImGui::NextColumn();
 
-        ImGui::NextColumn();
+    ImGui::BeginChild("metadata_media_scroll", ImVec2(0, -1), true, ImGuiWindowFlags_HorizontalScrollbar);
+    DrawMediaContent();
+    ImGui::EndChild();
 
-        // --- COLUMN 2: MEDIA ---
-        // Use ImGui::BeginChild to allow the media column to scroll independently
-        ImGui::BeginChild("metadata_media_scroll", ImVec2(0, -1), true, ImGuiWindowFlags_HorizontalScrollbar);
-        DrawMediaContent();
-        ImGui::EndChild();
-
-        ImGui::Columns(1); // End columns
-    } else {
-        // FRONTEND MODE (Portrait: Simple Stacked Text Only)
-        DrawInfoContent();
-        // Media content is skipped, as DrawMediaContent is only called inside the isLandscape block.
-    }
+    ImGui::Columns(1);
 
     ImGui::End();
 }

@@ -332,7 +332,6 @@ set(SOURCES
     src/editor/ui/editor_header.cpp
     src/editor/ui/editor_body.cpp
     src/editor/ui/editor_footer.cpp
-    src/editor/ui/metadata_view.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp
@@ -340,7 +339,8 @@ set(SOURCES
     src/log/logger.cpp
     src/log/logger_proxy.cpp
     # panels
-    src/panels/metadata_display/metadata_panel.cpp
+    src/panels/metadata_display/metadata_display.cpp
+    src/panels/metadata_view/metadata_view.cpp
     src/panels/override_editor/table_override_editor.cpp
     src/panels/vpsdb_catalog/vpsdb_catalog_manager.cpp
     src/panels/vpsdb_catalog/vpsdb_catalog_image.cpp

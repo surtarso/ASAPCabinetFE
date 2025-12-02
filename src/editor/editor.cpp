@@ -3,7 +3,7 @@
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
 #include "data/asapcab/asapcab_index_manager.h"
-#include "editor/ui/metadata_view.h"
+#include "panels/metadata_view/metadata_view.h"
 #include "tables/table_loader.h"
 #include "tables/table_patcher.h"
 #include "panels/vpsdb_catalog/vpsdb_catalog_manager.h"
@@ -54,7 +54,7 @@ Editor::Editor(const std::string& configPath, const std::string& exeDir)
 
     overrideManager_ = std::make_unique<TableOverrideManager>();
 
-    // Create sound manager for editor (only for MetadataPanel preview)
+    // Create sound manager for editor (only for metadataView preview)
     soundManager_ = DependencyFactory::createSoundManager(config_->getSettings());
 
     // Then pass it to screenshotManager if needed, or leave nullptr if not
@@ -333,7 +333,7 @@ void Editor::mainLoop() {
             // ========================= METADATA VIEW PANEL =========================
             } else if (showMetadataView_) {
 
-                static MetadataViewPanel metadataPanel;
+                static MetadataView metadataView;
 
                 int filteredIndex = editorUI_->selectedIndex();
                 TableData* realTable = nullptr;
@@ -355,8 +355,8 @@ void Editor::mainLoop() {
 
                 int width = 0, height = 0;
                 SDL_GetWindowSize(window_, &width, &height);
-                metadataPanel.setSoundManager(soundManager_.get());
-                metadataPanel.render(*realTable, width, height, settings, renderer_);
+                metadataView.setSoundManager(soundManager_.get());
+                metadataView.render(*realTable, width, height, settings, renderer_);
 
                 // Floating close/edit buttons
                 ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 200.0f,

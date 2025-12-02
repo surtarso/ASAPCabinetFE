@@ -1,5 +1,5 @@
 #include "playfield_overlay.h"
-#include "panels/metadata_display/metadata_panel.h"
+#include "panels/metadata_display/metadata_display.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <SDL.h>
@@ -110,8 +110,8 @@ void PlayfieldOverlay::render() {
     }
 
     if (showMetadataPanel_) {
-        MetadataPanel metadataPanel;
-        metadataPanel.render(tables_->at(*currentIndex_), playfieldWidth, playfieldHeight, configService_->getSettings());
+        MetadataDisplay MetadataDisplay;
+        MetadataDisplay.render(tables_->at(*currentIndex_), playfieldWidth, playfieldHeight, configService_->getSettings());
     }
 
     // Navigation arrows with fade animation

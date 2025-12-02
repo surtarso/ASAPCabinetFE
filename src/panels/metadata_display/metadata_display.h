@@ -7,7 +7,7 @@
 #include "utils/media_preview.h"
 #include "sound/isound_manager.h"  // ← include ISoundManager
 
-class MetadataPanel {
+class MetadataDisplay {
 public:
 
     // Frontend (no renderer → no images)
