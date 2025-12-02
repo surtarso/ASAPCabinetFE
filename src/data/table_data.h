@@ -37,7 +37,7 @@ struct TableData {
     // title is a generic string to be shown on the UI.
     // with filename it uses the filename, with vpin it uses the best
     // of both (for bad metadata), used to match against vpsdb.
-    std::string title;           ///< Table title (from filename).
+    std::string title;           ///< Table title (from filename initially).
     // if all fails we should try to extract these from the file name.
     std::string manufacturer;    ///< Manufacturer from title, vpin/vpxtool or vpsdb, used for sorting.
     std::string year;            ///< Year from title, vpin/vpxtool or vpsdb, used for sorting.
@@ -103,6 +103,8 @@ struct TableData {
     std::string flyerFront;      ///< Path to the static flyer front image.
     std::string flyerBack;       ///< Path to the static flyer back image.
     std::string lbdbID;          ///< lbdb game ID to match against clear logos
+
+    // --------------- Internet Pinball DB METADATA ---------------
 
     // --------------- OPERATIONAL TAGS ------------------
     float matchConfidence = 0.0f;///< Confidence score of match with vpsdb

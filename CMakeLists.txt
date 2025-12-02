@@ -240,7 +240,7 @@ file(MAKE_DIRECTORY "${RUST_TARGET_DIR}")
 
 # # Determine Cargo build profile (debug/release)
 # string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
-# if(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
+# if(CMAKE_BUILD_TYPE_LOWER STREQUAL "DEBUG")
 #     set(CARGO_PROFILE_FLAG "") # Default debug build, no extra flag needed
 #     set(RUST_LIB_SUBDIR "debug")
 # else()
@@ -291,6 +291,7 @@ set(SOURCES
     src/core/ui/playfield_overlay.cpp
     # data
     src/data/asapcab/asapcab_index_manager.cpp
+    src/data/asapcab/asapcab_database_builder.cpp
     src/data/asapcab/asapcab_database_manager.cpp
     src/data/asapcab/table_override_manager.cpp
     src/data/ipdb/ipdb_downloader.cpp
@@ -305,6 +306,8 @@ set(SOURCES
     src/data/vpinmdb/vpinmdb_downloader.cpp
     src/data/vpinmdb/vpinmdb_loader.cpp
     src/data/vpinmdb/vpinmdb_updater.cpp
+    src/data/asapcab/database_matchmaking.cpp
+    src/data/asapcab/database_unifier.cpp
     # launcher
     src/launcher/table_launcher.cpp
     # sound

@@ -1,5 +1,6 @@
 // src/data/asapcab/asapcab_database_manager.cpp
 #include "asapcab_database_manager.h"
+#include "asapcab_database_builder.h"
 #include "log/logging.h"
 
 // Updater / Loader headers (use the concrete APIs present in the repo)
@@ -166,30 +167,19 @@ bool AsapCabDatabaseManager::build() {
     }
 
     // -------------------------
-    // 3) Assemble master JSON (stub: raw copies for now)
+    // 3) Assemble master JSON
     // -------------------------
-    json master;
-    master["source_version"] = {
-        {"vpsdb",      "unknown"},
-        {"lbdb",       "unknown"},
-        {"vpinmdb",    "unknown"},
-        {"ipdb",       "unknown"}
-    };
-
-    // placeholder; matchmaking will come later
-    master["tables"] = json::array();
-
-    master["raw"] = {
-        {"vpsdb", db_vpsdb},
-        {"lbdb", db_lbdb},
-        {"vpinmdb", db_vpinmdb},
-        {"ipdb", db_ipdb}
-    };
+    AsapCabDatabaseBuilder builder;
+    json masterDb = builder.build(db_vpsdb, db_lbdb, db_vpinmdb, db_ipdb);
+    if (!writeMasterJson(masterDb)) {
+        LOG_ERROR("Failed writing master database");
+        return false;
+    }
 
     // -------------------------
     // 4) Save master file
     // -------------------------
-    if (!writeMasterJson(master)) {
+    if (!writeMasterJson(masterDb)) {
         LOG_ERROR("Failed writing master database");
         return false;
     }

@@ -121,6 +121,8 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             // Launchbox DB ID
             if (table.contains("lbdbID") && table["lbdbID"].is_string()) tableData.lbdbID = table["lbdbID"].get<std::string>();
 
+            // --------------- Internet Pinball DB METADATA ---------------
+            // TODO
 
             // --------------- OPERATIONAL TAGS ------------------
             if (table.contains("matchConfidence") && table["matchConfidence"].is_number_float()) tableData.matchConfidence = table["matchConfidence"].get<float>();

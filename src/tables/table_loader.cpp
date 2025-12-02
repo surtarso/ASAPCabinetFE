@@ -336,6 +336,13 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                             tempJson["filename_manufacturer"] = table.manufacturer;
                             tempJson["filename_year"] = table.year;
 
+                            // TODO: match instead with new master database.
+                            // add all new fields to table_data
+                            // keep the 3 canonical data + separate for each db (as is with vpin/vpsdb)
+                            // just adding launchbox and ipdb to the fields
+                            // We 1st match asapcab ID's than iso_ id's
+                            // all using he above tempjson (what we gatheres from file/metadata scan)
+
                             vpsClient.matchMetadata(tempJson, table, progress);
                             if (!table.vpsId.empty()) {
                                 table.jsonOwner = "Virtual Pinball Spreadsheet Database";
@@ -432,6 +439,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
 
         // NON PARALLEL VERSION:
+        // TODO: for now keep those, but later integrate with the new database in one pass
         {
             VpinMdbScanner vpdownloader(settings, progress);
             vpdownloader.scanForMedia(tables);
@@ -440,25 +448,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             LbdbScanner lbdownloader(settings, progress);
             lbdownloader.scanForMedia(tables);
         }
-
-        // Might be the cause of missing ID bug, on trials.
-        // // PARALLEL: VPinMediaDB + LaunchboxDB — COMPLEMENTARY, NEVER CONFLICT
-        // std::vector<std::future<void>> tasks;
-
-        // // 1. VPinMediaDB — your existing, proven downloader
-        // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
-        //     VpinMdbScanner vpdownloader(settings, progress);
-        //     vpdownloader.scanForMedia(tables);
-        // }));
-
-        // // 2. LaunchboxDB — new, for clear logos + flyers
-        // tasks.push_back(std::async(std::launch::async, [&settings, &tables, progress]() {
-        //     LbdbScanner lbdownloader(settings, progress);
-        //     lbdownloader.scanForMedia(tables);
-        // }));
-
-        // // Wait for both — UI stays smooth
-        // for (auto& f : tasks) f.wait();
 
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
