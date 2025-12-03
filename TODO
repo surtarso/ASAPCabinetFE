@@ -24,7 +24,6 @@ WHAT DID I GET INTO:
     - it was confusing and looked like a bug, need feedback for users.
 
 - [ED] spreadsheet keyboard navigation (polish)
-- add new vars to settings menu w/ clear names etc
 
 QOL:
 - [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)
