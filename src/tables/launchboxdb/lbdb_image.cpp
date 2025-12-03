@@ -15,7 +15,7 @@ bool resizeClearLogo(const fs::path& inputPng, int width, int height) {
     // -resize WxH! → force exact dimensions
     // PNG = transparency kept automatically
     std::stringstream cmd;
-    cmd << "magick convert \""
+    cmd << "magick \""
         << inputPng.string()
         << "\" -resize "
         << width << "x" << height << "! "
