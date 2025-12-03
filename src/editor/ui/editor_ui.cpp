@@ -51,8 +51,8 @@ EditorUI::EditorUI(bool& showMeta,
             // Start with fast startup (index load only)
             rescanAsync(ScannerMode::HasIndex);
         } else {
-            // Index doesn't exist (first run on new machine/folder), perform a full file scan
-            rescanAsync(ScannerMode::File);
+            // Index doesn't exist (first run on new machine/folder), perform a full file + metadata scan
+            rescanAsync(ScannerMode::VPin);
         }
 
     } else {
@@ -156,7 +156,7 @@ void EditorUI::rescanAsync(ScannerMode mode) {
                 break;
             case ScannerMode::HasIndex:
                 settings.ignoreScanners = true;
-                settings.titleSource = "filename"; // 'metadata'?
+                settings.titleSource = "metadata";
                 settings.fetchVPSdb = false;
                 break;
             case ScannerMode::Patch:

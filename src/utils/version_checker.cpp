@@ -69,6 +69,7 @@ bool VersionChecker::checkForUpdate() {
 
     // Normalize latest version
     latestVersion_ = normalizeVersion(latestVersion_);
+    // latestVersion_ = "test";  // to force pop-up (debug)
 
     if (latestVersion_.empty()) {
         std::cerr << "[VersionChecker] Warning: remote version is empty." << std::endl;

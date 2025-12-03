@@ -47,7 +47,6 @@ public:
         };
         // -------------------- KEYS --------------------
         keyOrders_["TableMetadata"] = {
-            "titleSource",
             "titleSortBy",
             "useVpxtool",
             "fetchVPSdb",
@@ -61,7 +60,6 @@ public:
             "confidenceThreshold"
         };
         keyDisplayNames_["TableMetadata"] = {
-            {"titleSource", "Title Source"},
             {"titleSortBy", "Sort By"},
             {"useVpxtool", "Enable VPXTool"},
             {"fetchVPSdb", "Use VPS DB"},
@@ -75,7 +73,6 @@ public:
             {"confidenceThreshold", "Overall confidence"}
         };
         keyDropdownOptions_["TableMetadata"] = {
-            {"titleSource", {"filename", "metadata"}},
             {"titleSortBy", {"title", "author", "type", "year", "manufacturer"}}
         };
 
@@ -402,6 +399,7 @@ public:
         };
 
         keyOrders_["Internal"] = {
+            "titleSource",
             "configUIWidth",
             "configUIHeight",
             "screenshotWait",
@@ -435,6 +433,7 @@ public:
             "ipdbPath",
         };
         keyDisplayNames_["Internal"] = {
+            {"titleSource", "Title Source"},
             {"screenshotWait", "Screenshot Wait Time"},
             {"configUIWidth", "FE Settings Panel Width"},
             {"configUIHeight", "FE Settings Panel Height"},
@@ -466,6 +465,9 @@ public:
             {"lbdbPath", "Launchbox Database Path"},
             {"ipdbUrl", "IPDB URL"},
             {"ipdbPath", "IPDB Path"}
+        };
+        keyDropdownOptions_["Internal"] = {
+            {"titleSource", {"metadata", "filename"}}
         };
 
         keyOrders_["Editor"] = {

@@ -186,7 +186,6 @@ void drawHeader(EditorUI& ui) {
 
                         bool success = dbManager.ensureAvailable();
                         // Close modal when finished
-                        sleep(2); // dirty fucking hack to show UI when too fast
                         ui.modal().requestFinishProgress("AsapCab's Database is now available!"); // TODO: not showing up...
 
                         if (!success) {
@@ -284,7 +283,6 @@ void drawHeader(EditorUI& ui) {
                         data::vpinmdb::VpinMdbUpdater updater(settings, nullptr);
 
                         bool success = updater.ensureAvailable();
-                        sleep(2); // dirty hack so ui appears...
                         LOG_DEBUG("finishProgress called");
                         ui.modal().requestFinishProgress("VPin Media DB is ready!");
 

@@ -105,7 +105,6 @@ struct Settings {
     int topperWindowY = -1;
 
     // [TableMetadata]
-    std::string titleSource = "filename"; // + 'metadata'
     bool fetchVPSdb = false;
     bool useVpxtool = false;
     bool ignoreScanners = true;
@@ -220,6 +219,8 @@ struct Settings {
     std::string ambienceSound = "snd/interface_ambience.mp3";
 
     // [Internal]
+    std::string titleSource = "metadata"; // + 'filename' (wont scan file metadata)
+
     std::string exeDir;
     std::string mainCacheDir = "data/cache";
 
@@ -453,7 +454,6 @@ private:
                 {"topperWindowY", s.topperWindowY}
             }},
             {"TableMetadata", {
-                {"titleSource", s.titleSource},
                 {"fetchVPSdb", s.fetchVPSdb},
                 {"useVpxtool", s.useVpxtool},
                 {"ignoreScanners", s.ignoreScanners},
@@ -560,6 +560,7 @@ private:
             }},
             {"Internal", {
                 {"exeDir", s.exeDir},
+                {"titleSource", s.titleSource},
                 {"mainCacheDir", s.mainCacheDir},
                 {"vpxPlayCmd", s.vpxPlayCmd},
                 {"vpxExtractCmd", s.vpxExtractCmd},
@@ -651,7 +652,6 @@ private:
         s.topperWindowY = j.value("WindowSettings", nlohmann::json{}).value("topperWindowY", s.topperWindowY);
 
         // TableMetadata
-        s.titleSource = j.value("TableMetadata", nlohmann::json{}).value("titleSource", s.titleSource);
         s.fetchVPSdb = j.value("TableMetadata", nlohmann::json{}).value("fetchVPSdb", s.fetchVPSdb);
         s.useVpxtool = j.value("TableMetadata", nlohmann::json{}).value("useVpxtool", s.useVpxtool);
         s.forceRebuildMetadata = j.value("TableMetadata", nlohmann::json{}).value("forceRebuildMetadata", s.forceRebuildMetadata);
@@ -794,6 +794,7 @@ private:
 
         // Internal
         s.exeDir = j.value("Internal", nlohmann::json{}).value("exeDir", s.exeDir);
+        s.titleSource = j.value("Internal", nlohmann::json{}).value("titleSource", s.titleSource);
         s.mainCacheDir = j.value("Internal", nlohmann::json{}).value("mainCacheDir", s.mainCacheDir);
         s.vpxPlayCmd = j.value("Internal", nlohmann::json{}).value("vpxPlayCmd", s.vpxPlayCmd);
         s.vpxExtractCmd = j.value("Internal", nlohmann::json{}).value("vpxExtractCmd", s.vpxExtractCmd);
@@ -914,9 +915,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"topperWindowY", {Settings::ReloadType::Full, "Topper window Y position on screen."}},
 
     // Table metadata matching and scanning
-    {"titleSource", {Settings::ReloadType::Tables, "Choose how table metadata is found:\n\n"
-                                                  "filename' - use filename-based heuristics;\n"
-                                                  "metadata' - run the scanners to extract embedded metadata."}},
     {"fetchVPSdb", {Settings::ReloadType::Tables, "Download and use the Virtual Pinball Spreadsheet db (community database)\nto improve automatic table matching and metadata accuracy."}},
     {"useVpxtool",{Settings::ReloadType::Tables, "Use an external vpxtool index (if available) or run vpxtool to extract table metadata\ninstead of built-in VPin scanner."}},
     {"ignoreScanners", {Settings::ReloadType::Tables, "Skip local scanners and read metadata only from the index file.\n\nUseful for when you have a trusted pre-built index."}},
@@ -1022,6 +1020,9 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ambienceSound", {Settings::ReloadType::Tables, "Ambient background sound used when a table has no music."}},
 
     // Internal paths and timing
+    {"titleSource", {Settings::ReloadType::Tables, "Choose how table metadata is found:\n\n"
+                                                  "filename' - use only filename-based heuristics (no metadata)\n"
+                                                  "metadata' - run the scanners to extract embedded metadata (default)."}},
     {"exeDir", {Settings::ReloadType::None, "Path to the application executable directory."}},
     {"mainCacheDir", {Settings::ReloadType::None, "Path to the main cache directory."}},
     {"vpxPlayCmd", {Settings::ReloadType::None, "VPinballX command used to play .vpx tables (internal helper)."}},

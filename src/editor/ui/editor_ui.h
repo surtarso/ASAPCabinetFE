@@ -134,7 +134,7 @@ private:
     EditorTableFilter tableFilter_;
 
     // state
-    ScannerMode selectedScanner_ = ScannerMode::File;
+    ScannerMode selectedScanner_ = ScannerMode::VPin;
 
     std::vector<TableData> tables_;
     std::vector<TableData> filteredTables_;
