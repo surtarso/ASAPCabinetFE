@@ -111,7 +111,7 @@ void PlayfieldOverlay::render() {
 
     if (showMetadataPanel_) {
         MetadataDisplay MetadataDisplay;
-        MetadataDisplay.render(tables_->at(*currentIndex_), playfieldWidth, playfieldHeight, configService_->getSettings());
+        MetadataDisplay.render(tables_->at(*currentIndex_), playfieldWidth, playfieldHeight, configService_->getSettings(), windowManager_->getPlayfieldRenderer());
     }
 
     // Navigation arrows with fade animation

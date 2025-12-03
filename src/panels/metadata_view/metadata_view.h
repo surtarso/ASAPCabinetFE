@@ -10,15 +10,13 @@
 class MetadataView
 {
 public:
+    // Editor
     void render(const TableData &currentTable,
-                int playfieldWidth,
-                int playfieldHeight,
-                const Settings &settings);
-    void render(const TableData &currentTable,
-                int playfieldWidth,
-                int playfieldHeight,
+                int editorWidth,
+                int editorHeight,
                 const Settings &settings,
                 SDL_Renderer *uiRenderer);
+
     void setSoundManager(ISoundManager *sm) { soundManager_ = sm; }
 
 private:

@@ -35,12 +35,12 @@ std::string MediaPreview::computeThumbPath(const std::string& imagePath, int max
     if (!fs::exists(dir))
         fs::create_directories(dir);
 
-    return (dir / (hex.str() + "_" + std::to_string(maxHeight) + ".jpg")).string();
+    return (dir / (hex.str() + "_" + std::to_string(maxHeight) + ".webp")).string();
 }
 
 
 /* ------------------------------------------------------------
-   Generate thumbnail (jpg) using ffmpeg
+   Generate thumbnail (webp) using ffmpeg
    ------------------------------------------------------------ */
 bool MediaPreview::ensureThumbnail(const std::string& srcPath,
                                    const std::string& thumbPath,
@@ -60,18 +60,21 @@ bool MediaPreview::ensureThumbnail(const std::string& srcPath,
 
     // ffmpeg command
     std::string cmd;
+
     if (isVideo) {
         cmd =
             "ffmpeg -y -hide_banner -loglevel error "
             "-ss 00:00:01 -i \"" + srcPath + "\" "
             "-vframes 1 "
             "-vf \"scale=-1:" + std::to_string(maxHeight) + "\" "
+            "-pix_fmt yuva420p "
             "\"" + thumbPath + "\"";
     } else {
         cmd =
             "ffmpeg -y -hide_banner -loglevel error "
             "-i \"" + srcPath + "\" "
             "-vf \"scale=-1:" + std::to_string(maxHeight) + "\" "
+            "-pix_fmt yuva420p "
             "\"" + thumbPath + "\"";
     }
 

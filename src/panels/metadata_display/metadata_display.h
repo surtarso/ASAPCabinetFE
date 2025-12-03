@@ -9,21 +9,12 @@
 
 class MetadataDisplay {
 public:
-
-    // Frontend (no renderer → no images)
-    void render(const TableData& currentTable,
+    // Frontend
+    void render(const TableData &currentTable,
                 int playfieldWidth,
                 int playfieldHeight,
-                const Settings& settings);
-
-    void render(const TableData& currentTable,
-                int playfieldWidth,
-                int playfieldHeight,
-                const Settings& settings,
-                SDL_Renderer* uiRenderer);
-
-    // // Call when panel is closed (editor only)
-    // void onClose();
+                const Settings &settings,
+                SDL_Renderer *uiRenderer);
 
     // Setter for sound manager
     void setSoundManager(ISoundManager* sm) { soundManager_ = sm; }
@@ -31,6 +22,10 @@ public:
 private:
     bool wasOpen_ = false;
     ISoundManager* soundManager_ = nullptr;  // ← pointer to the sound manager
+    SDL_Texture* flyerFrontTex_ = nullptr;
+    SDL_Texture* flyerBackTex_ = nullptr;
+    std::string lastFlyerFront_;
+    std::string lastFlyerBack_;
 };
 
 #endif // METADATA_PANEL_H
