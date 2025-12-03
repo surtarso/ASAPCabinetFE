@@ -51,6 +51,8 @@ public:
     std::function<void()> filterAndSort,
     std::function<void()> onEnter);
 
+    void handleRowNavigation(int& selectedRow, int totalRows);
+
     /**
      * @brief Launches the selected table and updates its statistics (play count, time, isBroken).
      * @param selectedTable The TableData object selected (used for its vpxFile key).

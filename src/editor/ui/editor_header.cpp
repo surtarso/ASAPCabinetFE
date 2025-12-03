@@ -11,9 +11,17 @@ namespace fs = std::filesystem;
 namespace editor_header {
 
 void drawHeader(EditorUI& ui) {
+
+    // ---------------------------------------------
+    // Arrow-key navigation for rows (FULLY SEPARATE)
+    // ---------------------------------------------
+    ui.actions().handleRowNavigation(
+        ui.selectedIndex(),
+        static_cast<int>(ui.filteredTables().size())
+    );
+
     // ------------------------------ FUZZY SEARCH BAR ------------------------------
     if (!ImGui::IsItemActive()) {
-        // Detect typing and auto-focus search field
         ui.actions().handleKeyboardSearchFocus(
             ui.searchBuffer(),
             ui.searchQuery(),
@@ -22,19 +30,18 @@ void drawHeader(EditorUI& ui) {
                 if (ui.selectedIndex() >= 0 && ui.selectedIndex() < static_cast<int>(ui.filteredTables().size())) {
                     const auto& t_filtered = ui.filteredTables()[ui.selectedIndex()];
 
-                    // 1. Add Modal Opening and External App Flag
                     fs::path p(t_filtered.vpxFile);
                     ui.inExternalAppMode_ = true;
-                    ui.modal().openProgress("Launching Game", "Starting " + p.filename().string() + "...");
+                    ui.modal().openProgress(
+                        "Launching Game",
+                        "Starting " + p.filename().string() + "..."
+                    );
 
-                    // Use the shared, centralized launch logic from ButtonActions
                     ui.actions().launchTableWithStats(
                         t_filtered,
-                        ui.tables(), // Mutable master list
+                        ui.tables(),
                         ui.tableLauncher(),
-                        [&ui]() {
-                            ui.requestPostLaunchCleanup();
-                        }
+                        [&ui]() { ui.requestPostLaunchCleanup(); }
                     );
                 } else {
                     LOG_DEBUG("'Play' pressed but no table selected");
@@ -47,8 +54,10 @@ void drawHeader(EditorUI& ui) {
             }
         );
     }
+
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() * 1.4f);
-    if (ImGui::InputTextWithHint("##SearchInputTop", "Search by Year, Name, Author, Manufacturer, File, or ROM",
+    if (ImGui::InputTextWithHint("##SearchInputTop",
+                                 "Search by Year, Name, Author, Manufacturer, File, or ROM",
                                  ui.searchBuffer(), ui.searchBufferSize())) {
         ui.setSearchQuery(ui.searchBuffer());
         ui.filterAndSortTablesPublic();

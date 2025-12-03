@@ -295,3 +295,33 @@ void ButtonActions::launchTableWithStats(
         }
     );
 }
+
+void ButtonActions::handleRowNavigation(int& selectedRow, int totalRows)
+{
+    if (totalRows <= 0) return;
+
+    if (ImGui::IsAnyItemActive()) return;
+
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (ctx->OpenPopupStack.Size > 0) return;
+
+    const int pageJump = 10;
+
+    if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
+        selectedRow = std::max(0, selectedRow - 1);
+
+    if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
+        selectedRow = std::min(totalRows - 1, selectedRow + 1);
+
+    if (ImGui::IsKeyPressed(ImGuiKey_PageUp))
+        selectedRow = std::max(0, selectedRow - pageJump);
+
+    if (ImGui::IsKeyPressed(ImGuiKey_PageDown))
+        selectedRow = std::min(totalRows - 1, selectedRow + pageJump);
+
+    if (ImGui::IsKeyPressed(ImGuiKey_Home))
+        selectedRow = 0;
+
+    if (ImGui::IsKeyPressed(ImGuiKey_End))
+        selectedRow = totalRows - 1;
+}

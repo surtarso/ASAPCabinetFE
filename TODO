@@ -18,12 +18,10 @@ WHAT DID I GET INTO:
 [master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
     - ship unified DB? 80mb...
 
-- finish advanced menu database updater
+- [!] finish advanced menu database updater
 - Topper window size was not saving, not changing. stuck. (media size ok)
     - ok it was just 'use vpinballx ini' option turned on.
     - it was confusing and looked like a bug, need feedback for users.
-
-- [ED] spreadsheet keyboard navigation (polish)
 
 QOL:
 - [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)

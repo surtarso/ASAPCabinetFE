@@ -54,6 +54,7 @@ public:
     std::vector<TableData>& tables()          { return tables_; }
     const std::vector<TableData>& filteredTables() const { return filteredTables_; }
 
+    int&  selectedIndex()        { return selectedIndex_; }
     int  selectedIndex()        const { return selectedIndex_; }
     void setSelectedIndex(int i)       { selectedIndex_ = i; }
 
