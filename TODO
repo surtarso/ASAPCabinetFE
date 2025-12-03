@@ -16,7 +16,7 @@ WHAT DID I GET INTO:
 [?] unify file scan and vpin scan (w/ vpxtool toggle) single pass!
 [master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
 
-- build master DB on startup. super fast on release builds.
+- build master DB on frontend startup. (editor does it already)
 - feedback when trying to change values that 'auto position' will ignore, if activated.
 
 QOL:
