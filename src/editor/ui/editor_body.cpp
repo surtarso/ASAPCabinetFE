@@ -380,8 +380,11 @@ void drawBody(EditorUI& ui) {
                     // Start text line
                     if (t.hasINI)
                         ImGui::TextUnformatted("I ");
-                    else
+                    else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                         ImGui::TextUnformatted("- ");
+                        ImGui::PopStyleColor();
+                    }
                     // Keep same line for next text
                     ImGui::SameLine(0, 0);
                     // "V" in yellow if t.hasDiff, otherwise normal
@@ -391,20 +394,28 @@ void drawBody(EditorUI& ui) {
                         else
                             ImGui::TextUnformatted("V ");
                     } else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                         ImGui::TextUnformatted("- ");
+                        ImGui::PopStyleColor();
                     }
                     // Same line again for "B"
                     ImGui::SameLine(0, 0);
                     if (t.hasB2S)
                         ImGui::TextUnformatted("B ");
-                    else
+                    else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                         ImGui::TextUnformatted("- ");
+                        ImGui::PopStyleColor();
+                    }
                     // Same line again for "O"
                     ImGui::SameLine(0, 0);
                     if (t.hasOverride)
                         ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.30f, 1.0f), "O "); //yellow
-                    else
+                    else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                         ImGui::TextUnformatted("- ");
+                        ImGui::PopStyleColor();
+                    }
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
@@ -417,7 +428,9 @@ void drawBody(EditorUI& ui) {
                     if (!t.romName.empty()) {
                         ImGui::TextUnformatted(t.romName.c_str());
                     } else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                         ImGui::TextUnformatted("");
+                        ImGui::PopStyleColor();
                     }
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
@@ -425,58 +438,128 @@ void drawBody(EditorUI& ui) {
                        drawTooltipForColumn(7, t, ui);}
 
                     // ----------------------------------------- Media Extras
-                    {ImGui::TableSetColumnIndex(8);
+                    {
+                        ImGui::TableSetColumnIndex(8);
 
-                    ImGui::Text("%s%s%s%s%s",
-                                t.hasAltSound ? "S " : "- ",
-                                t.hasAltColor ? "C " : "- ",
-                                t.hasPup ? "P " : "- ",
-                                t.hasUltraDMD ? "U " : "- ",
-                                t.hasAltMusic ? "M " : "- ");
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(8, t, ui);}
+                        // We print each symbol separately, pushing gray ONLY for "-"
+                        auto printFlag = [](bool flag, const char* letter)
+                        {
+                            if (flag) {
+                                ImGui::TextUnformatted(letter);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
+                                ImGui::TextUnformatted("- ");
+                                ImGui::PopStyleColor();
+                            }
+                            ImGui::SameLine(0, 0); // keep continuous spacing
+                        };
+
+                        printFlag(t.hasAltSound, "S ");
+                        printFlag(t.hasAltColor, "C ");
+                        printFlag(t.hasPup,      "P ");
+                        printFlag(t.hasUltraDMD, "U ");
+                        printFlag(t.hasAltMusic, "M ");
+
+                        ImGui::NewLine(); // finish the row
+
+                        ImVec2 min = ImGui::GetItemRectMin();
+                        ImVec2 max = ImGui::GetItemRectMax();
+                        if (ImGui::IsMouseHoveringRect(min, max))
+                            drawTooltipForColumn(8, t, ui);
+                    }
+
 
                     // ----------------------------------------- Media Assets - Images
-                    {ImGui::TableSetColumnIndex(9);
+                    {
+                        ImGui::TableSetColumnIndex(9);
 
-                    ImGui::Text("%s%s%s%s%s%s%s",
-                                t.hasPlayfieldImage ? "P " : "- ",
-                                t.hasBackglassImage ? "B " : "- ",
-                                t.hasDmdImage ? "D " : "- ",
-                                t.hasTopperImage ? "T " : "- ",
-                                t.hasWheelImage ? "W " : "- ",
-                                t.hasFlyerFront ? "F " : "- ",
-                                t.hasFlyerBack ? "Fb" : "-");
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(9, t, ui);}
+                        auto printFlag = [](bool flag, const char* letter)
+                        {
+                            if (flag) {
+                                ImGui::TextUnformatted(letter);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
+                                ImGui::TextUnformatted("- ");
+                                ImGui::PopStyleColor();
+                            }
+                            ImGui::SameLine(0, 0);
+                        };
+
+                        printFlag(t.hasPlayfieldImage, "P ");
+                        printFlag(t.hasBackglassImage, "B ");
+                        printFlag(t.hasDmdImage,       "D ");
+                        printFlag(t.hasTopperImage,    "T ");
+                        printFlag(t.hasWheelImage,     "W ");
+                        printFlag(t.hasFlyerFront,     "F ");
+                        printFlag(t.hasFlyerBack,      "Fb");
+
+                        ImGui::NewLine();
+
+                        ImVec2 min = ImGui::GetItemRectMin();
+                        ImVec2 max = ImGui::GetItemRectMax();
+                        if (ImGui::IsMouseHoveringRect(min, max))
+                            drawTooltipForColumn(9, t, ui);
+                    }
+
 
                     // ----------------------------------------- Media Assets - Videos
-                    {ImGui::TableSetColumnIndex(10);
+                    {
+                        ImGui::TableSetColumnIndex(10);
 
-                    ImGui::Text("%s%s%s%s",
-                                t.hasPlayfieldVideo ? "P " : "- ",
-                                t.hasBackglassVideo ? "B " : "- ",
-                                t.hasDmdVideo ? "D " : "- ",
-                                t.hasTopperVideo ? "T " : "- ");
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(10, t, ui);}
+                        auto printFlag = [](bool flag, const char* letter)
+                        {
+                            if (flag) {
+                                ImGui::TextUnformatted(letter);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
+                                ImGui::TextUnformatted("- ");
+                                ImGui::PopStyleColor();
+                            }
+                            ImGui::SameLine(0, 0);
+                        };
+
+                        printFlag(t.hasPlayfieldVideo, "P ");
+                        printFlag(t.hasBackglassVideo, "B ");
+                        printFlag(t.hasDmdVideo,       "D ");
+                        printFlag(t.hasTopperVideo,    "T ");
+
+                        ImGui::NewLine();
+
+                        ImVec2 min = ImGui::GetItemRectMin();
+                        ImVec2 max = ImGui::GetItemRectMax();
+                        if (ImGui::IsMouseHoveringRect(min, max))
+                            drawTooltipForColumn(10, t, ui);
+                    }
+
 
                     // ----------------------------------------- Media Assets - Sounds
-                    {ImGui::TableSetColumnIndex(11);
+                    {
+                        ImGui::TableSetColumnIndex(11);
 
-                    ImGui::Text("%s%s",
-                                t.hasTableMusic ? "M " : "- ",
-                                t.hasLaunchAudio ? "L " : "- ");
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(11, t, ui);}
+                        // Same helper used in the other columns
+                        auto printFlag = [](bool flag, const char* letter)
+                        {
+                            if (flag) {
+                                ImGui::TextUnformatted(letter);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
+                                ImGui::TextUnformatted("- ");
+                                ImGui::PopStyleColor();
+                            }
+                            ImGui::SameLine(0, 0);
+                        };
+
+                        printFlag(t.hasTableMusic,  "M ");
+                        printFlag(t.hasLaunchAudio, "L ");
+
+                        ImGui::NewLine();
+
+                        ImVec2 min = ImGui::GetItemRectMin();
+                        ImVec2 max = ImGui::GetItemRectMax();
+                        if (ImGui::IsMouseHoveringRect(min, max))
+                            drawTooltipForColumn(11, t, ui);
+                    }
+
 
                     // ----------------------------------------- Patch Status
                     {ImGui::TableSetColumnIndex(12);
@@ -486,7 +569,7 @@ void drawBody(EditorUI& ui) {
                             ImGui::Text(" P ");
                             ImGui::PopStyleColor();
                         } else {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.60f, 0.60f, 1.0f)); // gray
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                             ImGui::Text(" - ");
                             ImGui::PopStyleColor();
                         }
@@ -500,7 +583,7 @@ void drawBody(EditorUI& ui) {
                             ImGui::Text(" B ");
                             ImGui::PopStyleColor();
                         } else {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.60f, 0.60f, 1.0f)); // gray
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.40f, 0.40f, 0.40f, 1.0f)); // gray
                             if (t.playCount >= 1) {
                                 ImGui::Text(" ok ");
                             } else {

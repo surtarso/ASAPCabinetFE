@@ -23,12 +23,7 @@ WHAT DID I GET INTO:
     - ok it was just 'use vpinballx ini' option turned on.
     - it was confusing and looked like a bug, need feedback for users.
 
-- panels are split now, need to reformulate them: (waiting on new DB...)
-    - [ED]: complete metadata, everything + all media.
-    - [FE]: basic (best) info + flyers only. optional fields
-
 - [ED] spreadsheet keyboard navigation (polish)
-- [ED] gray on all white '-' (eyesore)
 - add new vars to settings menu w/ clear names etc
 
 QOL:
