@@ -42,7 +42,7 @@
 
 ```sh
 sudo apt-get install git findutils -y -qq
-git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 git lfs install && git lfs pull
 cat apt-packages.txt | xargs sudo apt-get install -y
@@ -61,7 +61,7 @@ cd ~/ASAPCabinetFE
   
 ```sh
 sudo pacman -Syu --noconfirm git findutils
-git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 git lfs install && git lfs pull
 cat pacman-packages.txt | xargs sudo pacman -S --needed --noconfirm
