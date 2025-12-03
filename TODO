@@ -17,6 +17,7 @@ WHAT DID I GET INTO:
 [master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
 
 - feedback when trying to change values that 'auto position' will ignore, if activated.
+- polish yes/no modals (fugly)
 
 QOL:
 - [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)
