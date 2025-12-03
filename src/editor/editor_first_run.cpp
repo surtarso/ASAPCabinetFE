@@ -113,7 +113,7 @@ void drawFirstRun(EditorUI& ui)
 
             if (isValid){
                 ui.modal().openProgress(
-                    "Building AsapCab's DB",
+                    "Initializing Database",
                     "Preparing AsapCab's Database...\nThis may take a few minutes."
                 );
 

@@ -27,6 +27,7 @@
 #include "capture/iscreenshot_manager.h"
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
+#include "data/asapcab/asapcab_database_manager.h"
 #include "data/asapcab/table_override_manager.h"
 #include "data/table_data.h"
 #include "keybinds/iinput_manager.h"
@@ -148,6 +149,10 @@ private:
     // --- Update checker ---
     std::unique_ptr<VersionChecker> versionChecker_;
     std::atomic<bool> updateAvailable_{false};
+    // DB initialization status
+    bool dbReady_ = false;
+    bool dbInitFailed_ = false;
+    std::unique_ptr<std::thread> dbInitThread_;
 
     /**
      * @brief Gets the executable directory.

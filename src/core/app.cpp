@@ -48,6 +48,14 @@ App::~App() {
         loadingThread_.join();
         LOG_DEBUG("Loading thread joined during shutdown");
     }
+
+    // Join db init thread if it exists and is joinable
+    if (dbInitThread_ && dbInitThread_->joinable()) {
+        LOG_DEBUG("Waiting for DB init thread to finish during shutdown");
+        dbInitThread_->join();
+        LOG_DEBUG("DB init thread joined during shutdown");
+    }
+
     cleanup();
 }
 
@@ -245,7 +253,20 @@ void App::initializeDependencies() {
 
     loadFont();
     loadingScreen_ = std::make_unique<LoadingScreen>(loadingProgress_);
-    loadTables();
+    // loadTables();
+    dbInitThread_ = std::make_unique<std::thread>([this, settings=configManager_->getSettings()]() {
+        LOG_INFO("Ensuring AsapCab's Database is available...");
+        data::asapcabdb::AsapCabDatabaseManager dbManager(settings);
+        bool success = dbManager.ensureAvailable();
+
+        if (success) {
+            dbReady_ = true;
+            LOG_INFO("AsapCab's Database is ready.");
+        } else {
+            dbInitFailed_ = true;
+            LOG_ERROR("Failed to initialize AsapCab's Database.");
+        }
+    });
 
     tableCallbacks_ = DependencyFactory::createTableCallbacks(configManager_.get());
     tableLauncher_ = DependencyFactory::createTableLauncher(configManager_.get());
@@ -363,6 +384,42 @@ void App::render() {
     }
 
     imGuiManager_->newFrame();
+
+    // ---- DATABASE MODAL AND PRE-TABLE LOADING ----
+    if (!dbReady_ && !dbInitFailed_) {
+        ImGui::OpenPopup("Initializing Database");
+    }
+
+    bool dbModalOpen = true;
+    if (ImGui::BeginPopupModal("Initializing Database", &dbModalOpen, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Preparing AsapCab's Database...\nThis may take a few minutes.");
+        ImGui::Separator();
+        ImGui::Text("Please wait...");
+
+        // Automatically close modal if DB ready
+        if (dbReady_) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Once DB is ready, trigger table loading if not already in progress
+    if (dbReady_ && !isLoadingTables_ && tables_.empty()) {
+        LOG_INFO("Database ready, starting table scan.");
+        loadTablesThreaded(); // start threaded table loading
+    }
+
+    // Optional: show failure popup
+    if (dbInitFailed_) {
+        if (ImGui::BeginPopupModal("Database Failed", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Failed to initialize AsapCab's Database!");
+            if (ImGui::Button("OK")) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
 
     // Render loading screen if tables are loading
     if (isLoadingTables_) {
