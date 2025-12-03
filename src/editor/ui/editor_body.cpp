@@ -81,6 +81,8 @@ static void drawNameTooltip(const TableData& t) {
     ImGui::Text("File: %s", t.vpxFile.empty() ? "-" : t.vpxFile.c_str());
     ImGui::Text("Metadata: %s", t.tableName.empty() ? "-" : t.tableName.c_str());
     ImGui::Text("VPSDB: %s", t.vpsName.empty() ? "-" : t.vpsName.c_str());
+    ImGui::Text("VPSDB ID: %s", t.vpsId.empty() ? "-" : t.vpsId.c_str());
+    ImGui::Text("LBDB ID: %s", t.lbdbID.empty() ? "-" : t.lbdbID.c_str());
 
     ImGui::Separator();
     ImGui::Text("Best match: %s (%.0f%%)", t.title.c_str(), t.matchConfidence * 100.0f);
