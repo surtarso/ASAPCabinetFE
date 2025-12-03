@@ -220,20 +220,77 @@ void drawHeader(EditorUI& ui) {
                         }
                     }).detach();
                 }
-                // REBUILD IPDB (STUB)
-                if (ImGui::MenuItem("Rebuild Internet Pinball DB")) {
-                    // data::ipdb ensureAvailable()
-                    LOG_INFO("Stub: Rebuild IPDB triggered");
+                // REBUILD IPDB
+                if (ImGui::MenuItem("Update Internet Pinball DB")) {
+                    ui.modal().openProgress(
+                        "Updating IPDB",
+                        "Working...\nDownloading data..."
+                    );
+
+                    std::thread([settings, &ui] {
+                        // Create updater with progress disabled (modal already handles UI)
+                        data::ipdb::IpdbUpdater updater(settings, nullptr);
+
+                        bool success = updater.forceUpdate();
+                        ui.modal().finishProgress("IPDB is now updated!");
+
+                        if (!success) LOG_ERROR("IPDB update failed");
+                        else          LOG_INFO("IPDB update complete");
+                    }).detach();
                 }
-                // REBUILD VPSDB (STUB)
+                // REBUILD VPSDB
                 if (ImGui::MenuItem("Update Virtual Pinball Spreadsheet DB")) {
-                    // VpsDatabaseUpdater::fetchIfNeeded()
-                    LOG_INFO("Stub: Update VPSDB triggered");
+
+                    ui.modal().openProgress(
+                        "Updating VPS Database",
+                        "Working...\nChecking for updates..."
+                    );
+
+                    std::thread([settings, &ui] {
+
+                        // Build local paths
+                        std::string vpsDbPath      = settings.vpsDbPath;
+                        std::string lastUpdatedPath = settings.vpsDbLastUpdated;
+
+                        // Hard assumption: update on user action → "startup" is always valid.
+                        // If you prefer another rule, change the string.
+                        std::string updateFrequency = "startup";
+
+                        // Instantiate updater
+                        VpsDatabaseUpdater updater(vpsDbPath);
+
+                        bool success = updater.fetchIfNeeded(
+                            lastUpdatedPath,
+                            updateFrequency,
+                            nullptr // no LoadingProgress → modal gives user feedback
+                        );
+                        LOG_INFO("finishProgress called");
+                        ui.modal().finishProgress("VPS Database is now updated!");
+
+                        if (!success) LOG_ERROR("VPS Database update failed");
+                        else          LOG_INFO("VPS Database update complete");
+                    }).detach();
                 }
-                // REBUILD VPINMDB (STUB)
+                // REBUILD VPINMDB
                 if (ImGui::MenuItem("Update VPin Media DB")) {
-                    // data::vpinmdb ensureAvailable()
-                    LOG_INFO("Stub: Update VPinMDB triggered");
+
+                    ui.modal().openProgress(
+                        "Updating VPin Media DB",
+                        "Working...\nChecking or downloading file..."
+                    );
+
+                    std::thread([settings, &ui] {
+
+                        // Create updater with null progress (modal is enough)
+                        data::vpinmdb::VpinMdbUpdater updater(settings, nullptr);
+
+                        bool success = updater.ensureAvailable();
+                        LOG_INFO("finishProgress called");
+                        ui.modal().finishProgress("VPin Media DB is ready!");
+
+                        if (!success) LOG_ERROR("VPin Media DB update failed");
+                        else          LOG_INFO("VPin Media DB update complete");
+                    }).detach();
                 }
                 ImGui::EndMenu(); // Database
             }
