@@ -392,7 +392,7 @@ void drawFooter(EditorUI& ui) {
                         ui.screenshotManager()->launchScreenshotMode(vpxFile_copy);
 
                         // 4. Update modal (this is thread-safe)
-                        ui.modal().finishProgress("");
+                        ui.modal().requestFinishProgress("");
 
                         // 5. Update flags *after* work is done
                         // NOTE: This is not strictly thread-safe, but will
@@ -446,7 +446,7 @@ void drawFooter(EditorUI& ui) {
                 ui.setShowMetadataView(true);
 
                 // Close modal silently
-                ui.modal().finishProgress("");  // empty message, no "Done!"
+                ui.modal().requestFinishProgress("");  // empty message, no "Done!"
             }).detach();
 
             LOG_DEBUG("Toggling metadata view ON");

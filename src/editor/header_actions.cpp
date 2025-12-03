@@ -223,13 +223,13 @@ void requestCompressTableFolder(EditorUI& ui) {
 
         if (ret == 0) {
             LOG_INFO("Compression complete");
-            ui.modal().finishProgress(
+            ui.modal().requestFinishProgress(
                 "Compression completed successfully.",
                 outputArchive.string()   // modal shows this as "Saved to:"
             );
         } else {
             LOG_ERROR("Compression failed (exit code " + std::to_string(ret) + ")");
-            ui.modal().finishProgress(
+            ui.modal().requestFinishProgress(
                 "Compression failed.\nExit code: " + std::to_string(ret),
                 ""    // no result file
             );

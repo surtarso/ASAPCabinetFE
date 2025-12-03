@@ -60,6 +60,7 @@ void ModalDialog::openProgress(const std::string& title,
     busy_ = true;
     completed_ = false;
     pendingOpen_ = true;
+    visibleFramesRequired_ = 1;
 }
 
 void ModalDialog::updateProgress(const std::string& message) {
@@ -77,6 +78,9 @@ void ModalDialog::finishProgress(const std::string& resultMessage,
     // If progress popup was never opened (edge case), request to open it
     // so the user can see the result message and press OK.
     if (!pendingOpen_) pendingOpen_ = true;
+
+    // Require at least 1 frame visible before closing
+    visibleFramesRequired_ = std::max(visibleFramesRequired_, 1);
 }
 
 void ModalDialog::openInfo(const std::string& title,
@@ -109,8 +113,33 @@ void ModalDialog::openError(const std::string& title,
     pendingOpen_ = true;
 }
 
+void ModalDialog::enqueueUiTask(std::function<void()> fn) {
+    std::scoped_lock lk(uiTaskMutex_);
+    uiTasks_.push_back(std::move(fn));
+}
+
+void ModalDialog::requestFinishProgress(const std::string& resultMessage,
+                                        const std::string& resultPath) {
+    // Enqueue a small task that will call finishProgress() from the UI thread.
+    enqueueUiTask([this, resultMessage, resultPath]() {
+        // finishProgress already takes the modal mutex internally.
+        this->finishProgress(resultMessage, resultPath);
+    });
+}
 
 void ModalDialog::draw() {
+    // ---- Execute queued UI tasks first (on UI/main thread) ----
+    {
+        std::vector<std::function<void()>> localTasks;
+        {
+            std::scoped_lock lk(uiTaskMutex_);
+            localTasks.swap(uiTasks_);
+        }
+        for (auto &t : localTasks) {
+            // Execute tasks on UI thread — must be quick.
+            t();
+        }
+    }
     std::function<void(std::string)> deferredConfirm;
     std::function<void()> deferredCancel;
     std::string chosenOption;
@@ -185,7 +214,18 @@ void ModalDialog::draw() {
                 if (busy_)
                     ImGui::TextColored(ImVec4(1, 1, 0, 1), "%s", "Processing...");
                 else if (completed_) {
-                    // If the thread passed an empty message (meaning: done, hide it now)
+                    if (visibleFramesRequired_ > 0) {
+                        visibleFramesRequired_--;
+                        // Still show modal this frame — do NOT close yet
+                        ImGui::TextColored(ImVec4(0,1,0,1), "%s", message_.c_str());
+                        if (!resultPath_.empty())
+                            ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
+                        if (visibleFramesRequired_ == 0) {
+                            // Next frame choose how to close
+                        }
+                        ImGui::EndPopup();
+                        return;
+                    }
                     if (message_.empty()) {
                         type_ = ModalType::None; // Kills the modal state
                         ImGui::CloseCurrentPopup(); // Closes the ImGui window

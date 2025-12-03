@@ -28,7 +28,7 @@ json VpinMdbLoader::load() {
     std::ifstream file(dbPath);
     if (!file.is_open()) {
         LOG_ERROR("Failed to open " + dbPath.string());
-        pushProgressMessage("Failed to open vpinmdb.json: " + dbPath.string());
+        if (progress_) pushProgressMessage("Failed to open vpinmdb.json: " + dbPath.string());
         throw std::runtime_error("Failed to open vpinmdb.json: " + dbPath.string());
     }
 
@@ -36,11 +36,11 @@ json VpinMdbLoader::load() {
         json mediaDb;
         file >> mediaDb;
         LOG_INFO("Loaded VPin Media Database from " + dbPath.string());
-        pushProgressMessage("Loaded vpinmdb.json from " + dbPath.string());
+        if (progress_) pushProgressMessage("Loaded vpinmdb.json from " + dbPath.string());
         return mediaDb;
     } catch (const std::exception& e) {
         LOG_ERROR("Failed to parse vpinmdb.json: " + std::string(e.what()));
-        pushProgressMessage("Failed to parse vpinmdb.json: " + std::string(e.what()));
+        if (progress_) pushProgressMessage("Failed to parse vpinmdb.json: " + std::string(e.what()));
         throw; // re-throw to match original early-return behavior
     }
 }

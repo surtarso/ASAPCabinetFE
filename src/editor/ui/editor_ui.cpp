@@ -97,7 +97,7 @@ void EditorUI::draw() {
 
         // 2. Modal closing and flag reset
         // This closes the modal for the Play Button, and is a safe no-op for the Enter key.
-        modal_.finishProgress("");
+        modal_.requestFinishProgress("");
         inExternalAppMode_ = false;
         lastExternalAppReturnTime_ = SDL_GetTicks();
 

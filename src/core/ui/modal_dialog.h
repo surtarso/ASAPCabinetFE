@@ -121,13 +121,13 @@ public:
         outputBuffer_.clear();
         pendingOpen_ = true;
         scrollToBottom_ = true;
-    }
+    };
 
     void appendCommandOutput(const std::string& text) {
         std::scoped_lock lock(mutex_);
         outputBuffer_ += text + "\n";
         scrollToBottom_ = true;
-    }
+    };
 
 
     // ---------------------------------------------------------------------
@@ -147,6 +147,21 @@ public:
      */
     bool isActive() const;
 
+        /**
+     * @brief Enqueue a UI task to be executed on the main/UI thread.
+     *
+     * The provided function must be quick and must not perform heavy blocking work.
+     */
+    void enqueueUiTask(std::function<void()> fn);
+
+    /**
+     * @brief Request the modal to finish progress from any thread.
+     *
+     * This is safe to call from worker threads — it will enqueue a task that runs
+     * on the UI thread and calls finishProgress(...) for you.
+     */
+    void requestFinishProgress(const std::string& resultMessage,
+                            const std::string& resultPath = "");
 private:
     /**
      * @brief Resets all modal state to default values.
@@ -157,7 +172,11 @@ private:
     // ---------------------------------------------------------------------
     // Internal State
     // ---------------------------------------------------------------------
-
+    // Thread-safe UI task queue so worker threads can request modal actions.
+    // Tasks are executed on the main/UI thread at the start of draw().
+    mutable std::mutex uiTaskMutex_;
+    std::vector<std::function<void()>> uiTasks_;
+    int visibleFramesRequired_ = 0;
     mutable std::mutex mutex_;                        ///< Protects modal state for thread-safe operations.
     ModalType type_;                                  ///< Current modal type.
     std::string title_;                               ///< Modal window title.

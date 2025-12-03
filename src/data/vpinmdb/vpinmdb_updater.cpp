@@ -35,10 +35,10 @@ bool VpinMdbUpdater::ensureAvailable() {
         try {
             fs::create_directories(dbPath.parent_path());
             LOG_INFO("Created directory " + dbPath.parent_path().string());
-            pushProgressMessage("Created directory " + dbPath.parent_path().string());
+            if (progress_) pushProgressMessage("Created directory " + dbPath.parent_path().string());
         } catch (const fs::filesystem_error& e) {
             LOG_ERROR("Failed to create directory " + dbPath.parent_path().string() + ": " + std::string(e.what()));
-            pushProgressMessage("Failed to create directory for vpinmdb.json: " + std::string(e.what()));
+            if (progress_) pushProgressMessage("Failed to create directory for vpinmdb.json: " + std::string(e.what()));
             return false;
         }
     }
@@ -46,11 +46,11 @@ bool VpinMdbUpdater::ensureAvailable() {
     // Download using existing helper
     if (filedownloader::downloadFile(url, dbPath)) {
         LOG_INFO("Downloaded VPin Media Database to " + dbPath.string());
-        pushProgressMessage("Downloaded vpinmdb.json to " + dbPath.string());
+        if (progress_) pushProgressMessage("Downloaded vpinmdb.json to " + dbPath.string());
         return true;
     } else {
         LOG_ERROR("Failed to download vpinmdb.json from " + url);
-        pushProgressMessage("Failed to download vpinmdb.json");
+        if (progress_) pushProgressMessage("Failed to download vpinmdb.json");
         return false;
     }
 }

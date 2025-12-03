@@ -186,7 +186,8 @@ void drawHeader(EditorUI& ui) {
 
                         bool success = dbManager.ensureAvailable();
                         // Close modal when finished
-                        ui.modal().finishProgress("AsapCab's Database is now available!"); // TODO: not showing up...
+                        sleep(2); // dirty fucking hack to show UI when too fast
+                        ui.modal().requestFinishProgress("AsapCab's Database is now available!"); // TODO: not showing up...
 
                         if (!success) {
                             LOG_ERROR("AsapCab's DB rebuild failed");
@@ -211,7 +212,7 @@ void drawHeader(EditorUI& ui) {
                             nullptr // no progress callback
                         );
                         // Close modal when finished
-                        ui.modal().finishProgress("Launchbox Database is now available!");
+                        ui.modal().requestFinishProgress("Launchbox Database is now available!");
 
                         if (!success) {
                             LOG_ERROR("LaunchBox DB rebuild failed");
@@ -232,7 +233,7 @@ void drawHeader(EditorUI& ui) {
                         data::ipdb::IpdbUpdater updater(settings, nullptr);
 
                         bool success = updater.forceUpdate();
-                        ui.modal().finishProgress("IPDB is now updated!");
+                        ui.modal().requestFinishProgress("IPDB is now updated!");
 
                         if (!success) LOG_ERROR("IPDB update failed");
                         else          LOG_INFO("IPDB update complete");
@@ -251,10 +252,7 @@ void drawHeader(EditorUI& ui) {
                         // Build local paths
                         std::string vpsDbPath      = settings.vpsDbPath;
                         std::string lastUpdatedPath = settings.vpsDbLastUpdated;
-
-                        // Hard assumption: update on user action → "startup" is always valid.
-                        // If you prefer another rule, change the string.
-                        std::string updateFrequency = "startup";
+                        std::string updateFrequency = settings.vpsDbUpdateFrequency;
 
                         // Instantiate updater
                         VpsDatabaseUpdater updater(vpsDbPath);
@@ -264,8 +262,8 @@ void drawHeader(EditorUI& ui) {
                             updateFrequency,
                             nullptr // no LoadingProgress → modal gives user feedback
                         );
-                        LOG_INFO("finishProgress called");
-                        ui.modal().finishProgress("VPS Database is now updated!");
+                        LOG_DEBUG("finishProgress called");
+                        ui.modal().requestFinishProgress("VPS Database is now updated!");
 
                         if (!success) LOG_ERROR("VPS Database update failed");
                         else          LOG_INFO("VPS Database update complete");
@@ -274,10 +272,11 @@ void drawHeader(EditorUI& ui) {
                 // REBUILD VPINMDB
                 if (ImGui::MenuItem("Update VPin Media DB")) {
 
-                    ui.modal().openProgress(
-                        "Updating VPin Media DB",
-                        "Working...\nChecking or downloading file..."
-                    );
+                    ui.modal().enqueueUiTask([&ui]() {
+                        ui.modal().openProgress(
+                            "Updating VPin Media DB",
+                            "Working...\nChecking or downloading file...");
+                    });
 
                     std::thread([settings, &ui] {
 
@@ -285,8 +284,9 @@ void drawHeader(EditorUI& ui) {
                         data::vpinmdb::VpinMdbUpdater updater(settings, nullptr);
 
                         bool success = updater.ensureAvailable();
-                        LOG_INFO("finishProgress called");
-                        ui.modal().finishProgress("VPin Media DB is ready!");
+                        sleep(2); // dirty hack so ui appears...
+                        LOG_DEBUG("finishProgress called");
+                        ui.modal().requestFinishProgress("VPin Media DB is ready!");
 
                         if (!success) LOG_ERROR("VPin Media DB update failed");
                         else          LOG_INFO("VPin Media DB update complete");
