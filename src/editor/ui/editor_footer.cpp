@@ -299,7 +299,7 @@ void drawFooter(EditorUI& ui) {
             ui.modal().openConfirm(
                 "Confirm Patch All?",
                 "This will apply patches to all tables in need.\nAre you sure you want to continue?",
-                {"No", "Yes"},
+                {"Yes", "No"},
                 [&ui](const std::string& choice) {
                     if (choice == "Yes") {
                         LOG_DEBUG("Confirmed: Applying Patch to all tables in need");
@@ -334,22 +334,6 @@ void drawFooter(EditorUI& ui) {
         } else {
             LOG_INFO("Opening Download Media Panel");
             ui.setShowDownloadMediaPanel(true);
-            // Open confirm dialog before media downloading for all tables
-            // ui.modal().openConfirm(
-            //     "Confirm Download All?",
-            //     "This will download images for all tables it finds.\nAre you sure you want to continue?",
-            //     {"No", "Yes"},
-            //     [&ui](const std::string& choice) {
-            //         if (choice == "Yes") {
-            //             LOG_DEBUG("Confirmed: Downloading tables to all tables found (hashed and matched)");
-            //             ui.setScannerMode(ScannerMode::MediaDb);
-            //             ui.rescanAsyncPublic(ui.scannerMode());
-            //         } else {
-            //             LOG_INFO("Download Media (all) canceled by user.");
-
-            //         }
-            //     }
-            // );
         }
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

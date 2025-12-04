@@ -136,10 +136,10 @@ void ModalDialog::draw() {
             localTasks.swap(uiTasks_);
         }
         for (auto &t : localTasks) {
-            // Execute tasks on UI thread — must be quick.
             t();
         }
     }
+
     std::function<void(std::string)> deferredConfirm;
     std::function<void()> deferredCancel;
     std::string chosenOption;
@@ -148,7 +148,8 @@ void ModalDialog::draw() {
         std::scoped_lock lock(mutex_);
         if (type_ == ModalType::None) return;
 
-        std::string popupId = title_ + "##" + std::to_string(reinterpret_cast<uintptr_t>(this));
+        std::string popupId =
+            title_ + "##" + std::to_string(reinterpret_cast<uintptr_t>(this));
 
         if (pendingOpen_) {
             ImGui::OpenPopup(popupId.c_str());
@@ -165,7 +166,7 @@ void ModalDialog::draw() {
 
         if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 
-            float wrapWidth = ImGui::GetFontSize() * 30.0f; // ~30 chars wide, tweak as needed
+            float wrapWidth = ImGui::GetFontSize() * 30.0f;
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + wrapWidth);
 
             if (type_ == ModalType::Error)
@@ -177,61 +178,102 @@ void ModalDialog::draw() {
 
             ImGui::PopTextWrapPos();
 
-            if (!options_.empty()) {
+
+            // ---------------------------------------------------------
+            // OPTIONS DROPDOWN (hidden for Confirm modals)
+            // ---------------------------------------------------------
+            if (type_ != ModalType::Confirm && !options_.empty()) {
                 std::vector<const char*> cstrOptions;
-                for (const auto& opt : options_) cstrOptions.push_back(opt.c_str());
-                ImGui::Combo("##options", &selectedOption_,
-                             cstrOptions.data(), static_cast<int>(cstrOptions.size()));
+                cstrOptions.reserve(options_.size());
+                for (const auto& opt : options_)
+                    cstrOptions.push_back(opt.c_str());
+
+                ImGui::Combo("##options",
+                             &selectedOption_,
+                             cstrOptions.data(),
+                             static_cast<int>(cstrOptions.size()));
             }
 
-            // -------------------- Button Section --------------------
-            if (type_ == ModalType::Confirm) {
-                if (ImGui::Button("Cancel")) {
-                    deferredCancel = onCancel_;
+
+            // ---------------------------------------------------------
+            // CONFIRM MODAL BUTTONS (centered)
+            // ---------------------------------------------------------
+            // Add space or line between text and buttons
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            if (type_ == ModalType::Confirm)
+            {
+                std::string noLabel  = options_.size() >= 1 ? options_[0] : "No";
+                std::string yesLabel = options_.size() >= 2 ? options_[1] : "Yes";
+
+                const float buttonWidth = 120.0f;
+                const float spacing = ImGui::GetStyle().ItemSpacing.x;
+                const float totalWidth = (buttonWidth * 2.0f) + spacing;
+                float regionWidth = ImGui::GetContentRegionAvail().x;
+                float offsetX     = (regionWidth - totalWidth) * 0.5f;
+
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+
+                // YES
+                if (ImGui::Button(yesLabel.c_str(), ImVec2(buttonWidth, 0))) {
+                    chosenOption = yesLabel;
+                    deferredConfirm = onConfirm_;
                     type_ = ModalType::None;
-                    ImGui::CloseCurrentPopup();
+                    ImGui::CloseCurrentPopup(); // safe - no return
                 }
 
                 ImGui::SameLine();
 
-                if (ImGui::Button("Confirm")) {
-                    if (!options_.empty())
-                        chosenOption = options_[selectedOption_];
-                    deferredConfirm = onConfirm_;
+                // NO
+                if (ImGui::Button(noLabel.c_str(), ImVec2(buttonWidth, 0))) {
+                    chosenOption = noLabel;
+
+                    if (onCancel_) deferredCancel = onCancel_;
+                    else deferredConfirm = onConfirm_;
+
                     type_ = ModalType::None;
-                    ImGui::CloseCurrentPopup();
+                    ImGui::CloseCurrentPopup(); // safe
                 }
             }
+
+
+            // ---------------------------------------------------------
+            // INFO / WARNING / ERROR (simple OK button)
+            // ---------------------------------------------------------
             else if (type_ == ModalType::Info ||
                      type_ == ModalType::Warning ||
-                     type_ == ModalType::Error) {
+                     type_ == ModalType::Error)
+            {
                 if (ImGui::Button("OK")) {
                     type_ = ModalType::None;
                     ImGui::CloseCurrentPopup();
                 }
             }
+
+
+            // ---------------------------------------------------------
+            // PROGRESS POPUP
+            // ---------------------------------------------------------
             else if (type_ == ModalType::Progress) {
-                if (busy_)
-                    ImGui::TextColored(ImVec4(1, 1, 0, 1), "%s", "Processing...");
+                if (busy_) {
+                    ImGui::TextColored(ImVec4(1,1,0,1), "Processing...");
+                }
                 else if (completed_) {
                     if (visibleFramesRequired_ > 0) {
                         visibleFramesRequired_--;
-                        // Still show modal this frame — do NOT close yet
                         ImGui::TextColored(ImVec4(0,1,0,1), "%s", message_.c_str());
                         if (!resultPath_.empty())
                             ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
-                        if (visibleFramesRequired_ == 0) {
-                            // Next frame choose how to close
-                        }
                         ImGui::EndPopup();
                         return;
                     }
+
                     if (message_.empty()) {
-                        type_ = ModalType::None; // Kills the modal state
-                        ImGui::CloseCurrentPopup(); // Closes the ImGui window
+                        type_ = ModalType::None;
+                        ImGui::CloseCurrentPopup();
                     } else {
-                        // This is the old "Done! OK" behavior for non-launching tasks
-                        ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", message_.c_str());
+                        ImGui::TextColored(ImVec4(0,1,0,1), "%s", message_.c_str());
                         if (!resultPath_.empty())
                             ImGui::TextWrapped("Saved to: %s", resultPath_.c_str());
                         if (ImGui::Button("OK")) {
@@ -240,13 +282,24 @@ void ModalDialog::draw() {
                         }
                     }
                 }
-            } else if (type_ == ModalType::CommandOutput) {
-                ImGui::BeginChild("##output_scroll", ImVec2(800, 500), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+            }
+
+
+            // ---------------------------------------------------------
+            // COMMAND OUTPUT WINDOW
+            // ---------------------------------------------------------
+            else if (type_ == ModalType::CommandOutput) {
+
+                ImGui::BeginChild("##output_scroll", ImVec2(800, 500), true,
+                                  ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+
                 ImGui::TextUnformatted(outputBuffer_.c_str());
+
                 if (scrollToBottom_) {
                     ImGui::SetScrollHereY(1.0f);
                     scrollToBottom_ = false;
                 }
+
                 ImGui::EndChild();
 
                 if (ImGui::Button("Close")) {
@@ -257,9 +310,11 @@ void ModalDialog::draw() {
 
             ImGui::EndPopup();
         }
-    } // <-- lock released here
+    } // lock released here
 
-    // Safe to execute callbacks now
+    // ---------------------------------------------------------
+    // EXECUTE CALLBACKS *AFTER* ImGui is done
+    // ---------------------------------------------------------
     if (deferredCancel) deferredCancel();
     if (deferredConfirm) deferredConfirm(chosenOption);
 }

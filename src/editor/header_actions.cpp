@@ -31,7 +31,7 @@ void requestDeleteTableFolder(EditorUI& ui) {
         ui.modal().openConfirm(
             "Confirm Delete?",
             "Delete TABLE FOLDER:\n" + folder.string() + "\n\nThis will permanently REMOVE ALL FILES. Continue?",
-            {"No", "Yes"}, // defaults to 1st on ui
+            {"Yes", "No"}, // defaults to 1st on ui
             [&ui, folder](const std::string& choice) {
                 if (choice == "Yes") {
                     try {
@@ -82,7 +82,7 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
         ui.modal().openConfirm(
             "Confirm Delete?",
             "Delete file:\n" + base.string() + "\n\nThis will permanently REMOVE it. Continue?",
-            {"No", "Yes"},
+            {"Yes", "No"},
             [&ui, base, fileType](const std::string& choice) {
                 if (choice == "Yes") {
                     try {

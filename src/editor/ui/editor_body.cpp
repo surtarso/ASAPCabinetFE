@@ -579,7 +579,7 @@ void drawBody(EditorUI& ui) {
                     {ImGui::TableSetColumnIndex(12);
 
                         if (t.isPatched) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.20f, 1.0f, 0.20f, 1.0f)); // green
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.30f, 1.0f)); // yellow
                             ImGui::Text(" P ");
                             ImGui::PopStyleColor();
                         } else {

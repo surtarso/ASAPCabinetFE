@@ -5,6 +5,7 @@ TODO [NEW]-> Feature/Idea
       -   -> General/Logic
 
 FIX:
+- [!][ED] remove keyboard follow logic, use imgui center built-in. test mouse scroll.
 - flatpak
 - add failsafe when there is no audio (card)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
@@ -17,10 +18,9 @@ WHAT DID I GET INTO:
 [master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
 
 - feedback when trying to change values that 'auto position' will ignore, if activated.
-- polish yes/no modals (fugly)
 
 QOL:
-- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix this)
+- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix  this)
 - improve all matchmaking (slow vs fast(current) modes?)
 - some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
 - add ipdb to the mix, change ids to ID_xxx (from xxxID)
