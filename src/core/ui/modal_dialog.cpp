@@ -204,8 +204,8 @@ void ModalDialog::draw() {
 
             if (type_ == ModalType::Confirm)
             {
-                std::string noLabel  = options_.size() >= 1 ? options_[0] : "No";
-                std::string yesLabel = options_.size() >= 2 ? options_[1] : "Yes";
+                std::string yesLabel = options_.size() >= 1 ? options_[0] : "Yes";
+                std::string noLabel  = options_.size() >= 2 ? options_[1] : "No";
 
                 const float buttonWidth = 120.0f;
                 const float spacing = ImGui::GetStyle().ItemSpacing.x;

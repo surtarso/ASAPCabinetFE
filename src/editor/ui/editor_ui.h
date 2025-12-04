@@ -118,6 +118,7 @@ public:
     Uint32 lastExternalAppReturnTime_ = 0;        ///< Timestamp of last external app return
     bool screenshotModeActive_ = false;           ///< Is screenshot mode active
     static constexpr Uint32 EXTERNAL_APP_DEBOUNCE_TIME_MS = 500; ///< 0.5 sec debounce
+    // int lastSelectedIndex = -1;
 
 private:
     // helper methods

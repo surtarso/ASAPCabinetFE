@@ -15,10 +15,10 @@ void drawHeader(EditorUI& ui) {
     // ---------------------------------------------
     // Arrow-key navigation for rows (FULLY SEPARATE)
     // ---------------------------------------------
-    ui.actions().handleRowNavigation(
-        ui.selectedIndex(),
-        static_cast<int>(ui.filteredTables().size())
-    );
+    // ui.actions().handleRowNavigation(
+    //     ui.selectedIndex(),
+    //     static_cast<int>(ui.filteredTables().size())
+    // );
 
     // ------------------------------ FUZZY SEARCH BAR ------------------------------
     if (!ImGui::IsItemActive()) {

@@ -251,18 +251,19 @@ void drawBody(EditorUI& ui) {
 
                 for (int i = 0; i < static_cast<int>(ui.filteredTables().size()); ++i) {
                     const auto& t = ui.filteredTables()[i];
+                    // bool selectionChanged = (ui.selectedIndex() != ui.lastSelectedIndex);
                     ImGui::TableNextRow();
 
-                    ImGui::TableNextColumn();   // IMPORTANT: must be called before GetCursorScreenPos()
+                    // ImGui::TableNextColumn();   // IMPORTANT: must be called before GetCursorScreenPos()
 
-                    // -------------------------------------------------
-                    // SCROLL THE TABLE WHEN THE SELECTED ROW CHANGES
-                    // -------------------------------------------------
-                    if (i == ui.selectedIndex()) {
-                        float rowY = ImGui::GetCursorScreenPos().y;
-                        float pad  = ImGui::GetTextLineHeight();      // small padding
-                        ImGui::SetScrollFromPosY(rowY - pad, 0.25f);  // 0.25f = soft push, not centering
-                    }
+                    // // -------------------------------------------------
+                    // // SCROLL THE TABLE WHEN THE SELECTED ROW CHANGES
+                    // // -------------------------------------------------
+                    // if (i == ui.selectedIndex()) {
+                    //     float rowY = ImGui::GetCursorScreenPos().y;
+                    //     float pad  = ImGui::GetTextLineHeight();      // small padding
+                    //     ImGui::SetScrollFromPosY(rowY - pad, 0.25f);  // 0.25f = soft push, not centering
+                    // }
 
                     // Pick correct values by scanner with fallback to best match
                     std::string displayYear = !t.vpsYear.empty() ? t.vpsYear
@@ -308,6 +309,10 @@ void drawBody(EditorUI& ui) {
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR
                     {ImGui::TableSetColumnIndex(0);
+                    // Auto-scroll ONLY when selection changes
+                    // if (i == ui.selectedIndex() && selectionChanged) {
+                    //     ImGui::SetScrollHereY(0.5f);
+                    // }
                     ImGui::TextUnformatted(displayYear.c_str());
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();

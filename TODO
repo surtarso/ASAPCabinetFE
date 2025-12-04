@@ -5,7 +5,6 @@ TODO [NEW]-> Feature/Idea
       -   -> General/Logic
 
 FIX:
-- [!][ED] remove keyboard follow logic, use imgui center built-in. test mouse scroll.
 - flatpak
 - add failsafe when there is no audio (card)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
@@ -17,7 +16,6 @@ WHAT DID I GET INTO:
 [?] unify file scan and vpin scan (w/ vpxtool toggle) single pass!
 [master fuck] streamline loading/matchmaking with 2 passes (file/metadata + dbmatchmake)
 
-- feedback when trying to change values that 'auto position' will ignore, if activated.
 
 QOL:
 - [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix  this)
