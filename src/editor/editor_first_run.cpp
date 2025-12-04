@@ -1,5 +1,4 @@
 #include "editor/editor_first_run.h"
-#include "data/asapcab/asapcab_database_manager.h"
 #include "config/settings.h"
 #include "log/logging.h"
 #include <filesystem>
@@ -112,33 +111,7 @@ void drawFirstRun(EditorUI& ui)
             ui.setConfigValid(isValid);
 
             if (isValid){
-                ui.modal().openProgress(
-                    "Initializing Database",
-                    "Preparing AsapCab's Database...\nThis may take a few minutes."
-                );
-
-                std::thread([settings = ui.configService()->getSettings(), &ui]() {
-                    data::asapcabdb::AsapCabDatabaseManager dbManager(settings);
-                    bool success = dbManager.ensureAvailable();
-
-                    if (!success) {
-                        // Only show modal if DB build failed
-                        ui.modal().openError(
-                            "Failed to build AsapCab's Database",
-                            "The database could not be built. Please check your internet connection.\n \
-                            You will not be able to match tables to online metadata at this moment.\n \
-                            Close this modal to start a complete file scan."
-                        );
-                        LOG_ERROR("Database failed on first run, starting complete file scan only.");
-                        ui.rescanAsyncPublic(ScannerMode::VPin); // only scan files + metadata
-
-                    } else {
-                        // Success: directly start the scan without any pop-up
-                        LOG_INFO("Database already present, starting full scan.");
-                        ui.rescanAsyncPublic(ScannerMode::VPSDb); // scan (file + file metadata) + VPSDB (later main DB)
-                    }
-
-                }).detach();
+                ui.rescanAsyncPublic(ScannerMode::VPSDb);
             }
         }
 

@@ -18,43 +18,18 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "future pinball",
     "zen studios",
     "zen pinball",
-    "pinball fx",
-    "pinball fx2",
-    "pinball fx3",
     "pinball fx4",
-    "pinball arcade",
+    "pinball fx3",
+    "pinball fx2",
+    "pinball fx",
     "the pinball arcade",
+    "pinball arcade",
     "vpx original",
     "original",              // VPX original table (community)
     "recreational",          // often used by modders
     "mod",                   // MOD editions of tables
     "modded",
     "mod version",
-    // "virtual pinball",
-    // "vpx team",
-    // "vpw",                   // Virtual Pin Workshop (VPW)
-    // "vp universe",           // community site reference
-    // "vpuniverse",
-    // "pinup popper",          // launcher ecosystem
-    // "pinup system",
-    // "pinup player",
-    // "b2s backglass",
-    // "b2s team",
-    // "slam tilt",             // notable Future Pinball creator
-    // "ravarcade",             // Future Pinball engine author
-    // "terryred",              // well-known FP/VP modder
-    // "schreibi34",            // VPX modder
-    // "balutito",              // VPX author
-    // "bord",                  // VPX author
-    // "hauntfreaks",           // VPX modder
-    // "nailbuster",            // PinUP System creator
-    // "loserman76",            // VPX table recreator (EM focus)
-    // "jp salas",              // prolific VPX/Future Pinball author
-    // "destruk",               // early VPX author
-    // "bodydump",              // VPX modder
-    // "cyberpez",              // VPX author
-    // "stat",                  // VPW contributor
-    // "schreibi",              // shorthand for schreibi34
 
     // ------------------------------------------------------------------
     // Major Historical Manufacturers (US)

@@ -1,7 +1,9 @@
 #include "editor/ui/editor_header.h"
 #include "editor/header_actions.h"
 #include "data/lbdb/lbdb_builder.h"
-#include "data/asapcab/asapcab_database_manager.h"
+#include "data/ipdb/ipdb_updater.h"
+#include "data/vpsdb/vps_database_updater.h"
+#include "data/vpinmdb/vpinmdb_updater.h"
 #include <thread>
 #include <imgui.h>
 #include <filesystem>
@@ -171,31 +173,6 @@ void drawHeader(EditorUI& ui) {
             // ----------------------------
             if (ImGui::BeginMenu("Database")) {
 
-                // REBUILD MAIN DATABASE
-                if (ImGui::MenuItem("Rebuild AsapCab's Main Database")) {
-                    // Immediately shows modal so the user knows it's working
-                    ui.modal().openProgress(
-                        "Building AsapCab's DB",
-                        "Working...\nThis may take several minutes."
-                    );
-                    // Background thread to avoid blocking ImGui
-                    std::thread([settings, &ui] {
-
-                        // Create manager instance
-                        data::asapcabdb::AsapCabDatabaseManager dbManager(settings);
-
-                        bool success = dbManager.ensureAvailable();
-                        // Close modal when finished
-                        ui.modal().requestFinishProgress("AsapCab's Database is now available!"); // TODO: not showing up...
-
-                        if (!success) {
-                            LOG_ERROR("AsapCab's DB rebuild failed");
-                        } else {
-                            LOG_INFO("AsapCab's DB rebuild complete");
-                        }
-                    }).detach();
-                }
-
                 // REBUILD LAUNCHBOX DB
                 if (ImGui::MenuItem("Rebuild Launchbox DB")) {
                     // Immediately shows modal so the user knows it's working
@@ -279,7 +256,6 @@ void drawHeader(EditorUI& ui) {
 
                     std::thread([settings, &ui] {
 
-                        // Create updater with null progress (modal is enough)
                         data::vpinmdb::VpinMdbUpdater updater(settings, nullptr);
 
                         bool success = updater.ensureAvailable();

@@ -27,7 +27,6 @@
 #include "capture/iscreenshot_manager.h"
 #include "config/iconfig_service.h"
 #include "config/ui/config_ui.h"
-#include "data/asapcab/asapcab_database_manager.h"
 #include "data/asapcab/table_override_manager.h"
 #include "data/table_data.h"
 #include "keybinds/iinput_manager.h"
@@ -149,10 +148,6 @@ private:
     // --- Update checker ---
     std::unique_ptr<VersionChecker> versionChecker_;
     std::atomic<bool> updateAvailable_{false};
-    // DB initialization status
-    bool dbReady_ = false;
-    bool dbInitFailed_ = false;
-    std::unique_ptr<std::thread> dbInitThread_;
 
     /**
      * @brief Gets the executable directory.
@@ -171,13 +166,6 @@ private:
      * @return True if the configuration is valid, false otherwise.
      */
     bool isConfigValid();
-
-    /**
-     * @brief Loads table data. (leftover)
-     *
-     * Calls loadTablesThreaded()
-     */
-    void loadTables();
 
     /**
      * @brief Loads the TTF font.
@@ -226,7 +214,7 @@ private:
      *
      * Populates the tables_ vector using the table loader.
      */
-    void loadTablesThreaded(size_t oldIndex = 0); // Helper for threaded loading
+    void loadTablesThreaded(size_t oldIndex = 0);
 };
 
 #endif // APP_H

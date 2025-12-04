@@ -3,7 +3,6 @@
 #include "core/dependency_factory.h"
 #include "core/ui/imgui_manager.h"
 #include "data/asapcab/asapcab_index_manager.h"
-#include "data/asapcab/asapcab_database_manager.h"
 #include "panels/metadata_view/metadata_view.h"
 #include "tables/table_loader.h"
 #include "tables/table_patcher.h"

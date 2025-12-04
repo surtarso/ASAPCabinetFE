@@ -291,8 +291,6 @@ set(SOURCES
     src/core/ui/playfield_overlay.cpp
     # data
     src/data/asapcab/asapcab_index_manager.cpp
-    src/data/asapcab/asapcab_database_builder.cpp
-    src/data/asapcab/asapcab_database_manager.cpp
     src/data/asapcab/table_override_manager.cpp
     src/data/ipdb/ipdb_downloader.cpp
     src/data/ipdb/ipdb_loader.cpp
@@ -306,8 +304,6 @@ set(SOURCES
     src/data/vpinmdb/vpinmdb_downloader.cpp
     src/data/vpinmdb/vpinmdb_loader.cpp
     src/data/vpinmdb/vpinmdb_updater.cpp
-    src/data/asapcab/database_matchmaking.cpp
-    src/data/asapcab/database_unifier.cpp
     # launcher
     src/launcher/table_launcher.cpp
     # sound

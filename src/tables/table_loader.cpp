@@ -255,18 +255,18 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numMatched = 0;
             progress->numNoMatch = 0;
         }
-        VpsDatabaseClient vpsClient(settings);
+        VpsDatabaseClient vpsdbClient(settings);
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Checking for VPSDB updates...";
         }
-        bool fetchSuccess = vpsClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress);
+        bool fetchSuccess = vpsdbClient.fetchIfNeeded(settings.vpsDbLastUpdated, settings.vpsDbUpdateFrequency, progress);
         if (fetchSuccess) {
             if (progress) {
                 std::lock_guard<std::mutex> lock(progress->mutex);
                 progress->currentTask = "Loading VPSDB into memory...";
             }
-            if (vpsClient.load(progress)) {
+            if (vpsdbClient.load(progress)) {
                 std::vector<TableData> tablesForVpsdb;
                 std::unordered_map<std::string, TableData> scannedTableMap;
                 for (const auto& newTable : scannedTables) {
@@ -310,40 +310,41 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                             std::this_thread::yield();
                         }
 
-                        futures.push_back(std::async(std::launch::async, [&table, &vpsClient, progress, &processedVps]() {
+                        futures.push_back(std::async(std::launch::async, [&table, &vpsdbClient, progress, &processedVps]() {
                             nlohmann::json tempJson;
-                            tempJson["path"] = table.vpxFile;
-                            tempJson["rom"] = table.romName;
+                            // file scan fileds:
+                            tempJson["path"] = table.vpxFile;   // Full path to the vpx table file
+                            tempJson["rom"] = table.romName;    // actual rom file from user (user could have wrong rom...)
+                            // we need to extract 'expected rom' from table script to validate this (tho script could be wrong too lol)
+                            // Table file metadata fields:
                             tempJson["table_info"] = {
                                 {"table_name", table.tableName},
                                 {"author_name", table.tableAuthor},
-                                {"table_description", table.tableDescription},
-                                {"table_version", table.tableVersion},
-                                {"table_save_date", table.tableSaveDate},
-                                {"release_date", table.tableReleaseDate},
+                                {"table_description", table.tableDescription}, // big text
+                                {"table_version", table.tableVersion},         // many formats
+                                {"table_save_date", table.tableSaveDate},      // many formats
+                                {"release_date", table.tableReleaseDate},      // many formats
                                 {"table_save_rev", table.tableRevision},
-                                {"table_blurb", table.tableBlurb},
-                                {"table_rules", table.tableRules},
+                                {"table_blurb", table.tableBlurb},             // big text
+                                {"table_rules", table.tableRules},             // big text
                                 {"author_email", table.tableAuthorEmail},
                                 {"author_website", table.tableAuthorWebsite}
                             };
                             tempJson["properties"] = {
                                 {"manufacturer", table.tableManufacturer},
-                                {"year", table.tableYear},
-                                {"TableType", table.tableType}
+                                {"year", table.tableYear},      // many formats
+                                {"TableType", table.tableType}  // EM, SS.. Eletro Mechanical, eletromechanical...
                             };
+                            // file heuristics fields:
                             tempJson["filename_title"] = table.title;
-                            tempJson["filename_manufacturer"] = table.manufacturer;
+                            tempJson["filename_manufacturer"] = table.manufacturer; // extracted from filename using manufacturers.h list
                             tempJson["filename_year"] = table.year;
 
-                            // TODO: match instead with new master database.
-                            // add all new fields to table_data
-                            // keep the 3 canonical data + separate for each db (as is with vpin/vpsdb)
-                            // just adding launchbox and ipdb to the fields
-                            // We 1st match asapcab ID's than iso_ id's
-                            // all using he above tempjson (what we gatheres from file/metadata scan)
+                            // create a metadata validator to mark good/bad metadata (extract from vpsdb match logic)
+                            // send to vpsdb with that marker, use good fields only
+                            // save(?) and send to ipdb with all possible good data.
 
-                            vpsClient.matchMetadata(tempJson, table, progress);
+                            vpsdbClient.matchMetadata(tempJson, table, progress);
                             if (!table.vpsId.empty()) {
                                 table.jsonOwner = "Virtual Pinball Spreadsheet Database";
                             }
