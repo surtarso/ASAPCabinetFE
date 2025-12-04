@@ -893,7 +893,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
                                                    "novideo - disable all in-app video (useful for debugging or low-power setups).\n"
                                                    "software - force SDL software rendering for window renderers (diagnostic/testing only)."}},
     {"useVPinballXIni", {Settings::ReloadType::Full, "If enabled, read sizes and positions from ~/.vpinball/VPinballX.ini.\n\n"
-                                                       "NOTE: This will override the manual window position/size settings below."}},
+                                                       "IMPORTANT: This will OVERRIDE ALL values from settings below."}},
     {"playfieldWindowWidth", {Settings::ReloadType::Full, "Playfield window width in pixels (match this to your playfield media for best results)."}},
     {"playfieldWindowHeight", {Settings::ReloadType::Full, "Playfield window height in pixels (match this to your playfield media for best results)."}},
     {"playfieldX", {Settings::ReloadType::Full, "Playfield window X position on screen.\n\nDrag a window and double-click to save its position."}},

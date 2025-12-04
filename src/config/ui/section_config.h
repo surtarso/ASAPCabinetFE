@@ -227,7 +227,7 @@ public:
         };
         keyDisplayNames_["WindowSettings"] = {
             {"videoBackend", "Video backend"},
-            {"useVPinballXIni", "Use VPX INI"},
+            {"useVPinballXIni", "Override with VPinballX settings"},
             {"playfieldWindowWidth", "Playfield width"},
             {"playfieldWindowHeight", "Playfield height"},
             {"playfieldX", "Playfield X"},
