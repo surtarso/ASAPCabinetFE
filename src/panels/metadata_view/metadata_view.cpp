@@ -210,7 +210,6 @@ auto DrawInfoContent = [&]() {
         ImGui::Text("Script Hash (VPX): %s", currentTable.hashFromVpx.c_str());
         ImGui::Text("Script Hash (VBS): %s", currentTable.hashFromVbs.c_str());
     }
-    ImGui::Text("Manual ID: %s", currentTable.isManualVpsId ? "Yes" : "No");
     ImGui::Text("Patched: %s", currentTable.isPatched ? "Yes" : "No");
     ImGui::Text("Has different VBS: %s", currentTable.hasDiffVbs ? "Yes" : "No");
 };
