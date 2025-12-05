@@ -82,7 +82,7 @@ static void buildLbIndex(const nlohmann::json& db, const StringUtils& util) {
         // name/year/manu safe extraction
         std::string title = util.safeGetString(game, "Name", "");
         std::string year  = util.safeGetString(game, "Year", "");
-        std::string manu  = util.safeGetString(game, "Developer", "");
+        std::string manu  = util.safeGetString(game, "Publisher", ""); // Developer has author OR manufacturer.
 
         std::string cleanB = util.extractCleanTitle(title);
         e.normTitle = util.normalizeStringLessAggressive(cleanB);
