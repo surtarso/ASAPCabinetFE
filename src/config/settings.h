@@ -109,7 +109,7 @@ struct Settings {
     bool useVpxtool = false;
     bool ignoreScanners = true;
     bool forceRebuildMetadata = false;
-    std::string titleSortBy = "title"; // + 'year', 'author', 'manufacturer', 'type'
+    std::string titleSortBy = "title"; // + 'bestYear', 'author', 'bestManufacturer', 'type'
 
     float titleWeight = 0.6f; //0.2 - 0.8
     float yearWeight = 0.2f; //0 - 0.4

@@ -56,19 +56,19 @@ void MetadataDisplay::render(const TableData &currentTable,
             ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
         if (!currentTable.vpsName.empty())
             ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
-        if (!currentTable.title.empty() && currentTable.title != filePath.stem().string())
-            ImGui::Text("Title: %s", currentTable.title.c_str());
+        if (!currentTable.bestTitle.empty() && currentTable.bestTitle != filePath.stem().string())
+            ImGui::Text("Title: %s", currentTable.bestTitle.c_str());
         if (!currentTable.romName.empty())
             ImGui::Text("ROM: %s", currentTable.romName.c_str());
 
-        bool hasManuf = !currentTable.manufacturer.empty();
-        bool hasYear = !currentTable.year.empty();
+        bool hasManuf = !currentTable.bestManufacturer.empty();
+        bool hasYear = !currentTable.bestYear.empty();
         if (hasManuf && hasYear)
-            ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
+            ImGui::Text("Manufacturer / Year: %s / %s", currentTable.bestManufacturer.c_str(), currentTable.bestYear.c_str());
         else if (hasManuf)
-            ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
+            ImGui::Text("Manufacturer: %s", currentTable.bestManufacturer.c_str());
         else if (hasYear)
-            ImGui::Text("Year: %s", currentTable.year.c_str());
+            ImGui::Text("Year: %s", currentTable.bestYear.c_str());
 
         if (currentTable.matchConfidence > 0)
         {

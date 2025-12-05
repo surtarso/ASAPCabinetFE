@@ -307,7 +307,7 @@ void Editor::mainLoop() {
                         metadataEditor_.reset();
                         showMetadataEditor_ = false;
 
-                        if (saved) {
+                        // if (saved) {  // only called on save, not delete.
                             {
                                 std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
 
@@ -319,14 +319,20 @@ void Editor::mainLoop() {
 
                                     // Match the same table used by TableOverrideEditor
                                     if (t.vpxFile == selectedPath) {
-                                        t.hasOverride = true;   // <--- REQUIRED: mark override flag
+                                        // REAPPLY THE OVERRIDE STATE TO THE MASTER TABLE
+                                        overrideManager_->applyOverrides(t);  // ← THIS SETS isManualVpsId CORRECTLY
+
+                                        // Update UI flag
+                                        t.hasOverride = overrideManager_->overrideFileExists(t);
+
+                                        // FORCE INDEX SAVE — THIS IS THE KEY
                                         tableCallbacks_->save(config_->getSettings(), editorUI_->tables(), nullptr);
                                         break;
                                     }
                                 }
                             }
                             editorUI_->filterAndSortTablesPublic();
-                        }
+                        // }
                     }
                 }
 

@@ -19,7 +19,7 @@ using json = nlohmann::json;
 
 std::string TableOverrideManager::getOverrideFilePath(const TableData& table) const {
     if (table.vpxFile.empty()) {
-        LOG_ERROR("Invalid vpxFile path for table: " + table.title);
+        LOG_ERROR("Invalid vpxFile path for table: " + table.bestTitle);
         return "";
     }
 
@@ -35,138 +35,51 @@ bool TableOverrideManager::overrideFileExists(const TableData& table) const {
 }
 
 void TableOverrideManager::applyOverrides(TableData& table) const {
-    std::string overridePath = getOverrideFilePath(table);
-    if (overridePath.empty()) {
-        return;
-    }
-
-    if (!fs::exists(overridePath)) {
-        // LOG_DEBUG("No override file found at: " + overridePath);
+    std::string path = getOverrideFilePath(table);
+    if (path.empty() || !fs::exists(path)){
+        table.isManualVpsId = false;
+        table.hasOverride = false;
         return;
     }
 
     try {
-        std::ifstream file(overridePath);
-        if (!file.is_open()) {
-            LOG_ERROR("Failed to open override file: " + overridePath);
-            return;
+        json j = json::parse(std::ifstream(path));
+
+        if (j.contains("bestTitle") && j["bestTitle"].is_string())
+            table.bestTitle = j["bestTitle"];
+        if (j.contains("bestManufacturer") && j["bestManufacturer"].is_string())
+            table.bestManufacturer = j["bestManufacturer"];
+        if (j.contains("bestYear") && j["bestYear"].is_string())
+            table.bestYear = j["bestYear"];
+        // ONLY if vpsId is present and non-empty → manual
+        if (j.contains("vpsId") && j["vpsId"].is_string()) {
+            std::string id = j["vpsId"];
+            if (!id.empty()) {
+                table.vpsId = id;
+                table.isManualVpsId = true;
+            } else {
+                table.vpsId.clear();  // user explicitly cleared it
+            }
         }
 
-        json overrides;
-        file >> overrides;
-        file.close();
-
-        // Merge overrideable fields
-        if (overrides.contains("title") && overrides["title"].is_string()) {
-            table.title = overrides["title"].get<std::string>();
-        }
-        if (overrides.contains("manufacturer") && overrides["manufacturer"].is_string()) {
-            table.manufacturer = overrides["manufacturer"].get<std::string>();
-        }
-        if (overrides.contains("year") && overrides["year"].is_string()) {
-            table.year = overrides["year"].get<std::string>();
-        }
-        if (overrides.contains("playfieldImage") && overrides["playfieldImage"].is_string()) {
-            table.playfieldImage = overrides["playfieldImage"].get<std::string>();
-        }
-        if (overrides.contains("wheelImage") && overrides["wheelImage"].is_string()) {
-            table.wheelImage = overrides["wheelImage"].get<std::string>();
-        }
-        if (overrides.contains("backglassImage") && overrides["backglassImage"].is_string()) {
-            table.backglassImage = overrides["backglassImage"].get<std::string>();
-        }
-        if (overrides.contains("dmdImage") && overrides["dmdImage"].is_string()) {
-            table.dmdImage = overrides["dmdImage"].get<std::string>();
-        }
-        if (overrides.contains("topperImage") && overrides["topperImage"].is_string()) {
-            table.topperImage = overrides["topperImage"].get<std::string>();
-        }
-        if (overrides.contains("playfieldVideo") && overrides["playfieldVideo"].is_string()) {
-            table.playfieldVideo = overrides["playfieldVideo"].get<std::string>();
-        }
-        if (overrides.contains("backglassVideo") && overrides["backglassVideo"].is_string()) {
-            table.backglassVideo = overrides["backglassVideo"].get<std::string>();
-        }
-        if (overrides.contains("dmdVideo") && overrides["dmdVideo"].is_string()) {
-            table.dmdVideo = overrides["dmdVideo"].get<std::string>();
-        }
-        if (overrides.contains("topperVideo") && overrides["topperVideo"].is_string()) {
-            table.topperVideo = overrides["topperVideo"].get<std::string>();
-        }
-        if (overrides.contains("music") && overrides["music"].is_string()) {
-            table.music = overrides["music"].get<std::string>();
-        }
-        if (overrides.contains("launchAudio") && overrides["launchAudio"].is_string()) {
-            table.launchAudio = overrides["launchAudio"].get<std::string>();
-        }
-        if (overrides.contains("tableName") && overrides["tableName"].is_string()) {
-            table.tableName = overrides["tableName"].get<std::string>();
-        }
-        if (overrides.contains("tableAuthor") && overrides["tableAuthor"].is_string()) {
-            table.tableAuthor = overrides["tableAuthor"].get<std::string>();
-        }
-        if (overrides.contains("tableDescription") && overrides["tableDescription"].is_string()) {
-            table.tableDescription = overrides["tableDescription"].get<std::string>();
-        }
-        if (overrides.contains("tableSaveDate") && overrides["tableSaveDate"].is_string()) {
-            table.tableSaveDate = overrides["tableSaveDate"].get<std::string>();
-        }
-        if (overrides.contains("tableLastModified") && overrides["tableLastModified"].is_string()) {
-            table.tableLastModified = overrides["tableLastModified"].get<std::string>();
-        }
-        if (overrides.contains("tableReleaseDate") && overrides["tableReleaseDate"].is_string()) {
-            table.tableReleaseDate = overrides["tableReleaseDate"].get<std::string>();
-        }
-        if (overrides.contains("tableVersion") && overrides["tableVersion"].is_string()) {
-            table.tableVersion = overrides["tableVersion"].get<std::string>();
-        }
-        if (overrides.contains("tableRevision") && overrides["tableRevision"].is_string()) {
-            table.tableRevision = overrides["tableRevision"].get<std::string>();
-        }
-        if (overrides.contains("tableBlurb") && overrides["tableBlurb"].is_string()) {
-            table.tableBlurb = overrides["tableBlurb"].get<std::string>();
-        }
-        if (overrides.contains("tableRules") && overrides["tableRules"].is_string()) {
-            table.tableRules = overrides["tableRules"].get<std::string>();
-        }
-        if (overrides.contains("tableAuthorEmail") && overrides["tableAuthorEmail"].is_string()) {
-            table.tableAuthorEmail = overrides["tableAuthorEmail"].get<std::string>();
-        }
-        if (overrides.contains("tableAuthorWebsite") && overrides["tableAuthorWebsite"].is_string()) {
-            table.tableAuthorWebsite = overrides["tableAuthorWebsite"].get<std::string>();
-        }
-        if (overrides.contains("tableType") && overrides["tableType"].is_string()) {
-            table.tableType = overrides["tableType"].get<std::string>();
-        }
-        if (overrides.contains("tableManufacturer") && overrides["tableManufacturer"].is_string()) {
-            table.tableManufacturer = overrides["tableManufacturer"].get<std::string>();
-        }
-        if (overrides.contains("tableYear") && overrides["tableYear"].is_string()) {
-            table.tableYear = overrides["tableYear"].get<std::string>();
-        }
-
-        LOG_INFO("Applied overrides for table: " + table.title + " from: " + overridePath);
-    } catch (const json::exception& e) {
-        LOG_ERROR("JSON parsing error in override file: " + overridePath + ": " + e.what());
-    } catch (const std::exception& e) {
-        LOG_ERROR("Failed to load override file: " + overridePath + ": " + e.what());
+        LOG_INFO("Applied overrides for: " + table.bestTitle);
+    } catch (...) {
+        LOG_ERROR("Failed to parse override file: " + path);
+        table.isManualVpsId = false;
+        table.hasOverride = false;
     }
-}
-
-void TableOverrideManager::reloadOverrides(TableData& table) const {
-    LOG_DEBUG("reloadOverrides called for table: " + table.title + " (not implemented)");
 }
 
 void TableOverrideManager::saveOverride(const TableData& table, const std::map<std::string, std::string>& overrides) const {
     std::string overridePath = getOverrideFilePath(table);
     if (overridePath.empty()) {
-        LOG_ERROR("Cannot save override, invalid path for table: " + table.title);
+        LOG_ERROR("Cannot save override, invalid path for table: " + table.bestTitle);
         return;
     }
 
     try {
         // Load existing JSON to preserve unedited fields
-        json overrideJson;
+        json overrideJson = json::object();
         if (fs::exists(overridePath)) {
             std::ifstream inFile(overridePath);
             if (!inFile.is_open()) {
@@ -191,7 +104,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         // If no changes and JSON is empty, delete the file
         if (!hasChanges && overrideJson.empty()) {
             deleteOverride(table);
-            LOG_DEBUG("No overrides to save, deleted file for table: " + table.title);
+            LOG_DEBUG("No overrides to save, deleted file for table: " + table.bestTitle);
             return;
         }
 
@@ -207,7 +120,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
         outFile << overrideJson.dump(4);
         outFile.close();
 
-        LOG_DEBUG("Saved overrides for table: " + table.title + " to: " + overridePath);
+        LOG_DEBUG("Saved overrides for table: " + table.bestTitle + " to: " + overridePath);
     } catch (const json::exception& e) {
         LOG_ERROR("JSON error while saving override file: " + overridePath + ": " + e.what());
     } catch (const std::exception& e) {
@@ -218,7 +131,7 @@ void TableOverrideManager::saveOverride(const TableData& table, const std::map<s
 void TableOverrideManager::deleteOverride(const TableData& table) const {
     std::string overridePath = getOverrideFilePath(table);
     if (overridePath.empty()) {
-        LOG_ERROR("Cannot delete override, invalid path for table: " + table.title);
+        LOG_ERROR("Cannot delete override, invalid path for table: " + table.bestTitle);
         return;
     }
 

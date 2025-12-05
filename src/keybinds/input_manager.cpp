@@ -196,7 +196,7 @@ void InputManager::onJumpPreviousLetter() {
         LOG_ERROR("currentIndex " + std::to_string(currentIdx) + " out of range (size=" + std::to_string(tables_->size()) + ")");
         return;
     }
-    std::string currentTitle = tables_->at(currentIdx).title;
+    std::string currentTitle = tables_->at(currentIdx).bestTitle;
     if (currentTitle.empty()) {
         LOG_ERROR("Empty title at index " + std::to_string(currentIdx));
         return;
@@ -211,7 +211,7 @@ void InputManager::onJumpPreviousLetter() {
     bool found = false;
     for (size_t i = currentIdx; i > 0; --i) {
         size_t idx = i - 1;
-        std::string title = tables_->at(idx).title;
+        std::string title = tables_->at(idx).bestTitle;
         if (title.empty()) continue;
         char c = title[0];
         char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
@@ -224,7 +224,7 @@ void InputManager::onJumpPreviousLetter() {
     if (!found) {
         for (size_t i = tables_->size(); i > 0; --i) {
             size_t idx = i - 1;
-            std::string title = tables_->at(idx).title;
+            std::string title = tables_->at(idx).bestTitle;
             if (title.empty()) continue;
             char c = title[0];
             char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
@@ -255,7 +255,7 @@ void InputManager::onJumpNextLetter() {
         LOG_ERROR("currentIndex " + std::to_string(currentIdx) + " out of range (size=" + std::to_string(tables_->size()) + ")");
         return;
     }
-    std::string currentTitle = tables_->at(currentIdx).title;
+    std::string currentTitle = tables_->at(currentIdx).bestTitle;
     if (currentTitle.empty()) {
         LOG_ERROR("Empty title at index " + std::to_string(currentIdx));
         return;
@@ -269,7 +269,7 @@ void InputManager::onJumpNextLetter() {
     size_t newIndex = currentIdx;
     bool found = false;
     for (size_t i = currentIdx + 1; i < tables_->size(); ++i) {
-        std::string title = tables_->at(i).title;
+        std::string title = tables_->at(i).bestTitle;
         if (title.empty()) continue;
         char c = title[0];
         char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
@@ -281,7 +281,7 @@ void InputManager::onJumpNextLetter() {
     }
     if (!found) {
         for (size_t i = 0; i < tables_->size(); ++i) {
-            std::string title = tables_->at(i).title;
+            std::string title = tables_->at(i).bestTitle;
             if (title.empty()) continue;
             char c = title[0];
             char key = (std::isalpha(c) || std::isdigit(c)) ? static_cast<char>(std::toupper(static_cast<unsigned char>(c))) : '\0';
@@ -365,7 +365,7 @@ void InputManager::onLaunchTable() {
 
     launchPopup_.active = true;
     launchPopup_.failed = false;
-    launchPopup_.tableName = tables_->at(launchedIndex).title;
+    launchPopup_.tableName = tables_->at(launchedIndex).bestTitle;
 
     tableLauncher_->launchTableAsync(
         tables_->at(launchedIndex),
@@ -390,14 +390,14 @@ void InputManager::onLaunchTable() {
                 t.playCount++;
                 t.playTimeLast = timePlayed;
                 t.playTimeTotal += timePlayed;
-                LOG_DEBUG("Updated TableData for " + t.title +
+                LOG_DEBUG("Updated TableData for " + t.bestTitle +
                         ": playCount=" + std::to_string(t.playCount) +
                         ", playTimeLast=" + std::to_string(t.playTimeLast) +
                         ", playTimeTotal=" + std::to_string(t.playTimeTotal));
             } else {
                 // non-zero mapped result -> treat as broken
                 t.isBroken = true;
-                LOG_DEBUG("Marked table " + t.title +
+                LOG_DEBUG("Marked table " + t.bestTitle +
                         " as broken due to mapped exit code " + std::to_string(result));
             }
 

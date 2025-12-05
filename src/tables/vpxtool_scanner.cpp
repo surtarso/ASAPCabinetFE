@@ -213,7 +213,7 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
 
                 if (tableJson.contains("table_info") && tableJson["table_info"].is_object()) {
                     const auto& tableInfo = tableJson["table_info"];
-                    currentTable->tableName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "table_name", currentTable->title));
+                    currentTable->tableName = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "table_name", currentTable->bestTitle));
                     currentTable->tableAuthor = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "author_name"));
                     currentTable->tableDescription = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableInfo, "table_description"));
                     currentTable->tableSaveDate = StringUtils::safeGetMetadataString(tableInfo, "table_save_date");
@@ -228,11 +228,11 @@ bool VPXToolScanner::scanFiles(const Settings& settings, std::vector<TableData>&
 
                 fs::path filePath(path);
                 std::string filename = filePath.stem().string();
-                currentTable->title = currentTable->tableName.empty() ? StringUtils::cleanMetadataString(filename) : currentTable->tableName;
+                currentTable->bestTitle = currentTable->tableName.empty() ? StringUtils::cleanMetadataString(filename) : currentTable->tableName;
 
                 if (tableJson.contains("properties") && tableJson["properties"].is_object()) {
-                    currentTable->manufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "manufacturer", ""));
-                    currentTable->year = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "year", ""));
+                    currentTable->bestManufacturer = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "manufacturer", ""));
+                    currentTable->bestYear = StringUtils::cleanMetadataString(StringUtils::safeGetMetadataString(tableJson["properties"], "year", ""));
                 }
                 if (progress) { std::lock_guard lock(progress->mutex); progress->numMatched++; }
             } catch (...) { if (progress) { std::lock_guard lock(progress->mutex); progress->numNoMatch++; } }

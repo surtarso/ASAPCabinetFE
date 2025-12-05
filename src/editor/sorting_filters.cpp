@@ -54,7 +54,7 @@ namespace
             if (sortColumn == 1 || sortColumn == 4 || sortColumn == 5 || sortColumn == 7) {
                 // Name (ID 1) should use 'title'
                 if (sortColumn == 1) {
-                    return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
+                    return compareWithTieBreaker(a.bestTitle, b.bestTitle, sortAscending, a, b);
                 }
                 // Author (ID 4) should use all table authors
                 if (sortColumn == 4) {
@@ -62,7 +62,7 @@ namespace
                 }
                 // Manufacturer (ID 5) should use 'manufacturer'
                 if (sortColumn == 5) {
-                    return compareWithTieBreaker(a.manufacturer, b.manufacturer, sortAscending, a, b);
+                    return compareWithTieBreaker(a.bestManufacturer, b.bestManufacturer, sortAscending, a, b);
                 }
 
                 // ROM (ID 7) should use 'romName'
@@ -74,7 +74,7 @@ namespace
             // Handle integer and simple string fields
             switch (sortColumn) {
                 case 0: // Year
-                    return compareWithTieBreaker(a.year, b.year, sortAscending, a, b);
+                    return compareWithTieBreaker(a.bestYear, b.bestYear, sortAscending, a, b);
 
                 case 2: // Type
                     return compareWithTieBreaker(a.vpsType, b.vpsType, sortAscending, a, b); //TODO: accout for tableType too
@@ -119,7 +119,7 @@ namespace
                     return compareWithTieBreaker((int)a.isBroken, (int)b.isBroken, sortAscending, a, b);
 
                 default:
-                    return compareWithTieBreaker(a.title, b.title, sortAscending, a, b);
+                    return compareWithTieBreaker(a.bestTitle, b.bestTitle, sortAscending, a, b);
             }
         });
     }
@@ -154,16 +154,16 @@ void EditorTableFilter::filterAndSort(const std::vector<TableData>& sourceTables
 
         // ---- Normalize and combine equivalent metadata ----
         std::string titleCombo =
-            toLower(table.title + " " + table.tableName + " " + table.vpsName);
+            toLower(table.bestTitle + " " + table.tableName + " " + table.vpsName);
 
         std::string authorCombo =
             toLower(table.tableAuthor + " " + table.vpsAuthors);
 
         std::string manufCombo =
-            toLower(table.manufacturer + " " + table.tableManufacturer + " " + table.vpsManufacturer);
+            toLower(table.bestManufacturer + " " + table.tableManufacturer + " " + table.vpsManufacturer);
 
         std::string yearCombo =
-            toLower(table.year + " " + table.tableYear + " " + table.vpsYear);
+            toLower(table.bestYear + " " + table.tableYear + " " + table.vpsYear);
 
         fs::path vpxPath(table.vpxFile);
         std::string filename = toLower(vpxPath.stem().string());

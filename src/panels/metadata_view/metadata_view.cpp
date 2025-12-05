@@ -47,21 +47,24 @@ auto DrawInfoContent = [&]() {
         ImGui::Text("VPin Name: %s", currentTable.tableName.c_str());
     if (!currentTable.vpsName.empty())
         ImGui::Text("VPSdb Name: %s", currentTable.vpsName.c_str());
-    if (!currentTable.title.empty() && currentTable.title != filePath.stem().string())
-        ImGui::Text("Title: %s", currentTable.title.c_str());
+    if (!currentTable.bestTitle.empty() && currentTable.bestTitle != filePath.stem().string())
+        ImGui::Text("Used Title: %s", currentTable.bestTitle.c_str());
 
     if (!currentTable.romName.empty())
         ImGui::Text("ROM: %s", currentTable.romName.c_str());
 
-    bool hasManuf = !currentTable.manufacturer.empty();
-    bool hasYear  = !currentTable.year.empty();
+    if (!currentTable.bestVersion.empty())
+        ImGui::Text("Version: %s", currentTable.bestVersion.c_str());
+
+    bool hasManuf = !currentTable.bestManufacturer.empty();
+    bool hasYear  = !currentTable.bestYear.empty();
 
     if (hasManuf && hasYear)
-        ImGui::Text("Manufacturer / Year: %s / %s", currentTable.manufacturer.c_str(), currentTable.year.c_str());
+        ImGui::Text("Manufacturer / Year: %s / %s", currentTable.bestManufacturer.c_str(), currentTable.bestYear.c_str());
     else if (hasManuf)
-        ImGui::Text("Manufacturer: %s", currentTable.manufacturer.c_str());
+        ImGui::Text("Manufacturer: %s", currentTable.bestManufacturer.c_str());
     else if (hasYear)
-        ImGui::Text("Year: %s", currentTable.year.c_str());
+        ImGui::Text("Year: %s", currentTable.bestYear.c_str());
 
     if (currentTable.matchConfidence > 0) {
         int fullStars = static_cast<int>(std::round(currentTable.matchConfidence * 10.0f));
@@ -72,6 +75,10 @@ auto DrawInfoContent = [&]() {
         for (int i = 0; i < fullStars; ++i) { ImGui::TextUnformatted("+"); ImGui::SameLine(); }
         ImGui::PopStyleColor();
         for (int i = fullStars; i < 10; ++i) { ImGui::TextUnformatted("-"); ImGui::SameLine(); }
+        if (currentTable.isManualVpsId) {
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), " (Manual ID)");
+        }
         ImGui::NewLine();
     }
 
@@ -83,6 +90,14 @@ auto DrawInfoContent = [&]() {
     ImGui::Separator();
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "FILE METADATA (VPIN / VPXTOOL)");
 
+    if (!currentTable.tableName.empty())
+        ImGui::Text("Name: %s", currentTable.tableName.c_str());
+    if (!currentTable.tableType.empty())
+        ImGui::Text("Type: %s", currentTable.tableType.c_str());
+    if (!currentTable.tableManufacturer.empty())
+        ImGui::Text("Manufacturer: %s", currentTable.tableManufacturer.c_str());
+    if (!currentTable.tableYear.empty())
+        ImGui::Text("Year: %s", currentTable.tableYear.c_str());
     if (!currentTable.tableAuthor.empty())
         ImGui::Text("Author: %s", currentTable.tableAuthor.c_str());
     if (!currentTable.tableDescription.empty())
@@ -108,14 +123,6 @@ auto DrawInfoContent = [&]() {
     if (!currentTable.tableRom.empty())
         ImGui::Text("ROM (file metadata): %s", currentTable.tableRom.c_str());
 
-    // Properties sub-fields
-    if (!currentTable.tableType.empty())
-        ImGui::Text("Type: %s", currentTable.tableType.c_str());
-    if (!currentTable.tableManufacturer.empty())
-        ImGui::Text("Manufacturer: %s", currentTable.tableManufacturer.c_str());
-    if (!currentTable.tableYear.empty())
-        ImGui::Text("Year: %s", currentTable.tableYear.c_str());
-
     // ============================================================================
     // VPSDB METADATA (FULL)
     // ============================================================================
@@ -133,10 +140,6 @@ auto DrawInfoContent = [&]() {
         currentTable.vpsComment.empty() &&
         currentTable.vpsManufacturer.empty() &&
         currentTable.vpsYear.empty() &&
-        currentTable.vpsTableImgUrl.empty() &&
-        currentTable.vpsTableUrl.empty() &&
-        currentTable.vpsB2SImgUrl.empty() &&
-        currentTable.vpsB2SUrl.empty() &&
         currentTable.vpsFormat.empty()
     )) {
         ImGui::Separator();
@@ -145,40 +148,31 @@ auto DrawInfoContent = [&]() {
 
     if (!currentTable.vpsId.empty())          ImGui::Text("ID: %s", currentTable.vpsId.c_str());
     if (!currentTable.vpsName.empty())        ImGui::Text("Name: %s", currentTable.vpsName.c_str());
+    if (!currentTable.vpsYear.empty())        ImGui::Text("Year: %s", currentTable.vpsYear.c_str());
+    if (!currentTable.vpsManufacturer.empty())ImGui::Text("Manufacturer: %s", currentTable.vpsManufacturer.c_str());
     if (!currentTable.vpsType.empty())        ImGui::Text("Type: %s", currentTable.vpsType.c_str());
     if (!currentTable.vpsThemes.empty())      ImGui::Text("Themes: %s", currentTable.vpsThemes.c_str());
     if (!currentTable.vpsDesigners.empty())   ImGui::Text("Designers: %s", currentTable.vpsDesigners.c_str());
     if (!currentTable.vpsPlayers.empty())     ImGui::Text("Players: %s", currentTable.vpsPlayers.c_str());
-    if (!currentTable.vpsIpdbUrl.empty())     ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());
+    if (!currentTable.vpsIpdbUrl.empty())     ImGui::Text("IPDB URL: %s", currentTable.vpsIpdbUrl.c_str());  //vpsdb has IPDB url!
     if (!currentTable.vpsVersion.empty())     ImGui::Text("Version: %s", currentTable.vpsVersion.c_str());
     if (!currentTable.vpsAuthors.empty())     ImGui::Text("Authors: %s", currentTable.vpsAuthors.c_str());
     if (!currentTable.vpsFeatures.empty())    ImGui::Text("Features: %s", currentTable.vpsFeatures.c_str());
     if (!currentTable.vpsFormat.empty())      ImGui::Text("Format: %s", currentTable.vpsFormat.c_str());
-    if (!currentTable.vpsManufacturer.empty())ImGui::Text("Manufacturer: %s", currentTable.vpsManufacturer.c_str());
-    if (!currentTable.vpsYear.empty())        ImGui::Text("Year: %s", currentTable.vpsYear.c_str());
     if (!currentTable.vpsComment.empty())     ImGui::TextWrapped("Comment: %s", currentTable.vpsComment.c_str());
-    if (!currentTable.vpsTableImgUrl.empty()) ImGui::Text("Table Img URL: %s", currentTable.vpsTableImgUrl.c_str());
-    if (!currentTable.vpsTableUrl.empty())    ImGui::Text("Table File URL: %s", currentTable.vpsTableUrl.c_str());
-    if (!currentTable.vpsB2SImgUrl.empty())   ImGui::Text("B2S Img URL: %s", currentTable.vpsB2SImgUrl.c_str());
-    if (!currentTable.vpsB2SUrl.empty())      ImGui::Text("B2S File URL: %s", currentTable.vpsB2SUrl.c_str());
 
     // ============================================================================
     // LAUNCHBOX METADATA
     // ============================================================================
-    if (!currentTable.flyerFront.empty() ||
-        !currentTable.flyerBack.empty() ||
-        !currentTable.lbdbID.empty())
+    if (!currentTable.lbdbID.empty())
     {
         ImGui::Separator();
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "LAUNCHBOX METADATA");
     }
 
-    if (!currentTable.flyerFront.empty())
-        ImGui::Text("Flyer Front: %s", currentTable.flyerFront.c_str());
-    if (!currentTable.flyerBack.empty())
-        ImGui::Text("Flyer Back: %s", currentTable.flyerBack.c_str());
     if (!currentTable.lbdbID.empty())
         ImGui::Text("LBDB ID: %s", currentTable.lbdbID.c_str());
+    // TODO: add -> ldbd + Developer Name Publisher Year
 
     // ============================================================================
     // OPERATIONAL TAGS (FULL)
@@ -216,6 +210,7 @@ auto DrawInfoContent = [&]() {
         ImGui::Text("Script Hash (VPX): %s", currentTable.hashFromVpx.c_str());
         ImGui::Text("Script Hash (VBS): %s", currentTable.hashFromVbs.c_str());
     }
+    ImGui::Text("Manual ID: %s", currentTable.isManualVpsId ? "Yes" : "No");
     ImGui::Text("Patched: %s", currentTable.isPatched ? "Yes" : "No");
     ImGui::Text("Has different VBS: %s", currentTable.hasDiffVbs ? "Yes" : "No");
 };

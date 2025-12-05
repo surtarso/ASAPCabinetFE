@@ -76,7 +76,7 @@ void App::reloadFont(bool isStandalone) {
             SDL_Rect titleRect = assets_->getTitleRect();
             titleRect.w = 0;
             titleRect.h = 0;
-            assets_->reloadTitleTexture(table.title, settings.fontColor, titleRect);
+            assets_->reloadTitleTexture(table.bestTitle, settings.fontColor, titleRect);
         }
         LOG_DEBUG("Font updated after config save");
     } else {
@@ -420,7 +420,7 @@ void App::render() {
             if (!overrideEditor_ || lastTableIndex_ != currentIndex_) {
                 overrideEditor_ = std::make_unique<TableOverrideEditor>(tables_[currentIndex_], overrideManager_);
                 lastTableIndex_ = currentIndex_;
-                LOG_DEBUG("Initialized TableOverrideEditor for table index: " + std::to_string(currentIndex_) + ", title: " + tables_[currentIndex_].title);
+                LOG_DEBUG("Initialized TableOverrideEditor for table index: " + std::to_string(currentIndex_) + ", title: " + tables_[currentIndex_].bestTitle);
             }
             if (!overrideEditor_->render()) {
                 if (overrideEditor_->wasSaved()) {

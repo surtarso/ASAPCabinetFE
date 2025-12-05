@@ -104,7 +104,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
         auto duration_ms = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(loadEnd - loadStart).count();
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(3) << duration_ms;
-        LOG_INFO("Loaded " + table.title + " in " + oss.str() + " ms (cached)");
+        LOG_INFO("Loaded " + table.bestTitle + " in " + oss.str() + " ms (cached)");
         return;
     }
 
@@ -133,7 +133,7 @@ void AssetManager::loadTableAssets(size_t index, const std::vector<TableData>& t
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(3) << duration_ms;
-    LOG_INFO("Loaded " + table.title + " in " + oss.str() + " ms");
+    LOG_INFO("Loaded " + table.bestTitle + " in " + oss.str() + " ms");
 }
 
 
@@ -158,7 +158,7 @@ void AssetManager::loadWindowAssets(SDL_Renderer* renderer, SDL_Texture*& tex, S
     // === TITLE ===
     if (s.showTitle && s.titleWindow == name) {
         SDL_Rect r{s.titleX, s.titleY, 0, 0};
-        titleRenderer_->reloadTitleTexture(table.title, s.fontColor, r,
+        titleRenderer_->reloadTitleTexture(table.bestTitle, s.fontColor, r,
             playfieldRenderer, playfieldTitleTexture,
             backglassRenderer, backglassTitleTexture,
             dmdRenderer, dmdTitleTexture,
@@ -242,9 +242,9 @@ void AssetManager::loadFallbackMedia(SDL_Renderer* renderer, std::unique_ptr<IVi
                                       const std::string& name, const TableData& table, int w, int h)
 {
     const Settings& s = configManager_->getSettings();
-    std::string text = (name == "dmd" ? table.manufacturer :
+    std::string text = (name == "dmd" ? table.bestManufacturer :
                        name == "topper" ? table.lbdbID :
-                       name == "backglass" ? table.title : "ASAPCabinetFE");
+                       name == "backglass" ? table.bestTitle : "ASAPCabinetFE");
 
     // std::string pseudo = "__ALTERNATIVE_MEDIA__" + (name == "dmd" ? ":" + text : "");
     std::string pseudo = "__ALTERNATIVE_MEDIA__";

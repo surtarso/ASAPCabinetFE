@@ -17,6 +17,10 @@
 #include <mutex>
 #include <memory>
 
+// TODO: collect ldbdDeveloper ldbdName ldbdPublisher ldbdYear on matches to table_data !
+// Developer is a mix of Author and manufacturers... Publisher = Manufacturer
+// Remember manufacturers.h list!
+
 namespace fs = std::filesystem;
 
 // ---------------------------------------------------------
@@ -136,13 +140,13 @@ std::optional<std::string> LbdbScanner::findBestMatch(const TableData& table) {
     // ------------------------------------------
     // CLEAN ASAP TITLE (aggressive, VPS-style)
     // ------------------------------------------
-    std::string cleanA = util.extractCleanTitle(table.title);
+    std::string cleanA = util.extractCleanTitle(table.bestTitle);
     std::string normA  = util.normalizeStringLessAggressive(cleanA);
     auto tokensA = tokenizeSimple(normA);
 
     // Normalize year and manufacturer
-    std::string yearA = table.year;
-    std::string manuA = util.toLower(table.manufacturer);
+    std::string yearA = table.bestYear;
+    std::string manuA = util.toLower(table.bestManufacturer);
     bool manuKnown = false;
     for (const auto& m : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
         if (manuA.find(m) != std::string::npos) {
@@ -324,12 +328,12 @@ void LbdbScanner::scanForMedia(std::vector<TableData>& tables) {
         auto best = findBestMatch(table);
         if (!best.has_value()) {
             table.lbdbID = "";
-            LOG_WARN("LaunchBox: NO MATCH → " + table.title);
+            LOG_WARN("LaunchBox: NO MATCH → " + table.bestTitle);
         } else {
             std::string bestId = best.value();
             table.lbdbID = bestId; // store clean new ID
 
-            LOG_INFO("LaunchBox MATCH → " + table.title +
+            LOG_INFO("LaunchBox MATCH → " + table.bestTitle +
                     " (ID: " + bestId + ")");
 
             // Download images
@@ -344,7 +348,7 @@ void LbdbScanner::scanForMedia(std::vector<TableData>& tables) {
         if (progress_) {
             std::lock_guard<std::mutex> l(progress_->mutex);
             progress_->currentTablesLoaded = processed;
-            progress_->logMessages.push_back("LaunchBox: " + table.title);
+            progress_->logMessages.push_back("LaunchBox: " + table.bestTitle);
         }
     }
 }
@@ -359,14 +363,14 @@ void LbdbScanner::downloadClearLogo(const std::string& gameId,
         });
 
     if (it == db.end() || !it->contains("images")) {
-        LOG_WARN("LaunchBox: no image block for " + table.title);
+        LOG_WARN("LaunchBox: no image block for " + table.bestTitle);
         return;
     }
 
     const auto& images = (*it)["images"];
 
     if (!images.contains("Clear Logo") || images["Clear Logo"].empty()) {
-        LOG_WARN("LaunchBox: no clear logo for " + table.title);
+        LOG_WARN("LaunchBox: no clear logo for " + table.bestTitle);
         return;
     }
 
@@ -390,7 +394,7 @@ void LbdbScanner::downloadClearLogo(const std::string& gameId,
         return;
     }
 
-    LOG_INFO("Downloaded Clear Logo → " + table.title + " → " + output.string());
+    LOG_INFO("Downloaded Clear Logo → " + table.bestTitle + " → " + output.string());
 
     if (!lbdb::resizeClearLogo(output, 128, 32)) {
         LOG_WARN("Resize failed for Clear Logo → " + output.string());

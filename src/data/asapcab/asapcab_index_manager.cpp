@@ -56,9 +56,10 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
         for (const auto& table : asapIndex["tables"]) {
             TableData tableData;
             // ----------------- BEST MATCHES --------------------
-            if (table.contains("title") && table["title"].is_string()) tableData.title = table["title"].get<std::string>();
-            if (table.contains("manufacturer") && table["manufacturer"].is_string()) tableData.manufacturer = table["manufacturer"].get<std::string>();
-            if (table.contains("year") && table["year"].is_string()) tableData.year = table["year"].get<std::string>();
+            if (table.contains("bestTitle") && table["bestTitle"].is_string()) tableData.bestTitle = table["bestTitle"].get<std::string>();
+            if (table.contains("bestManufacturer") && table["bestManufacturer"].is_string()) tableData.bestManufacturer = table["bestManufacturer"].get<std::string>();
+            if (table.contains("bestYear") && table["bestYear"].is_string()) tableData.bestYear = table["bestYear"].get<std::string>();
+            if (table.contains("bestVersion") && table["bestVersion"].is_string()) tableData.bestVersion = table["bestVersion"].get<std::string>();
 
             // ------------------ FILE PATHS ------------------
             if (table.contains("vpxFile") && table["vpxFile"].is_string()) tableData.vpxFile = table["vpxFile"].get<std::string>();
@@ -120,6 +121,10 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
 
             // Launchbox DB ID
             if (table.contains("lbdbID") && table["lbdbID"].is_string()) tableData.lbdbID = table["lbdbID"].get<std::string>();
+            if (table.contains("lbdbName") && table["lbdbName"].is_string()) tableData.lbdbName = table["lbdbName"].get<std::string>();
+            if (table.contains("lbdbYear") && table["lbdbYear"].is_string()) tableData.lbdbYear = table["lbdbYear"].get<std::string>();
+            if (table.contains("lbdbPublisher") && table["lbdbPublisher"].is_string()) tableData.lbdbPublisher = table["lbdbPublisher"].get<std::string>();
+            if (table.contains("lbdbDeveloper") && table["lbdbDeveloper"].is_string()) tableData.lbdbDeveloper = table["lbdbDeveloper"].get<std::string>();
 
             // --------------- Internet Pinball DB METADATA ---------------
             // TODO
@@ -137,6 +142,7 @@ bool AsapIndexManager::load(const Settings& settings, std::vector<TableData>& ta
             if (table.contains("hashFromVbs") && table["hashFromVbs"].is_string()) tableData.hashFromVbs = table["hashFromVbs"].get<std::string>();
             if (table.contains("hasDiffVbs") && table["hasDiffVbs"].is_boolean()) tableData.hasDiffVbs = table["hasDiffVbs"].get<bool>();
             if (table.contains("isPatched") && table["isPatched"].is_boolean()) tableData.isPatched = table["isPatched"].get<bool>();
+            // if (table.contains("isManualVpsId") && table["isManualVpsId"].is_boolean()) tableData.isManualVpsId = table["isManualVpsId"].get<bool>();
             // EXTRA FILES SCAN Boolean flags (ensure they are boolean type in JSON)
             if (table.contains("hasAltSound") && table["hasAltSound"].is_boolean()) tableData.hasAltSound = table["hasAltSound"].get<bool>();
             if (table.contains("hasAltColor") && table["hasAltColor"].is_boolean()) tableData.hasAltColor = table["hasAltColor"].get<bool>();
@@ -195,9 +201,10 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
     for (const auto& table : tables) {
         json tableJson;
         // ----------------- BEST MATCHES --------------------
-        tableJson["title"] = table.title;
-        tableJson["manufacturer"] = table.manufacturer;
-        tableJson["year"] = table.year;
+        tableJson["bestTitle"] = table.bestTitle;
+        tableJson["bestManufacturer"] = table.bestManufacturer;
+        tableJson["bestYear"] = table.bestYear;
+        tableJson["bestVersion"] = table.bestVersion;
 
         // ------------------ FILE PATHS ------------------
         tableJson["vpxFile"] = table.vpxFile;
@@ -260,6 +267,11 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         // Launchbox ID
         tableJson["lbdbID"] = table.lbdbID;
 
+        tableJson["lbdbName"] = table.lbdbName;
+        tableJson["lbdbYear"] = table.lbdbYear;
+        tableJson["lbdbPublisher"] = table.lbdbPublisher;
+        tableJson["lbdbDeveloper"] = table.lbdbDeveloper;
+
         // --------------- OPERATIONAL TAGS ------------------
         tableJson["matchConfidence"] = table.matchConfidence;
         tableJson["jsonOwner"] = table.jsonOwner;
@@ -273,6 +285,7 @@ bool AsapIndexManager::save(const Settings& settings, const std::vector<TableDat
         tableJson["hashFromVbs"] = table.hashFromVbs;
         tableJson["hasDiffVbs"] = table.hasDiffVbs;
         tableJson["isPatched"] = table.isPatched;
+        // tableJson["isManualVpsId"] = table.isManualVpsId;
         // EXTRA FILE SCAN (Boolean flags)
         tableJson["hasAltSound"] = table.hasAltSound;
         tableJson["hasAltColor"] = table.hasAltColor;

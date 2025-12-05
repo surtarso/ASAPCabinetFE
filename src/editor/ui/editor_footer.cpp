@@ -75,13 +75,6 @@ void drawFooter(EditorUI& ui) {
 
         // ---------- Rescan Options Combo ----------
         if (ImGui::BeginCombo("##rescan_combo", comboLabel.c_str(), ImGuiComboFlags_NoPreview | ImGuiComboFlags_HeightLargest)) {
-            // ImGui::TextDisabled("Scanner Mode");
-            // if (ImGui::Selectable("File Scanner", ui.scannerMode() == ScannerMode::File))
-            //     ui.setScannerMode(ScannerMode::File);
-            // if (ImGui::Selectable("VPin Scanner", ui.scannerMode() == ScannerMode::VPin))
-            //     ui.setScannerMode(ScannerMode::VPin);
-            // if (ImGui::Selectable("VPSDb Scanner", ui.scannerMode() == ScannerMode::VPSDb))
-            //     ui.setScannerMode(ScannerMode::VPSDb);
 
             // Flag to keep the popup open after clicking a selectable item
             const ImGuiSelectableFlags keepOpenFlags = ImGuiSelectableFlags_DontClosePopups;
@@ -108,51 +101,36 @@ void drawFooter(EditorUI& ui) {
             bool isVPSDbSelected = ui.scannerMode() == ScannerMode::VPSDb;
             const char* vpsDbLabel = isVPSDbSelected ? "VPSDb Scanner \t\t\t\t\t «" : "VPSDb Scanner";
 
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.70f, 0.55f, 1.00f, 1.00f));
             if (ImGui::Selectable(vpsDbLabel, isVPSDbSelected, keepOpenFlags)) {
                 ui.setScannerMode(ScannerMode::VPSDb);
             }
+            ImGui::PopStyleColor(1);
+
 
             ImGui::TextDisabled("Options");
             Settings& settings = ui.configService()->getMutableSettings();
 
             // Use external VPXTOOLS
             bool wantsVpxtool = settings.useVpxtool;
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.4f, 1.0f));
             if (ImGui::Checkbox("Use External VPXTool", &wantsVpxtool)) {
                 settings.useVpxtool = wantsVpxtool;
                 ui.configService()->saveConfig();
             }
+            ImGui::PopStyleColor(1);
 
             // Auto patch tables
-            bool autoPatch = settings.autoPatchTables;
-            if (ImGui::Checkbox("Patch All Tables", &autoPatch)) {
-                LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
-                settings.autoPatchTables = autoPatch;  // invert
-                ui.configService()->saveConfig();
-            }
-
-            // // Auto media download
-            // bool autoMedia = settings.fetchMediaOnline;
-            // bool autoLogo = settings.downloadTopperLogoImage;   // Launchbox (for Topper Logos)
-            // bool autoFlyer = settings.downloadFlyersImage;       // Launchbox Flyers (front/back)
-            // bool autoPlayf = settings.downloadPlayfieldImage;    // Vpin Playfield
-            // bool autoBackg = settings.downloadBackglassImage;    // Vpin Backglass
-            // bool autoDmd = settings.downloadDmdImage;          // Vpin DMD
-            // bool autoWheel = settings.downloadWheelImage;        // VPin Wheel
-            // if (ImGui::Checkbox("Download All Media", &autoMedia)) {
-            //     LOG_INFO(std::string("Download All Media on Rescan toggled: ") + (autoMedia ? "ON" : "OFF"));
-            //     settings.fetchMediaOnline = autoMedia;  // invert
-            //     settings.downloadTopperLogoImage = autoLogo;   // Launchbox (for Topper Logos)
-            //     settings.downloadFlyersImage = autoFlyer;       // Launchbox Flyers (front/back)
-            //     settings.downloadPlayfieldImage = autoPlayf;    // Vpin Playfield
-            //     settings.downloadBackglassImage = autoBackg;    // Vpin Backglass
-            //     settings.downloadDmdImage = autoDmd;          // Vpin DMD
-            //     settings.downloadWheelImage = autoWheel;        // VPin Wheel
-            //     // ui.configService()->saveConfig();
+            // bool autoPatch = settings.autoPatchTables;
+            // if (ImGui::Checkbox("Patch All Tables", &autoPatch)) {
+            //     LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
+            //     settings.autoPatchTables = autoPatch;  // invert
+            //     ui.configService()->saveConfig();
             // }
 
             // Rebuild Metadata
             bool cleanIndex = settings.forceRebuildMetadata;
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.4f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
             if (ImGui::Checkbox("Rebuild Metadata", &cleanIndex)) {
                 settings.forceRebuildMetadata = cleanIndex;
                 if (settings.forceRebuildMetadata){
@@ -281,14 +259,14 @@ void drawFooter(EditorUI& ui) {
             }
             // 3. Call the single patch function on the found TableData
             if (patcher && tableToPatch) {
-                LOG_INFO("Attempting single patch for: " + tableToPatch->title);
+                LOG_INFO("Attempting single patch for: " + tableToPatch->bestTitle);
 
                 if (patcher->patchSingleTable(settings, *tableToPatch)) {
-                    LOG_DEBUG("Successfully patched table: " + tableToPatch->title);
-                    ui.modal().openInfo("Patch Complete", tableToPatch->title + " was successfully patched.");
+                    LOG_DEBUG("Successfully patched table: " + tableToPatch->bestTitle);
+                    ui.modal().openInfo("Patch Complete", tableToPatch->bestTitle + " was successfully patched.");
                 } else {
-                    LOG_DEBUG("Patch not applied or failed for: " + tableToPatch->title);
-                    ui.modal().openWarning("Patch Status", tableToPatch->title + " did not require or failed to apply a patch.");
+                    LOG_DEBUG("Patch not applied or failed for: " + tableToPatch->bestTitle);
+                    ui.modal().openWarning("Patch Status", tableToPatch->bestTitle + " did not require or failed to apply a patch.");
                 }
 
                 // Since we modified the table data (isPatched, hashFromVbs),

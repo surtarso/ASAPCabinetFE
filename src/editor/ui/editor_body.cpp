@@ -72,7 +72,7 @@ static void drawYearTooltip(const TableData& t) {
     ImGui::Text("VPSDB: %s", t.vpsYear.empty() ? "-" : t.vpsYear.c_str());
 
     ImGui::Separator();
-    ImGui::Text("Best match: %s (%.0f%%)", t.year.c_str(), t.matchConfidence * 100.0f);
+    ImGui::Text("Best match: %s (%.0f%%)", t.bestYear.c_str(), t.matchConfidence * 100.0f);
 }
 
 // ------------------------------------------------------------------
@@ -85,7 +85,7 @@ static void drawNameTooltip(const TableData& t) {
     ImGui::Text("LBDB ID: %s", t.lbdbID.empty() ? "-" : t.lbdbID.c_str());
 
     ImGui::Separator();
-    ImGui::Text("Best match: %s (%.0f%%)", t.title.c_str(), t.matchConfidence * 100.0f);
+    ImGui::Text("Best match: %s (%.0f%%)", t.bestTitle.c_str(), t.matchConfidence * 100.0f);
 }
 
 // ------------------------------------------------------------------
@@ -134,15 +134,16 @@ static void drawManufacturerTooltip(const TableData& t) {
     ImGui::Text("Metadata: %s", t.tableManufacturer.empty() ? "-" : t.tableManufacturer.c_str());
     ImGui::Text("VPSDB: %s", t.vpsManufacturer.empty() ? "-" : t.vpsManufacturer.c_str());
     ImGui::Separator();
-    ImGui::Text("Best match: %s (%.0f%%)", t.manufacturer.c_str(), t.matchConfidence * 100.0f);
+    ImGui::Text("Best match: %s (%.0f%%)", t.bestManufacturer.c_str(), t.matchConfidence * 100.0f);
 }
 
 // ------------------------------------------------------------------
 // VERSION column
 static void drawVersionTooltip(const TableData& t) {
     ImGui::Text("Metadata: %s", t.tableVersion.empty() ? "-" : t.tableVersion.c_str());
-    ImGui::Text("VPSDB: %s (latest)", t.vpsVersion.empty() ? "-" : t.vpsVersion.c_str());
+    ImGui::Text("VPSDB: %s", t.vpsVersion.empty() ? "-" : t.vpsVersion.c_str());
     ImGui::Separator();
+    ImGui::Text("Best Version: %s", t.bestVersion.empty() ? "-" : t.bestVersion.c_str());
     ImGui::Text("Match confidence: %.0f%%", t.matchConfidence * 100.0f);
 }
 
@@ -251,29 +252,17 @@ void drawBody(EditorUI& ui) {
 
                 for (int i = 0; i < static_cast<int>(ui.filteredTables().size()); ++i) {
                     const auto& t = ui.filteredTables()[i];
-                    // bool selectionChanged = (ui.selectedIndex() != ui.lastSelectedIndex);
                     ImGui::TableNextRow();
-
-                    // ImGui::TableNextColumn();   // IMPORTANT: must be called before GetCursorScreenPos()
-
-                    // // -------------------------------------------------
-                    // // SCROLL THE TABLE WHEN THE SELECTED ROW CHANGES
-                    // // -------------------------------------------------
-                    // if (i == ui.selectedIndex()) {
-                    //     float rowY = ImGui::GetCursorScreenPos().y;
-                    //     float pad  = ImGui::GetTextLineHeight();      // small padding
-                    //     ImGui::SetScrollFromPosY(rowY - pad, 0.25f);  // 0.25f = soft push, not centering
-                    // }
 
                     // Pick correct values by scanner with fallback to best match
                     std::string displayYear = !t.vpsYear.empty() ? t.vpsYear
                                              : !t.tableYear.empty() ? t.tableYear
-                                             : !t.year.empty() ? t.year
+                                             : !t.bestYear.empty() ? t.bestYear
                                              : "-";
 
                     std::string displayName = !t.vpsName.empty() ? t.vpsName
                                             : !t.tableName.empty() ? t.tableName
-                                            : !t.title.empty() ? t.title
+                                            : !t.bestTitle.empty() ? t.bestTitle
                                             : "-";
 
                     std::string displayType = !t.vpsType.empty() ? t.vpsType
@@ -286,7 +275,7 @@ void drawBody(EditorUI& ui) {
 
                     std::string displayManufacturer = !t.vpsManufacturer.empty() ? t.vpsManufacturer
                                                    : !t.tableManufacturer.empty() ? t.tableManufacturer
-                                                   : !t.manufacturer.empty() ? t.manufacturer
+                                                   : !t.bestManufacturer.empty() ? t.bestManufacturer
                                                    : "-";
 
                     // ================================ Row colors ================================
@@ -309,10 +298,7 @@ void drawBody(EditorUI& ui) {
                     // ================================ COLUMNS =================================
                     // ----------------------------------------- YEAR
                     {ImGui::TableSetColumnIndex(0);
-                    // Auto-scroll ONLY when selection changes
-                    // if (i == ui.selectedIndex() && selectionChanged) {
-                    //     ImGui::SetScrollHereY(0.5f);
-                    // }
+
                     ImGui::TextUnformatted(displayYear.c_str());
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
@@ -325,14 +311,22 @@ void drawBody(EditorUI& ui) {
                     ImGui::PushID(i);
 
                     // Check if we need special coloring
-                    bool usePurple = (t.matchConfidence == 0.0f);
+                    // bool usePurple = (t.matchConfidence == 0.0f);
+                    bool usePurple = (t.vpsId == "");
+                    bool useBlue = (t.isManualVpsId);
 
                     // Light / faint purple (readable)
-                    ImVec4 faintPurple(0.70f, 0.55f, 1.00f, 1.00f); // tweak if needed
+                    ImVec4 faintPurple(0.70f, 0.55f, 1.00f, 1.00f);
+                    ImVec4 faintBlue(0.55f, 0.70f, 1.00f, 1.00f);
 
                     int colorStack = 0;
                     if (usePurple) {
                         ImGui::PushStyleColor(ImGuiCol_Text, faintPurple);
+                        colorStack++;
+                    }
+
+                    if (useBlue) {
+                        ImGui::PushStyleColor(ImGuiCol_Text, faintBlue);
                         colorStack++;
                     }
 
@@ -343,14 +337,14 @@ void drawBody(EditorUI& ui) {
                         ui.setScrollToSelected(false);
                     }
 
+                    // Pop color if applied
+                    while (colorStack-- > 0)
+                        ImGui::PopStyleColor();
+
                     ImVec2 min = ImGui::GetItemRectMin();
                     ImVec2 max = ImGui::GetItemRectMax();
                     if (ImGui::IsMouseHoveringRect(min, max))
                         drawTooltipForColumn(1, t, ui);
-
-                    // Pop color if applied
-                    while (colorStack-- > 0)
-                        ImGui::PopStyleColor();
 
                     ImGui::PopID();}
 
@@ -365,17 +359,44 @@ void drawBody(EditorUI& ui) {
                        drawTooltipForColumn(2, t, ui);}
 
                     // ----------------------------------------- VERSION
-                    {ImGui::TableSetColumnIndex(3);
+                    {
+                        ImGui::TableSetColumnIndex(3);
 
-                    if (!t.tableVersion.empty()) {
-                        ImGui::TextUnformatted(t.tableVersion.c_str());
-                    } else {
-                        ImGui::TextUnformatted("");
+                        ImVec4 faintGreen(0.55f, 0.70f, 0.55f, 1.00f); // faint update indicator
+
+                        const bool hasTableVersion = !t.tableVersion.empty();
+                        const bool hasVpsVersion   = !t.vpsVersion.empty();
+                        const bool hasBestVersion  = !t.bestVersion.empty();
+
+                        const char* versionToShow = "";
+                        bool usingBestVersion = false;  // for recoloring
+
+                        if (hasTableVersion && hasVpsVersion) {
+                            // Both exist → show bestVersion
+                            versionToShow = hasBestVersion ? t.bestVersion.c_str() : "";
+                            usingBestVersion = true;
+                        }
+                        else if (hasVpsVersion) {
+                            versionToShow = t.vpsVersion.c_str();
+                        }
+                        else if (hasTableVersion) {
+                            versionToShow = t.tableVersion.c_str();
+                        }
+
+                        // If bestVersion is being displayed, tint text faint green
+                        if (usingBestVersion)
+                            ImGui::PushStyleColor(ImGuiCol_Text, faintGreen);
+
+                        ImGui::TextUnformatted(versionToShow);
+
+                        if (usingBestVersion)
+                            ImGui::PopStyleColor();
+
+                        ImVec2 min = ImGui::GetItemRectMin();
+                        ImVec2 max = ImGui::GetItemRectMax();
+                        if (ImGui::IsMouseHoveringRect(min, max))
+                            drawTooltipForColumn(3, t, ui);
                     }
-                    ImVec2 min = ImGui::GetItemRectMin();
-                    ImVec2 max = ImGui::GetItemRectMax();
-                    if (ImGui::IsMouseHoveringRect(min, max))
-                       drawTooltipForColumn(3, t, ui);}
 
                     // ----------------------------------------- AUTHOR
                     {ImGui::TableSetColumnIndex(4);

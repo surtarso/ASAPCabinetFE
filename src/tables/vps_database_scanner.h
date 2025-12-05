@@ -40,6 +40,8 @@ public:
     bool matchMetadata(const nlohmann::json& vpxTable, TableData& tableData, LoadingProgress* progress = nullptr) const;
 
 private:
+    void populateFromVpsEntry(const nlohmann::json& entry, TableData& tableData, float confidence) const;
+
     const nlohmann::json& vpsDb_; ///< Reference to the loaded VPS database.
     StringUtils utils_; ///< Utility functions for string processing.
     const Settings& settings_; ///< For weight management

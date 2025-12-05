@@ -242,7 +242,7 @@ void ButtonActions::launchTableWithStats(
 
     TableData& t_mutable = *it;
 
-    LOG_INFO("Editor: Launching table: " + t_mutable.title);
+    LOG_INFO("Editor: Launching table: " + t_mutable.bestTitle);
 
     auto startTime = std::chrono::high_resolution_clock::now();
 

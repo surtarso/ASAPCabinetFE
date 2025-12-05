@@ -275,13 +275,16 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     }
                 }
 
+                // consider vpsID if added by override_manager.
                 for (auto& table : tables) {
-                    if (table.vpsId.empty() || table.jsonOwner == "System File Scan" ||
-                        (scannedTableMap.find(table.vpxFile) != scannedTableMap.end() &&
-                         scannedTableMap[table.vpxFile].fileLastModified > table.fileLastModified)) {
-                        tablesForVpsdb.push_back(table);
+                    if (settings.forceRebuildMetadata && !table.isManualVpsId) {
+                        table.vpsId.clear();
+                        table.jsonOwner.clear();
+                        table.matchConfidence = 0.0f;
                     }
+                    tablesForVpsdb.push_back(table);
                 }
+
                 LOG_INFO("Processing " + std::to_string(tablesForVpsdb.size()) + " tables for VPSDB matching");
 
                 if (!tablesForVpsdb.empty()) {
@@ -310,7 +313,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                             std::this_thread::yield();
                         }
 
-                        futures.push_back(std::async(std::launch::async, [&table, &vpsdbClient, progress, &processedVps]() {
+                        futures.push_back(std::async(std::launch::async, [&table, &vpsdbClient, progress, &processedVps, &settings]() {
                             nlohmann::json tempJson;
                             // file scan fileds:
                             tempJson["path"] = table.vpxFile;   // Full path to the vpx table file
@@ -336,14 +339,11 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                                 {"TableType", table.tableType}  // EM, SS.. Eletro Mechanical, eletromechanical...
                             };
                             // file heuristics fields:
-                            tempJson["filename_title"] = table.title;
-                            tempJson["filename_manufacturer"] = table.manufacturer; // extracted from filename using manufacturers.h list
-                            tempJson["filename_year"] = table.year;
+                            tempJson["filename_title"] = table.bestTitle;
+                            tempJson["filename_manufacturer"] = table.bestManufacturer; // extracted from filename using manufacturers.h list
+                            tempJson["filename_year"] = table.bestYear;
 
-                            // create a metadata validator to mark good/bad metadata (extract from vpsdb match logic)
-                            // send to vpsdb with that marker, use good fields only
-                            // save(?) and send to ipdb with all possible good data.
-
+                            // send to vpsdb using good fields only
                             vpsdbClient.matchMetadata(tempJson, table, progress);
                             if (!table.vpsId.empty()) {
                                 table.jsonOwner = "Virtual Pinball Spreadsheet Database";
@@ -520,7 +520,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
         }
     }
 
-    // Stage 9: Apply per-table overrides
+    // Stage 9: Apply per-table overrides for sorting (vpsdbID was already used and will remain)
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Applying table overrides...";
@@ -587,19 +587,18 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         });
     } else if (sortBy == "manufacturer") {
         std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
-            return a.manufacturer < b.manufacturer;
+            return a.bestManufacturer < b.bestManufacturer;
         });
     } else if (sortBy == "year") {
         std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
-            return a.year > b.year;
+            return a.bestYear > b.bestYear;
         });
     } else {
         std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
-            return a.title < b.title;
+            return a.bestTitle < b.bestTitle;
         });
     }
 
-    // NO MORE LETTER INDEX — YOUR JUMP LOGIC IS BETTER
     if (progress) {
         std::lock_guard<std::mutex> lock(progress->mutex);
         progress->currentTask = "Sorting complete";

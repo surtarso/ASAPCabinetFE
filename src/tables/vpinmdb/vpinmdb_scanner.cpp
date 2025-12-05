@@ -79,7 +79,7 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
     for (auto& table : tables) {
         futures.push_back(std::async(std::launch::async, [&table, this, resolution, &downloadedCount]() {
             if (table.vpsId.empty()) {
-                std::string msg = "Skipping media download for " + table.title + ": No VPSDB ID";
+                std::string msg = "Skipping media download for " + table.bestTitle + ": No VPSDB ID";
                 LOG_WARN(msg);
                 if (progress_) {
                     std::lock_guard<std::mutex> lock(progress_->mutex);
@@ -120,10 +120,10 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
             for (const auto& media : mediaTypes) {
                 fs::path destPath = tableDir / media.filename;
                 if (fs::exists(destPath)) {
-                    LOG_DEBUG("Skipping " + media.type + " for " + table.title + ": File exists at " + destPath.string());
+                    LOG_DEBUG("Skipping " + media.type + " for " + table.bestTitle + ": File exists at " + destPath.string());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
-                        progress_->logMessages.push_back("Skipping " + media.type + " for " + table.title + ": File exists");
+                        progress_->logMessages.push_back("Skipping " + media.type + " for " + table.bestTitle + ": File exists");
                     }
                     continue;
                 }
@@ -131,7 +131,7 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                 std::string url;
                 try {
                     if (!mediaDb_.contains(table.vpsId)) {
-                        std::string msg = "No entry for vpsId " + table.vpsId + " in vpinmdb.json for " + table.title;
+                        std::string msg = "No entry for vpsId " + table.vpsId + " in vpinmdb.json for " + table.bestTitle;
                         LOG_WARN(msg);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
@@ -151,7 +151,7 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                         }
                     }
                     if (url.empty()) {
-                        std::string msg = "No " + media.type + " URL for " + table.title + " in " + (media.type == "wheel" ? "wheel" : resolution);
+                        std::string msg = "No " + media.type + " URL for " + table.bestTitle + " in " + (media.type == "wheel" ? "wheel" : resolution);
                         LOG_WARN(msg);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
@@ -160,10 +160,10 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                         continue;
                     }
                 } catch (const std::exception& e) {
-                    LOG_ERROR("Error parsing media for " + table.title + ": " + e.what());
+                    LOG_ERROR("Error parsing media for " + table.bestTitle + ": " + e.what());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
-                        progress_->logMessages.push_back("Error parsing media for " + table.title + ": " + std::string(e.what()));
+                        progress_->logMessages.push_back("Error parsing media for " + table.bestTitle + ": " + std::string(e.what()));
                     }
                     continue;
                 }
@@ -171,16 +171,16 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                 if (!fs::exists(destPath.parent_path())) {
                     try {
                         fs::create_directories(destPath.parent_path());
-                        LOG_INFO("Created directory " + destPath.parent_path().string() + " for " + table.title);
+                        LOG_INFO("Created directory " + destPath.parent_path().string() + " for " + table.bestTitle);
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
-                            progress_->logMessages.push_back("Created directory for " + table.title + ": " + destPath.parent_path().string());
+                            progress_->logMessages.push_back("Created directory for " + table.bestTitle + ": " + destPath.parent_path().string());
                         }
                     } catch (const fs::filesystem_error& e) {
-                        LOG_ERROR("Failed to create directory " + destPath.parent_path().string() + " for " + table.title + ": " + std::string(e.what()));
+                        LOG_ERROR("Failed to create directory " + destPath.parent_path().string() + " for " + table.bestTitle + ": " + std::string(e.what()));
                         if (progress_) {
                             std::lock_guard<std::mutex> lock(progress_->mutex);
-                            progress_->logMessages.push_back("Failed to create directory for " + table.title + ": " + std::string(e.what()));
+                            progress_->logMessages.push_back("Failed to create directory for " + table.bestTitle + ": " + std::string(e.what()));
                         }
                         continue;
                     }
@@ -194,7 +194,7 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                     if (shouldAttemptRotation) {
                         LOG_INFO("Calling rotateImage for " + destPath.string() + " (Target: Playfield, Monitor: Vertical)");
                         if (!vpinmdb::rotateImage(destPath, shouldAttemptRotation)) {
-                            LOG_ERROR("Failed to rotate " + media.type + " for " + table.title + " at " + destPath.string());
+                            LOG_ERROR("Failed to rotate " + media.type + " for " + table.bestTitle + " at " + destPath.string());
                             fs::remove(destPath);
                             continue;
                         }
@@ -206,7 +206,7 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                     if (settings_.resizeToWindows) {
                         LOG_INFO("resizeToWindows: 1, calling resizeImage for " + destPath.string() + " to " + std::to_string(media.width) + "x" + std::to_string(media.height));
                         if (!vpinmdb::resizeImage(destPath, media.width, media.height)) {
-                            LOG_ERROR("Failed to resize " + media.type + " for " + table.title + " at " + destPath.string());
+                            LOG_ERROR("Failed to resize " + media.type + " for " + table.bestTitle + " at " + destPath.string());
                             fs::remove(destPath);
                             continue;
                         }
@@ -215,14 +215,14 @@ bool VpinMdbScanner::scanForMedia(std::vector<TableData>& tables) {
                     *media.destPath = destPath.string();
                     downloaded = true;
                     downloadedCount++;
-                    LOG_INFO("Downloaded " + media.type + " for " + table.title + " to " + destPath.string());
+                    LOG_INFO("Downloaded " + media.type + " for " + table.bestTitle + " to " + destPath.string());
                     if (progress_) {
                         std::lock_guard<std::mutex> lock(progress_->mutex);
-                        progress_->logMessages.push_back("Downloaded " + media.type + " for " + table.title);
+                        progress_->logMessages.push_back("Downloaded " + media.type + " for " + table.bestTitle);
                         progress_->currentTablesLoaded++;
                     }
                 } else {
-                    LOG_ERROR("Failed to download " + media.type + " for " + table.title + " from " + url);
+                    LOG_ERROR("Failed to download " + media.type + " for " + table.bestTitle + " from " + url);
                 }
             }
 

@@ -95,7 +95,7 @@ nlohmann::json TablePatcher::parseHashesJson(const std::string& jsonContent) {
 
 bool TablePatcher::needsPatch(TableData& table, const nlohmann::json& hashes) {
     if (table.hashFromVpx.empty()) {
-        LOG_DEBUG("No hashFromVpx for table " + table.title + ", skipping patch check");
+        LOG_DEBUG("No hashFromVpx for table " + table.bestTitle + ", skipping patch check");
         return false;
     }
 
@@ -103,19 +103,19 @@ bool TablePatcher::needsPatch(TableData& table, const nlohmann::json& hashes) {
         if (entry.is_object() && entry.contains("sha256") && entry["sha256"] == table.hashFromVpx) {
             std::string patchedHash = entry["patched"]["sha256"];
             if (table.hashFromVbs.empty()) {
-                LOG_WARN("No sidecar .vbs for " + table.title + ", patch needed");
+                LOG_WARN("No sidecar .vbs for " + table.bestTitle + ", patch needed");
                 return true;
             } else if (table.hashFromVbs != patchedHash) {
-                LOG_WARN("Sidecar .vbs hash mismatch for " + table.title + ", computed: " + table.hashFromVbs + ", expected: " + patchedHash);
+                LOG_WARN("Sidecar .vbs hash mismatch for " + table.bestTitle + ", computed: " + table.hashFromVbs + ", expected: " + patchedHash);
                 return true;
             } else {
                 table.isPatched = true;
-                LOG_INFO("Sidecar .vbs for " + table.title + " is already patched");
+                LOG_INFO("Sidecar .vbs for " + table.bestTitle + " is already patched");
                 return false;
             }
         }
     }
-    LOG_DEBUG("No matching hash entry found for " + table.title);
+    LOG_DEBUG("No matching hash entry found for " + table.bestTitle);
     return false;
 }
 
@@ -210,8 +210,8 @@ void TablePatcher::patchTables(const Settings& settings, std::vector<TableData>&
             for (const auto& entry : hashes) {
                 if (entry["sha256"] == table.hashFromVpx) {
                     std::string url = entry["patched"]["url"];
-                    std::string savePath = table.folder + "/" + table.title + ".vbs";
-                    LOG_INFO("Patching " + table.title + " with .vbs from " + url);
+                    std::string savePath = table.folder + "/" + table.bestTitle + ".vbs";
+                    LOG_INFO("Patching " + table.bestTitle + " with .vbs from " + url);
                     downloadAndSaveVbs(url, savePath);
 
                     std::string computedHash = compute_file_sha256(savePath);
@@ -243,19 +243,19 @@ bool TablePatcher::patchSingleTable(const Settings& settings, TableData& table) 
     // 1. Download and Parse the Hash Database (Same as bulk method, but we only do it once)
     std::string jsonContent = downloadHashesJson(settings);
     if (jsonContent.empty()) {
-        LOG_ERROR("Aborting single patch for " + table.title + " due to empty hashes.json content");
+        LOG_ERROR("Aborting single patch for " + table.bestTitle + " due to empty hashes.json content");
         return false;
     }
 
     nlohmann::json hashes = parseHashesJson(jsonContent);
     if (hashes.is_null() || !hashes.is_array()) {
-        LOG_ERROR("Aborting single patch for " + table.title + " due to invalid hashes.json");
+        LOG_ERROR("Aborting single patch for " + table.bestTitle + " due to invalid hashes.json");
         return false;
     }
 
     // 2. Check if the single table needs a patch
     if (!needsPatch(table, hashes)) {
-        LOG_INFO(table.title + " is already patched or does not require a patch.");
+        LOG_INFO(table.bestTitle + " is already patched or does not require a patch.");
         return table.isPatched; // Returns true if it was already patched
     }
 
@@ -265,9 +265,9 @@ bool TablePatcher::patchSingleTable(const Settings& settings, TableData& table) 
             std::string url = entry["patched"]["url"];
 
             // Construct the path to the VBS file (same folder as the VPX)
-            std::string savePath = table.folder + "/" + table.title + ".vbs";
+            std::string savePath = table.folder + "/" + table.bestTitle + ".vbs";
 
-            LOG_INFO("Single Patch: Downloading .vbs for " + table.title + " from " + url);
+            LOG_INFO("Single Patch: Downloading .vbs for " + table.bestTitle + " from " + url);
             downloadAndSaveVbs(url, savePath);
 
             // 4. Verify the patch (Recalculate VBS hash)
@@ -277,10 +277,10 @@ bool TablePatcher::patchSingleTable(const Settings& settings, TableData& table) 
                 if (computedHash == expectedHash) {
                     table.hashFromVbs = computedHash;
                     table.isPatched = true;
-                    LOG_DEBUG("Single Patch Success: Updated hashFromVbs for " + table.title);
+                    LOG_DEBUG("Single Patch Success: Updated hashFromVbs for " + table.bestTitle);
                     return true;
                 } else {
-                    LOG_ERROR("Single Patch Failed: Hash mismatch for downloaded .vbs for " + table.title);
+                    LOG_ERROR("Single Patch Failed: Hash mismatch for downloaded .vbs for " + table.bestTitle);
                 }
             } else {
                 LOG_ERROR("Single Patch Failed: Could not compute hash for downloaded .vbs: " + savePath);
@@ -290,6 +290,6 @@ bool TablePatcher::patchSingleTable(const Settings& settings, TableData& table) 
     }
 
     // If we reach here, no patch entry was found.
-    LOG_INFO(table.title + " hash (" + table.hashFromVpx + ") not found in database.");
+    LOG_INFO(table.bestTitle + " hash (" + table.hashFromVpx + ") not found in database.");
     return false;
 }

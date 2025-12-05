@@ -37,15 +37,6 @@ public:
     void applyOverrides(TableData& table) const;
 
     /**
-     * @brief Reloads overrides for a table (placeholder for dynamic reloading).
-     *
-     * Future implementation will reload overrides during runtime if the JSON file changes.
-     *
-     * @param table The TableData object to reload overrides for.
-     */
-    void reloadOverrides(TableData& table) const;
-
-    /**
      * @brief Saves overrides to the table's JSON file.
      *
      * Writes user-edited fields to <table_name>.json, merging with existing fields to preserve

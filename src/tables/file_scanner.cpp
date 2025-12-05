@@ -104,7 +104,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             TableData table;
             table.vpxFile = path.string();
             table.folder = path.parent_path().string();
-            table.title = path.stem().string();
+            table.bestTitle = path.stem().string();
 
             // --- File last modified ---
             uint64_t fileLastModified = 0;
@@ -161,7 +161,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     // Force rescan if override exists in previous metadata OR new override is detected
                     bool mustRescan = existingTable.hasOverride || table.hasOverride;
 
-                    std::string skipName = table.title.empty() ? table.vpxFile : table.title;
+                    std::string skipName = table.bestTitle.empty() ? table.vpxFile : table.bestTitle;
                     if (unchanged && !mustRescan) {
                         if (progress) {
                             std::lock_guard<std::mutex> lock(progress->mutex);
@@ -175,14 +175,14 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
 
             // --- Year and Manufacturer ---
             std::smatch match;
-            if (std::regex_search(table.title, match, year_regex))
-                table.year = match.str(0);
+            if (std::regex_search(table.bestTitle, match, year_regex))
+                table.bestYear = match.str(0);
 
-            std::string lowerTitle = table.title;
+            std::string lowerTitle = table.bestTitle;
             std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
             for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
                 if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
-                    table.manufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
+                    table.bestManufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
                     break;
                 }
             }
@@ -287,7 +287,7 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             table.jsonOwner = "System File Scan";
 
             // --- Push result ---
-            std::string logName = table.title.empty() ? table.vpxFile : table.title;
+            std::string logName = table.bestTitle.empty() ? table.vpxFile : table.bestTitle;
             {
                 std::lock_guard<std::mutex> lock(tables_mutex);
                 tables.push_back(std::move(table));
