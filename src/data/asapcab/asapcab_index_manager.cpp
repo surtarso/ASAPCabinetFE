@@ -354,6 +354,21 @@ std::vector<TableData> AsapIndexManager::mergeTables(const Settings& settings, c
     std::vector<TableData> existingTables;
     std::unordered_map<std::string, TableData> existingTableMap;
 
+    // FULL REBUILD MODE: ignore existing index entirely
+    if (settings.forceRebuildMetadata) {
+        std::vector<TableData> fresh = newTables;
+
+        // Wipe ONLY user-mutable fields (keep all metadata rebuilt by scanners)
+        for (auto& t : fresh) {
+            t.playCount = 0;
+            t.playTimeLast = 0;
+            t.playTimeTotal = 0;
+            t.isBroken = false;
+        }
+
+        return fresh;
+    }
+
     // Load existing index
     if (load(settings, existingTables, progress)) {
         if (progress) {
