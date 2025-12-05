@@ -9,7 +9,7 @@
 #include "launcher/itable_launcher.h"
 #include "capture/iscreenshot_manager.h"
 #include "core/ui/loading_progress.h"
-#include "core/ui/modal_dialog.h"
+#include "editor/ui/modal_dialog.h"
 #include <imgui.h>
 #include <vector>
 #include <string>

@@ -176,10 +176,12 @@ void drawHeader(EditorUI& ui) {
                 // REBUILD LAUNCHBOX DB
                 if (ImGui::MenuItem("Rebuild Launchbox DB")) {
                     // Immediately shows modal so the user knows it's working
-                    ui.modal().openProgress(
-                        "Building LaunchBox DB",
-                        "Working...\nThis may take a few minutes."
-                    );
+                    ui.modal().enqueueUiTask([&ui]() {
+                        ui.modal().openProgress(
+                            "Building LaunchBox DB",
+                            "Working...\nThis may take a few minutes."
+                        );
+                    });
                     // Background thread to avoid blocking ImGui
                     std::thread([settings, &ui] {
 
@@ -199,10 +201,12 @@ void drawHeader(EditorUI& ui) {
                 }
                 // REBUILD IPDB
                 if (ImGui::MenuItem("Update Internet Pinball DB")) {
-                    ui.modal().openProgress(
-                        "Updating IPDB",
-                        "Working...\nDownloading data..."
-                    );
+                    ui.modal().enqueueUiTask([&ui]() {
+                        ui.modal().openProgress(
+                            "Updating IPDB",
+                            "Working...\nDownloading data..."
+                        );
+                    });
 
                     std::thread([settings, &ui] {
                         // Create updater with progress disabled (modal already handles UI)
@@ -218,10 +222,12 @@ void drawHeader(EditorUI& ui) {
                 // REBUILD VPSDB
                 if (ImGui::MenuItem("Update Virtual Pinball Spreadsheet DB")) {
 
-                    ui.modal().openProgress(
-                        "Updating VPS Database",
-                        "Working...\nChecking for updates..."
-                    );
+                    ui.modal().enqueueUiTask([&ui]() {
+                        ui.modal().openProgress(
+                            "Updating VPS Database",
+                            "Working...\nChecking for updates..."
+                        );
+                    });
 
                     std::thread([settings, &ui] {
 

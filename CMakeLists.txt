@@ -287,7 +287,6 @@ set(SOURCES
     src/core/window_manager.cpp
     src/core/ui/imgui_manager.cpp
     src/core/ui/loading_screen.cpp
-    src/core/ui/modal_dialog.cpp
     src/core/ui/playfield_overlay.cpp
     # data
     src/data/asapcab/asapcab_index_manager.cpp
@@ -328,6 +327,7 @@ set(SOURCES
     src/editor/ui/editor_header.cpp
     src/editor/ui/editor_body.cpp
     src/editor/ui/editor_footer.cpp
+    src/editor/ui/modal_dialog.cpp
     # keybinds
     src/keybinds/input_manager.cpp
     src/keybinds/keybind_manager.cpp

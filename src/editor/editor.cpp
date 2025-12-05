@@ -178,31 +178,6 @@ void Editor::mainLoop() {
                 SDL_OpenURL("https://github.com/surtarso/ASAPCabinetFE/releases/latest");
             }
 
-            // --- MOCK self updater button
-            // ImGui::SameLine();
-            // if (ImGui::Button("Update")) {
-            //     fs::path tempDir = fs::temp_directory_path() / "ASAPCabinetFE_Update";
-            //     fs::create_directories(tempDir);
-
-            //     fs::path archivePath = tempDir / "update.tar.gz";
-            //     std::string url = "https://github.com/surtarso/ASAPCabinetFE/releases/latest/download/ASAPCabinetFE.tar.gz";
-
-            //     // Use downloader (returns bool)
-            //     // if (myDownloader.download(url, archivePath)) {
-            //     //     // Extract downloaded archive to exeDir
-            //     //     extractTarGz(archivePath, config_->getSettings().exeDir);
-
-            //     //     // Trigger app restart
-            //     //     hotReload_ = true;
-            //     // } else {
-            //     //     showError("Failed to download update.");
-            //     // }
-
-            //     // Close the popup either way
-            //     showUpdateModal_ = false;
-            //     ImGui::CloseCurrentPopup();
-            // }
-
             ImGui::SameLine();
             if (ImGui::Button("Close")) {
                 showUpdateModal_ = false;
