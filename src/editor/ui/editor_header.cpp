@@ -114,6 +114,7 @@ void drawHeader(EditorUI& ui) {
         }
 
         // --- Edit Metadata (TableOverride Editor)
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.70f, 0.55f, 1.00f, 1.00f)); // faint purple
         if (ImGui::Selectable("Edit Metadata", false)) {
             int idx = ui.selectedIndex();
             auto& filtered = ui.filteredTables();
@@ -129,19 +130,9 @@ void drawHeader(EditorUI& ui) {
                 );
             }
         }
+        ImGui::PopStyleColor();
 
         ImGui::Separator();
-
-        // --- Delete submenu
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
-        if (ImGui::BeginMenu("Delete")) {
-            if (ImGui::MenuItem("Table Folder")) header_actions::requestDeleteTableFolder(ui);
-            if (ImGui::MenuItem("Table INI")) header_actions::requestDeleteTableFile(ui, "ini");
-            if (ImGui::MenuItem("Table VBS")) header_actions::requestDeleteTableFile(ui, "vbs");
-            if (ImGui::MenuItem("Table Overrides")) header_actions::requestDeleteTableFile(ui, "json");
-            ImGui::EndMenu();
-        }
-        ImGui::PopStyleColor();
 
         // --- Maintenance submenu (colored title)
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.7f, 0.3f, 0.85f));
@@ -275,6 +266,17 @@ void drawHeader(EditorUI& ui) {
                 ImGui::EndMenu(); // Database
             }
             ImGui::EndMenu(); // Maintenance
+        }
+        ImGui::PopStyleColor();
+
+        // --- Delete submenu
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.74f, 0.24f, 0.24f, 1.0f));
+        if (ImGui::BeginMenu("Delete")) {
+            if (ImGui::MenuItem("Table Folder")) header_actions::requestDeleteTableFolder(ui);
+            if (ImGui::MenuItem("Table INI")) header_actions::requestDeleteTableFile(ui, "ini");
+            if (ImGui::MenuItem("Table VBS")) header_actions::requestDeleteTableFile(ui, "vbs");
+            if (ImGui::MenuItem("Table Overrides")) header_actions::requestDeleteTableFile(ui, "json");
+            ImGui::EndMenu();
         }
         ImGui::PopStyleColor();
         ImGui::Separator();
