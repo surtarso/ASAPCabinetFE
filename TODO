@@ -9,13 +9,10 @@ FIX:
 - add failsafe when there is no audio (card)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
-for 1.3.0
+for 1.3.1
 
-- fix fooooking modals not showing up.... (vpinmd. lbdb db updaters...shit)
 - add ipdb after vpsdb scan for enriching
 - see if that helps with launchbox hits (or just improve it after...)
-- 
-
 
 QOL:
 - some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
