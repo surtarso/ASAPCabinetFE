@@ -154,7 +154,7 @@ struct Settings {
 
     // [MediaSources]
     bool useGenArt = false;                 // Use generated DMD/Topper arts
-    bool fetchMediaOnline = false;          // Download images online (vpinmedia/launchbox)
+    bool fetchMediaOnline = true;           // Download images online (vpinmedia/launchbox) always true!
     bool resizeToWindows = false;           // Resize VPIN images to current windows sizes
     bool downloadTopperLogoImage = false;   // Launchbox (for Topper Logos)
     bool downloadFlyersImage = false;       // Launchbox Flyers (front/back)
@@ -498,7 +498,6 @@ private:
             }},
             {"MediaSources", {
                 {"useGenArt", s.useGenArt},
-                {"fetchMediaOnline", s.fetchMediaOnline},
                 {"resizeToWindows", s.resizeToWindows},
                 {"downloadTopperLogoImage", s.downloadTopperLogoImage},
                 {"downloadFlyersImage", s.downloadFlyersImage},
@@ -560,6 +559,7 @@ private:
             {"Internal", {
                 {"exeDir", s.exeDir},
                 {"titleSource", s.titleSource},
+                {"fetchMediaOnline", s.fetchMediaOnline},
                 {"mainCacheDir", s.mainCacheDir},
                 {"vpxPlayCmd", s.vpxPlayCmd},
                 {"vpxExtractCmd", s.vpxExtractCmd},
@@ -732,7 +732,6 @@ private:
 
         // MediaSources
         s.useGenArt = j.value("MediaSources", nlohmann::json{}).value("useGenArt", s.useGenArt);
-        s.fetchMediaOnline = j.value("MediaSources", nlohmann::json{}).value("fetchMediaOnline", s.fetchMediaOnline);
         s.resizeToWindows = j.value("MediaSources", nlohmann::json{}).value("resizeToWindows", s.resizeToWindows);
         s.downloadTopperLogoImage = j.value("MediaSources", nlohmann::json{}).value("downloadTopperLogoImage", s.downloadTopperLogoImage);
         s.downloadFlyersImage = j.value("MediaSources", nlohmann::json{}).value("downloadFlyersImage", s.downloadFlyersImage);
@@ -794,6 +793,7 @@ private:
         // Internal
         s.exeDir = j.value("Internal", nlohmann::json{}).value("exeDir", s.exeDir);
         s.titleSource = j.value("Internal", nlohmann::json{}).value("titleSource", s.titleSource);
+        s.fetchMediaOnline = j.value("Internal", nlohmann::json{}).value("fetchMediaOnline", s.fetchMediaOnline);
         s.mainCacheDir = j.value("Internal", nlohmann::json{}).value("mainCacheDir", s.mainCacheDir);
         s.vpxPlayCmd = j.value("Internal", nlohmann::json{}).value("vpxPlayCmd", s.vpxPlayCmd);
         s.vpxExtractCmd = j.value("Internal", nlohmann::json{}).value("vpxExtractCmd", s.vpxExtractCmd);
@@ -959,7 +959,6 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
 
     // Media Sources
     {"useGenArt", {Settings::ReloadType::Full, "Use generated graphics for missing table art.\nReplaces 'NO MEDIA' animations with generated screens from metadata."}},
-    {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download images from the VPin and Launchbox Media Databases.\nTo match a table we require VPSdb ID metadata."}},
     {"resizeToWindows", {Settings::ReloadType::Tables, "Automatically resize VPin Media Database downloaded images to match your\ncurrent window dimensions to save memory and keep layout consistent."}},
     {"downloadTopperLogoImage", {Settings::ReloadType::Tables, "Launchbox Game logos for generated Topper dot matrix display."}},
     {"downloadFlyersImage", {Settings::ReloadType::Tables, "Launchbox Flyer images (front and back) to display on metadata panel."}},
@@ -1019,10 +1018,11 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"ambienceSound", {Settings::ReloadType::Tables, "Ambient background sound used when a table has no music."}},
 
     // Internal paths and timing
+    {"exeDir", {Settings::ReloadType::None, "Path to the application executable directory."}},
     {"titleSource", {Settings::ReloadType::Tables, "Choose how table metadata is found:\n\n"
                                                   "filename' - use only filename-based heuristics (no metadata)\n"
                                                   "metadata' - run the scanners to extract embedded metadata (default)."}},
-    {"exeDir", {Settings::ReloadType::None, "Path to the application executable directory."}},
+    {"fetchMediaOnline", {Settings::ReloadType::Tables, "Download images from the VPin and Launchbox Media Databases.\nTo match a table we require VPSdb ID metadata."}},
     {"mainCacheDir", {Settings::ReloadType::None, "Path to the main cache directory."}},
     {"vpxPlayCmd", {Settings::ReloadType::None, "VPinballX command used to play .vpx tables (internal helper)."}},
     {"vpxExtractCmd", {Settings::ReloadType::None, "VPinballX command used to extract .vbs scripts from tables (internal helper)."}},

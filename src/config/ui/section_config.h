@@ -253,7 +253,6 @@ public:
 
         keyOrders_["MediaSources"] = {
             "useGenArt",
-            "fetchMediaOnline",
             "resizeToWindows",
             "downloadTopperLogoImage",
             "downloadFlyersImage",
@@ -264,7 +263,6 @@ public:
         };
         keyDisplayNames_["MediaSources"] = {
             {"useGenArt", "Generate Topper and DMD from Metadata."},
-            {"fetchMediaOnline", "Download Table Images."},
             {"resizeToWindows", "Resize downloaded images to current window sizes."},
             {"downloadTopperLogoImage", "Download Game Logo Images for Topper."},
             {"downloadFlyersImage", "Download Flyers Images."},
@@ -399,6 +397,7 @@ public:
 
         keyOrders_["Internal"] = {
             "titleSource",
+            "fetchMediaOnline",
             "configUIWidth",
             "configUIHeight",
             "screenshotWait",
@@ -433,6 +432,7 @@ public:
         };
         keyDisplayNames_["Internal"] = {
             {"titleSource", "Title Source"},
+            {"fetchMediaOnline", "Download Table Images."},
             {"screenshotWait", "Screenshot Wait Time"},
             {"configUIWidth", "FE Settings Panel Width"},
             {"configUIHeight", "FE Settings Panel Height"},
