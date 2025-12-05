@@ -10,12 +10,11 @@ FIX:
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
 LAST THINGS FOR 1.3.0:
-- improve the launchbox matchmaking! 
-- vpsdb scanner starts on boot (should be vpin) but default scanner on editor should be vpsdb (its vpin)
+- improve the launchbox matchmaking!
+- save lbdb values to table_data!
 
 for 1.3.1
 - add ipdb after vpsdb scan for enriching (matched vpsdb may have ipdb url already, some of them)
-- save lbdb values to table_data!
 - see if that helps with launchbox hits (or just improve it after...)
 
 QOL:
