@@ -43,12 +43,6 @@ public:
     @return True if the panel should remain open, false if it should close (e.g., Discard or Save pressed).
     */
     bool render();
-    /**
-    @brief Checks if changes were saved.
-
-    @return True if Save was clicked and changes were applied, false otherwise.
-    */
-    bool wasSaved() const { return saved_; }
 
 private:
     /**

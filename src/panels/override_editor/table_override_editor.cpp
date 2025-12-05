@@ -3,12 +3,12 @@
 #include "log/logging.h"
 #include <array>
 // TableOverrideEditor Customization Settings (hardcoded for future ConfigUI integration)
-namespace TableOverrideEditorSettings
-{
-    constexpr float WIDTH_FACTOR = 0.7f;   // 70% of screen width
-    constexpr float HEIGHT_FACTOR = 0.52f; // 50% of screen height
-    constexpr float ALPHA = 0.8f;          // Semi-transparent background
-}
+// namespace TableOverrideEditorSettings
+// {
+//     constexpr float WIDTH_FACTOR = 0.7f;   // 70% of screen width
+//     constexpr float HEIGHT_FACTOR = 0.52f; // 50% of screen height
+//     constexpr float ALPHA = 0.8f;          // Semi-transparent background
+// }
 TableOverrideEditor::TableOverrideEditor(TableData &table, TableOverrideManager &overrideManager)
     : table_(table), overrideManager_(overrideManager), shouldClose_(false), saved_(false)
 {
@@ -36,30 +36,15 @@ bool TableOverrideEditor::render()
     }
     // Center and fix window size
     ImGuiIO &io = ImGui::GetIO();
-    // Detect display orientation
-    bool isLandscape = io.DisplaySize.x > io.DisplaySize.y;
-    // Adjust window layout depending on orientation
-    if (isLandscape)
-    {
-        // Landscape → full-screen mode
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
-        ImGui::SetNextWindowBgAlpha(TableOverrideEditorSettings::ALPHA);
-    }
-    else
-    {
-        // Portrait → keep centered floating layout
-        float panelWidth = io.DisplaySize.x * TableOverrideEditorSettings::WIDTH_FACTOR;
-        float panelHeight = io.DisplaySize.y * TableOverrideEditorSettings::HEIGHT_FACTOR;
-        float posX = (io.DisplaySize.x - panelWidth) / 2.0f;
-        float posY = (io.DisplaySize.y - panelHeight) / 2.0f;
-        ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight), ImGuiCond_Always);
-        ImGui::SetNextWindowBgAlpha(TableOverrideEditorSettings::ALPHA);
-    }
+
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.8f);
+
     ImGui::Begin("ASAPCabinetFE Override Editor", nullptr,
                  ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
     // Explanatory feedback text
     ImGui::Text("Override these fields to customize display and sorting in the frontend.");
     ImGui::Text("bestTitle, bestManufacturer, and bestYear affect how the table is shown and sorted.");

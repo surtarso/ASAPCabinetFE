@@ -14,20 +14,17 @@ for 1.3.0
 - fix fooooking modals not showing up.... (vpinmd. lbdb db updaters...shit)
 - add ipdb after vpsdb scan for enriching
 - see if that helps with launchbox hits (or just improve it after...)
+- 
 
 
 QOL:
-- [ED] tip ('scan with XXX') on empty (ex.) vpsdb:  tooltips? (new scanner might fix  this)
 - some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
 - add ipdb to the mix, change ids to ID_xxx (from xxxID)
-- (maybe) create a "fixed" correlation table of ID's (vpsdb, ipdb, launchbox)
-- prompt user on media download (when unmatched/unsure, give options to chose)
 - update header docs and user manual
 - Add memory settings for storing N tables on RAM (default is '7' 3+(current)+3)
 - [ED] add check if present rom is correct and recolor (vpin/vpxtool hook!?)
 - [!] add basic/advanced toggle for main config ui
 - [!] add instructions to the screenshot mode
-- take overrides in consideration for matchmaking.
 - use more than title on catalog search (author, manufacturer etc)
 - ease overwhelm in FE, send to Editor!
 

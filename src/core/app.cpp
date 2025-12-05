@@ -415,24 +415,6 @@ void App::render() {
             ImGui::End();
         }
 
-        // Render TableOverrideEditor if toggled
-        if (showEditor_ && currentIndex_ < tables_.size()) {
-            if (!overrideEditor_ || lastTableIndex_ != currentIndex_) {
-                overrideEditor_ = std::make_unique<TableOverrideEditor>(tables_[currentIndex_], overrideManager_);
-                lastTableIndex_ = currentIndex_;
-                LOG_DEBUG("Initialized TableOverrideEditor for table index: " + std::to_string(currentIndex_) + ", title: " + tables_[currentIndex_].bestTitle);
-            }
-            if (!overrideEditor_->render()) {
-                if (overrideEditor_->wasSaved()) {
-                    reloadTablesAndTitle();
-                    LOG_DEBUG("Closed TableOverrideEditor after Save, triggered table reload");
-                } else {
-                    LOG_DEBUG("Closed TableOverrideEditor after Discard, no reload");
-                }
-                overrideEditor_.reset();
-                showEditor_ = false;
-            }
-        }
         // Render vpsdb catalog
         if (showVpsdb_) {
             if (!vpsdbCatalog_) {

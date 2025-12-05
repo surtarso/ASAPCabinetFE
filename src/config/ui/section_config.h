@@ -171,7 +171,7 @@ public:
         keyOrders_["Keybinds"] = {
             "Previous Table", "Next Table", "Fast Previous Table", "Fast Next Table",
             "Jump Next Letter", "Jump Previous Letter", "Random Table", "Launch Table",
-            "Toggle Config", "Toggle Editor", "Toggle Metadata", "Toggle Catalog", "Screenshot Mode",
+            "Toggle Config", "Toggle Metadata", "Toggle Catalog", "Screenshot Mode",
             "Screenshot Key", "Screenshot Quit", "Quit"
         };
         keyDisplayNames_["Keybinds"] = {
@@ -187,7 +187,6 @@ public:
             {"Screenshot Key", "Screenshot Key"},
             {"Screenshot Quit", "Screenshot Quit"},
             {"Toggle Config", "Toggle Config"},
-            {"Toggle Editor", "Toggle Editor"},
             {"Toggle Metadata", "Toggle Metadata"},
             {"Toggle Catalog", "Toggle Catalog"},
             {"Quit", "Quit"}

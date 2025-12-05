@@ -303,36 +303,33 @@ void Editor::mainLoop() {
 
                 if (metadataEditor_) {
                     if (!metadataEditor_->render()) {
-                        bool saved = metadataEditor_->wasSaved();
                         metadataEditor_.reset();
                         showMetadataEditor_ = false;
 
-                        // if (saved) {  // only called on save, not delete.
-                            {
-                                std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
+                        {
+                            std::lock_guard<std::mutex> lock(editorUI_->tableMutex());
 
-                                int filteredIndex = editorUI_->selectedIndex();
-                                auto& filtered = editorUI_->filteredTables();
-                                const std::string& selectedPath = filtered[filteredIndex].vpxFile;
+                            int filteredIndex = editorUI_->selectedIndex();
+                            auto& filtered = editorUI_->filteredTables();
+                            const std::string& selectedPath = filtered[filteredIndex].vpxFile;
 
-                                for (auto& t : editorUI_->tables()) {
+                            for (auto& t : editorUI_->tables()) {
 
-                                    // Match the same table used by TableOverrideEditor
-                                    if (t.vpxFile == selectedPath) {
-                                        // REAPPLY THE OVERRIDE STATE TO THE MASTER TABLE
-                                        overrideManager_->applyOverrides(t);  // ← THIS SETS isManualVpsId CORRECTLY
+                                // Match the same table used by TableOverrideEditor
+                                if (t.vpxFile == selectedPath) {
+                                    // REAPPLY THE OVERRIDE STATE TO THE MASTER TABLE
+                                    overrideManager_->applyOverrides(t);  // ← THIS SETS isManualVpsId CORRECTLY
 
-                                        // Update UI flag
-                                        t.hasOverride = overrideManager_->overrideFileExists(t);
+                                    // Update UI flag
+                                    t.hasOverride = overrideManager_->overrideFileExists(t);
 
-                                        // FORCE INDEX SAVE — THIS IS THE KEY
-                                        tableCallbacks_->save(config_->getSettings(), editorUI_->tables(), nullptr);
-                                        break;
-                                    }
+                                    // FORCE INDEX SAVE — THIS IS THE KEY
+                                    tableCallbacks_->save(config_->getSettings(), editorUI_->tables(), nullptr);
+                                    break;
                                 }
                             }
-                            editorUI_->filterAndSortTablesPublic();
-                        // }
+                        }
+                        editorUI_->filterAndSortTablesPublic();
                     }
                 }
 

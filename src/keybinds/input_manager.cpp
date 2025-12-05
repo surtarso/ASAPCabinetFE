@@ -36,7 +36,6 @@ void InputManager::registerActions() {
         {"Toggle Config",       [this]() { onToggleConfig(); }},
         {"Quit",                [this]() { onQuit(); }},
         {"Screenshot Mode",     [this]() { onScreenshotMode(); }},
-        {"Toggle Editor",       [this]() { onToggleEditor(); }},
         {"Toggle Metadata",     [this]() { onToggleMetadata(); }},
         {"Toggle Catalog",      [this]() { onToggleCatalog(); }}
     };
@@ -94,7 +93,6 @@ void InputManager::handleEvent(const SDL_Event& event) {
 
     if (event.type == SDL_KEYDOWN && !io.WantCaptureKeyboard) {
         if (keybindProvider_->isAction(event.key, "Toggle Config")) { onToggleConfig(); return; }
-        if (keybindProvider_->isAction(event.key, "Toggle Editor")) { onToggleEditor(); return; }
         if (keybindProvider_->isAction(event.key, "Toggle Metadata")) { onToggleMetadata(); return; }
         if (keybindProvider_->isAction(event.key, "Toggle Catalog")) { onToggleCatalog(); return; }
     }
@@ -102,7 +100,6 @@ void InputManager::handleEvent(const SDL_Event& event) {
     if (*showConfig_ || *showEditor_ || *showVpsdb_) {
         if (event.type == SDL_KEYDOWN && !io.WantCaptureKeyboard) {
             if (keybindProvider_->isAction(event.key, "Toggle Config") ||
-                keybindProvider_->isAction(event.key, "Toggle Editor") ||
                 keybindProvider_->isAction(event.key, "Toggle Catalog") ||
                 keybindProvider_->isAction(event.key, "Quit")) {
                 onQuit();
@@ -464,15 +461,6 @@ void InputManager::onToggleConfig() {
         soundManager_->playUISound("panel_toggle");
         *showConfig_ = !*showConfig_;
         LOG_DEBUG("Toggled showConfig to: " + std::to_string(*showConfig_));
-    }
-}
-
-void InputManager::onToggleEditor() {
-    LOG_DEBUG("ToggleEditor action triggered");
-    if (showEditor_) {
-        soundManager_->playUISound("panel_toggle");
-        *showEditor_ = !*showEditor_;
-        LOG_DEBUG("Toggled showEditor to: " + std::to_string(*showEditor_));
     }
 }
 
