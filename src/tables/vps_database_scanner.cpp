@@ -106,8 +106,21 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
     if (vpxTable.contains("properties") && vpxTable["properties"].is_object()) {
         const auto& properties = vpxTable["properties"];
         tableData.tableType = utils_.cleanString(utils_.safeGetString(properties, "TableType", ""));
-        tableData.tableManufacturer = utils_.cleanString(utils_.safeGetString(properties, "CompanyName",
-                                                     utils_.safeGetString(properties, "Company", "")));
+        // tableData.tableManufacturer = utils_.cleanString(utils_.safeGetString(properties, "CompanyName",
+        //                                              utils_.safeGetString(properties, "Company", "")));
+        {
+            std::string company = utils_.safeGetString(properties, "CompanyName",
+                                utils_.safeGetString(properties, "Company", ""));
+
+            company = utils_.cleanString(company);
+
+            // *** FIX ***
+            // Only overwrite if metadata actually provided something
+            if (!company.empty()) {
+                tableData.tableManufacturer = company;
+            }
+        }
+
         tableData.tableYear = utils_.cleanString(utils_.safeGetString(properties, "CompanyYear",
                                                      utils_.safeGetString(properties, "Year", "")));
     }
