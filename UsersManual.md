@@ -207,7 +207,6 @@ Customize these keybinds to fit your cabinet’s controls—because every setup 
 | Launch SShot mode  | s                | Launch the table in screenshot mode.      |
 | Config Panel       | c                | Toggle config panel.                      |
 | Save window pos.   | left doubleclick | Saves current window positions in config. |
-| Metadata Editor    | e                | Toggle Metadata Editor in current table.  |
 | Metadata Panel     | m                | View current table Metadata Panel         |
 | VPSdb Catalog      | n                | Toggle VPSdb catalog for browsing tables. |
 | Quit               | q                | Exit the application.                     |
