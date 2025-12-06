@@ -114,7 +114,7 @@ cd ~/ASAPCabinetFE
 - Mark tables you have overrided metadata.
 - Advanced menu for file operations (delete, backup, override metadata).
 - Manage media cache with a single click.
-- **Create** custom table overrides for media or metadata.
+- **Create** custom table overrides for display and matching.
 - Advanced menu for [VpxTool](https://github.com/francisdb/vpxtool) --flags.
 - Use [VPin](https://github.com/francisdb/vpin) to **retrieve** table file metadata.
 - **Match** metadata with [VPSDb](https://virtual-pinball-spreadsheet.web.app/) API with visual feedback.
@@ -122,6 +122,7 @@ cd ~/ASAPCabinetFE
 - Automatically apply or update table **patches** from [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts).
 - Download **media** from the [Vpin Media Database](https://github.com/superhac/vpinmediadb) and [Launchbox Database](https://gamesdb.launchbox-app.com/games/results/?platform=pinball).
 - Update check and notifications to keep you up to date.
+- Update online databases on the fly.
 
 >[!NOTE]
 >Check the [User's Manual](UsersManual.md) for more details.
@@ -207,6 +208,7 @@ We’re dreaming big! Help us bring these features to life:
 - Attract Mode.
 - Custom collections.
 - Real DMD connection.
+- DOF support.
 - CLI automation.
 - Highscore tracking.
 - Tournaments. (maybe)
