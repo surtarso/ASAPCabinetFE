@@ -146,7 +146,7 @@ sudo pacman -Syu git findutils --noconfirm
 
 Clone the Repository
 ```sh
-git clone --depth 1 https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
+git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE-src
 cd ASAPCabinetFE-src
 git lfs install
 git lfs pull
