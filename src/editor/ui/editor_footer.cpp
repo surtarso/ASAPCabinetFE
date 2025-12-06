@@ -120,14 +120,6 @@ void drawFooter(EditorUI& ui) {
             }
             ImGui::PopStyleColor(1);
 
-            // Auto patch tables
-            // bool autoPatch = settings.autoPatchTables;
-            // if (ImGui::Checkbox("Patch All Tables", &autoPatch)) {
-            //     LOG_INFO(std::string("Auto-Patch tables on Rescan toggled: ") + (autoPatch ? "ON" : "OFF"));
-            //     settings.autoPatchTables = autoPatch;  // invert
-            //     ui.configService()->saveConfig();
-            // }
-
             // Rebuild Metadata
             bool cleanIndex = settings.forceRebuildMetadata;
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));

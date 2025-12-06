@@ -179,7 +179,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             if (table.jsonOwner == "System File Scan") {
                 tablesToScan.push_back(table);
             } else {
-                auto it = scannedTableMap.find(table.vpxFile);
+                auto it = scannedTableMap.find(table.vpxFile);  // we check file mod here coz its file metadata
                 if (it != scannedTableMap.end() && it->second.fileLastModified > table.fileLastModified) {
                     tablesToScan.push_back(table);
                 }
@@ -206,7 +206,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     VPinScanner::scanFiles(tablesToScan, progress);
                 }
             } else {
-                LOG_INFO("useVpxtool is false, using VPin File Scanner.");
+                LOG_INFO("Using VPin File Scanner.");
                 VPinScanner::scanFiles(tablesToScan, progress);
             }
 
@@ -275,7 +275,7 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
                     }
                 }
 
-                // consider vpsID if added by override_manager.
+                // consider vpsID if added by override_manager (should persist?)
                 for (auto& table : tables) {
                     if (settings.forceRebuildMetadata && !table.isManualVpsId) {
                         table.vpsId.clear();
@@ -428,7 +428,15 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
     }
 
     // Stage 6: Media download
-    if (settings.fetchMediaOnline) {
+    bool anyMediaEnabled =
+           settings.downloadBackglassImage
+        || settings.downloadDmdImage
+        || settings.downloadFlyersImage
+        || settings.downloadPlayfieldImage
+        || settings.downloadTopperLogoImage
+        || settings.downloadWheelImage;
+
+    if (settings.fetchMediaOnline && anyMediaEnabled) {
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->currentTask = "Downloading table media...";
@@ -439,8 +447,6 @@ std::vector<TableData> TableLoader::loadTableList(const Settings& settings, Load
             progress->numNoMatch = 0;
         }
 
-        // NON PARALLEL VERSION:
-        // TODO: for now keep those, but later integrate with the new database in one pass
         {
             VpinMdbScanner vpdownloader(settings, progress);
             vpdownloader.scanForMedia(tables);
@@ -575,7 +581,6 @@ void TableLoader::sortTables(std::vector<TableData>& tables, const std::string& 
         progress->currentTask = "Sorting tables...";
     }
 
-    // === YOUR ORIGINAL SORT — JUST EFFICIENT ===
     if (sortBy == "author") {
         std::sort(tables.begin(), tables.end(), [](const auto& a, const auto& b) {
             auto getAuthor = [](const auto& t) { return t.vpsAuthors.empty() ? t.tableAuthor : t.vpsAuthors; };

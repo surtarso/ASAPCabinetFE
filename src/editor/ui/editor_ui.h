@@ -53,6 +53,7 @@ public:
 
     std::vector<TableData>& tables()          { return tables_; }
     const std::vector<TableData>& filteredTables() const { return filteredTables_; }
+    // std::vector<TableData>& filteredTables() { return filteredTables_; }
 
     int&  selectedIndex()        { return selectedIndex_; }
     int  selectedIndex()        const { return selectedIndex_; }

@@ -140,6 +140,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 if (o_ext == ".json" && o_entry.path().stem() == path.stem()) {
                     table.hasOverride = true;
                     break;
+                } else {
+                    table.hasOverride = false;
                 }
             }
 
@@ -210,6 +212,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                     found_vbs_path = entry.path();
                     foundVbs = true;
                     break;
+                } else {
+                    table.hasVBS = false;
                 }
             }
             if (foundVbs) {
@@ -233,6 +237,8 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
                 if (o_ext == ".json" && o_entry.path().stem() == path.stem()) {
                     table.hasOverride = true;
                     break;
+                } else {
+                    table.hasOverride = false;
                 }
             }
 

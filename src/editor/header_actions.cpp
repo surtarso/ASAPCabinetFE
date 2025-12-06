@@ -92,6 +92,19 @@ void requestDeleteTableFile(EditorUI& ui, const std::string& fileType) {
                             LOG_ERROR("Failed to delete " + fileType + ": " + ec.message());
                             ui.modal().openError("File Operation error", "Failed to delete " + fileType + ": " + ec.message());
                         } else if (removed) {
+                            // COMMENT: We must re-fetch (writable) because this lambda captured ui by reference.
+                            // TableData& updatedSel = ui.filteredTables()[ui.selectedIndex()];
+                            // this should be saved? not working......
+                            // if (fileType == "ini") {
+                            //     updatedSel.hasINI = false;
+                            // }
+                            // else if (fileType == "vbs") {
+                            //     updatedSel.hasVBS = false;
+                            // }
+                            // else if (fileType == "json") {
+                            //     updatedSel.hasOverride = false;
+                            // }
+
                             ui.rescanAsyncPublic(ui.scannerMode());
                             ui.filterAndSortTablesPublic();
                             LOG_INFO("Deleted " + fileType + ": " + base.string());

@@ -180,5 +180,6 @@ void EditorUI::rescanAsync(ScannerMode mode) {
             filterAndSortTables();
         }
         loading_ = false;
+
     }).detach();
 }
