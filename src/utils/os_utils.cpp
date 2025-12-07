@@ -3,7 +3,9 @@
 #include <cstdlib>
 #include <sstream>
 #include <sys/utsname.h>
-#include <sys/sysinfo.h>
+#if not defined(__APPLE__)
+    #include <sys/sysinfo.h>
+#endif
 
 namespace OSUtils {
 
@@ -68,6 +70,9 @@ std::string getKernelVersion() {
 }
 
 std::string getCpuModel() {
+    #ifdef __APPLE__
+        return "not supported on macos";
+    #else
     std::ifstream cpuinfo("/proc/cpuinfo");
     if (!cpuinfo.is_open())
         return "unknown";
@@ -81,15 +86,20 @@ std::string getCpuModel() {
         }
     }
     return "unknown";
+    #endif
 }
 
 std::string getTotalRamMB() {
+    #ifdef __APPLE__
+        return "not supported on macos";
+    #else
     struct sysinfo info{};
     if (sysinfo(&info) == 0) {
         long ramMB = info.totalram * info.mem_unit / (1024 * 1024);
         return std::to_string(ramMB) + " MB";
     }
     return "unknown";
+    #endif
 }
 
 std::string getSummary() {

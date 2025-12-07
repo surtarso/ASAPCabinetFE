@@ -490,6 +490,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CURL_INCLUDE_DIRS}
     ${rapidfuzz_SOURCE_DIR}
 )
+if(NOT APPLE)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${LIBVLC_INCLUDE_DIRS})
+endif()
+
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -515,11 +519,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     pugixml::pugixml
     rapidfuzz::rapidfuzz
 )
-
 if(NOT APPLE)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${LIBVLC_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBVLC_LIBRARIES})
 endif()
+
 # --- Dependencies End ---
 
 # Compile options

@@ -231,7 +231,6 @@ jobs:
     outputs:
       sdl2_version: ${{ steps.get-lib-versions.outputs.sdl2_version }}
       ffmpeg_version: ${{ steps.get-lib-versions.outputs.ffmpeg_version }}
-      vlc_version: ${{ steps.get-lib-versions.outputs.vlc_version }}
       curl_version: ${{ steps.get-lib-versions.outputs.curl_version }}
       macos_version: ${{ steps.get-lib-versions.outputs.macos_version }}
 
@@ -253,8 +252,7 @@ jobs:
         brew update
         brew install cmake pkg-config \
           sdl2 sdl2_image sdl2_ttf sdl2_mixer \
-          ffmpeg openssl@3 libzip curl nlohmann-json \
-          vlc
+          ffmpeg openssl@3 libzip curl nlohmann-json
 
     # Collect versions (for release notes)
     - name: Get Library Versions
@@ -262,12 +260,10 @@ jobs:
       run: |
         SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
         FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
-        VLC_VER=$(pkg-config --modversion libvlc || echo "N/A")
         CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
         MACOS_VER=$(sw_vers -productVersion || echo "N/A")
         echo "sdl2_version=$SDL2_VER" >> $GITHUB_OUTPUT
         echo "ffmpeg_version=$FFMPEG_VER" >> $GITHUB_OUTPUT
-        echo "vlc_version=$VLC_VER" >> $GITHUB_OUTPUT
         echo "curl_version=$CURL_VER" >> $GITHUB_OUTPUT
         echo "macos_version=$MACOS_VER" >> $GITHUB_OUTPUT
 
@@ -389,7 +385,6 @@ jobs:
           - macOS: ${{ needs.build_macos.outputs.macos_version }}
           - SDL2: ${{ needs.build_macos.outputs.sdl2_version }}
           - FFmpeg: ${{ needs.build_macos.outputs.ffmpeg_version }}
-          - VLC: ${{ needs.build_macos.outputs.vlc_version }}
           - cURL: ${{ needs.build_macos.outputs.curl_version }}
 
           </details>
