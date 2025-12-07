@@ -277,7 +277,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
               -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
               -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" \
-              -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+              -DCMAKE_OSX_ARCHITECTURES="x86_64" \
               -S .. -B .
 
     - name: Compile with CMake
