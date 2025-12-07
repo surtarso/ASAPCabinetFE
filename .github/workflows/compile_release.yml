@@ -270,6 +270,7 @@ jobs:
     # Configure and build
     - name: Configure with CMake
       run: |
+        export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
         mkdir -p build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release \

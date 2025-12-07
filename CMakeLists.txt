@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
+# Homebrew default paths
+if(APPLE)
+    list(APPEND CMAKE_PREFIX_PATH /opt/homebrew /opt/homebrew/opt)
+    list(APPEND CMAKE_LIBRARY_PATH /opt/homebrew/lib)
+    list(APPEND CMAKE_INCLUDE_PATH /opt/homebrew/include)
+endif()
+
 # Detect if building inside Flatpak (not working)
 if("$ENV{FLATPAK_BUILD}" STREQUAL "1")
     # Flatpak build: do NOT unset, just force /app
@@ -457,8 +464,24 @@ pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 
-pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
-pkg_check_modules(LIBZIP REQUIRED libzip)
+if(APPLE)
+    set(FFMPEG_LIBRARIES
+        /opt/homebrew/lib/libavcodec.dylib
+        /opt/homebrew/lib/libavformat.dylib
+        /opt/homebrew/lib/libavutil.dylib
+        /opt/homebrew/lib/libswscale.dylib
+        /opt/homebrew/lib/libswresample.dylib
+    )
+    set(FFMPEG_INCLUDE_DIRS /opt/homebrew/include)
+
+    set(LIBZIP_LIBRARIES /opt/homebrew/lib/libzip.dylib)
+    set(LIBZIP_INCLUDE_DIRS /opt/homebrew/include)
+
+else()
+    pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
+    pkg_check_modules(LIBZIP REQUIRED libzip)
+endif()
+
 
 if(NOT APPLE)
     pkg_check_modules(LIBVLC REQUIRED libvlc)
