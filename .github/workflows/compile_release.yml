@@ -253,7 +253,8 @@ jobs:
         brew update
         brew install cmake pkg-config \
           sdl2 sdl2_image sdl2_ttf sdl2_mixer \
-          ffmpeg vlc openssl@3 libzip curl nlohmann-json
+          ffmpeg openssl@3 libzip curl nlohmann-json \
+          vlc libvlc
 
     # Collect versions (for release notes)
     - name: Get Library Versions

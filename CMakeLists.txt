@@ -452,9 +452,12 @@ pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 
-pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
 pkg_check_modules(LIBZIP REQUIRED libzip)
+
+# if(NOT APPLE)
+pkg_check_modules(LIBVLC REQUIRED libvlc)
+# endif()
 
 find_package(CURL REQUIRED)
 
