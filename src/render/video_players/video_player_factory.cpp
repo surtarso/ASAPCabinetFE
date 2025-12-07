@@ -7,7 +7,9 @@
 #include "dummy_player.h"
 #include "sdl_draw/alternate_media_player.h"
 #include "default_media_player.h"
-#include "vlc/vlc_player.h"
+#if not defined(__APPLE__)
+    #include "vlc/vlc_player.h"
+#endif
 #include "ffmpeg/ffmpeg_player.h"
 #include "config/iconfig_service.h"
 #include "config/settings.h"

@@ -82,7 +82,7 @@ public:
      *
      * Executes the application’s main loop, handling events, updating state, and rendering.
      */
-    void run();
+    void run() override;
 
     /**
      * @brief Reloads the font resource.

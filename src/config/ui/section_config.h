@@ -248,7 +248,11 @@ public:
             {"topperWindowY", "Topper Y"}
         };
         keyDropdownOptions_["WindowSettings"] = {
+            #if defined(__APPLE__)
+            {"videoBackend", {"ffmpeg", "novideo", "software"}}
+            #else
             {"videoBackend", {"vlc", "ffmpeg", "novideo", "software"}}
+            #endif
         };
 
         keyOrders_["MediaSources"] = {
