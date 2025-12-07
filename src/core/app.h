@@ -113,13 +113,11 @@ private:
     std::string configPath_;                    ///< Path to the configuration file.
     bool showConfig_ = false;                   ///< Flag controlling configuration UI visibility.
     std::unique_ptr<TableOverrideEditor> overrideEditor_; ///< Editor for table overrides
-    TableOverrideManager overrideManager_; ///< Manager for table overrides
     bool showEditor_ = false;
     std::unique_ptr<vpsdb::VpsdbCatalog> vpsdbCatalog_;
     std::unique_ptr<vpsdb::VpsdbJsonLoader> vpsdbJsonLoader_; // Added for JSON loading
     bool showVpsdb_ = false;
     size_t currentIndex_ = 0;                   ///< Index of the current table.
-    size_t lastTableIndex_; ///< Track last table index for editor updates
     std::unique_ptr<TTF_Font, void(*)(TTF_Font*)> font_; ///< TTF font for text rendering.
     std::unique_ptr<JoystickManager> joystickManager_;   ///< Manager for SDL joysticks.
     std::unique_ptr<IWindowManager> windowManager_;      ///< Manager for SDL windows and renderers.

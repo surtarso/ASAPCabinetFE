@@ -190,14 +190,48 @@ void ConfigService::saveConfig() {
 void ConfigService::applyPostProcessing() {
     std::string exeDir;
     char path[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (count != -1) {
-        path[count] = '\0';
-        exeDir = std::filesystem::path(path).parent_path().string() + "/";
-    } else {
-        exeDir = std::filesystem::current_path().string() + "/";
-        LOG_DEBUG("Failed to resolve executable path, using current directory: " + exeDir);
-    }
+
+    #if defined(__APPLE__)
+        // macOS: _NSGetExecutablePath + realpath
+        uint32_t size = sizeof(path);
+
+        // Try with static buffer
+        if (_NSGetExecutablePath(path, &size) == 0) {
+            char resolved[PATH_MAX];
+            if (realpath(path, resolved) != nullptr) {
+                // Executable absolute path, get directory
+                exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
+            } else {
+                // Couldn't resolve symlinks, fallback to raw
+                exeDir = std::filesystem::path(path).parent_path().string() + "/";
+            }
+        } else {
+            // Buffer too small, allocate exactly the required size
+            std::string dynamicPath(size, '\0');
+            if (_NSGetExecutablePath(dynamicPath.data(), &size) == 0) {
+                char resolved[PATH_MAX];
+                if (realpath(dynamicPath.c_str(), resolved) != nullptr) {
+                    exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
+                } else {
+                    exeDir = std::filesystem::path(dynamicPath).parent_path().string() + "/";
+                }
+            } else {
+                // Completely failed — fallback to CWD
+                exeDir = std::filesystem::current_path().string() + "/";
+            }
+        }
+    #else
+        // Linux: /proc/self/exe
+        ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+        if (count != -1) {
+            path[count] = '\0';
+            exeDir = std::filesystem::path(path).parent_path().string() + "/";
+        } else {
+            exeDir = std::filesystem::current_path().string() + "/";
+            LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
+        }
+    #endif
+
     settings_.applyPostProcessing(exeDir);
 }
 
