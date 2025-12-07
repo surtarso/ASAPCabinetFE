@@ -22,12 +22,16 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#if defined(__APPLE__)
+    #include <mach-o/dyld.h>
+    #include <limits.h>
+#endif
 
 /**
  * @struct SDLBootstrap
  * @brief RAII struct for initializing and cleaning up SDL subsystems.
  *
- * This struct initializes GST, SDL, SDL_ttf, and SDL_image with required subsystems
+ * This struct initializes SDL, SDL_ttf, and SDL_image with required subsystems
  * (video, events, joystick, audio) and configures DPI awareness. It logs errors
  * using LOG_ERROR and throws exceptions on failure. Cleanup is performed
  * automatically on destruction.
@@ -36,13 +40,13 @@ struct SDLBootstrap {
     std::string configPath; ///< Configuration file path
 
     /**
-     * @brief Constructs an SDLBootstrap and initializes GST and SDL subsystems.
+     * @brief Constructs an SDLBootstrap and initializes SDL subsystems.
      *
      * Initializes SDL with video, events, joystick, and audio subsystems, retrieves
-     * system DPI, sets DPI awareness hints, and initializes SDL_ttf, SDL_image, and
-     * GStreamer. Logs errors and throws runtime_error on failure.
+     * system DPI, sets DPI awareness hints, and initializes SDL_ttf and SDL_image.
+     * Logs errors and throws runtime_error on failure.
      *
-     * @throws std::runtime_error If GST, SDL, SDL_ttf, or SDL_image initialization fails.
+     * @throws std::runtime_error If SDL, SDL_ttf, or SDL_image initialization fails.
      */
     SDLBootstrap() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
@@ -89,7 +93,6 @@ struct SDLBootstrap {
      * @brief Destroys the SDLBootstrap and cleans up SDL subsystems.
      *
      * Cleans up SDL_image, SDL_ttf, and SDL subsystems, logging the cleanup process.
-     * Also quits and joins the GStreamer event loop thread gracefully.
      */
     ~SDLBootstrap() {
         IMG_Quit();
@@ -161,14 +164,49 @@ int main(int argc, char* argv[]) {
     // Resolve exeDir
     std::string exeDir;
     char path[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (count != -1) {
-        path[count] = '\0';
-        exeDir = std::filesystem::path(path).parent_path().string() + "/";
-    } else {
-        exeDir = std::filesystem::current_path().string() + "/";
-        LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
-    }
+
+    #if defined(__APPLE__)
+        // macOS: _NSGetExecutablePath + realpath
+        uint32_t size = sizeof(path);
+
+        // Try with static buffer
+        if (_NSGetExecutablePath(path, &size) == 0) {
+            char resolved[PATH_MAX];
+            if (realpath(path, resolved) != nullptr) {
+                // Executable absolute path, get directory
+                exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
+            } else {
+                // Couldn't resolve symlinks, fallback to raw
+                exeDir = std::filesystem::path(path).parent_path().string() + "/";
+            }
+        } else {
+            // Buffer too small, allocate exactly the required size
+            std::string dynamicPath(size, '\0');
+            if (_NSGetExecutablePath(dynamicPath.data(), &size) == 0) {
+                char resolved[PATH_MAX];
+                if (realpath(dynamicPath.c_str(), resolved) != nullptr) {
+                    exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
+                } else {
+                    exeDir = std::filesystem::path(dynamicPath).parent_path().string() + "/";
+                }
+            } else {
+                // Completely failed — fallback to CWD
+                exeDir = std::filesystem::current_path().string() + "/";
+            }
+        }
+
+    #else
+        // Linux: /proc/self/exe
+        ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+        if (count != -1) {
+            path[count] = '\0';
+            exeDir = std::filesystem::path(path).parent_path().string() + "/";
+        } else {
+            exeDir = std::filesystem::current_path().string() + "/";
+            LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
+        }
+    #endif
+
 
     // Handle --reset / -r argument
     if (argc > 1 && (std::string(argv[1]) == "--reset" || std::string(argv[1]) == "-r")) {
