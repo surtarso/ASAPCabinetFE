@@ -61,7 +61,6 @@ private:
     // --- Core state ---
     std::string configPath_;
     std::string exeDir_;
-    bool exitRequested_ = false;
 
     // --- SDL window + renderer ---
     SDL_Window* window_ = nullptr;

@@ -74,9 +74,13 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             }
             LOG_ERROR("Failed to setup Dummy video player for path=" + path);
             return nullptr;
-        case VideoBackendType::VLC:
-            player = std::make_unique<VlcVideoPlayer>();
-            break;
+
+        #if not defined(__APPLE__)
+            case VideoBackendType::VLC:
+                player = std::make_unique<VlcVideoPlayer>();
+                break;
+        #endif
+
         case VideoBackendType::FFMPEG:
             player = std::make_unique<FFmpegPlayer>();
             break;

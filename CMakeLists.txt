@@ -513,9 +513,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # --- Dependencies End ---
 
 # Compile options
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall -Wextra -Wshadow -Wconversion -D_REENTRANT
-)
+if(APPLE)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-system-headers)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wall -Wextra -Wshadow -Wconversion -D_REENTRANT)
+endif()
+
 
 # -----------------------------------------------------------------------------
 # Primary launcher binary (ASAPCabinetFE)
