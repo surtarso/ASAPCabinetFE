@@ -446,14 +446,24 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
+
 pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+
 pkg_check_modules(LIBVLC REQUIRED libvlc)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
 pkg_check_modules(LIBZIP REQUIRED libzip)
+
 find_package(CURL REQUIRED)
+
+if(APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(AVFOUNDATION_LIBRARY AVFoundation)
+    find_library(COREVIDEO_LIBRARY CoreVideo)
+    find_library(IOKIT_LIBRARY IOKit)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
@@ -471,6 +481,15 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 pkg_get_variable(LIBVLC_VERSION libvlc version)
 if(LIBVLC_VERSION VERSION_GREATER_EQUAL "4.0.0")
     add_compile_definitions(HAVE_LIBVLC_V4)
+endif()
+
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${COCOA_LIBRARY}
+        ${AVFOUNDATION_LIBRARY}
+        ${COREVIDEO_LIBRARY}
+        ${IOKIT_LIBRARY}
+    )
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -566,3 +585,59 @@ add_dependencies(${PROJECT_NAME}-Editor ${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME}-Editor
     RUNTIME DESTINATION .
 )
+
+# -----------------------------------------------------------------------------
+# macOS Bundle Settings
+# -----------------------------------------------------------------------------
+if(APPLE)
+    # Mark the target as an application bundle
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.asapcabinet.fe"
+        MACOSX_BUNDLE_BUNDLE_NAME "ASAPCabinetFE"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/macOS/Info.plist"
+    )
+
+    # ---------------------------------------------------------------------
+    # Icon (.icns)
+    # ---------------------------------------------------------------------
+    set(MACOSX_BUNDLE_ICON_FILE "appicon.icns")
+
+    # Copy icon into bundle Resources/
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/macOS/appicon.icns
+        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
+    )
+
+    target_sources(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/macOS/appicon.icns
+    )
+
+    # ---------------------------------------------------------------------
+    # Copy your assets into .app/Contents/Resources/
+    # ---------------------------------------------------------------------
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources"
+
+        # Copy img assets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets/img"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/img"
+
+        # Copy snd assets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets/snd"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/snd"
+
+        # Copy tools
+        # COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        #     "${CMAKE_SOURCE_DIR}/tools/generate_media.sh"
+        #     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/generate_media.sh"
+
+        # COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        #     "${CMAKE_SOURCE_DIR}/tools/missing_media.sh"
+        #     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/missing_media.sh"
+    )
+
+endif()

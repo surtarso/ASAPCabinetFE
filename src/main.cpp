@@ -57,9 +57,15 @@ struct SDLBootstrap {
             ddpi = 96.0f; // Default fallback DPI
         }
 
-        // Enable DPI awareness
-        SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
-        SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+        // Cross-platform DPI awareness configuration
+        #if defined(__LINUX__) || defined(__WINDOWS__)
+            SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
+            SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+        #elif defined(__APPLE__)
+            #ifdef SDL_HINT_VIDEO_HIDPI_DISABLED
+                SDL_SetHint(SDL_HINT_VIDEO_HIDPI_DISABLED, "0");
+            #endif
+        #endif
 
         if (TTF_Init() < 0) {
             LOG_ERROR("Failed to initialize TTF: " + std::string(TTF_GetError()));

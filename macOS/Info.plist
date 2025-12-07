@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>ASAPCabinetFE</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>ASAPCabinetFE</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.yourdomain.asapcabinetfe</string>
+
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <key>CFBundleExecutable</key>
+    <string>ASAPCabinetFE</string>
+
+    <key>CFBundleIconFile</key>
+    <string>appicon</string>
+
+    <!-- HiDPI: REQUIRED for DPI-awareness to work -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <!-- Optional, improves looks -->
+    <key>LSMinimumSystemVersion</key>
+    <string>10.13</string>
+</dict>
+</plist>
