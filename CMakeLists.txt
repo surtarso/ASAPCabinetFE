@@ -361,7 +361,7 @@ set(SOURCES
     src/render/video_players/ffmpeg/video_decoder.cpp
     src/render/video_players/sdl_draw/dmd_renderer.cpp
     src/render/video_players/sdl_draw/embedded_fallbacks.cpp
-    src/render/video_players/vlc/vlc_player.cpp
+    # src/render/video_players/vlc/vlc_player.cpp
     # tables
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
@@ -391,6 +391,11 @@ set(SOURCES
     # ImGui File Dialog source
     "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp"
 )
+
+if(NOT APPLE)
+    list(APPEND SOURCES
+        src/render/video_players/vlc/vlc_player.cpp)
+endif()
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -457,6 +462,12 @@ pkg_check_modules(LIBZIP REQUIRED libzip)
 
 if(NOT APPLE)
     pkg_check_modules(LIBVLC REQUIRED libvlc)
+
+    # support VLC v3.x and v4.x
+    pkg_get_variable(LIBVLC_VERSION libvlc version)
+    if(LIBVLC_VERSION VERSION_GREATER_EQUAL "4.0.0")
+        add_compile_definitions(HAVE_LIBVLC_V4)
+    endif()
 endif()
 
 find_package(CURL REQUIRED)
@@ -473,18 +484,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    ${LIBVLC_INCLUDE_DIRS}
+    # ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${LIBZIP_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
     ${rapidfuzz_SOURCE_DIR}
 )
-
-# support VLC v3.x and v4.x
-pkg_get_variable(LIBVLC_VERSION libvlc version)
-if(LIBVLC_VERSION VERSION_GREATER_EQUAL "4.0.0")
-    add_compile_definitions(HAVE_LIBVLC_V4)
-endif()
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -502,7 +507,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_TTF_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES}
-    ${LIBVLC_LIBRARIES}
+    # ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
@@ -510,6 +515,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     pugixml::pugixml
     rapidfuzz::rapidfuzz
 )
+
+if(NOT APPLE)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${LIBVLC_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBVLC_LIBRARIES})
+endif()
 # --- Dependencies End ---
 
 # Compile options
