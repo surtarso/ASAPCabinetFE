@@ -459,10 +459,21 @@ find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
 
-pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
-pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+if(APPLE)
+    # Homebrew SDL2
+    set(SDL2_INCLUDE_DIRS /opt/homebrew/include/SDL2)
+    set(SDL2_MAIN_LIBRARIES /opt/homebrew/lib/libSDL2.dylib)
+    set(SDL2_IMAGE_LIBRARIES /opt/homebrew/lib/libSDL2_image.dylib)
+    set(SDL2_TTF_LIBRARIES /opt/homebrew/lib/libSDL2_ttf.dylib)
+    set(SDL2_MIXER_LIBRARIES /opt/homebrew/lib/libSDL2_mixer.dylib)
+
+    include_directories(${SDL2_INCLUDE_DIRS})
+else()
+    pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
+    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+    pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+    pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+endif()
 
 if(APPLE)
     set(FFMPEG_LIBRARIES
@@ -527,13 +538,29 @@ if(APPLE)
     )
 endif()
 
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${SDL2_MAIN_LIBRARIES}
+        ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2_TTF_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+    )
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${SDL2_MAIN_LIBRARIES}
+        ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2_TTF_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+    )
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenSSL::Crypto
     nlohmann_json::nlohmann_json
-    ${SDL2_MAIN_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES}
+    # ${SDL2_MAIN_LIBRARIES}
+    # ${SDL2_IMAGE_LIBRARIES}
+    # ${SDL2_TTF_LIBRARIES}
+    # ${SDL2_MIXER_LIBRARIES}
     # ${LIBVLC_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
