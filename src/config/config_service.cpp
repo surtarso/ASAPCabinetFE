@@ -9,6 +9,10 @@
 #include <stdexcept>
 #include <filesystem>
 #include <string>
+#if defined(__APPLE__)
+    #include <mach-o/dyld.h>
+    #include <limits.h>
+#endif
 
 ConfigService::ConfigService(const std::string& configPath, IKeybindProvider* keybindProvider)
     : configPath_(configPath), keybindProvider_(keybindProvider) {
