@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <functional>
+#include <sstream>      // REQUIRED on macOS for std::stringstream
 
 namespace fs = std::filesystem;
 
