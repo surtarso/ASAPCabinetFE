@@ -565,7 +565,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${FFMPEG_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
-    zip
+    # zip
+    ${LIBZIP_LIBRARIES}
     pugixml::pugixml
     rapidfuzz::rapidfuzz
 )
