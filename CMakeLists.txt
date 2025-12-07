@@ -148,6 +148,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(pugixml)
 
+FetchContent_Declare(
+    rapidfuzz-cpp
+    URL https://github.com/rapidfuzz/rapidfuzz-cpp/archive/refs/tags/v3.3.3.tar.gz
+)
+
+FetchContent_MakeAvailable(rapidfuzz-cpp)
+
 # -------------------- ImGui ---------------------
 FetchContent_Declare(
     imgui
@@ -457,6 +464,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${FFMPEG_INCLUDE_DIRS}
     ${LIBZIP_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
+    ${rapidfuzz_SOURCE_DIR}
 )
 
 # support VLC v3.x and v4.x
@@ -478,6 +486,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     CURL::libcurl
     zip
     pugixml::pugixml
+    rapidfuzz::rapidfuzz
 )
 # --- Dependencies End ---
 

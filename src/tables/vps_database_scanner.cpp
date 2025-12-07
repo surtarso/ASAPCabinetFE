@@ -9,6 +9,7 @@
 namespace fs = std::filesystem;
 
 static std::mutex mismatchLogMutex;
+static std::mutex matchLogMutex;
 
 VpsDataScanner::VpsDataScanner(const nlohmann::json& vpsDb, const Settings& settings) : vpsDb_(vpsDb), utils_(), settings_(settings) {}
 
@@ -329,6 +330,21 @@ bool VpsDataScanner::matchMetadata(const nlohmann::json& vpxTable, TableData& ta
 
         // --- Done, count table and move on ---
         LOG_INFO("Matched table: " + tableData.vpsName + ", confidence: " + std::to_string(bestScore));
+        {
+            std::lock_guard<std::mutex> lock(matchLogMutex);
+            fs::path logPath(settings_.vpsdbMatchLog);
+            fs::create_directories(logPath.parent_path());
+            // LOG_DEBUG("VPSDB Missmatch logPath: " + logPath.string()); // why not resolved?!
+            std::ofstream matchLog(settings_.vpsdbMatchLog, std::ios::app);
+            // LOG_DEBUG("VPSDB Missmatch log file: " + settings_.vpsdbMissmatchLog);  // not resolved?
+
+            matchLog << "No match for: title='" << tableData.bestTitle << "', tableName='" << tableData.tableName
+                        << "', romName='" << romName << "', filename='" << filename
+                        << "', year='" << year << "', manufacturer='" << manufacturer
+                        << "', score=" << bestScore;
+            matchLog << ", match='" << bestVpsName << "'";
+            matchLog << "\n";
+        }
         if (progress) {
             std::lock_guard<std::mutex> lock(progress->mutex);
             progress->numMatched++;

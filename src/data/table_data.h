@@ -113,7 +113,7 @@ struct TableData {
     // TODO
 
     // --------------- OPERATIONAL TAGS ------------------
-    float matchConfidence = 0.0f;    ///< Confidence score of match with vpsdb
+    double matchConfidence = 0.0f;    ///< Confidence score of match with vpsdb
     bool isManualVpsId = false;      ///< Marks table with user added vpsdb ID for matching (skips matchmaking)
     // file internals related
     std::string hashFromVpx;         ///< SHA256 hash of internal .vpx VB script

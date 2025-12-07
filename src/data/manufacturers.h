@@ -1,19 +1,11 @@
-// utils/manufacturers.h
-#ifndef PINBALL_MANUFACTURERS_H
-#define PINBALL_MANUFACTURERS_H
-
-#include <vector>
-#include <string>
-
 namespace PinballManufacturers {
 
-// Comprehensive manufacturer name list (all lowercase for matching).
-// Longer or more specific names come first to improve detection accuracy.
-// e.g. 'sonic pinball' before 'sonic'.
 const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
-    // ------------------------------------------------------------------
-    // Virtual Pinball / Digital Pinball Studios and Authors
-    // ------------------------------------------------------------------
+    // Original tables
+    "original",
+    "recreation",
+
+    // Virtual/digital studios – safe for fuzzy matching
     "visual pinball",
     "future pinball",
     "zen studios",
@@ -24,18 +16,11 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "pinball fx",
     "the pinball arcade",
     "pinball arcade",
-    "vpx original",
-    "original",              // VPX original table (community)
-    "recreational",          // often used by modders
-    "mod",                   // MOD editions of tables
-    "modded",
-    "mod version",
 
-    // ------------------------------------------------------------------
-    // Major Historical Manufacturers (US)
-    // ------------------------------------------------------------------
+    // Historical real-world manufacturers
     "bally manufacturing",
     "bally midway",
+    "bally",
     "williams electronics",
     "williams",
     "gottlieb",
@@ -47,15 +32,13 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "midway manufacturing",
     "midway",
     "sega pinball",
-    "segasa",                // Spanish variant (Segasa-Sonic)
+    "segasa",
     "sega",
     "atari",
     "capcom coin-op",
     "capcom",
 
-    // ------------------------------------------------------------------
-    // Other US Manufacturers
-    // ------------------------------------------------------------------
+    // More
     "chicago coin",
     "chicago gaming company",
     "chicago gaming",
@@ -79,9 +62,7 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "multimorphic",
     "haggis pinball",
 
-    // ------------------------------------------------------------------
-    // European Manufacturers
-    // ------------------------------------------------------------------
+    // European
     "zaccaria pinball",
     "zaccaria",
     "recel",
@@ -97,6 +78,7 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "mirco",
     "spm",
     "spinball",
+    "ltd do brasil",
     "taito do brasil",
     "taito",
     "playmatic",
@@ -106,13 +88,10 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
     "sonic pinball",
     "sonic",
     "sankt georgen",
-    "recel s.a.",
     "bingo gameroom",
     "euro pinball corp",
 
-    // ------------------------------------------------------------------
-    // Modern Indie / Homebrew / Virtual Projects
-    // ------------------------------------------------------------------
+    // Modern indie studios
     "silver castle pinball",
     "pedretti gaming",
     "retro pinball",
@@ -130,5 +109,3 @@ const std::vector<std::string> MANUFACTURERS_LOWERCASE = {
 };
 
 } // namespace PinballManufacturers
-
-#endif // PINBALL_MANUFACTURERS_H

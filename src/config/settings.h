@@ -232,6 +232,7 @@ struct Settings {
     std::string vpsDbLastUpdated = "data/cache/vpsdbLastUpdated.json";
     std::string vpsdbImageCacheDir = "data/cache/vpsdb_thumbs";
     std::string vpsdbMissmatchLog = "logs/vpsdb_mismatches.log";
+    std::string vpsdbMatchLog = "logs/vpsdb_matches.log";
 
     std::string vpxtoolBin = ""; // absolute path
     std::string vpxtoolExtractCmd = "extractvbs";
@@ -308,7 +309,7 @@ struct Settings {
             "vpsDbPath", "vpsDbLastUpdated", "indexPath", "vbsHashPath",
             "vpsdbImageCacheDir", "previewCacheDir", "vpsdbMissmatchLog",
             "vpinmdbPath", "mainCacheDir", "lbdbPath", "lbdbZipPath",
-            "mainDbPath", "ipdbPath",
+            "mainDbPath", "ipdbPath", "vpsdbMatchLog",
         };
 
         // Iterate through the list and resolve each path
@@ -341,6 +342,7 @@ struct Settings {
             else if (field == "lbdbZipPath") lbdbZipPath = resolvePath(lbdbZipPath, exeDir);
             else if (field == "mainDbPath") mainDbPath = resolvePath(mainDbPath, exeDir);
             else if (field == "ipdbPath") ipdbPath = resolvePath(ipdbPath, exeDir);
+            else if (field == "vpsdbMatchLog") vpsdbMatchLog = resolvePath(vpsdbMatchLog, exeDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -581,6 +583,7 @@ private:
                 {"vpsdbImageCacheDir", s.vpsdbImageCacheDir},
                 {"previewCacheDir", s.previewCacheDir},
                 {"vpsdbMissmatchLog", s.vpsdbMissmatchLog},
+                {"vpsdbMatchLog", s.vpsdbMatchLog},
                 {"vpinmdbPath", s.vpinmdbPath},
                 {"vpinmdbUrl", s.vpinmdbUrl},
                 {"lbdbImgUrl", s.lbdbImgUrl},
@@ -815,6 +818,7 @@ private:
         s.vpsdbImageCacheDir = j.value("Internal", nlohmann::json{}).value("vpsdbImageCacheDir", s.vpsdbImageCacheDir);
         s.previewCacheDir = j.value("Internal", nlohmann::json{}).value("previewCacheDir", s.previewCacheDir);
         s.vpsdbMissmatchLog = j.value("Internal", nlohmann::json{}).value("vpsdbMissmatchLog", s.vpsdbMissmatchLog);
+        s.vpsdbMatchLog = j.value("Internal", nlohmann::json{}).value("vpsdbMatchLog", s.vpsdbMatchLog);
         s.vpinmdbPath = j.value("Internal", nlohmann::json{}).value("vpinmdbPath", s.vpinmdbPath);
         s.vpinmdbUrl = j.value("Internal", nlohmann::json{}).value("vpinmdbUrl", s.vpinmdbUrl);
         s.lbdbImgUrl = j.value("Internal", nlohmann::json{}).value("lbdbImgUrl", s.lbdbImgUrl);
@@ -1031,6 +1035,7 @@ inline const std::map<std::string, std::pair<Settings::ReloadType, std::string>>
     {"vpsDbLastUpdated", {Settings::ReloadType::None, "Full path to the VPS database timestamp file."}},
     {"vpsdbImageCacheDir", {Settings::ReloadType::None, "Relative path to the VPSdb image cache dir."}},
     {"vpsdbMissmatchLog", {Settings::ReloadType::None, "Relative path to the VPSdb missmatch log file."}},
+    {"vpsdbMatchLog", {Settings::ReloadType::None, "Relative path to the VPSdb match log file."}},
 
     {"vpxtoolIndex", {Settings::ReloadType::None, "Path to the vpxtool index file (defaults to vpxtool_index.json)."}},
     {"vpxtoolBin", {Settings::ReloadType::None, "Full path to the vpxtool binary, if it is not on your PATH."}},

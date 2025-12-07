@@ -20,8 +20,36 @@
 #include <fstream>
 #include <mutex>
 #include <atomic>
+#include <rapidfuzz/rapidfuzz_all.hpp>
+
+using rapidfuzz::fuzz::partial_ratio;
+using rapidfuzz::fuzz::ratio;
 
 namespace fs = std::filesystem;
+
+
+// --- Manufacturer detection helper (with rapidfuzz) ---
+static std::string detectManufacturerFuzzy(const std::string& titleLower, int threshold = 85) {
+    if (titleLower.empty()) return "";
+
+    int bestScore = 0;
+    std::string bestMatch;
+
+    for (const auto& manuLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+        if (manuLower.empty()) continue;
+        int score = static_cast<int>(rapidfuzz::fuzz::partial_ratio(titleLower, manuLower));
+        if (score > bestScore) {
+            bestScore = score;
+            bestMatch = manuLower;
+        }
+    }
+
+    if (bestScore >= threshold) {
+        return StringUtils::capitalizeWords(bestMatch);
+    }
+
+    return ""; // fallback if below threshold
+}
 
 // Helper to get the last modified timestamp of a folder recursively
 static uint64_t getFolderLastModifiedRecursive(const fs::path& folder) {
@@ -180,12 +208,30 @@ std::vector<TableData> FileScanner::scan(const Settings& settings, LoadingProgre
             if (std::regex_search(table.bestTitle, match, year_regex))
                 table.bestYear = match.str(0);
 
-            std::string lowerTitle = table.bestTitle;
-            std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
-            for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
-                if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
-                    table.bestManufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
-                    break;
+            // std::string lowerTitle = table.bestTitle;
+            // std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+
+            // for (const auto& manufacturerNameLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+            //     if (lowerTitle.find(manufacturerNameLower) != std::string::npos) {
+            //         table.bestManufacturer = StringUtils::capitalizeWords(manufacturerNameLower);
+            //         break;
+            //     }
+            // }
+            if (table.bestManufacturer.empty()) {
+                std::string lowerTitle = table.bestTitle;
+                std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+
+                // Try exact substring match first (legacy behavior)
+                for (const auto& manuLower : PinballManufacturers::MANUFACTURERS_LOWERCASE) {
+                    if (lowerTitle.find(manuLower) != std::string::npos) {
+                        table.bestManufacturer = StringUtils::capitalizeWords(manuLower);
+                        break;
+                    }
+                }
+
+                // If nothing found, try fuzzy match (with RapidFuzz)
+                if (table.bestManufacturer.empty()) {
+                    table.bestManufacturer = detectManufacturerFuzzy(lowerTitle, /*threshold=*/85);
                 }
             }
 
