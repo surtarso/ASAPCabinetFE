@@ -468,14 +468,7 @@ if(APPLE)
     set(SDL2_MIXER_LIBRARIES /opt/homebrew/lib/libSDL2_mixer.dylib)
 
     include_directories(${SDL2_INCLUDE_DIRS})
-else()
-    pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
-    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-    pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
-endif()
 
-if(APPLE)
     set(FFMPEG_LIBRARIES
         /opt/homebrew/lib/libavcodec.dylib
         /opt/homebrew/lib/libavformat.dylib
@@ -487,14 +480,13 @@ if(APPLE)
 
     set(LIBZIP_LIBRARIES /opt/homebrew/lib/libzip.dylib)
     set(LIBZIP_INCLUDE_DIRS /opt/homebrew/include)
-
 else()
+    pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
+    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+    pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+    pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
     pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
     pkg_check_modules(LIBZIP REQUIRED libzip)
-endif()
-
-
-if(NOT APPLE)
     pkg_check_modules(LIBVLC REQUIRED libvlc)
 
     # support VLC v3.x and v4.x
@@ -518,7 +510,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    # ${LIBVLC_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${LIBZIP_INCLUDE_DIRS}
     ${CURL_INCLUDE_DIRS}
@@ -538,34 +529,16 @@ if(APPLE)
     )
 endif()
 
-if(APPLE)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_MAIN_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES}
-    )
-else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_MAIN_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES}
-    )
-endif()
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenSSL::Crypto
     nlohmann_json::nlohmann_json
-    # ${SDL2_MAIN_LIBRARIES}
-    # ${SDL2_IMAGE_LIBRARIES}
-    # ${SDL2_TTF_LIBRARIES}
-    # ${SDL2_MIXER_LIBRARIES}
-    # ${LIBVLC_LIBRARIES}
+    ${SDL2_MAIN_LIBRARIES}
+    ${SDL2_IMAGE_LIBRARIES}
+    ${SDL2_TTF_LIBRARIES}
+    ${SDL2_MIXER_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${VPIN_FFI_WRAPPER_LIB_NAME}
     CURL::libcurl
-    # zip
     ${LIBZIP_LIBRARIES}
     pugixml::pugixml
     rapidfuzz::rapidfuzz
@@ -625,12 +598,14 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
     # Install resource directories directly into the root of the install prefix
     # Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
-    install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
-    install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
-    install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
-    install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
+    if(NOT APPLE)
+        install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
+        install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
+        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
+        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
+        install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
+        install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
+    endif()
 endif()
 
 # Set output directory (this is for the build directory, not install)
@@ -642,20 +617,22 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Secondary launcher binary (--editor shortcut)
 # -----------------------------------------------------------------------------
 # Define and import the editor source file
-add_executable(${PROJECT_NAME}-Editor src/editor/editor_binary.cpp)
+if(NOT APPLE)
+    add_executable(${PROJECT_NAME}-Editor src/editor/editor_binary.cpp)
 
-# Place it in the same build folder as the main binary
-set_target_properties(${PROJECT_NAME}-Editor PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
+    # Place it in the same build folder as the main binary
+    set_target_properties(${PROJECT_NAME}-Editor PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
 
-# Ensure it builds after the main app so ./ASAPCabinetFE exists
-add_dependencies(${PROJECT_NAME}-Editor ${PROJECT_NAME})
+    # Ensure it builds after the main app so ./ASAPCabinetFE exists
+    add_dependencies(${PROJECT_NAME}-Editor ${PROJECT_NAME})
 
-# Install it alongside the main binary
-install(TARGETS ${PROJECT_NAME}-Editor
-    RUNTIME DESTINATION .
-)
+    # Install it alongside the main binary
+    install(TARGETS ${PROJECT_NAME}-Editor
+        RUNTIME DESTINATION .
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # macOS Bundle Settings
@@ -701,7 +678,7 @@ if(APPLE)
             "${CMAKE_SOURCE_DIR}/assets/snd"
             "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/snd"
 
-        # Copy tools
+        # Copy tools (debian scripts)
         # COMMAND ${CMAKE_COMMAND} -E copy_if_different
         #     "${CMAKE_SOURCE_DIR}/tools/generate_media.sh"
         #     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/generate_media.sh"
