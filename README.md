@@ -84,7 +84,7 @@ cd ~/ASAPCabinetFE
 # Install Homebrew if you don't have it:
 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew update
-brew install git cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
+cat brew-packages.txt | xargs brew install
 git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE && cd ASAPCabinetFE
 git lfs install
 git lfs pull
@@ -92,7 +92,6 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/ASAPCabinetFE -DCMAKE_PREFIX_PATH="$(brew --prefix)" -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" -DCMAKE_OSX_ARCHITECTURES="arm64" ..
 cmake --build . -j$(sysctl -n hw.logicalcpu)
 cmake --install .
-# open the app bundle
 ```
 </details>
 
