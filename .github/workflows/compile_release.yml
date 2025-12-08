@@ -315,9 +315,7 @@ jobs:
 
     - name: Test Version Flag
       run: |
-        if [ -d "${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app" ]; then
-            EXEC="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app/Contents/MacOS/ASAPCabinetFE"
-        fi
+        EXEC="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app/Contents/MacOS/ASAPCabinetFE"
         VERSION_OUTPUT=$($EXEC --version || true)
         echo "Version output: $VERSION_OUTPUT"
 
