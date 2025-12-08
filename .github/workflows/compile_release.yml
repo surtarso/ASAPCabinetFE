@@ -250,9 +250,7 @@ jobs:
     - name: Install Homebrew Dependencies
       run: |
         brew update
-        brew install cmake pkg-config \
-          sdl2 sdl2_image sdl2_ttf sdl2_mixer \
-          ffmpeg openssl@3 libzip curl nlohmann-json
+        cat brew-packages.txt | xargs brew install
 
     # Collect versions (for release notes)
     - name: Get Library Versions
