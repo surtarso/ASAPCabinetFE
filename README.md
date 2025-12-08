@@ -77,7 +77,7 @@ cd ~/ASAPCabinetFE
 
 ### TL:DR <img src="https://twemoji.maxcdn.com/v/latest/svg/1f34e.svg" width="15"/> MacOS (experimental)
 <details>
-<summary>UNTESTED <b>arm64</b> build <img src="https://twemoji.maxcdn.com/v/latest/svg/1f37a.svg" alt="Beer" width="15"/>
+<summary>UNTESTED <b>arm64</b> build <img src="https://twemoji.maxcdn.com/v/latest/svg/1f37a.svg" alt="Beer" width="15"/> (I do NOT own a Mac and I just made it compile and link without errors, if you are a Mac person and interested in this, feel free to jump in as I have no real way to test this right now)
 </summary>
 
 ```bash
