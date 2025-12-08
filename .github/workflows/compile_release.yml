@@ -295,7 +295,7 @@ jobs:
         if [ -z "$VERSION" ]; then
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
-        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-arm64.tar.gz"
+        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-arm64-experimental.tar.gz"
         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
