@@ -364,8 +364,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
-              -DCMAKE_PREFIX_PATH="$(brew --prefix sdl2)" \
-              -DSDL2_INCLUDE_DIR="$(brew --prefix sdl2)/include/SDL2" \
+              -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
               -DCMAKE_OSX_ARCHITECTURES="x86_64" \
               -S .. -B .
 
@@ -463,12 +462,12 @@ jobs:
           </details>
 
           <details>
-          <summary>macOS build compiled using...</summary>
+          <summary>macOS arm64 build compiled using...</summary>
 
-          - macOS: ${{ needs.build_macos.outputs.macos_version }}
-          - SDL2: ${{ needs.build_macos.outputs.sdl2_version }}
-          - FFmpeg: ${{ needs.build_macos.outputs.ffmpeg_version }}
-          - cURL: ${{ needs.build_macos.outputs.curl_version }}
+          - macOS: ${{ needs.build_macos_arm64.outputs.macos_version }}
+          - SDL2: ${{ needs.build_macos_arm64.outputs.sdl2_version }}
+          - FFmpeg: ${{ needs.build_macos_arm64.outputs.ffmpeg_version }}
+          - cURL: ${{ needs.build_macos_arm64.outputs.curl_version }}
 
           </details>
 
