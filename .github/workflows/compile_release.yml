@@ -277,7 +277,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
               -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
               -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" \
-              -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+              -DCMAKE_OSX_ARCHITECTURES="arm64" \
               -S .. -B .
 
     - name: Compile with CMake
@@ -297,7 +297,7 @@ jobs:
         if [ -z "$VERSION" ]; then
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
-        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-universal.tar.gz"
+        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-arm64.tar.gz"
         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
