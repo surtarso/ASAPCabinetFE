@@ -315,10 +315,17 @@ jobs:
 
     - name: Test Version Flag
       run: |
-        EXEC="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app/Contents/MacOS/ASAPCabinetFE"
-        VERSION_OUTPUT=$($EXEC --version || true)
-        echo "Version output: $VERSION_OUTPUT"
+        APP="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app"
+        EXEC="$APP/Contents/MacOS/ASAPCabinetFE"
 
+        if [ -f "$EXEC" ] && [ -x "$EXEC" ]; then
+            echo "Executable exists and is runnable"
+            VERSION_OUTPUT=$("$EXEC" --version || true)
+            echo "Version output: $VERSION_OUTPUT"
+        else
+            echo "Executable missing or not runnable!"
+            ls -l "$APP/Contents/MacOS"
+        fi
 
 #=============== RELEASE JOB ================
   release:
