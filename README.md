@@ -83,11 +83,11 @@ cd ~/ASAPCabinetFE
 ```bash
 # Install Homebrew if you don't have it:
 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew update
-cat brew-packages.txt | xargs brew install
 git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE && cd ASAPCabinetFE
 git lfs install
 git lfs pull
+brew update
+cat brew-packages.txt | xargs brew install
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/ASAPCabinetFE -DCMAKE_PREFIX_PATH="$(brew --prefix)" -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" -DCMAKE_OSX_ARCHITECTURES="arm64" ..
 cmake --build . -j$(sysctl -n hw.logicalcpu)
