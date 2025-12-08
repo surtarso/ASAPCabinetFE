@@ -224,8 +224,8 @@ jobs:
           exit 1
         fi
 
-#=============== MACOS BUILD JOB ===============
-  build_macos:
+#=============== MACOS ARM64 BUILD JOB ===============
+  build_macos_arm64:
     runs-on: macos-latest
 
     outputs:
@@ -309,29 +309,104 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ASAPCabinetFE-macos
+        name: ASAPCabinetFE-macos-arm64
         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
         retention-days: 7
 
-    - name: Test Version Flag
-      run: |
-        APP="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app"
-        EXEC="$APP/Contents/MacOS/ASAPCabinetFE"
+#=============== MACOS x86_64 BUILD JOB ===============
+  build_macos_x86_64:
+    runs-on: macos-latest
 
-        if [ -f "$EXEC" ] && [ -x "$EXEC" ]; then
-            echo "Executable exists and is runnable"
-            VERSION_OUTPUT=$("$EXEC" --version || true)
-            echo "Version output: $VERSION_OUTPUT"
-        else
-            echo "Executable missing or not runnable!"
-            ls -l "$APP/Contents/MacOS"
+    outputs:
+      sdl2_version: ${{ steps.get-lib-versions.outputs.sdl2_version }}
+      ffmpeg_version: ${{ steps.get-lib-versions.outputs.ffmpeg_version }}
+      curl_version: ${{ steps.get-lib-versions.outputs.curl_version }}
+      macos_version: ${{ steps.get-lib-versions.outputs.macos_version }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        lfs: true
+
+    - name: Checkout selected tag
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        git fetch --tags
+        git checkout ${{ inputs.tag }}
+
+    # Install dependencies using Homebrew
+    - name: Install Homebrew Dependencies
+      run: |
+        brew update
+        brew install cmake pkg-config \
+          sdl2 sdl2_image sdl2_ttf sdl2_mixer \
+          ffmpeg openssl@3 libzip curl nlohmann-json
+
+    # Collect versions (for release notes)
+    - name: Get Library Versions
+      id: get-lib-versions
+      run: |
+        SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
+        FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
+        CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
+        MACOS_VER=$(sw_vers -productVersion || echo "N/A")
+        echo "sdl2_version=$SDL2_VER" >> $GITHUB_OUTPUT
+        echo "ffmpeg_version=$FFMPEG_VER" >> $GITHUB_OUTPUT
+        echo "curl_version=$CURL_VER" >> $GITHUB_OUTPUT
+        echo "macos_version=$MACOS_VER" >> $GITHUB_OUTPUT
+
+    # Configure and build
+    - name: Configure with CMake
+      run: |
+        export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
+              -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
+              -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" \
+              -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+              -S .. -B .
+
+    - name: Compile with CMake
+      run: |
+        cd build
+        cmake --build . -j$(sysctl -n hw.logicalcpu)
+
+    - name: Run make install
+      run: |
+        cd build
+        cmake --install .
+
+    - name: Create distributable archive
+      id: create-archive
+      run: |
+        VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
+        if [ -z "$VERSION" ]; then
+            VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
+        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-x86_64.tar.gz"
+        ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
+        mkdir -p "${ARTIFACT_TEMP_DIR}"
+        TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
+        cd "${HOME}/ASAPCabinetFE"
+        tar -czvhf "${TARBALL_FULL_PATH}" ./*
+        echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
+        echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ASAPCabinetFE-macos-x86_64
+        path: "${{ steps.create-archive.outputs.tarball_full_path }}"
+        retention-days: 7
 
 #=============== RELEASE JOB ================
   release:
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build_ubuntu, build_arch, build_macos, codeql_analysis]
+    needs: [build_ubuntu, build_arch, build_macos_arm64, build_macos_x86_64, codeql_analysis]
     steps:
     - name: Download Ubuntu artifact
       uses: actions/download-artifact@v4
@@ -403,7 +478,8 @@ jobs:
         files: |
           artifacts/ubuntu/*.tar.gz
           artifacts/arch/*.tar.gz
-          artifacts/macos/*.tar.gz
+          artifacts/macos-arm64/*.tar.gz
+          artifacts/macos-x86_64/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

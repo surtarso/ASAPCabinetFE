@@ -3,9 +3,20 @@ project(ASAPCabinetFE LANGUAGES CXX C)
 
 # Homebrew default paths
 if(APPLE)
-    list(APPEND CMAKE_PREFIX_PATH /opt/homebrew /opt/homebrew/opt)
-    list(APPEND CMAKE_LIBRARY_PATH /opt/homebrew/lib)
-    list(APPEND CMAKE_INCLUDE_PATH /opt/homebrew/include)
+    if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
+        set(HOMEBREW_PREFIX "/opt/homebrew")
+    elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
+        set(HOMEBREW_PREFIX "/usr/local")
+    else()
+        set(HOMEBREW_PREFIX "/opt/homebrew")
+    endif()
+
+    list(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX})
+    list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
+    list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
+    # list(APPEND CMAKE_PREFIX_PATH /opt/homebrew /opt/homebrew/opt)
+    # list(APPEND CMAKE_LIBRARY_PATH /opt/homebrew/lib)
+    # list(APPEND CMAKE_INCLUDE_PATH /opt/homebrew/include)
 endif()
 
 # Detect if building inside Flatpak (not working)
@@ -461,25 +472,25 @@ find_package(nlohmann_json 3.11.2 REQUIRED)
 
 if(APPLE)
     # Homebrew SDL2
-    set(SDL2_INCLUDE_DIRS /opt/homebrew/include/SDL2)
-    set(SDL2_MAIN_LIBRARIES /opt/homebrew/lib/libSDL2.dylib)
-    set(SDL2_IMAGE_LIBRARIES /opt/homebrew/lib/libSDL2_image.dylib)
-    set(SDL2_TTF_LIBRARIES /opt/homebrew/lib/libSDL2_ttf.dylib)
-    set(SDL2_MIXER_LIBRARIES /opt/homebrew/lib/libSDL2_mixer.dylib)
+    set(SDL2_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include/SDL2)
+    set(SDL2_MAIN_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2.dylib)
+    set(SDL2_IMAGE_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_image.dylib)
+    set(SDL2_TTF_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_ttf.dylib)
+    set(SDL2_MIXER_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_mixer.dylib)
 
     include_directories(${SDL2_INCLUDE_DIRS})
 
     set(FFMPEG_LIBRARIES
-        /opt/homebrew/lib/libavcodec.dylib
-        /opt/homebrew/lib/libavformat.dylib
-        /opt/homebrew/lib/libavutil.dylib
-        /opt/homebrew/lib/libswscale.dylib
-        /opt/homebrew/lib/libswresample.dylib
+        ${HOMEBREW_PREFIX}/lib/libavcodec.dylib
+        ${HOMEBREW_PREFIX}/lib/libavformat.dylib
+        ${HOMEBREW_PREFIX}/lib/libavutil.dylib
+        ${HOMEBREW_PREFIX}/lib/libswscale.dylib
+        ${HOMEBREW_PREFIX}/lib/libswresample.dylib
     )
-    set(FFMPEG_INCLUDE_DIRS /opt/homebrew/include)
+    set(FFMPEG_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
 
-    set(LIBZIP_LIBRARIES /opt/homebrew/lib/libzip.dylib)
-    set(LIBZIP_INCLUDE_DIRS /opt/homebrew/include)
+    set(LIBZIP_LIBRARIES ${HOMEBREW_PREFIX}/lib/libzip.dylib)
+    set(LIBZIP_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
 else()
     pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
