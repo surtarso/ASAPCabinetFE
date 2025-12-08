@@ -335,18 +335,25 @@ jobs:
         git fetch --tags
         git checkout ${{ inputs.tag }}
 
-    # Install dependencies using Homebrew
-    - name: Install Homebrew Dependencies
+    - name: Set Environment for x86_64
       run: |
-        brew update
-        brew install cmake pkg-config \
-          sdl2 sdl2_image sdl2_ttf sdl2_mixer \
-          ffmpeg openssl@3 libzip curl nlohmann-json
+        echo "HOMEBREW_PREFIX=/usr/local" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+
+    - name: Install Homebrew Dependencies for x86_64
+      run: |
+        arch -x86_64 /bin/bash -c "
+        if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
+        fi
+        /usr/local/bin/brew update
+        /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
 
     # Collect versions (for release notes)
     - name: Get Library Versions
       id: get-lib-versions
       run: |
+        export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
         SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
         FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
         CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
@@ -359,14 +366,15 @@ jobs:
     # Configure and build
     - name: Configure with CMake
       run: |
-        export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
         mkdir -p build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
-              -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
-              -DCMAKE_OSX_ARCHITECTURES="x86_64" \
-              -S .. -B .
+        cmake -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root
+        -DCMAKE_PREFIX_PATH="/usr/local"
+        -DCMAKE_FIND_ROOT_PATH="/usr/local"
+        -DCMAKE_OSX_ARCHITECTURES="x86_64"
+        -S .. -B .
 
     - name: Compile with CMake
       run: |
