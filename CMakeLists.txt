@@ -15,7 +15,7 @@ if(APPLE)
     list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
 
-    message(STATUS "macOS build: $(CMAKE_OSX_ARCHITECTURES) using Homebrew prefix: ${HOMEBREW_PREFIX}")
+    message(STATUS "macOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
 endif()
 
 # Detect if building inside Flatpak (not working)
