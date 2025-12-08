@@ -368,6 +368,18 @@ struct Settings {
                 "/usr/local/share/fonts/Arial.ttf",
                 "/usr/local/share/fonts/FreeSans.ttf",
                 "/usr/local/share/fonts/FreeMono.ttf",
+                "/System/Library/Fonts/SFNS.ttf",                  // macOS system fonts
+                "/System/Library/Fonts/SFNSText.ttf",
+                "/System/Library/Fonts/Helvetica.ttc",
+                "/System/Library/Fonts/Courier New.ttf",
+                "/System/Library/Fonts/Arial.ttf",
+                "/Library/Fonts/Arial.ttf",                        // macOS user/global fonts
+                "/Library/Fonts/Arial Unicode.ttf",
+                "/Library/Fonts/Helvetica.ttf",
+                "/Library/Fonts/Times New Roman.ttf",
+                "/Library/Fonts/Courier New.ttf",
+                "/Library/Fonts/Verdana.ttf",
+                "/Library/Fonts/Georgia.ttf",
                 "/usr/share/fonts/TTF/HackNerdFont-Regular.ttf"    // Mine =]
             };
             for (const auto& path : candidates) {
