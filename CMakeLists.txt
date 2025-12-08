@@ -14,9 +14,6 @@ if(APPLE)
     list(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX})
     list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
-    # list(APPEND CMAKE_PREFIX_PATH /opt/homebrew /opt/homebrew/opt)
-    # list(APPEND CMAKE_LIBRARY_PATH /opt/homebrew/lib)
-    # list(APPEND CMAKE_INCLUDE_PATH /opt/homebrew/include)
 endif()
 
 # Detect if building inside Flatpak (not working)
@@ -379,7 +376,7 @@ set(SOURCES
     src/render/video_players/ffmpeg/video_decoder.cpp
     src/render/video_players/sdl_draw/dmd_renderer.cpp
     src/render/video_players/sdl_draw/embedded_fallbacks.cpp
-    # src/render/video_players/vlc/vlc_player.cpp
+    # src/render/video_players/vlc/vlc_player.cpp  # only included in non-Apple builds
     # tables
     src/tables/file_scanner.cpp
     src/tables/table_loader.cpp
