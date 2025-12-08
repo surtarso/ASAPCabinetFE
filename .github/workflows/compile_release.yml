@@ -313,112 +313,112 @@ jobs:
         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
         retention-days: 7
 
-#=============== MACOS x86_64 BUILD JOB ===============
-  build_macos_x86_64:
-    runs-on: macos-latest
+# #=============== MACOS x86_64 BUILD JOB ===============
+#   build_macos_x86_64:
+#     runs-on: macos-latest
 
-    outputs:
-      sdl2_version: ${{ steps.get-lib-versions.outputs.sdl2_version }}
-      ffmpeg_version: ${{ steps.get-lib-versions.outputs.ffmpeg_version }}
-      curl_version: ${{ steps.get-lib-versions.outputs.curl_version }}
-      macos_version: ${{ steps.get-lib-versions.outputs.macos_version }}
+#     outputs:
+#       sdl2_version: ${{ steps.get-lib-versions.outputs.sdl2_version }}
+#       ffmpeg_version: ${{ steps.get-lib-versions.outputs.ffmpeg_version }}
+#       curl_version: ${{ steps.get-lib-versions.outputs.curl_version }}
+#       macos_version: ${{ steps.get-lib-versions.outputs.macos_version }}
 
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        lfs: true
+#     steps:
+#     - uses: actions/checkout@v4
+#       with:
+#         fetch-depth: 0
+#         lfs: true
 
-    - name: Checkout selected tag
-      if: ${{ github.event_name == 'workflow_dispatch' }}
-      run: |
-        git fetch --tags
-        git checkout ${{ inputs.tag }}
+#     - name: Checkout selected tag
+#       if: ${{ github.event_name == 'workflow_dispatch' }}
+#       run: |
+#         git fetch --tags
+#         git checkout ${{ inputs.tag }}
 
-    - name: Install Homebrew Dependencies for x86_64
-      run: |
-        arch -x86_64 /bin/bash -c "
-          if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
-            /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
-          fi
-          /usr/local/bin/brew update
-          /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
-        "
+#     - name: Install Homebrew Dependencies for x86_64
+#       run: |
+#         arch -x86_64 /bin/bash -c "
+#           if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
+#             /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
+#           fi
+#           /usr/local/bin/brew update
+#           /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
+#         "
 
-    # Collect versions (for release notes)
-    - name: Get Library Versions
-      id: get-lib-versions
-      run: |
-        arch -x86_64 /bin/bash -c "
-          export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
-          SDL2_VER=\$(pkg-config --modversion sdl2 || echo \"N/A\")
-          FFMPEG_VER=\$(pkg-config --modversion libavcodec || echo \"N/A\")
-          CURL_VER=\$(pkg-config --modversion libcurl || echo \"N/A\")
-          echo \"sdl2_version=\$SDL2_VER\" >> \$GITHUB_OUTPUT
-          echo \"ffmpeg_version=\$FFMPEG_VER\" >> \$GITHUB_OUTPUT
-          echo \"curl_version=\$CURL_VER\" >> \$GITHUB_OUTPUT
-        "
-        MACOS_VER=$(sw_vers -productVersion || echo "N/A")
-        echo "macos_version=$MACOS_VER" >> $GITHUB_OUTPUT
+#     # Collect versions (for release notes)
+#     - name: Get Library Versions
+#       id: get-lib-versions
+#       run: |
+#         arch -x86_64 /bin/bash -c "
+#           export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+#           SDL2_VER=\$(pkg-config --modversion sdl2 || echo \"N/A\")
+#           FFMPEG_VER=\$(pkg-config --modversion libavcodec || echo \"N/A\")
+#           CURL_VER=\$(pkg-config --modversion libcurl || echo \"N/A\")
+#           echo \"sdl2_version=\$SDL2_VER\" >> \$GITHUB_OUTPUT
+#           echo \"ffmpeg_version=\$FFMPEG_VER\" >> \$GITHUB_OUTPUT
+#           echo \"curl_version=\$CURL_VER\" >> \$GITHUB_OUTPUT
+#         "
+#         MACOS_VER=$(sw_vers -productVersion || echo "N/A")
+#         echo "macos_version=$MACOS_VER" >> $GITHUB_OUTPUT
 
-    # Configure and build
-    - name: Configure with CMake
-      run: |
-        arch -x86_64 /bin/bash -c "
-          export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
-          mkdir -p build
-          cd build
-          cmake \\
-            -DCMAKE_BUILD_TYPE=Release \\
-            -DCMAKE_INSTALL_PREFIX=\${GITHUB_WORKSPACE}/install_root \\
-            -DCMAKE_PREFIX_PATH=\"/usr/local\" \\
-            -DCMAKE_FIND_ROOT_PATH=\"/usr/local\" \\
-            -DCMAKE_OSX_ARCHITECTURES=\"x86_64\" \\
-            -S .. -B .
-        "
+#     # Configure and build
+#     - name: Configure with CMake
+#       run: |
+#         arch -x86_64 /bin/bash -c "
+#           export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+#           mkdir -p build
+#           cd build
+#           cmake \\
+#             -DCMAKE_BUILD_TYPE=Release \\
+#             -DCMAKE_INSTALL_PREFIX=\${GITHUB_WORKSPACE}/install_root \\
+#             -DCMAKE_PREFIX_PATH=\"/usr/local\" \\
+#             -DCMAKE_FIND_ROOT_PATH=\"/usr/local\" \\
+#             -DCMAKE_OSX_ARCHITECTURES=\"x86_64\" \\
+#             -S .. -B .
+#         "
 
-    - name: Compile with CMake
-      run: |
-        arch -x86_64 /bin/bash -c "
-          cd build
-          cmake --build . -j\$(sysctl -n hw.logicalcpu)
-        "
+#     - name: Compile with CMake
+#       run: |
+#         arch -x86_64 /bin/bash -c "
+#           cd build
+#           cmake --build . -j\$(sysctl -n hw.logicalcpu)
+#         "
 
-    - name: Run make install
-      run: |
-        arch -x86_64 /bin/bash -c "
-          cd build
-          cmake --install .
-        "
+#     - name: Run make install
+#       run: |
+#         arch -x86_64 /bin/bash -c "
+#           cd build
+#           cmake --install .
+#         "
 
-    - name: Create distributable archive
-      id: create-archive
-      run: |
-        VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
-        if [ -z "$VERSION" ]; then
-            VERSION="unknown-$(date +%Y%m%d%H%M%S)"
-        fi
-        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-x86_64.tar.gz"
-        ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
-        mkdir -p "${ARTIFACT_TEMP_DIR}"
-        TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
-        cd "${GITHUB_WORKSPACE}/build"
-        tar -czvhf "${TARBALL_FULL_PATH}" ASAPCabinetFE.app
-        echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
-        echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
+#     - name: Create distributable archive
+#       id: create-archive
+#       run: |
+#         VERSION=$(git describe --tags --always --dirty="-dirty" --abbrev=7)
+#         if [ -z "$VERSION" ]; then
+#             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
+#         fi
+#         TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-x86_64.tar.gz"
+#         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
+#         mkdir -p "${ARTIFACT_TEMP_DIR}"
+#         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
+#         cd "${GITHUB_WORKSPACE}/build"
+#         tar -czvhf "${TARBALL_FULL_PATH}" ASAPCabinetFE.app
+#         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
+#         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ASAPCabinetFE-macos-x86_64
-        path: "${{ steps.create-archive.outputs.tarball_full_path }}"
-        retention-days: 7
+#     - name: Upload artifact
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: ASAPCabinetFE-macos-x86_64
+#         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
+#         retention-days: 7
 
 #=============== RELEASE JOB ================
   release:
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build_ubuntu, build_arch, build_macos_arm64, build_macos_x86_64, codeql_analysis]
+    needs: [build_ubuntu, build_arch, build_macos_arm64, codeql_analysis]  #  build_macos_x86_64
     steps:
     - name: Download Ubuntu artifact
       uses: actions/download-artifact@v4
@@ -442,7 +442,6 @@ jobs:
 
           Unpack and run `./ASAPCabinetFE` or `./ASAPCabinetFE-Editor`
           Please refer to the [User's Manual](https://github.com/surtarso/ASAPCabinetFE/blob/main/UsersManual.md)
-          _macOS builds are experimental_
 
           **Changes**:
             -
@@ -485,15 +484,7 @@ jobs:
 
           </details>
 
-          <details>
-          <summary>macOS x86_64 dependencies...</summary>
-
-          - macOS: ${{ needs.build_macos_x86_64.outputs.macos_version }}
-          - SDL2: ${{ needs.build_macos_x86_64.outputs.sdl2_version }}
-          - FFmpeg: ${{ needs.build_macos_x86_64.outputs.ffmpeg_version }}
-          - cURL: ${{ needs.build_macos_x86_64.outputs.curl_version }}
-
-          </details>
+          _macOS builds are experimental and probably broken_
 
           **Full Changelog**: https://github.com/surtarso/ASAPCabinetFE/commits/${{ github.ref_name }}
         draft: true
@@ -597,3 +588,15 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:cpp"
+
+
+# ==== saved for reference ====
+# <details>
+# <summary>macOS x86_64 dependencies...</summary>
+
+# - macOS: ${{ needs.build_macos_x86_64.outputs.macos_version }}
+# - SDL2: ${{ needs.build_macos_x86_64.outputs.sdl2_version }}
+# - FFmpeg: ${{ needs.build_macos_x86_64.outputs.ffmpeg_version }}
+# - cURL: ${{ needs.build_macos_x86_64.outputs.curl_version }}
+
+# </details>
