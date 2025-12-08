@@ -315,8 +315,10 @@ jobs:
 
     - name: Test Version Flag
       run: |
-        cd "${HOME}/ASAPCabinetFE"
-        VERSION_OUTPUT=$(./ASAPCabinetFE --version || true)
+        if [ -d "${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app" ]; then
+            EXEC="${GITHUB_WORKSPACE}/install_root/ASAPCabinetFE.app/Contents/MacOS/ASAPCabinetFE"
+        fi
+        VERSION_OUTPUT=$($EXEC --version || true)
         echo "Version output: $VERSION_OUTPUT"
 
 

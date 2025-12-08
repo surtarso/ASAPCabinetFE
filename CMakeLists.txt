@@ -505,6 +505,7 @@ if(APPLE)
     find_library(IOKIT_LIBRARY IOKit)
 endif()
 
+# Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
@@ -519,7 +520,7 @@ if(NOT APPLE)
     target_include_directories(${PROJECT_NAME} PRIVATE ${LIBVLC_INCLUDE_DIRS})
 endif()
 
-
+# Link libraries
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         ${COCOA_LIBRARY}
@@ -527,6 +528,8 @@ if(APPLE)
         ${COREVIDEO_LIBRARY}
         ${IOKIT_LIBRARY}
     )
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBVLC_LIBRARIES})
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -543,9 +546,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     pugixml::pugixml
     rapidfuzz::rapidfuzz
 )
-if(NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBVLC_LIBRARIES})
-endif()
 
 # --- Dependencies End ---
 
