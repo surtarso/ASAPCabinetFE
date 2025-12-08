@@ -344,7 +344,7 @@ jobs:
       run: |
         arch -x86_64 /bin/bash -c "
         if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
+        /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
         fi
         /usr/local/bin/brew update
         /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
