@@ -335,57 +335,61 @@ jobs:
         git fetch --tags
         git checkout ${{ inputs.tag }}
 
-    - name: Set Environment for x86_64
-      run: |
-        echo "HOMEBREW_PREFIX=/usr/local" >> $GITHUB_ENV
-        echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
-
     - name: Install Homebrew Dependencies for x86_64
       run: |
         arch -x86_64 /bin/bash -c "
-        if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
-        /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
-        fi
-        /usr/local/bin/brew update
-        /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
+          if ! command -v /usr/local/bin/brew >/dev/null 2>&1; then
+            /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
+          fi
+          /usr/local/bin/brew update
+          /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
         "
 
     # Collect versions (for release notes)
     - name: Get Library Versions
       id: get-lib-versions
       run: |
-        export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
-        SDL2_VER=$(pkg-config --modversion sdl2 || echo "N/A")
-        FFMPEG_VER=$(pkg-config --modversion libavcodec || echo "N/A")
-        CURL_VER=$(pkg-config --modversion libcurl || echo "N/A")
+        arch -x86_64 /bin/bash -c "
+          export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+          SDL2_VER=\$(pkg-config --modversion sdl2 || echo \"N/A\")
+          FFMPEG_VER=\$(pkg-config --modversion libavcodec || echo \"N/A\")
+          CURL_VER=\$(pkg-config --modversion libcurl || echo \"N/A\")
+          echo \"sdl2_version=\$SDL2_VER\" >> \$GITHUB_OUTPUT
+          echo \"ffmpeg_version=\$FFMPEG_VER\" >> \$GITHUB_OUTPUT
+          echo \"curl_version=\$CURL_VER\" >> \$GITHUB_OUTPUT
+        "
         MACOS_VER=$(sw_vers -productVersion || echo "N/A")
-        echo "sdl2_version=$SDL2_VER" >> $GITHUB_OUTPUT
-        echo "ffmpeg_version=$FFMPEG_VER" >> $GITHUB_OUTPUT
-        echo "curl_version=$CURL_VER" >> $GITHUB_OUTPUT
         echo "macos_version=$MACOS_VER" >> $GITHUB_OUTPUT
 
     # Configure and build
     - name: Configure with CMake
       run: |
-        export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
-        mkdir -p build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root
-        -DCMAKE_PREFIX_PATH="/usr/local"
-        -DCMAKE_FIND_ROOT_PATH="/usr/local"
-        -DCMAKE_OSX_ARCHITECTURES="x86_64"
-        -S .. -B .
+        arch -x86_64 /bin/bash -c "
+          export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+          mkdir -p build
+          cd build
+          cmake \\
+            -DCMAKE_BUILD_TYPE=Release \\
+            -DCMAKE_INSTALL_PREFIX=\${GITHUB_WORKSPACE}/install_root \\
+            -DCMAKE_PREFIX_PATH=\"/usr/local\" \\
+            -DCMAKE_FIND_ROOT_PATH=\"/usr/local\" \\
+            -DCMAKE_OSX_ARCHITECTURES=\"x86_64\" \\
+            -S .. -B .
+        "
 
     - name: Compile with CMake
       run: |
-        cd build
-        cmake --build . -j$(sysctl -n hw.logicalcpu)
+        arch -x86_64 /bin/bash -c "
+          cd build
+          cmake --build . -j\$(sysctl -n hw.logicalcpu)
+        "
 
     - name: Run make install
       run: |
-        cd build
-        cmake --install .
+        arch -x86_64 /bin/bash -c "
+          cd build
+          cmake --install .
+        "
 
     - name: Create distributable archive
       id: create-archive
@@ -398,8 +402,8 @@ jobs:
         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
-        cd "${HOME}/ASAPCabinetFE"
-        tar -czvhf "${TARBALL_FULL_PATH}" ./*
+        cd "${GITHUB_WORKSPACE}/build"
+        tar -czvhf "${TARBALL_FULL_PATH}" ASAPCabinetFE.app
         echo "tarball_name=${TARBALL_NAME}" >> "$GITHUB_OUTPUT"
         echo "tarball_full_path=${TARBALL_FULL_PATH}" >> "$GITHUB_OUTPUT"
 
