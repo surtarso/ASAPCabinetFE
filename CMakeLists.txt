@@ -2,68 +2,21 @@ cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
 # Homebrew default paths
-# if(APPLE)
-#     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
-#         set(HOMEBREW_PREFIX "/opt/homebrew")
-#     elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
-#         set(HOMEBREW_PREFIX "/usr/local")
-#     else()
-#         set(HOMEBREW_PREFIX "/opt/homebrew")
-#     endif()
-
-#     list(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX})
-#     list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
-#     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
-# endif()
 if(APPLE)
     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
         set(HOMEBREW_PREFIX "/opt/homebrew")
-    else() # x86_64
+    elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
         set(HOMEBREW_PREFIX "/usr/local")
+    else()
+        set(HOMEBREW_PREFIX "/opt/homebrew")
     endif()
 
-    set(SDL2_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include/SDL2)
-    set(SDL2_LIBRARIES
-        ${HOMEBREW_PREFIX}/lib/libSDL2.dylib
-        ${HOMEBREW_PREFIX}/lib/libSDL2_image.dylib
-        ${HOMEBREW_PREFIX}/lib/libSDL2_ttf.dylib
-        ${HOMEBREW_PREFIX}/lib/libSDL2_mixer.dylib
-    )
+    list(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX})
+    list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
+    list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
 
-    set(FFMPEG_LIBRARIES
-        ${HOMEBREW_PREFIX}/lib/libavcodec.dylib
-        ${HOMEBREW_PREFIX}/lib/libavformat.dylib
-        ${HOMEBREW_PREFIX}/lib/libavutil.dylib
-        ${HOMEBREW_PREFIX}/lib/libswscale.dylib
-        ${HOMEBREW_PREFIX}/lib/libswresample.dylib
-    )
-    set(FFMPEG_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
-
-    set(LIBZIP_LIBRARIES ${HOMEBREW_PREFIX}/lib/libzip.dylib)
-    set(LIBZIP_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
-
-    find_library(COCOA_LIBRARY Cocoa REQUIRED)
-    find_library(AVFOUNDATION_LIBRARY AVFoundation REQUIRED)
-    find_library(COREVIDEO_LIBRARY CoreVideo REQUIRED)
-    find_library(IOKIT_LIBRARY IOKit REQUIRED)
-
-    target_include_directories(${PROJECT_NAME} PRIVATE
-        ${SDL2_INCLUDE_DIRS}
-        ${FFMPEG_INCLUDE_DIRS}
-        ${LIBZIP_INCLUDE_DIRS}
-    )
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_LIBRARIES}
-        ${FFMPEG_LIBRARIES}
-        ${LIBZIP_LIBRARIES}
-        ${COCOA_LIBRARY}
-        ${AVFOUNDATION_LIBRARY}
-        ${COREVIDEO_LIBRARY}
-        ${IOKIT_LIBRARY}
-    )
+    message(STATUS "macOS build: $(CMAKE_OSX_ARCHITECTURES) using Homebrew prefix: ${HOMEBREW_PREFIX}")
 endif()
-
 
 # Detect if building inside Flatpak (not working)
 if("$ENV{FLATPAK_BUILD}" STREQUAL "1")
@@ -515,28 +468,29 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
+find_package(CURL REQUIRED)
 
 if(APPLE)
     # Homebrew SDL2
-    # set(SDL2_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include/SDL2)
-    # set(SDL2_MAIN_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2.dylib)
-    # set(SDL2_IMAGE_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_image.dylib)
-    # set(SDL2_TTF_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_ttf.dylib)
-    # set(SDL2_MIXER_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_mixer.dylib)
+    set(SDL2_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include/SDL2)
+    set(SDL2_MAIN_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2.dylib)
+    set(SDL2_IMAGE_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_image.dylib)
+    set(SDL2_TTF_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_ttf.dylib)
+    set(SDL2_MIXER_LIBRARIES ${HOMEBREW_PREFIX}/lib/libSDL2_mixer.dylib)
 
-    # include_directories(${SDL2_INCLUDE_DIRS})
+    include_directories(${SDL2_INCLUDE_DIRS})
 
-    # set(FFMPEG_LIBRARIES
-    #     ${HOMEBREW_PREFIX}/lib/libavcodec.dylib
-    #     ${HOMEBREW_PREFIX}/lib/libavformat.dylib
-    #     ${HOMEBREW_PREFIX}/lib/libavutil.dylib
-    #     ${HOMEBREW_PREFIX}/lib/libswscale.dylib
-    #     ${HOMEBREW_PREFIX}/lib/libswresample.dylib
-    # )
-    # set(FFMPEG_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
+    set(FFMPEG_LIBRARIES
+        ${HOMEBREW_PREFIX}/lib/libavcodec.dylib
+        ${HOMEBREW_PREFIX}/lib/libavformat.dylib
+        ${HOMEBREW_PREFIX}/lib/libavutil.dylib
+        ${HOMEBREW_PREFIX}/lib/libswscale.dylib
+        ${HOMEBREW_PREFIX}/lib/libswresample.dylib
+    )
+    set(FFMPEG_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
 
-    # set(LIBZIP_LIBRARIES ${HOMEBREW_PREFIX}/lib/libzip.dylib)
-    # set(LIBZIP_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
+    set(LIBZIP_LIBRARIES ${HOMEBREW_PREFIX}/lib/libzip.dylib)
+    set(LIBZIP_INCLUDE_DIRS ${HOMEBREW_PREFIX}/include)
 else()
     pkg_check_modules(SDL2_MAIN REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -553,7 +507,6 @@ else()
     endif()
 endif()
 
-find_package(CURL REQUIRED)
 
 if(APPLE)
     find_library(COCOA_LIBRARY Cocoa)
