@@ -364,8 +364,8 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install_root \
-              -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
-              -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" \
+              -DCMAKE_PREFIX_PATH="$(brew --prefix sdl2)" \
+              -DSDL2_INCLUDE_DIR="$(brew --prefix sdl2)/include/SDL2" \
               -DCMAKE_OSX_ARCHITECTURES="x86_64" \
               -S .. -B .
 
