@@ -348,6 +348,7 @@ jobs:
         fi
         /usr/local/bin/brew update
         /usr/local/bin/brew install cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
+        "
 
     # Collect versions (for release notes)
     - name: Get Library Versions
