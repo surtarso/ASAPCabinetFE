@@ -607,7 +607,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     )
 
     # Install resource directories directly into the root of the install prefix
-    # Assuming assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
+    # assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
     if(NOT APPLE)
         install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
         install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
@@ -672,7 +672,7 @@ if(APPLE)
     )
 
     # ---------------------------------------------------------------------
-    # Copy your assets into .app/Contents/Resources/
+    # Copy assets into .app/Contents/Resources/
     # ---------------------------------------------------------------------
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory

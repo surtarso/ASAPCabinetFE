@@ -58,12 +58,14 @@ void ImGuiManager::initialize() {
 
     // Apply DPI scaling to ImGui
     const Settings& settings = configService_->getSettings();
+#if defined(__APPLE__)
+    // Fonts and style scaling is handled dynamically in newFrame() using DisplayFramebufferScale
+#else
     if (settings.enableDpiScaling) {
-        //LOG_DEBUG("ImGuiManager: Applying DPI scale: " << settings.dpiScale);
         io.FontGlobalScale = settings.dpiScale;
-        // Scale all ImGui style sizes
         ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
     }
+#endif
 
     if (windowManager_) {
         SDL_Window* w = windowManager_->getPlayfieldWindow();
@@ -86,33 +88,31 @@ void ImGuiManager::newFrame() {
     ImGui_ImplSDL2_NewFrame();
 
     ImGuiIO& io = ImGui::GetIO();
-    int w = 0, h = 0;
-    float scaleX = 1.0f, scaleY = 1.0f;
 
-    SDL_Window* window = nullptr;
-    if (windowManager_) {
-        window = windowManager_->getPlayfieldWindow();
-    } else if (configWindow_) {
-        window = configWindow_;
-    }
+    SDL_Window* window = windowManager_ ? windowManager_->getPlayfieldWindow() : configWindow_;
+    SDL_Renderer* renderer = windowManager_ ? windowManager_->getPlayfieldRenderer() : configRenderer_;
 
-    if (window) {
-        SDL_GetWindowSize(window, &w, &h);
+    if (!window || !renderer) return;
 
-        // Query display index and DPI scale
-        int displayIndex = SDL_GetWindowDisplayIndex(window);
-        float ddpi = 96.0f, hdpi = 96.0f, vdpi = 96.0f;
-        if (displayIndex >= 0 && SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0) {
-            scaleX = hdpi / 96.0f;
-            scaleY = vdpi / 96.0f;
-        }
-    }
+    int winW = 0, winH = 0;
+    int fbW = 0, fbH = 0;
+    SDL_GetWindowSize(window, &winW, &winH);                    // Logical size (points)
+    SDL_GetRendererOutputSize(renderer, &fbW, &fbH);            // Actual framebuffer (pixels)
 
-    io.DisplaySize = ImVec2((float)w, (float)h);
-    io.DisplayFramebufferScale = ImVec2(scaleX, scaleY);
+    io.DisplaySize = ImVec2(static_cast<float>(winW), static_cast<float>(winH));
+    io.DisplayFramebufferScale = ImVec2(
+        static_cast<float>(fbW) / static_cast<float>(winW),
+        static_cast<float>(fbH) / static_cast<float>(winH)
+    );
 
-    // Skip frame if minimized or invalid
-    if (w <= 0 || h <= 0 || scaleX <= 0.0f || scaleY <= 0.0f)
+#if defined(__APPLE__)
+    // Optional: you can scale fonts automatically on Retina
+    io.FontGlobalScale = io.DisplayFramebufferScale.x;
+    ImGui::GetStyle().ScaleAllSizes(io.DisplayFramebufferScale.x);
+#endif
+
+    // Skip frame if invalid
+    if (winW <= 0 || winH <= 0 || fbW <= 0 || fbH <= 0)
         return;
 
     ImGui::NewFrame();
