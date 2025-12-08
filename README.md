@@ -75,6 +75,27 @@ cd ~/ASAPCabinetFE
 
 </details>
 
+### TL:DR <img src="https://twemoji.maxcdn.com/v/latest/svg/1f34e.svg" width="15"/> MacOS (experimental)
+<details>
+<summary>UNTESTED <b>arm64</b> build <img src="https://twemoji.maxcdn.com/v/latest/svg/1f37a.svg" alt="Beer" width="15"/>
+</summary>
+
+```bash
+# Install Homebrew if you don't have it:
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew update
+brew install git cmake pkg-config sdl2 sdl2_image sdl2_ttf sdl2_mixer ffmpeg openssl@3 libzip curl nlohmann-json
+git clone https://github.com/surtarso/ASAPCabinetFE.git ASAPCabinetFE && cd ASAPCabinetFE
+git lfs install
+git lfs pull
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/ASAPCabinetFE -DCMAKE_PREFIX_PATH="$(brew --prefix)" -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" -DCMAKE_OSX_ARCHITECTURES="arm64" ..
+cmake --build . -j$(sysctl -n hw.logicalcpu)
+cmake --install .
+# open the app bundle
+```
+</details>
+
 ## Front-End Features
 
 | Topper/DMD without Metadata | Topper/DMD with Metadata |
