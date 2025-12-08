@@ -23,6 +23,7 @@
 #include <string>
 #include <filesystem>
 #if defined(__APPLE__)
+    #include <CoreFoundation/CoreFoundation.h>
     #include <mach-o/dyld.h>
     #include <limits.h>
 #endif
@@ -166,33 +167,19 @@ int main(int argc, char* argv[]) {
     char path[PATH_MAX];
 
     #if defined(__APPLE__)
-        // macOS: _NSGetExecutablePath + realpath
-        uint32_t size = sizeof(path);
-
-        // Try with static buffer
-        if (_NSGetExecutablePath(path, &size) == 0) {
-            char resolved[PATH_MAX];
-            if (realpath(path, resolved) != nullptr) {
-                // Executable absolute path, get directory
-                exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
-            } else {
-                // Couldn't resolve symlinks, fallback to raw
-                exeDir = std::filesystem::path(path).parent_path().string() + "/";
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        if (mainBundle) {
+            CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+            if (resourcesURL) {
+                char resourcesPath[PATH_MAX];
+                if (CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8*)resourcesPath, PATH_MAX)) {
+                    exeDir = std::string(resourcesPath) + "/";
+                }
+                CFRelease(resourcesURL);
             }
         } else {
-            // Buffer too small, allocate exactly the required size
-            std::string dynamicPath(size, '\0');
-            if (_NSGetExecutablePath(dynamicPath.data(), &size) == 0) {
-                char resolved[PATH_MAX];
-                if (realpath(dynamicPath.c_str(), resolved) != nullptr) {
-                    exeDir = std::filesystem::path(resolved).parent_path().string() + "/";
-                } else {
-                    exeDir = std::filesystem::path(dynamicPath).parent_path().string() + "/";
-                }
-            } else {
-                // Completely failed — fallback to CWD
-                exeDir = std::filesystem::current_path().string() + "/";
-            }
+            // Fallback to CWD if not a bundle
+            exeDir = std::filesystem::current_path().string() + "/";
         }
 
     #else

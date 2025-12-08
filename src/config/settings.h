@@ -291,11 +291,18 @@ struct Settings {
         // Store exeDir
         this->exeDir = exeDirectory;
 
-        // Resolve VPX paths
+        // Resolve VPX paths (these work on apple coz user sets them manually)
         VPXTablesPath = resolvePath(VPXTablesPath, exeDirectory);
         VPinballXPath = resolvePath(VPinballXPath, exeDirectory);
 
-        // List all paths that need resolution
+        std::string staticDir = exeDir;
+        std::string dataDir = exeDir;
+    #ifdef __APPLE__
+        staticDir = getResourcesDir(exeDirectory);
+        dataDir = getUserDataDir();
+    #endif
+
+        // List all paths that need resolution here
         std::vector<std::string> pathFields = {
             // default images
             "defaultWheelImage", "dmdStillImages", "topperStillImages",
@@ -315,34 +322,35 @@ struct Settings {
         // Iterate through the list and resolve each path
         for (const auto& field : pathFields) {
             // Default images
-            if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, exeDir);
-            else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, exeDir);
-            else if (field == "topperStillImages") topperStillImages = resolvePath(topperStillImages, exeDir);
+            if (field == "defaultWheelImage") defaultWheelImage = resolvePath(defaultWheelImage, staticDir);
+            else if (field == "dmdStillImages") dmdStillImages = resolvePath(dmdStillImages, staticDir);
+            // fetched
+            else if (field == "topperStillImages") topperStillImages = resolvePath(topperStillImages, dataDir);
             // UI Sounds
-            else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, exeDir);
-            else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, exeDir);
-            else if (field == "scrollJumpSound") scrollJumpSound = resolvePath(scrollJumpSound, exeDir);
-            else if (field == "scrollRandomSound") scrollRandomSound = resolvePath(scrollRandomSound, exeDir);
-            else if (field == "launchTableSound") launchTableSound = resolvePath(launchTableSound, exeDir);
-            else if (field == "launchScreenshotSound") launchScreenshotSound = resolvePath(launchScreenshotSound, exeDir);
-            else if (field == "panelToggleSound") panelToggleSound = resolvePath(panelToggleSound, exeDir);
-            else if (field == "screenshotTakeSound") screenshotTakeSound = resolvePath(screenshotTakeSound, exeDir);
-            else if (field == "ambienceSound") ambienceSound = resolvePath(ambienceSound, exeDir);
+            else if (field == "scrollNormalSound") scrollNormalSound = resolvePath(scrollNormalSound, staticDir);
+            else if (field == "scrollFastSound") scrollFastSound = resolvePath(scrollFastSound, staticDir);
+            else if (field == "scrollJumpSound") scrollJumpSound = resolvePath(scrollJumpSound, staticDir);
+            else if (field == "scrollRandomSound") scrollRandomSound = resolvePath(scrollRandomSound, staticDir);
+            else if (field == "launchTableSound") launchTableSound = resolvePath(launchTableSound, staticDir);
+            else if (field == "launchScreenshotSound") launchScreenshotSound = resolvePath(launchScreenshotSound, staticDir);
+            else if (field == "panelToggleSound") panelToggleSound = resolvePath(panelToggleSound, staticDir);
+            else if (field == "screenshotTakeSound") screenshotTakeSound = resolvePath(screenshotTakeSound, staticDir);
+            else if (field == "ambienceSound") ambienceSound = resolvePath(ambienceSound, staticDir);
             // Other paths
-            else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, exeDir);
-            else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, exeDir);
-            else if (field == "indexPath") indexPath = resolvePath(indexPath, exeDir);
-            else if (field == "vbsHashPath") vbsHashPath = resolvePath(vbsHashPath, exeDir);
-            else if (field == "vpsdbImageCacheDir") vpsdbImageCacheDir = resolvePath(vpsdbImageCacheDir, exeDir);
-            else if (field == "previewCacheDir") previewCacheDir = resolvePath(previewCacheDir, exeDir);
-            else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, exeDir);
-            else if (field == "vpinmdbPath") vpinmdbPath = resolvePath(vpinmdbPath, exeDir);
-            else if (field == "mainCacheDir") mainCacheDir = resolvePath(mainCacheDir, exeDir);
-            else if (field == "lbdbPath") lbdbPath = resolvePath(lbdbPath, exeDir);
-            else if (field == "lbdbZipPath") lbdbZipPath = resolvePath(lbdbZipPath, exeDir);
-            else if (field == "mainDbPath") mainDbPath = resolvePath(mainDbPath, exeDir);
-            else if (field == "ipdbPath") ipdbPath = resolvePath(ipdbPath, exeDir);
-            else if (field == "vpsdbMatchLog") vpsdbMatchLog = resolvePath(vpsdbMatchLog, exeDir);
+            else if (field == "vpsDbPath") vpsDbPath = resolvePath(vpsDbPath, dataDir);
+            else if (field == "vpsDbLastUpdated") vpsDbLastUpdated = resolvePath(vpsDbLastUpdated, dataDir);
+            else if (field == "indexPath") indexPath = resolvePath(indexPath, dataDir);
+            else if (field == "vbsHashPath") vbsHashPath = resolvePath(vbsHashPath, dataDir);
+            else if (field == "vpsdbImageCacheDir") vpsdbImageCacheDir = resolvePath(vpsdbImageCacheDir, dataDir);
+            else if (field == "previewCacheDir") previewCacheDir = resolvePath(previewCacheDir, dataDir);
+            else if (field == "vpsdbMissmatchLog") vpsdbMissmatchLog = resolvePath(vpsdbMissmatchLog, dataDir);
+            else if (field == "vpinmdbPath") vpinmdbPath = resolvePath(vpinmdbPath, dataDir);
+            else if (field == "mainCacheDir") mainCacheDir = resolvePath(mainCacheDir, dataDir);
+            else if (field == "lbdbPath") lbdbPath = resolvePath(lbdbPath, dataDir);
+            else if (field == "lbdbZipPath") lbdbZipPath = resolvePath(lbdbZipPath, dataDir);
+            else if (field == "mainDbPath") mainDbPath = resolvePath(mainDbPath, dataDir);
+            else if (field == "ipdbPath") ipdbPath = resolvePath(ipdbPath, dataDir);
+            else if (field == "vpsdbMatchLog") vpsdbMatchLog = resolvePath(vpsdbMatchLog, dataDir);
         }
 
         // Apply DPI scaling to fontSize if enabled
@@ -411,6 +419,21 @@ public:
         if (result[0] == '/' || result[0] == '\\') return result;
         return exeDirectory + result;
     }
+
+#ifdef __APPLE__
+    std::string getResourcesDir(const std::string& exeDirectory) const {
+        return (std::filesystem::path(exeDirectory).parent_path() / "Resources/").string();
+    }
+
+    std::string getUserDataDir() const {
+        std::string appName = "ASAPCabinetFE";  // Replace with actual app name
+        char* home = std::getenv("HOME");
+        if (home) {
+            return std::string(home) + "/Library/Application Support/" + appName + "/";
+        }
+        return std::filesystem::current_path().string() + "/";
+    }
+#endif
 
 private:
     // JSON serialization
