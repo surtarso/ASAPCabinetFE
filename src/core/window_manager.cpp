@@ -78,37 +78,52 @@ void WindowManager::updateWindows(const Settings& settings) {
     }
 }
 
-void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>& window,
-                                        std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>& renderer,
-                                        const char* title,
-                                        int width, int height,
-                                        int posX, int posY,
-                                        float dpiScale, bool enableDpiScaling) {
-    int scaledWidth = enableDpiScaling ? static_cast<int>(static_cast<float>(width) * dpiScale) : width;
-    int scaledHeight = enableDpiScaling ? static_cast<int>(static_cast<float>(height) * dpiScale) : height;
+void WindowManager::createOrUpdateWindow(
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>& window,
+    std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>& renderer,
+    const char* title,
+    int width, int height,
+    int posX, int posY,
+    float dpiScale, bool enableDpiScaling)
+{
+    float scaledWidthF  = enableDpiScaling ? static_cast<float>(width) * dpiScale  : static_cast<float>(width);
+    float scaledHeightF = enableDpiScaling ? static_cast<float>(height) * dpiScale : static_cast<float>(height);
 
+    int scaledWidth  = static_cast<int>(scaledWidthF);
+    int scaledHeight = static_cast<int>(scaledHeightF);
+
+#if defined(__APPLE__)
+    // On macOS Retina, force accelerated renderer with target texture for sharp drawing
+    Uint32 sdlWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS;
+    window.reset(SDL_CreateWindow(title, posX, posY, scaledWidth, scaledHeight, sdlWindowFlags));
+    if (!window) {
+        LOG_ERROR("Failed to create " + std::string(title) + " window: " + std::string(SDL_GetError()));
+        exit(1);
+    }
+
+    // Prefer accelerated with target texture
+    Uint32 rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE;
+    renderer.reset(SDL_CreateRenderer(window.get(), -1, rendererFlags));
+    if (!renderer) {
+        LOG_WARN("Accelerated renderer failed on macOS, falling back to software: " + std::string(SDL_GetError()));
+        renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
+        if (!renderer) {
+            LOG_ERROR("Failed to create renderer for " + std::string(title) + " on macOS: " + std::string(SDL_GetError()));
+            exit(1);
+        }
+    }
+
+#else
+    // Existing cross-platform logic for Linux / Wayland
     if (window) {
         int currentWidth, currentHeight, currentX, currentY;
         SDL_GetWindowSize(window.get(), &currentWidth, &currentHeight);
         SDL_GetWindowPosition(window.get(), &currentX, &currentY);
-
         if (currentWidth != scaledWidth || currentHeight != scaledHeight ||
             currentX != posX || currentY != posY) {
             SDL_SetWindowSize(window.get(), scaledWidth, scaledHeight);
             SDL_SetWindowPosition(window.get(), posX, posY);
-
-            int actualWidth, actualHeight, actualX, actualY;
-            SDL_GetWindowSize(window.get(), &actualWidth, &actualHeight);
-            SDL_GetWindowPosition(window.get(), &actualX, &actualY);
-            if (actualWidth != scaledWidth || actualHeight != scaledHeight ||
-                actualX != posX || actualY != posY) {
-                LOG_DEBUG(std::string(title) + " window reset due to mismatch - width: " + std::to_string(actualWidth) + "!=" + std::to_string(scaledWidth) +
-                          ", height: " + std::to_string(actualHeight) + "!=" + std::to_string(scaledHeight) +
-                          ", x: " + std::to_string(actualX) + "!=" + std::to_string(posX) +
-                          ", y: " + std::to_string(actualY) + "!=" + std::to_string(posY));
-                renderer.reset();
-                window.reset();
-            }
+            renderer.reset(); // recreate renderer if size changed
         }
     }
 
@@ -120,44 +135,25 @@ void WindowManager::createOrUpdateWindow(std::unique_ptr<SDL_Window, void(*)(SDL
             exit(1);
         }
 
-        // If the user or CLI requested software renderer, try that first
         if (forceSoftwareRenderer_) {
             renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
-            if (!renderer) {
-                LOG_WARN("Software renderer requested but failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
-                // Fall back to accelerated if available
-                renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
-                if (!renderer) {
-                    LOG_ERROR("Failed to create accelerated fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
-                    exit(1);
-                } else {
-                    LOG_INFO("Created accelerated fallback renderer for " + std::string(title));
-                }
-            } else {
-                LOG_INFO("Created software renderer for " + std::string(title));
-            }
         } else {
             renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
-            if (!renderer) {
-                LOG_WARN("Accelerated renderer creation failed for " + std::string(title) + ": " + std::string(SDL_GetError()));
-                // Try a software renderer fallback which can help on some Wayland/Hyprland setups
-                renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC));
-                if (!renderer) {
-                    LOG_ERROR("Failed to create software fallback renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
-                    exit(1);
-                } else {
-                    LOG_INFO("Created software fallback renderer for " + std::string(title));
-                }
-            }
         }
-        // Log renderer details to help diagnose platform-specific issues
-        SDL_RendererInfo rinfo;
-        if (SDL_GetRendererInfo(renderer.get(), &rinfo) == 0) {
-            LOG_DEBUG(std::string("Created renderer for ") + std::string(title) + ", name=" + (rinfo.name ? rinfo.name : "<unknown>") + ", flags=" + std::to_string(rinfo.flags));
-        } else {
-            LOG_DEBUG(std::string("SDL_GetRendererInfo failed: ") + SDL_GetError());
+        if (!renderer) {
+            LOG_ERROR("Failed to create renderer for " + std::string(title) + ": " + std::string(SDL_GetError()));
+            exit(1);
         }
-        SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
+    }
+#endif
+
+    SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
+
+    // Optional debug info
+    SDL_RendererInfo rinfo;
+    if (SDL_GetRendererInfo(renderer.get(), &rinfo) == 0) {
+        LOG_DEBUG(std::string("Renderer for ") + std::string(title) + ", name=" +
+                  (rinfo.name ? rinfo.name : "<unknown>") + ", flags=" + std::to_string(rinfo.flags));
     }
 }
 

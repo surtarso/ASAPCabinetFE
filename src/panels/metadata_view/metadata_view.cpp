@@ -219,9 +219,9 @@ auto DrawInfoContent = [&]() {
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "MEDIA PREVIEW");
 
         auto drawMediaPair = [&](const char* label,
-                                 const std::string& imagePath, const std::string& videoPath,
-                                 bool hasImage, bool hasVideo,
-                                 bool sideBySide = true,
+                                const std::string& imagePath, const std::string& videoPath,
+                                bool hasImage, bool hasVideo,
+                                bool sideBySide = true,
                                 int customThumbHeight = -1)
         {
             if (!hasImage && !hasVideo) return;
@@ -237,11 +237,11 @@ auto DrawInfoContent = [&]() {
 
             // Default height for all media
             const int defaultThumbHeight = 250;
+            const int thumbHeight = (customThumbHeight > 0) ? customThumbHeight : defaultThumbHeight;
 
-            // Use custom value if provided
-            const int thumbHeight = (customThumbHeight > 0)
-                                        ? customThumbHeight
-                                        : defaultThumbHeight;
+            // Get ImGui framebuffer scale for high-DPI displays
+            ImGuiIO& io = ImGui::GetIO();
+            const float dpiScaleY = io.DisplayFramebufferScale.y;
 
             const char* imageLabel = "Image:";
             const char* videoLabel = "Video:";
@@ -260,9 +260,11 @@ auto DrawInfoContent = [&]() {
                     int w = 0, h = 0;
                     SDL_QueryTexture(tex, nullptr, nullptr, &w, &h);
 
+                    // Compute scale based on thumbnail height and apply DPI
                     float scale = float(thumbHeight) / float(h);
-                    ImVec2 size(float(w) * scale, float(h) * scale);
+                    scale *= dpiScaleY;
 
+                    ImVec2 size(float(w) * scale, float(h) * scale);
                     ImGui::Image((void*)tex, size);
                 } else {
                     ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Failed to load thumbnail");
@@ -283,8 +285,9 @@ auto DrawInfoContent = [&]() {
                     SDL_QueryTexture(tex, nullptr, nullptr, &w, &h);
 
                     float scale = float(thumbHeight) / float(h);
-                    ImVec2 size(float(w) * scale, float(h) * scale);
+                    scale *= dpiScaleY;
 
+                    ImVec2 size(float(w) * scale, float(h) * scale);
                     ImGui::Image((void*)tex, size);
                 } else {
                     ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Failed to preview video");
@@ -293,6 +296,7 @@ auto DrawInfoContent = [&]() {
                 if (sideBySide) ImGui::EndGroup();
             }
         };
+
 
         drawMediaPair("Playfield", currentTable.playfieldImage, currentTable.playfieldVideo,
                       currentTable.hasPlayfieldImage, currentTable.hasPlayfieldVideo, true, 550);
