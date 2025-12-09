@@ -5,6 +5,7 @@ sdk: org.freedesktop.Sdk
 
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.ffmpeg
 
 command: ASAPCabinetFE
 
@@ -29,44 +30,45 @@ modules:
   - name: asapcabinetfe
     buildsystem: cmake
     builddir: true
-    # allow-network: true
 
-    # build-options:
-      # env:
-        # Set the CMAKE_INSTALL_PREFIX environment variable before CMake runs
-        # CMAKE_INSTALL_PREFIX: "/app"
     build-options:
+      wipe: true
       env:
         - FLATPAK_BUILD=1
-
-    # config-opts:
-      # - -DCMAKE_BUILD_TYPE=Release
-      # - -DFLATPAK_IS_BUILDING_CMAKE="TRUE"
+        - PATH=/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/x86_64/usr/bin:/usr/lib/sdk/bin:/usr/bin
 
     config-opts:
       - -DFLATPAK_IS_BUILDING_CMAKE=ON
       - -DCMAKE_BUILD_TYPE=Release
-      - -DCMAKE_INSTALL_PREFIX=/app
 
     sources:
-      - type: git
-        url: https://github.com/surtarso/ASAPCabinetFE.git
-        tag: v1.2.15  #can I make this dynamic?
+      - type: dir
+        path: ../../ASAPCabinetFE
 
-    # build-commands:
-    #   # 0. EXPORT: Set a unique environment flag that CMake can read
-    #   # - export FLATPAK_IS_BUILDING="TRUE"
+      # - type: git
+      #   url: https://github.com/surtarso/ASAPCabinetFE.git
+      #   tag: v1.2.15
 
-    #   # 1. CONFIGURE: Force the CMAKE_INSTALL_PREFIX to /app!
-    #   # - cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-    #   - cmake -B build -S . -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
-    #   # - cmake -B build -S . -DFLATPAK_IS_BUILDING_CMAKE=TRUE -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
+      # cmake FetchContent sources mirror
+      - type: file  # pugixml
+        url: https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
+        sha256: 655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a
 
-    #   # 2. BUILD:
-    #   - cmake --build build-flatpak
+      - type: file  # rapidfuzz-cpp
+        url: https://github.com/rapidfuzz/rapidfuzz-cpp/archive/refs/tags/v3.3.3.tar.gz
+        sha256: fa0fbd40110df8134cf05bddbaa4e237dbc4fd915ab9a3029ff481a8d3e8b757
 
-    #   # 3. INSTALL:
-    #   - cmake --install build-flatpak
+      - type: file  # ImGui
+        url: https://github.com/ocornut/imgui/archive/refs/tags/v1.92.4.tar.gz
+        sha256: 0e175d4d941112532549b418ced0bd546abe9024ecb9b5f431f8a67a2197b0ba
+
+      - type: file  # ImGuiFileDialog
+        url: https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
+        sha256: 7aa3fbb0fc7206c5b434246d906f036057a59eb51e28ae36488aa654a667a266
+
+      - type: file  # vpin crate
+        url: https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
+        sha256: 0d79288f6ac3adc8a5dc4bf8ae60cf06ccad1d1beede9e8c51f0fb8e3581a3b6
 
     post-install:
       - install -Dm644 flatpak/io.asapcabinetfe.ASAPCabinetFE.svg /app/share/icons/hicolor/scalable/apps/io.asapcabinetfe.ASAPCabinetFE.svg

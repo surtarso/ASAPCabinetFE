@@ -4,22 +4,14 @@ project(ASAPCabinetFE LANGUAGES CXX C)
 # ----------------------------------------------------------------------------
 # -------------------- Installation Prefix Configuration ---------------------
 # ----------------------------------------------------------------------------
-
-# if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
+# Flatpak builder must export FLATPAK_BUILD=1
 if(DEFINED ENV{FLATPAK_BUILD})
-    # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
-    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
-
-    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+    set(BUILDING_FLATPAK TRUE)
+    message(STATUS ">>> FLATPAK BUILD DETECTED (ENV FLATPAK_BUILD=1)")
 else()
-    # Normal build: unset cached prefix first
+# Normal build: unset cached prefix first
+    set(BUILDING_FLATPAK FALSE)
     unset(CMAKE_INSTALL_PREFIX CACHE)
-
-    # Then set default prefix under $HOME
-    set(CMAKE_INSTALL_PREFIX
-        "$ENV{HOME}/${PROJECT_NAME}"
-        CACHE PATH "Installation prefix for ASAPCabinetFE"
-    )
 endif()
 
 if(APPLE)
@@ -160,65 +152,109 @@ configure_file(
 # -------------------------------------------------------------------
 # -------------------------- Fetch modules --------------------------
 # -------------------------------------------------------------------
-include(FetchContent)
+if(BUILDING_FLATPAK)
+    # ---- FLATPAK BUILD ----
+    message(STATUS "Flatpak build: using pre-downloaded dependencies")
 
-# Allow legacy FetchContent_Populate usage for libraries without CMake targets
-cmake_policy(SET CMP0169 OLD)
-cmake_policy(SET CMP0135 NEW) # Use extraction time for timestamps
+    function(extract_tar name)
+        set(src "${CMAKE_SOURCE_DIR}/${name}.tar.gz")
+        set(dst "${CMAKE_SOURCE_DIR}/${name}")
+        if(NOT EXISTS ${dst})
+            message(STATUS "Extracting ${src} -> ${dst}")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${src}
+                            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+        endif()
+    endfunction()
 
-# -------------------- pugixml (header-only) ---------------------
-FetchContent_Declare(
-    pugixml
-    URL https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
-)
+    extract_tar(pugixml-1.15) # pugixml
+    extract_tar(v3.3.3)       # rapidfuzz-cpp
+    extract_tar(v1.92.4)      # ImGui
+    extract_tar(v0.6.8)       # ImGuiFileDialog
+    extract_tar(v0.18.6)      # vpin crate
 
-FetchContent_MakeAvailable(pugixml)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/pugixml-1.15)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/rapidfuzz-cpp-3.3.3)
 
-FetchContent_Declare(
-    rapidfuzz-cpp
-    URL https://github.com/rapidfuzz/rapidfuzz-cpp/archive/refs/tags/v3.3.3.tar.gz
-)
+    # ImGui (no CMakeLists)
+    file(GLOB IMGUI_SOURCES
+        "${CMAKE_SOURCE_DIR}/imgui-1.92.4/*.cpp"
+    )
+    add_library(imgui STATIC ${IMGUI_SOURCES})
+    target_include_directories(imgui PUBLIC "${CMAKE_SOURCE_DIR}/imgui-1.92.4")
 
-FetchContent_MakeAvailable(rapidfuzz-cpp)
+    # IGFD (just add include path)
+    set(ImGuiFileDialog_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ImGuiFileDialog-0.6.8)
+    include_directories(${ImGuiFileDialog_SOURCE_DIR})
 
-# -------------------- ImGui ---------------------
-FetchContent_Declare(
-    imgui
-    URL https://github.com/ocornut/imgui/archive/refs/tags/v1.92.4.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-FetchContent_GetProperties(imgui)
-if(NOT imgui_POPULATED)
-    FetchContent_MakeAvailable(imgui)
-endif()
+    # vpin crate
+    set(vpin_SOURCE_DIR "${CMAKE_SOURCE_DIR}/vpin-0.18.6")
 
-# -------------------- ImGuiFileDialog ---------------------
-# We won't use FetchContent_MakeAvailable for IGFD because it doesn't provide a clean target.
-FetchContent_Declare(
-    ImGuiFileDialog
-    URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-FetchContent_GetProperties(ImGuiFileDialog)
-if(NOT imguifiledialog_POPULATED)
-    FetchContent_Populate(ImGuiFileDialog)
-endif()
+else() # ---- NORMAL BUILD ----
+    message(STATUS "Beginning FetchContent...")
+    include(FetchContent)
+
+    # Allow legacy FetchContent_Populate usage for libraries without CMake targets
+    cmake_policy(SET CMP0169 OLD)
+    cmake_policy(SET CMP0135 NEW) # Use extraction time for timestamps
+
+    # -------------------- pugixml (header-only) ---------------------
+    FetchContent_Declare(
+        pugixml
+        URL https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
+        URL_HASH SHA256=655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a
+    )
+
+    FetchContent_MakeAvailable(pugixml)
+
+    FetchContent_Declare(
+        rapidfuzz-cpp
+        URL https://github.com/rapidfuzz/rapidfuzz-cpp/archive/refs/tags/v3.3.3.tar.gz
+        URL_HASH SHA256=fa0fbd40110df8134cf05bddbaa4e237dbc4fd915ab9a3029ff481a8d3e8b757
+    )
+
+    FetchContent_MakeAvailable(rapidfuzz-cpp)
+
+    # -------------------- ImGui ---------------------
+    FetchContent_Declare(
+        imgui
+        URL https://github.com/ocornut/imgui/archive/refs/tags/v1.92.4.tar.gz
+        URL_HASH SHA256=0e175d4d941112532549b418ced0bd546abe9024ecb9b5f431f8a67a2197b0ba
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_GetProperties(imgui)
+    if(NOT imgui_POPULATED)
+        FetchContent_MakeAvailable(imgui)
+    endif()
+
+    # -------------------- ImGuiFileDialog ---------------------
+    # We won't use FetchContent_MakeAvailable for IGFD because it doesn't provide a clean target.
+    FetchContent_Declare(
+        ImGuiFileDialog
+        URL https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
+        URL_HASH SHA256=7aa3fbb0fc7206c5b434246d906f036057a59eb51e28ae36488aa654a667a266
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_GetProperties(ImGuiFileDialog)
+    if(NOT imguifiledialog_POPULATED)
+        FetchContent_Populate(ImGuiFileDialog)
+    endif()
+
+    # -------------------- vpin crate (Rust) ---------------------
+    FetchContent_Declare(
+        vpin
+        URL https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
+        URL_HASH SHA256=0d79288f6ac3adc8a5dc4bf8ae60cf06ccad1d1beede9e8c51f0fb8e3581a3b6
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_GetProperties(vpin)
+    if(NOT vpin_POPULATED)
+        FetchContent_MakeAvailable(vpin)
+    endif()
+
+endif() # --- End Fetch Modules ---
 
 # ------------ Rust Library Integration Start --------------
-
-# 1. Fetch the vpin Rust library
-FetchContent_Declare(
-    vpin
-    URL https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-FetchContent_GetProperties(vpin)
-if(NOT vpin_POPULATED)
-    FetchContent_MakeAvailable(vpin)
-endif()
-
-# --- End Fetch Modules ---
-
+# 1. Fetch the vpin Rust library (above)
 # 2. Find Rust Toolchain (cargo)
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
 find_program(RUSTC_EXECUTABLE rustc REQUIRED)
