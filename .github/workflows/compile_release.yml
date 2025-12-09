@@ -276,7 +276,6 @@ jobs:
               -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
               -DCMAKE_FIND_ROOT_PATH="$(brew --prefix)" \
               -DCMAKE_OSX_ARCHITECTURES="arm64" \
-              -DFLATPAK_IS_BUILDING_CMAKE=OFF \
               -S .. -B .
 
     - name: Compile with CMake

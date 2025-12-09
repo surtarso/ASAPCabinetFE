@@ -3,13 +3,14 @@ project(ASAPCabinetFE LANGUAGES CXX C)
 
 # -------------------- Installation Prefix Configuration ---------------------
 # if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
-if(DEFINED ENV{FLATPAK_BUILD})
-    # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
-    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
+# if(DEFINED ENV{FLATPAK_BUILD})
+#     # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
+#     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
 
-    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+#     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
 
-elseif(APPLE)
+# else
+if(APPLE)
     # Homebrew default paths
     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
         set(HOMEBREW_PREFIX "/opt/homebrew")
