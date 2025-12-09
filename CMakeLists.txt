@@ -22,7 +22,6 @@ else()
     )
 endif()
 
-# else
 if(APPLE)
     # Homebrew default paths
     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
