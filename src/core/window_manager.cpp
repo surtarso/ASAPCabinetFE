@@ -94,7 +94,8 @@ void WindowManager::createOrUpdateWindow(
 
 #if defined(__APPLE__)
     // On macOS Retina, force accelerated renderer with target texture for sharp drawing
-    Uint32 sdlWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS;
+    // Uint32 sdlWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS;
+    Uint32 sdlWindowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI; // No need for OpenGL flag for mac?
     window.reset(SDL_CreateWindow(title, posX, posY, scaledWidth, scaledHeight, sdlWindowFlags));
     if (!window) {
         LOG_ERROR("Failed to create " + std::string(title) + " window: " + std::string(SDL_GetError()));
