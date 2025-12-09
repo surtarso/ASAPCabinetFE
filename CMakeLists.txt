@@ -2,12 +2,23 @@ cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
 # -------------------- Installation Prefix Configuration ---------------------
-# if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
-# if(DEFINED ENV{FLATPAK_BUILD})
-#     # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
-#     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
 
-#     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+# if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
+if(DEFINED ENV{FLATPAK_BUILD})
+    # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
+    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
+
+    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+else()
+    # Normal build: unset cached prefix first
+    unset(CMAKE_INSTALL_PREFIX CACHE)
+
+    # Then set default prefix under $HOME
+    set(CMAKE_INSTALL_PREFIX
+        "$ENV{HOME}/${PROJECT_NAME}"
+        CACHE PATH "Installation prefix for ASAPCabinetFE"
+    )
+endif()
 
 # else
 if(APPLE)
@@ -25,16 +36,6 @@ if(APPLE)
     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
 
     message(STATUS "ASAPCabinetFE MacOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
-
-else()
-    # Normal build: unset cached prefix first
-    unset(CMAKE_INSTALL_PREFIX CACHE)
-
-    # Then set default prefix under $HOME
-    set(CMAKE_INSTALL_PREFIX
-        "$ENV{HOME}/${PROJECT_NAME}"
-        CACHE PATH "Installation prefix for ASAPCabinetFE"
-    )
 endif()
 
 # --- Git Versioning Start ---
