@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
 # -------------------- Installation Prefix Configuration ---------------------
-if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
+# if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
+if(DEFINED ENV{FLATPAK_BUILD})
     # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
 
