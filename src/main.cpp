@@ -64,9 +64,10 @@ struct SDLBootstrap {
 
         // Cross-platform DPI awareness configuration
         #if defined(__APPLE__)
-            #ifdef SDL_HINT_VIDEO_HIDPI_DISABLED
-                SDL_SetHint(SDL_HINT_VIDEO_HIDPI_DISABLED, "0");
-            #endif
+            // #ifdef SDL_HINT_VIDEO_HIDPI_DISABLED
+            //     SDL_SetHint(SDL_HINT_VIDEO_HIDPI_DISABLED, "0");
+            // #endif
+            // We rely solely on the SDL_WINDOW_ALLOW_HIGHDPI flag.
         #else
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");

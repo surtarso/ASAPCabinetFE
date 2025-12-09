@@ -86,8 +86,16 @@ void WindowManager::createOrUpdateWindow(
     int posX, int posY,
     float dpiScale, bool enableDpiScaling)
 {
-    float scaledWidthF  = enableDpiScaling ? static_cast<float>(width) * dpiScale  : static_cast<float>(width);
-    float scaledHeightF = enableDpiScaling ? static_cast<float>(height) * dpiScale : static_cast<float>(height);
+    // float scaledWidthF  = enableDpiScaling ? static_cast<float>(width) * dpiScale  : static_cast<float>(width);
+    // float scaledHeightF = enableDpiScaling ? static_cast<float>(height) * dpiScale : static_cast<float>(height);
+
+    float scaleFactor = 1.0f;
+    if (!enableDpiScaling) { // Use dpiScale ONLY if Auto-DPI is disabled (false)
+        scaleFactor = dpiScale;
+    }
+
+    float scaledWidthF  = static_cast<float>(width) * scaleFactor;
+    float scaledHeightF = static_cast<float>(height) * scaleFactor;
 
     int scaledWidth  = static_cast<int>(scaledWidthF);
     int scaledHeight = static_cast<int>(scaledHeightF);
