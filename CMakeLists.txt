@@ -15,14 +15,14 @@ if(APPLE)
     list(APPEND CMAKE_LIBRARY_PATH ${HOMEBREW_PREFIX}/lib)
     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
 
-    message(STATUS "macOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
+    message(STATUS "ASAPCabinetFE MacOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
 endif()
 
 # Detect if building inside Flatpak (not working)
 if("$ENV{FLATPAK_BUILD}" STREQUAL "1")
     # Flatpak build: do NOT unset, just force /app
     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
-
+    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
 else()
     # Normal build: unset cached prefix first
     unset(CMAKE_INSTALL_PREFIX CACHE)
@@ -32,11 +32,12 @@ else()
         "$ENV{HOME}/${PROJECT_NAME}"
         CACHE PATH "Installation prefix for ASAPCabinetFE"
     )
+    message(STATUS "ASAPCabinetFE Linux build using prefix: ${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # --- Git Versioning Start ---
 # This will print the resolved installation prefix during the configure step.
-message(STATUS "ASAPCabinetFE Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "ASAPCabinetFE Final Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
 
 # Find Git executable
 find_package(Git QUIET)
@@ -428,20 +429,32 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/capture
     ${CMAKE_SOURCE_DIR}/src/config
     ${CMAKE_SOURCE_DIR}/src/config/ui
+    ${CMAKE_SOURCE_DIR}/src/data
+    ${CMAKE_SOURCE_DIR}/src/data/ipdb
+    ${CMAKE_SOURCE_DIR}/src/data/lbdb
+    ${CMAKE_SOURCE_DIR}/src/data/vpinmdb
+    ${CMAKE_SOURCE_DIR}/src/data/vpsdb
     ${CMAKE_SOURCE_DIR}/src/editor
+    ${CMAKE_SOURCE_DIR}/src/editor/ui
     ${CMAKE_SOURCE_DIR}/src/keybinds
+    ${CMAKE_SOURCE_DIR}/src/launcher
     ${CMAKE_SOURCE_DIR}/src/log
+    ${CMAKE_SOURCE_DIR}/src/panels
+    ${CMAKE_SOURCE_DIR}/src/panels/metadata_display
+    ${CMAKE_SOURCE_DIR}/src/panels/metadata_view
+    ${CMAKE_SOURCE_DIR}/src/panels/override_editor
+    ${CMAKE_SOURCE_DIR}/src/panels/vpsdb_catalog
     ${CMAKE_SOURCE_DIR}/src/render
     ${CMAKE_SOURCE_DIR}/src/render/assets
     ${CMAKE_SOURCE_DIR}/src/render/video_players
     ${CMAKE_SOURCE_DIR}/src/render/video_players/ffmpeg
     ${CMAKE_SOURCE_DIR}/src/render/video_players/vlc
     ${CMAKE_SOURCE_DIR}/src/render/video_players/sdl_draw
+    ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/tables
     ${CMAKE_SOURCE_DIR}/src/tables/overrides
     ${CMAKE_SOURCE_DIR}/src/tables/vpinmdb
     ${CMAKE_SOURCE_DIR}/src/tables/vpsdb
-    ${CMAKE_SOURCE_DIR}/src/sound
     ${CMAKE_SOURCE_DIR}/src/utils
     # Dear ImGui includes
     "${imgui_SOURCE_DIR}"
