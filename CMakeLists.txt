@@ -1,24 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
-# Detect if building inside Flatpak (not working)
-# option(FLATPAK_BUILD_ENABLED "Flag to indicate a Flatpak build" OFF)
-# if(FLATPAK_BUILD_ENABLED)
-# if("${FLATPAK_BUILD_ENABLED}" STREQUAL "ON")
-#     # Flatpak build: do NOT unset, just force /app
-#     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
-#     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
-# if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/app")
-# if(DEFINED ENV{FLATPAK_IS_BUILDING} AND "$ENV{FLATPAK_IS_BUILDING}" STREQUAL "TRUE")
-# if(FLATPAK_IS_BUILDING_CMAKE)  # <- WE NEVER HIT THIS VARIABLE FROM FLATPAK! fuck.
-
-if(DEFINED ENV{FLATPAK_BUILD})
-    message(STATUS "Flatpak env detected")
-endif()
+# -------------------- Installation Prefix Configuration ---------------------
 if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
-    # FLATPAK BUILD: We know we are inside Flatpak.
-    # We FORCE the prefix to /app again to ensure no later logic can override it.
+    # FLATPAK BUILD: We FORCE the prefix to /app again to ensure no later logic can override it.
     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
+
     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
 
 elseif(APPLE)
