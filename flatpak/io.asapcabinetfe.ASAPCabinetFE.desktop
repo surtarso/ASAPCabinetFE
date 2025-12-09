@@ -2,6 +2,6 @@
 Name=ASAPCabinetFE
 Comment=As Simple As Possible Cabinet Front-End
 Exec=ASAPCabinetFE
-Icon=com.asapcabinetfe.ASAPCabinetFE
+Icon=io.asapcabinetfe.ASAPCabinetFE
 Type=Application
 Categories=Game;Emulator;

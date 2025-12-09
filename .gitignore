@@ -49,3 +49,4 @@ build/
 build-dir/
 Doxyfile.bak
 *instructions.md
+flatpak_build/

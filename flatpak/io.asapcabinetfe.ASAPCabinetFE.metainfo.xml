@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.asapcabinetfe.ASAPCabinetFE</id>
+  <id>io.asapcabinetfe.ASAPCabinetFE</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
 
@@ -25,7 +25,7 @@
     <keyword>visual pinball</keyword>
   </keywords>
 
-  <launchable type="desktop-id">com.asapcabinetfe.ASAPCabinetFE.desktop</launchable>
+  <launchable type="desktop-id">io.asapcabinetfe.ASAPCabinetFE.desktop</launchable>
 
   <url type="homepage">https://github.com/surtarso/ASAPCabinetFE</url>
 
@@ -39,6 +39,6 @@
   </screenshots>
 
   <releases>
-    <release version="1.2.13" date="2025"/>
+    <release version="1.2.15" date="2025"/>
   </releases>
 </component>

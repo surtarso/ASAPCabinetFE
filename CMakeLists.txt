@@ -1,8 +1,23 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
-# Homebrew default paths
-if(APPLE)
+# Detect if building inside Flatpak (not working)
+# option(FLATPAK_BUILD_ENABLED "Flag to indicate a Flatpak build" OFF)
+# if(FLATPAK_BUILD_ENABLED)
+# if("${FLATPAK_BUILD_ENABLED}" STREQUAL "ON")
+#     # Flatpak build: do NOT unset, just force /app
+#     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
+#     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+# if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/app")
+# if(DEFINED ENV{FLATPAK_IS_BUILDING} AND "$ENV{FLATPAK_IS_BUILDING}" STREQUAL "TRUE")
+if(FLATPAK_IS_BUILDING_CMAKE MATCHES "^(ON|TRUE|1)$")
+    # FLATPAK BUILD: We know we are inside Flatpak.
+    # We FORCE the prefix to /app again to ensure no later logic can override it.
+    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
+    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
+
+elseif(APPLE)
+    # Homebrew default paths
     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
         set(HOMEBREW_PREFIX "/opt/homebrew")
     elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
@@ -16,13 +31,7 @@ if(APPLE)
     list(APPEND CMAKE_INCLUDE_PATH ${HOMEBREW_PREFIX}/include)
 
     message(STATUS "ASAPCabinetFE MacOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
-endif()
 
-# Detect if building inside Flatpak (not working)
-if("$ENV{FLATPAK_BUILD}" STREQUAL "1")
-    # Flatpak build: do NOT unset, just force /app
-    set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)
-    message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
 else()
     # Normal build: unset cached prefix first
     unset(CMAKE_INSTALL_PREFIX CACHE)
