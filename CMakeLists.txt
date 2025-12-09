@@ -32,12 +32,11 @@ else()
         "$ENV{HOME}/${PROJECT_NAME}"
         CACHE PATH "Installation prefix for ASAPCabinetFE"
     )
-    message(STATUS "ASAPCabinetFE Linux build using prefix: ${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # --- Git Versioning Start ---
 # This will print the resolved installation prefix during the configure step.
-message(STATUS "ASAPCabinetFE Final Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "ASAPCabinetFE Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
 
 # Find Git executable
 find_package(Git QUIET)
