@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(ASAPCabinetFE LANGUAGES CXX C)
 
+# ----------------------------------------------------------------------------
 # -------------------- Installation Prefix Configuration ---------------------
+# ----------------------------------------------------------------------------
 
 # if(DEFINED FLATPAK_IS_BUILDING_CMAKE AND FLATPAK_IS_BUILDING_CMAKE)
 if(DEFINED ENV{FLATPAK_BUILD})
@@ -38,10 +40,12 @@ if(APPLE)
     message(STATUS "ASAPCabinetFE MacOS build: ${CMAKE_OSX_ARCHITECTURES} using Homebrew prefix: ${HOMEBREW_PREFIX}")
 endif()
 
-# --- Git Versioning Start ---
 # This will print the resolved installation prefix during the configure step.
 message(STATUS "ASAPCabinetFE Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
 
+# -----------------------------------------------------------------------
+# ------------------------- Git Versioning Start ------------------------
+# -----------------------------------------------------------------------
 # Find Git executable
 find_package(Git QUIET)
 
@@ -154,7 +158,9 @@ configure_file(
     @ONLY
 )
 
-# -------------------- Fetch modules ---------------------
+# -------------------------------------------------------------------
+# -------------------------- Fetch modules --------------------------
+# -------------------------------------------------------------------
 include(FetchContent)
 
 # Allow legacy FetchContent_Populate usage for libraries without CMake targets
@@ -211,6 +217,8 @@ FetchContent_GetProperties(vpin)
 if(NOT vpin_POPULATED)
     FetchContent_MakeAvailable(vpin)
 endif()
+
+# --- End Fetch Modules ---
 
 # 2. Find Rust Toolchain (cargo)
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
@@ -303,7 +311,7 @@ set_target_properties(${VPIN_FFI_WRAPPER_LIB_NAME} PROPERTIES
 
 # --- Rust Library Integration End ---
 
-# Define source files
+# -------------------- Define source files --------------------
 set(SOURCES
     # main/entry
     src/main.cpp
@@ -418,13 +426,13 @@ if(NOT APPLE)
         src/render/video_players/vlc/vlc_player.cpp)
 endif()
 
-# Define the executable
+# -------------------- Define the executable --------------------
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Ensure the Rust library is built before linking the main executable
 add_dependencies(${PROJECT_NAME} build_rust_lib)
 
-# Include directories
+# -------------------- Include directories --------------------
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/core
@@ -480,7 +488,9 @@ set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
 # Treat ImGui include path as a system include (silences header warnings)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 
-# --- Dependencies Start ---
+# ---------------------------------------------------------------------
+# ------------------------- Dependencies Start ------------------------
+# ---------------------------------------------------------------------
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
@@ -575,7 +585,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 # --- Dependencies End ---
 
-# Compile options
+# -------------------- Compile options --------------------
 if(APPLE)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-system-headers)
 else()
@@ -584,9 +594,9 @@ else()
 endif()
 
 
-# -----------------------------------------------------------------------------
-# Primary launcher binary (ASAPCabinetFE)
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
+# --------------------- Primary launcher binary (ASAPCabinetFE) ----------------------
+# ------------------------------------------------------------------------------------
 # Build type-specific flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(${PROJECT_NAME} PRIVATE -g)
@@ -661,7 +671,7 @@ if(NOT APPLE)
 endif()
 
 # -----------------------------------------------------------------------------
-# macOS Bundle Settings
+# ------------------------- macOS Bundle Settings -----------------------------
 # -----------------------------------------------------------------------------
 if(APPLE)
     # Mark the target as an application bundle
