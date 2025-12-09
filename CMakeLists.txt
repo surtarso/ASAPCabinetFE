@@ -10,7 +10,7 @@ project(ASAPCabinetFE LANGUAGES CXX C)
 #     message(STATUS "ASAPCabinetFE Flatpak build using prefix: ${CMAKE_INSTALL_PREFIX}")
 # if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/app")
 # if(DEFINED ENV{FLATPAK_IS_BUILDING} AND "$ENV{FLATPAK_IS_BUILDING}" STREQUAL "TRUE")
-if(FLATPAK_IS_BUILDING_CMAKE MATCHES "^(ON|TRUE|1)$")
+if(FLATPAK_IS_BUILDING_CMAKE)  # <- WE NEVER HIT THIS VARIABLE FROM FLATPAK! fuck.
     # FLATPAK BUILD: We know we are inside Flatpak.
     # We FORCE the prefix to /app again to ensure no later logic can override it.
     set(CMAKE_INSTALL_PREFIX "/app" CACHE PATH "Flatpak install prefix" FORCE)

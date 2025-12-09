@@ -27,7 +27,7 @@ cleanup:
 
 modules:
   - name: asapcabinetfe
-    buildsystem: simple
+    buildsystem: cmake
     builddir: true
     # allow-network: true
 
@@ -35,6 +35,9 @@ modules:
       # env:
         # Set the CMAKE_INSTALL_PREFIX environment variable before CMake runs
         # CMAKE_INSTALL_PREFIX: "/app"
+    build-options:
+      env:
+        FLATPAK_IS_BUILDING_CMAKE: TRUE
 
     # config-opts:
       # - -DCMAKE_BUILD_TYPE=Release
@@ -45,20 +48,20 @@ modules:
         url: https://github.com/surtarso/ASAPCabinetFE.git
         tag: v1.2.15  #can I make this dynamic?
 
-    build-commands: # <--- ADD THESE COMMANDS
-      # 0. EXPORT: Set a unique environment flag that CMake can read
-      # - export FLATPAK_IS_BUILDING="TRUE"
+    # build-commands:
+    #   # 0. EXPORT: Set a unique environment flag that CMake can read
+    #   # - export FLATPAK_IS_BUILDING="TRUE"
 
-      # 1. CONFIGURE: Force the CMAKE_INSTALL_PREFIX to /app!
-      # - cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-      # - cmake -B build -S . -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
-      - cmake -B build -S . -DFLATPAK_IS_BUILDING_CMAKE=TRUE -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
+    #   # 1. CONFIGURE: Force the CMAKE_INSTALL_PREFIX to /app!
+    #   # - cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+    #   - cmake -B build -S . -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
+    #   # - cmake -B build -S . -DFLATPAK_IS_BUILDING_CMAKE=TRUE -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_BUILD_TYPE=Release
 
-      # 2. BUILD:
-      - cmake --build build-flatpak
+    #   # 2. BUILD:
+    #   - cmake --build build-flatpak
 
-      # 3. INSTALL:
-      - cmake --install build-flatpak
+    #   # 3. INSTALL:
+    #   - cmake --install build-flatpak
 
     post-install:
       - install -Dm644 flatpak/io.asapcabinetfe.ASAPCabinetFE.svg /app/share/icons/hicolor/scalable/apps/io.asapcabinetfe.ASAPCabinetFE.svg
