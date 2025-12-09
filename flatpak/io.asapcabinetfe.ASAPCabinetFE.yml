@@ -37,11 +37,16 @@ modules:
         # CMAKE_INSTALL_PREFIX: "/app"
     build-options:
       env:
-        FLATPAK_IS_BUILDING_CMAKE: TRUE
+        - FLATPAK_BUILD=1
 
     # config-opts:
       # - -DCMAKE_BUILD_TYPE=Release
       # - -DFLATPAK_IS_BUILDING_CMAKE="TRUE"
+
+    config-opts:
+      - -DFLATPAK_IS_BUILDING_CMAKE=ON
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/app
 
     sources:
       - type: git

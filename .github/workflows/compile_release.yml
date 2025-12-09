@@ -295,7 +295,7 @@ jobs:
         if [ -z "$VERSION" ]; then
             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
         fi
-        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-arm64-experimental.tar.gz"
+        TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-arm64.tar.gz"
         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
         mkdir -p "${ARTIFACT_TEMP_DIR}"
         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
@@ -307,7 +307,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ASAPCabinetFE-macos-arm64-experimental
+        name: ASAPCabinetFE-macos-arm64
         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
         retention-days: 7
 
@@ -396,7 +396,7 @@ jobs:
 #         if [ -z "$VERSION" ]; then
 #             VERSION="unknown-$(date +%Y%m%d%H%M%S)"
 #         fi
-#         TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-x86_64-experimental.tar.gz"
+#         TARBALL_NAME="ASAPCabinetFE-${VERSION}-macos-x86_64.tar.gz"
 #         ARTIFACT_TEMP_DIR="${RUNNER_TEMP}/artifacts"
 #         mkdir -p "${ARTIFACT_TEMP_DIR}"
 #         TARBALL_FULL_PATH="${ARTIFACT_TEMP_DIR}/${TARBALL_NAME}"
@@ -408,7 +408,7 @@ jobs:
 #     - name: Upload artifact
 #       uses: actions/upload-artifact@v4
 #       with:
-#         name: ASAPCabinetFE-macos-x86_64-experimental
+#         name: ASAPCabinetFE-macos-x86_64
 #         path: "${{ steps.create-archive.outputs.tarball_full_path }}"
 #         retention-days: 7
 
