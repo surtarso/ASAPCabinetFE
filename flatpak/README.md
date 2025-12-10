@@ -37,5 +37,5 @@ e.g.:
       # git source code (for release builds)
       - type: git
         url: https://github.com/surtarso/ASAPCabinetFE.git
-        tag: v1.2.15  # <- 'main' for latest, or use a release tag
+        tag: main  # <- or use a release tag 'v1.2.15'
  ```
