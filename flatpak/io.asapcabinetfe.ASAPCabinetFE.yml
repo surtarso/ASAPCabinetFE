@@ -99,7 +99,7 @@ modules:
       # requires rust-vendor.tar.gz (vpin crate dependencies)
       # - in flatpak/ folder:
       # - cp -var ../src/vpin_ffi_wrapper/src/ .
-      # - cargo vendor --manifest-path Cargo.toml
+      # - cargo vendor --manifest-path rust-vendor.toml
       # - tar czf rust-vendor.tar.gz vendor/
       # - sha256sum rust-vendor.tar.gz
 
