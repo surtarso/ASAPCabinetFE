@@ -222,15 +222,15 @@ _Built something cool? Share it with us in the [Discussions](https://github.com/
 ## Planned Features:
 We’re dreaming big! Help us bring these features to life:
 
+- DOF support.
+- Real DMD connection.
+- Highscore tracking.
 - Multi-launchers.
 - In-game video recording.
 - Media manipulation.
 - Attract Mode.
 - Custom collections.
-- Real DMD connection.
-- DOF support.
 - CLI automation.
-- Highscore tracking.
 - Tournaments. (maybe)
 
 ## In Development now:
