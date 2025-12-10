@@ -7,11 +7,20 @@ project(ASAPCabinetFE LANGUAGES CXX C)
 # Flatpak builder must export FLATPAK_BUILD=1
 if(DEFINED ENV{FLATPAK_BUILD})
     set(BUILDING_FLATPAK TRUE)
+    add_compile_definitions(BUILDING_FLATPAK)
     message(STATUS ">>> FLATPAK BUILD DETECTED (ENV FLATPAK_BUILD=1)")
 else()
 # Normal build: unset cached prefix first
     set(BUILDING_FLATPAK FALSE)
     unset(CMAKE_INSTALL_PREFIX CACHE)
+    # Normal build: unset cached prefix first
+    unset(CMAKE_INSTALL_PREFIX CACHE)
+
+    # Then set default prefix under $HOME
+    set(CMAKE_INSTALL_PREFIX
+        "$ENV{HOME}/${PROJECT_NAME}"
+        CACHE PATH "Installation prefix for ASAPCabinetFE"
+    )
 endif()
 
 if(APPLE)
@@ -166,14 +175,20 @@ if(BUILDING_FLATPAK)
         endif()
     endfunction()
 
-    extract_tar(pugixml-1.15) # pugixml
-    extract_tar(v3.3.3)       # rapidfuzz-cpp
-    extract_tar(v1.92.4)      # ImGui
-    extract_tar(v0.6.8)       # ImGuiFileDialog
-    extract_tar(v0.18.6)      # vpin crate
+    extract_tar(pugixml-1.15)  # pugixml
+    extract_tar(v3.3.3)        # rapidfuzz-cpp
+    extract_tar(v1.92.4)       # ImGui
+    extract_tar(v0.6.8)        # ImGuiFileDialog
+    extract_tar(v0.18.6)       # vpin crate
+    extract_tar(v3.12.0)       # nlohmann_json
+    extract_tar(libzip-1.11.4) # libzip
+    # extract_tar(zstd-1.5.7)    # zstd (dependency of libzip for flatpaks)
 
     add_subdirectory(${CMAKE_SOURCE_DIR}/pugixml-1.15)
     add_subdirectory(${CMAKE_SOURCE_DIR}/rapidfuzz-cpp-3.3.3)
+
+    add_subdirectory(${CMAKE_SOURCE_DIR}/libzip-1.11.4)
+    set(FLATPAK_EXTRA_LIBS zip imgui)
 
     # ImGui (no CMakeLists)
     file(GLOB IMGUI_SOURCES
@@ -181,10 +196,18 @@ if(BUILDING_FLATPAK)
     )
     add_library(imgui STATIC ${IMGUI_SOURCES})
     target_include_directories(imgui PUBLIC "${CMAKE_SOURCE_DIR}/imgui-1.92.4")
+    list(APPEND SOURCES
+        "${CMAKE_SOURCE_DIR}/imgui-1.92.4/backends/imgui_impl_sdl2.cpp"
+        "${CMAKE_SOURCE_DIR}/imgui-1.92.4/backends/imgui_impl_sdlrenderer2.cpp"
+    )
 
     # IGFD (just add include path)
     set(ImGuiFileDialog_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ImGuiFileDialog-0.6.8)
     include_directories(${ImGuiFileDialog_SOURCE_DIR})
+    list(APPEND SOURCES "${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
+    set_source_files_properties("${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
+        COMPILE_FLAGS "-w"
+    )
 
     # vpin crate
     set(vpin_SOURCE_DIR "${CMAKE_SOURCE_DIR}/vpin-0.18.6")
@@ -309,29 +332,45 @@ add_custom_command(
 set(RUST_TARGET_DIR "${CMAKE_BINARY_DIR}/_deps/rust_lib_target") # Keep this separate for all Cargo output
 file(MAKE_DIRECTORY "${RUST_TARGET_DIR}")
 
-# # Determine Cargo build profile (debug/release)
-# string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
-# if(CMAKE_BUILD_TYPE_LOWER STREQUAL "DEBUG")
-#     set(CARGO_PROFILE_FLAG "") # Default debug build, no extra flag needed
-#     set(RUST_LIB_SUBDIR "debug")
-# else()
 set(CARGO_PROFILE_FLAG "--release")
 set(RUST_LIB_SUBDIR "release")
-# endif()
 
 # 3. Build the Rust FFI wrapper as a static library
-add_custom_command(
-    OUTPUT "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
-    COMMAND ${CARGO_EXECUTABLE} build
-            --manifest-path "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
-            --target-dir "${RUST_TARGET_DIR}"
-            ${CARGO_PROFILE_FLAG}
-    WORKING_DIRECTORY "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}"
-    COMMENT "Building Rust FFI wrapper library..."
-    # Depend on the configured Cargo.toml AND the stamp file from the copy command
-    DEPENDS "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
-            "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp" # <-- Crucial dependency
-)
+if(BUILDING_FLATPAK)
+    add_custom_command(
+        OUTPUT "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
+        COMMAND env
+            DBUS_SESSION_BUS_ADDRESS=unix:path=/dev/null
+            DISPLAY=
+            CARGO_HOME=/run/build/.cargo
+            RUSTUP_HOME=/run/build/.rustup
+            PATH=/usr/lib/sdk/rust-stable/bin:/usr/bin
+            cargo build
+                --manifest-path "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+                --target-dir "${RUST_TARGET_DIR}"
+                ${CARGO_PROFILE_FLAG}
+        WORKING_DIRECTORY "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}"
+        COMMENT "Building Rust FFI wrapper library inside Flatpak using host cargo..."
+        DEPENDS "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+                "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp"
+    )
+else()
+    # Normal build command
+    add_custom_command(
+        OUTPUT "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
+
+        COMMAND ${CARGO_EXECUTABLE} build
+                --manifest-path "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+                --target-dir "${RUST_TARGET_DIR}"
+                ${CARGO_PROFILE_FLAG}
+
+        WORKING_DIRECTORY "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}"
+        COMMENT "Building Rust FFI wrapper library..."
+        # Depend on the configured Cargo.toml AND the stamp file from the copy command
+        DEPENDS "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/Cargo.toml"
+                "${VPIN_FFI_WRAPPER_BUILD_IN_DEPS_DIR}/.copy_stamp" # <-- Crucial dependency
+    )
+endif()
 
 add_custom_target(build_rust_lib ALL
     DEPENDS "${RUST_TARGET_DIR}/${RUST_LIB_SUBDIR}/lib${VPIN_FFI_WRAPPER_LIB_NAME}.a"
@@ -445,18 +484,36 @@ set(SOURCES
     src/utils/string_utils.cpp
     src/utils/version_checker.cpp
     src/utils/vpinballx_ini_reader.cpp
-    # Dear ImGui sources added directly from FetchContent path
-    "${imgui_SOURCE_DIR}/imgui.cpp"
-    "${imgui_SOURCE_DIR}/imgui_draw.cpp"
-    "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
-    "${imgui_SOURCE_DIR}/imgui_tables.cpp"
-    "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp"
-    "${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp"
-    # ImGui File Dialog source
-    "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp"
 )
 
-if(NOT APPLE)
+if(BUILDING_FLATPAK)
+    # Define paths to the extracted directories
+    set(FLATPAK_IMGUI_DIR "${CMAKE_SOURCE_DIR}/imgui-1.92.4")
+    set(FLATPAK_IGFD_DIR "${CMAKE_SOURCE_DIR}/ImGuiFileDialog-0.6.8")
+
+    # Add ImGui Backends (SDL2 + SDLRenderer2)
+    list(APPEND SOURCES "${FLATPAK_IMGUI_DIR}/backends/imgui_impl_sdl2.cpp")
+    list(APPEND SOURCES "${FLATPAK_IMGUI_DIR}/backends/imgui_impl_sdlrenderer2.cpp")
+
+    # Add ImGuiFileDialog
+    list(APPEND SOURCES "${FLATPAK_IGFD_DIR}/ImGuiFileDialog.cpp")
+
+    # Suppress warnings for these files (Optional but recommended)
+    set_source_files_properties("${FLATPAK_IGFD_DIR}/ImGuiFileDialog.cpp" PROPERTIES COMPILE_FLAGS "-w")
+else()
+    # if(NOT BUILDING_FLATPAK)
+    # Dear ImGui sources added directly from FetchContent path
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/imgui.cpp")
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/imgui_draw.cpp")
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/imgui_widgets.cpp")
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/imgui_tables.cpp")
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp")
+    list(APPEND SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp")
+    # ImGui File Dialog source
+    list(APPEND SOURCES "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
+endif()
+
+if(NOT APPLE AND NOT BUILDING_FLATPAK)
     list(APPEND SOURCES
         src/render/video_players/vlc/vlc_player.cpp)
 endif()
@@ -502,34 +559,54 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/tables/vpinmdb
     ${CMAKE_SOURCE_DIR}/src/tables/vpsdb
     ${CMAKE_SOURCE_DIR}/src/utils
-    # Dear ImGui includes
-    "${imgui_SOURCE_DIR}"
-    "${imgui_SOURCE_DIR}/backends"
-    # ImGui File Dialog includes
-    "${imguifiledialog_SOURCE_DIR}"
     # Rust FFI wrapper include
     "${VPIN_FFI_WRAPPER_SOURCE_DIR}/include"
     "${CMAKE_BINARY_DIR}"  # Where version.h is generated
 )
 
-# Suppress warnings for ImGuiFileDialog.cpp and ensure it finds imgui.h
-set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
-    COMPILE_FLAGS "-w"
-)
-# Suppress warnings for ImGui sources and headers
-file(GLOB_RECURSE IMGUI_SOURCES "${imgui_SOURCE_DIR}/*.cpp")
-set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
+if(BUILDING_FLATPAK)
+    # Extracted folder name from the source tarball
+    target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/imgui-1.92.4")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/imgui-1.92.4/backends")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ImGuiFileDialog-0.6.8")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/libzip-1.11.4")
+else()
+# if(NOT BUILDING_FLATPAK)
+    # Dear ImGui includes
+    list(APPEND SOURCES
+        "${imgui_SOURCE_DIR}")
+    list(APPEND SOURCES
+        "${imgui_SOURCE_DIR}/backends")
+    # ImGui File Dialog includes
+    list(APPEND SOURCES
+        "${imguifiledialog_SOURCE_DIR}")
 
-# Treat ImGui include path as a system include (silences header warnings)
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
+    # Suppress warnings for ImGuiFileDialog.cpp and ensure it finds imgui.h
+    set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
+        COMPILE_FLAGS "-w"
+    )
+
+    # Suppress warnings for ImGui sources and headers
+    file(GLOB_RECURSE IMGUI_SOURCES "${imgui_SOURCE_DIR}/*.cpp")
+    set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
+
+    # Treat ImGui include path as a system include (silences header warnings)
+    target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
+endif()
 
 # ---------------------------------------------------------------------
 # ------------------------- Dependencies Start ------------------------
 # ---------------------------------------------------------------------
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
-find_package(nlohmann_json 3.11.2 REQUIRED)
+# find_package(nlohmann_json 3.11.2 REQUIRED)
 find_package(CURL REQUIRED)
+
+if(BUILDING_FLATPAK)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/json-3.12.0)
+else()
+    find_package(nlohmann_json 3.11.2 REQUIRED)
+endif()
 
 if(APPLE)
     # Homebrew SDL2
@@ -558,8 +635,11 @@ else()
     pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
     pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
     pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libswresample)
-    pkg_check_modules(LIBZIP REQUIRED libzip)
-    pkg_check_modules(LIBVLC REQUIRED libvlc)
+    # pkg_check_modules(LIBZIP REQUIRED libzip)
+    if(NOT BUILDING_FLATPAK)
+        pkg_check_modules(LIBZIP REQUIRED libzip)
+        pkg_check_modules(LIBVLC REQUIRED libvlc)
+    endif()
 
     # support VLC v3.x and v4.x
     pkg_get_variable(LIBVLC_VERSION libvlc version)
@@ -617,6 +697,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     pugixml::pugixml
     rapidfuzz::rapidfuzz
 )
+
+if(BUILDING_FLATPAK)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${FLATPAK_EXTRA_LIBS})
+endif()
 
 # --- Dependencies End ---
 

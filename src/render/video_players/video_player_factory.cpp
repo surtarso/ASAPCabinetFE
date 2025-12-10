@@ -7,7 +7,7 @@
 #include "dummy_player.h"
 #include "sdl_draw/alternate_media_player.h"
 #include "default_media_player.h"
-#if !defined(__APPLE__)
+#if !defined(__APPLE__)  && !defined(BUILDING_FLATPAK)
     #include "vlc/vlc_player.h"
 #endif
 #include "ffmpeg/ffmpeg_player.h"
@@ -75,7 +75,7 @@ std::unique_ptr<IVideoPlayer> VideoPlayerFactory::createVideoPlayer(
             LOG_ERROR("Failed to setup Dummy video player for path=" + path);
             return nullptr;
 
-    #if !defined(__APPLE__)
+    #if !defined(__APPLE__) && !defined(BUILDING_FLATPAK)
         case VideoBackendType::VLC:
             player = std::make_unique<VlcVideoPlayer>();
             break;

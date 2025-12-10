@@ -35,6 +35,8 @@ docs/
 *.app
 
 # Custom
+*.gz
+*.tar.gz
 ASAPCabinetFE
 settings.json
 .vscode

@@ -248,7 +248,7 @@ public:
             {"topperWindowY", "Topper Y"}
         };
         keyDropdownOptions_["WindowSettings"] = {
-        #if defined(__APPLE__)
+        #if defined(__APPLE__) && !defined(BUILDING_FLATPAK)
             {"videoBackend", {"ffmpeg", "novideo", "software"}}
         #else
             {"videoBackend", {"vlc", "ffmpeg", "novideo", "software"}}

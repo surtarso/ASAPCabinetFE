@@ -5,7 +5,6 @@ sdk: org.freedesktop.Sdk
 
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
-  - org.freedesktop.Sdk.Extension.ffmpeg
 
 command: ASAPCabinetFE
 
@@ -27,18 +26,27 @@ cleanup:
   - '*.a'
 
 modules:
-  - name: asapcabinetfe
-    buildsystem: cmake
-    builddir: true
+  - name: zstd   # zstd dependency for libzip
+    buildsystem: simple
+    build-commands:
+      - make
+      - make install PREFIX=/app
+    sources:
+      - type: archive
+        url: https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz
+        sha256: 37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3
+
+  - name: asapcabinetfe  # main app
+    buildsystem: simple
 
     build-options:
-      wipe: true
       env:
         - FLATPAK_BUILD=1
-        - PATH=/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/x86_64/usr/bin:/usr/lib/sdk/bin:/usr/bin
+        - CARGO_HOME=/run/build/.cargo
+        - RUSTUP_HOME=/run/build/.rustup
+        - PATH=/app/bin:/usr/lib/sdk/rust-stable/bin:/usr/bin
 
     config-opts:
-      - -DFLATPAK_IS_BUILDING_CMAKE=ON
       - -DCMAKE_BUILD_TYPE=Release
 
     sources:
@@ -66,9 +74,57 @@ modules:
         url: https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
         sha256: 7aa3fbb0fc7206c5b434246d906f036057a59eb51e28ae36488aa654a667a266
 
+      - type: file
+        path: rust-vendor.tar.gz
+        sha256: c896ffc30b0a572f62589cd71da50c6f4c1712465c3af8bc2056aaa15befa494
+
       - type: file  # vpin crate
         url: https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
         sha256: 0d79288f6ac3adc8a5dc4bf8ae60cf06ccad1d1beede9e8c51f0fb8e3581a3b6
+
+      - type: file
+        url: https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz
+        sha256: 4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187
+
+      - type: file
+        url: https://libzip.org/download/libzip-1.11.4.tar.gz
+        sha256: 82e9f2f2421f9d7c2466bbc3173cd09595a88ea37db0d559a9d0a2dc60dc722e
+
+    build-commands:
+      # --- 1. INITIALIZE BUILD AND GENERATE CARGO.TOML ---
+      - export DBUS_SESSION_BUS_ADDRESS=unix:path=/dev/null ; cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app
+
+      # requires rust-vendor.tar.gz (vpin crate dependencies)
+      # - in flatpak/ folder:
+      # - cp -var ../src/vpin_ffi_wrapper/src/ .
+      # - cargo vendor --manifest-path Cargo.toml
+      # - tar czf rust-vendor.tar.gz vendor/
+      # - sha256sum rust-vendor.tar.gz
+
+      # --- 2. EXTRACT VENDOR DIRECTORY ---
+      - tar xzf rust-vendor.tar.gz
+
+      # --- 3. CARGO CONFIGURATION SETUP (Use Vendor) ---
+      - mkdir -p .cargo
+      - echo '[net]' > .cargo/config.toml
+      - echo 'retry = 5' >> .cargo/config.toml
+
+      - echo '' >> .cargo/config.toml
+      - echo '[source.crates-io]' >> .cargo/config.toml
+      - echo 'replace-with = "vendored-sources"' >> .cargo/config.toml
+      - echo '' >> .cargo/config.toml
+      - echo '[source.vendored-sources]' >> .cargo/config.toml
+      - echo 'directory = "vendor"' >> .cargo/config.toml
+
+      # --- 4. FINISH STAGING (Copy Source Files) ---
+      - cmake -E copy_directory src/vpin_ffi_wrapper/src _deps/vpin_ffi_wrapper-build/src
+      - cmake -E copy_directory src/vpin_ffi_wrapper/include _deps/vpin_ffi_wrapper-build/include
+
+      # 5. RUN CARGO FETCH (uses vendored sources) and MAKE
+      - export DBUS_SESSION_BUS_ADDRESS=unix:path=/dev/null ; cargo fetch --manifest-path _deps/vpin_ffi_wrapper-build/Cargo.toml
+
+      - export DBUS_SESSION_BUS_ADDRESS=unix:path=/dev/null ; make -j$(nproc)
+      - make install
 
     post-install:
       - install -Dm644 flatpak/io.asapcabinetfe.ASAPCabinetFE.svg /app/share/icons/hicolor/scalable/apps/io.asapcabinetfe.ASAPCabinetFE.svg
