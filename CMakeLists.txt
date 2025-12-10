@@ -571,27 +571,25 @@ if(BUILDING_FLATPAK)
     target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ImGuiFileDialog-0.6.8")
     target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/libzip-1.11.4")
 else()
-# if(NOT BUILDING_FLATPAK)
+    # if(NOT BUILDING_FLATPAK)
     # Dear ImGui includes
-    list(APPEND SOURCES
-        "${imgui_SOURCE_DIR}")
-    list(APPEND SOURCES
-        "${imgui_SOURCE_DIR}/backends")
-    # ImGui File Dialog includes
-    list(APPEND SOURCES
-        "${imguifiledialog_SOURCE_DIR}")
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${imguifiledialog_SOURCE_DIR}
+    )
+    # Ensure ImGui backends path is included for header search
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        "${imgui_SOURCE_DIR}/backends"
+    )
+    # Treat ImGui include path as a system include (silences header warnings)
+    target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 
     # Suppress warnings for ImGuiFileDialog.cpp and ensure it finds imgui.h
     set_source_files_properties("${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp" PROPERTIES
         COMPILE_FLAGS "-w"
     )
-
     # Suppress warnings for ImGui sources and headers
     file(GLOB_RECURSE IMGUI_SOURCES "${imgui_SOURCE_DIR}/*.cpp")
     set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
-
-    # Treat ImGui include path as a system include (silences header warnings)
-    target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 endif()
 
 # ---------------------------------------------------------------------
