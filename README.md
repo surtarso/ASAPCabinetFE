@@ -235,6 +235,7 @@ We’re dreaming big! Help us bring these features to life:
 
 ## In Development now:
 
+- Flatpak packaging.
 - Integration of [VPXGUITools](https://github.com/surtarso/vpx-gui-tools) for table management. (--editor)
 
 The **new editor** is almost ready and can be *beta tested* with the [latest release](https://github.com/surtarso/ASAPCabinetFE/releases/)! Use it's own binary `ASAPCabinetFE-Editor` or start with `ASAPCabinetFE --editor` (or `-e` for short) to open it up. Please report any issues or suggestions! *(some functionalities are not yet implemented)*
@@ -246,6 +247,7 @@ https://github.com/user-attachments/assets/2a430103-da5d-49fc-95c0-c1ee10a280c1
 - Contributions are very welcome! Check the [TODO](TODO) list, open issues or pull requests to help improve this app—every bit helps.
 - Contributions to `128x32` logos are highly appreciated. Open pull requests to the `assets/img/dmd_still/` folder.
 - If you're a *Dear ImGui* wizard, please contribute to UI polishing as I'm a complete loser for it, sorry.
+- We're looking for a MacOS maintainer to add/keep/test the `__APPLE__` blocks. (Thanks [@herrmito](https://github.com/herrMirto)!)
 - You can find the [documentation here](https://surtarso.github.io/ASAPCabinetFE/) or by typing `doxygen` on the project root, and opening docs/index.html.
 
 ## Acknowledgments
