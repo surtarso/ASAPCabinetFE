@@ -7,12 +7,6 @@ on:
       - ".github/workflows/compile_release.yml"
       - "src/**"
       - "CMakeLists.txt"
-      - "external/**"
-      - "version.h.in"
-      - "apt-packages.txt"
-      - "pacman-packages.txt"
-      - "Doxyfile"
-      - "docs/**"
     tags:
       - 'v*'
   pull_request:

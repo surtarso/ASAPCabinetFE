@@ -50,9 +50,11 @@ modules:
       - -DCMAKE_BUILD_TYPE=Release
 
     sources:
+      # local source code
       - type: dir
         path: ../../ASAPCabinetFE
 
+      # git source code (for release builds)
       # - type: git
       #   url: https://github.com/surtarso/ASAPCabinetFE.git
       #   tag: v1.2.15
@@ -74,7 +76,7 @@ modules:
         url: https://github.com/aiekick/ImGuiFileDialog/archive/refs/tags/v0.6.8.tar.gz
         sha256: 7aa3fbb0fc7206c5b434246d906f036057a59eb51e28ae36488aa654a667a266
 
-      - type: file
+      - type: file  # cargo vendor archive (vpin crate dependencies)
         path: rust-vendor.tar.gz
         sha256: c896ffc30b0a572f62589cd71da50c6f4c1712465c3af8bc2056aaa15befa494
 
@@ -82,11 +84,11 @@ modules:
         url: https://github.com/francisdb/vpin/archive/refs/tags/v0.18.6.tar.gz
         sha256: 0d79288f6ac3adc8a5dc4bf8ae60cf06ccad1d1beede9e8c51f0fb8e3581a3b6
 
-      - type: file
+      - type: file  # nlohmann json
         url: https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz
         sha256: 4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187
 
-      - type: file
+      - type: file  # libzip
         url: https://libzip.org/download/libzip-1.11.4.tar.gz
         sha256: 82e9f2f2421f9d7c2466bbc3173cd09595a88ea37db0d559a9d0a2dc60dc722e
 
