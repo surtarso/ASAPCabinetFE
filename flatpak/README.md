@@ -1,3 +1,9 @@
+# NOT YET COMPLETE
+Already builds 100% and links but it won't work yet.
+
+- We're still missing the final part of Cmakelists.txt to redirect the executable to the correct location inside the flatpak;
+- We're still missing the C++ part to direct non-static data out of the read-only flatpak.
+
 ### Instructions:
 
 The flatpak requires rust-vendor.tar.gz (vpin crate dependencies)
