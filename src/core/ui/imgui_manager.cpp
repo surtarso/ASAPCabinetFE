@@ -52,38 +52,19 @@ void ImGuiManager::initialize() {
     context_ = ImGui::CreateContext();
     ImGui::StyleColorsDark();
 
-    // Disable ini file loading and saving
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr; // Prevent loading/saving imgui.ini
-
-    // Apply DPI scaling to ImGui
-    const Settings& settings = configService_->getSettings();
-#if defined(__APPLE__)
-    // Fonts are handled by the backend. Use the application's configured DPI scale for styles.
-    if (settings.enableDpiScaling) {
-        // You must use a known value (like the one from settings) for initial scaling.
-        ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
-    }
-#else
-    if (settings.enableDpiScaling) {
-        io.FontGlobalScale = settings.dpiScale;
-        ImGui::GetStyle().ScaleAllSizes(settings.dpiScale);
-    }
-#endif
+    io.IniFilename = nullptr;
 
     if (windowManager_) {
         SDL_Window* w = windowManager_->getPlayfieldWindow();
         SDL_Renderer* r = windowManager_->getPlayfieldRenderer();
-        LOG_DEBUG(std::string("ImGuiManager: Initializing ImGui for playfield window=" ) + std::to_string(reinterpret_cast<uintptr_t>(w)) +
-                  ", renderer=" + std::to_string(reinterpret_cast<uintptr_t>(r)));
         ImGui_ImplSDL2_InitForSDLRenderer(w, r);
         ImGui_ImplSDLRenderer2_Init(r);
     } else {
-        LOG_DEBUG(std::string("ImGuiManager: Initializing ImGui for config window=" ) + std::to_string(reinterpret_cast<uintptr_t>(configWindow_)) +
-                  ", renderer=" + std::to_string(reinterpret_cast<uintptr_t>(configRenderer_)));
         ImGui_ImplSDL2_InitForSDLRenderer(configWindow_, configRenderer_);
         ImGui_ImplSDLRenderer2_Init(configRenderer_);
     }
+
     LOG_INFO("ImGui Initialized.");
 }
 
@@ -91,32 +72,33 @@ void ImGuiManager::newFrame() {
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
 
-    // ImGuiIO& io = ImGui::GetIO();
-
     SDL_Window* window = windowManager_ ? windowManager_->getPlayfieldWindow() : configWindow_;
     SDL_Renderer* renderer = windowManager_ ? windowManager_->getPlayfieldRenderer() : configRenderer_;
 
-    if (!window || !renderer) return;
+    if (!window || !renderer)
+        return;
 
-//     int winW = 0, winH = 0;
-//     int fbW = 0, fbH = 0;
-//     SDL_GetWindowSize(window, &winW, &winH);                    // Logical size (points)
-//     SDL_GetRendererOutputSize(renderer, &fbW, &fbH);            // Actual framebuffer (pixels)
+    ImGuiIO& io = ImGui::GetIO();
 
-//     io.DisplaySize = ImVec2(static_cast<float>(winW), static_cast<float>(winH));
-//     io.DisplayFramebufferScale = ImVec2(
-//         static_cast<float>(fbW) / static_cast<float>(winW),
-//         static_cast<float>(fbH) / static_cast<float>(winH)
-//     );
+    // --- The critical macOS fix ---
+    int winW = 0, winH = 0;      // Logical (points)
+    int fbW  = 0, fbH  = 0;      // Framebuffer (pixels)
+    SDL_GetWindowSize(window, &winW, &winH);
+    SDL_GetRendererOutputSize(renderer, &fbW, &fbH);
 
-// #if defined(__APPLE__)
-//     // Optional: you can scale fonts automatically on Retina
-//     // io.FontGlobalScale = io.DisplayFramebufferScale.x;
-// #endif
+    // The framebuffer scale (e.g., 2.0 on Retina)
+    float scaleX = (float)fbW / (float)winW;
+    float scaleY = (float)fbH / (float)winH;
 
-//     // Skip frame if invalid
-//     if (winW <= 0 || winH <= 0 || fbW <= 0 || fbH <= 0)
-//         return;
+    io.DisplaySize = ImVec2((float)winW, (float)winH);
+    io.DisplayFramebufferScale = ImVec2(scaleX, scaleY);
+
+#if defined(__APPLE__)
+    // You MUST scale fonts on macOS Retina or they will remain tiny
+    io.FontGlobalScale = scaleX;   // scaleX == 2.0 on most Retina screens
+#endif
+
+    // --- end fix ---
 
     ImGui::NewFrame();
 }
