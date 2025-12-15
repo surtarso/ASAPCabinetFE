@@ -295,11 +295,27 @@ struct Settings {
         VPXTablesPath = resolvePath(VPXTablesPath, exeDirectory);
         VPinballXPath = resolvePath(VPinballXPath, exeDirectory);
 
-        std::string staticDir = exeDir;
-        std::string dataDir = exeDir;
+        std::string staticDir;
+        std::string dataDir;
+
+    #if defined(__linux__) && !BUILDING_FLATPAK
+        staticDir = exeDir;
+        dataDir = exeDir;
+    #endif
+
     #ifdef __APPLE__
         staticDir = getResourcesDir(exeDirectory);
         dataDir = getUserDataDir();
+    #endif
+
+    #if BUILDING_FLATPAK
+        const char* home = std::getenv("HOME");
+
+        // absolute, fixed, correct sandbox locations
+        staticDir = "/app/share/ASAPCabinetFE/";   // read-only but valid for static assets
+        dataDir =
+            std::string(home ? home : "/tmp") +
+            "/.var/app/io.asapcabinetfe.ASAPCabinetFE/data/";
     #endif
 
         // List all paths that need resolution here
@@ -414,10 +430,23 @@ public:
                 result.replace(0, 1, home);
             }
         }
+
+    #if BUILDING_FLATPAK
+        // value is always absolute after applyPostProcessing has rewritten fields.
+        if (value.empty()) return {};
+        if (value[0] == '/' || value[0] == '\\')
+            return value;
+
+        // otherwise relative → treat as relative to exeDirectory (dataDir or staticDir)
+        return exeDirectory + value;
+    #endif
+
+    #if defined(__linux__) && !BUILDING_FLATPAK
         // Resolve relative paths
         if (result.empty()) return exeDirectory + value;
         if (result[0] == '/' || result[0] == '\\') return result;
         return exeDirectory + result;
+    #endif
     }
 
 #ifdef __APPLE__

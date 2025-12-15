@@ -194,36 +194,48 @@ void ConfigService::saveConfig() {
 
 void ConfigService::applyPostProcessing() {
     std::string exeDir;
-    char path[PATH_MAX];
 
-    #if defined(__APPLE__)
-        CFBundleRef mainBundle = CFBundleGetMainBundle();
-        if (mainBundle) {
-            CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-            if (resourcesURL) {
-                char resourcesPath[PATH_MAX];
-                if (CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8*)resourcesPath, PATH_MAX)) {
-                    exeDir = std::string(resourcesPath) + "/";
-                }
-                CFRelease(resourcesURL);
+#if defined(__APPLE__)
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    if (mainBundle) {
+        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+        if (resourcesURL) {
+            char resourcesPath[PATH_MAX];
+            if (CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8*)resourcesPath, PATH_MAX)) {
+                exeDir = std::string(resourcesPath) + "/";
             }
-        } else {
-            // Fallback to CWD if not a bundle
-            exeDir = std::filesystem::current_path().string() + "/";
+            CFRelease(resourcesURL);
         }
-    #else
-        // Linux: /proc/self/exe
-        ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
-        if (count != -1) {
-            path[count] = '\0';
-            exeDir = std::filesystem::path(path).parent_path().string() + "/";
-        } else {
-            exeDir = std::filesystem::current_path().string() + "/";
-            LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
-        }
-    #endif
-
+    } else {
+        // Fallback to CWD if not a bundle
+        exeDir = std::filesystem::current_path().string() + "/";
+    }
     settings_.applyPostProcessing(exeDir);
+    return;
+#endif
+
+#if BUILDING_FLATPAK
+    // Fully absolute, canonical base directory
+    std::string baseDir =
+        std::string(std::getenv("HOME") ? std::getenv("HOME") : "/tmp") +
+        "/.var/app/io.asapcabinetfe.ASAPCabinetFE/";
+
+    settings_.applyPostProcessing(baseDir);
+    return;
+#endif
+
+#if defined(__linux__) && !BUILDING_FLATPAK
+    char path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (count != -1) {
+        path[count] = '\0';
+        exeDir = std::filesystem::path(path).parent_path().string() + "/";
+    } else {
+        exeDir = std::filesystem::current_path().string() + "/";
+        LOG_WARN("Failed to resolve executable path, using current directory: " + exeDir);
+    }
+    settings_.applyPostProcessing(exeDir);
+#endif
 }
 
 void ConfigService::applyIniSettings(const std::optional<VPinballXIniSettings>& iniSettings) {

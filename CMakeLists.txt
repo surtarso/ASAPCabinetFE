@@ -744,20 +744,33 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${PROJECT_NAME} PRIVATE -O2)
 
-    # Install the executable directly into the root of the install prefix
-    install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION . # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
-    )
+    # Install the executable into either the flatpak-friendly bin/ or the previous root location.
+    if(BUILDING_FLATPAK)
+        # For Flatpak, install into /app/bin so the `command: ASAPCabinetFE` in manifest can find it.
+        install(TARGETS ${PROJECT_NAME}
+            RUNTIME DESTINATION bin
+        )
 
-    # Install resource directories directly into the root of the install prefix
-    # assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
-    if(NOT APPLE)
-        install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
-        install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
-        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
-        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
-        install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
-        install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
+        # Place resources under /app/share/ASAPCabinetFE so they're not in root and are discoverable.
+        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION "share/ASAPCabinetFE")
+        install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION "share/ASAPCabinetFE")
+
+    else()
+        # Install the executable directly into the root of the install prefix
+        install(TARGETS ${PROJECT_NAME}
+            RUNTIME DESTINATION . # Places ASAPCabinetFE directly in ${CMAKE_INSTALL_PREFIX}/
+        )
+
+        # Install resource directories directly into the root of the install prefix
+        # assets/img, assets/snd, src/config.ini, and tools/ are relative to CMAKE_SOURCE_DIR
+        if(NOT APPLE)
+            install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/logs\")")
+            install(CODE "file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/data\")")
+            install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/img" DESTINATION .)
+            install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/snd" DESTINATION .)
+            install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/generate_media.sh" DESTINATION .)
+            install(PROGRAMS "${CMAKE_SOURCE_DIR}/tools/missing_media.sh" DESTINATION .)
+        endif()
     endif()
 endif()
 
@@ -767,10 +780,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # -----------------------------------------------------------------------------
-# Secondary launcher binary (--editor shortcut)
+# Secondary launcher binary (--editor shortcut) [Linux only]
 # -----------------------------------------------------------------------------
 # Define and import the editor source file
-if(NOT APPLE)
+if(NOT APPLE AND NOT BUILDING_FLATPAK)
     add_executable(${PROJECT_NAME}-Editor src/editor/editor_binary.cpp)
 
     # Place it in the same build folder as the main binary
@@ -830,15 +843,6 @@ if(APPLE)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets/snd"
             "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/snd"
-
-        # Copy tools (debian scripts)
-        # COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        #     "${CMAKE_SOURCE_DIR}/tools/generate_media.sh"
-        #     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/generate_media.sh"
-
-        # COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        #     "${CMAKE_SOURCE_DIR}/tools/missing_media.sh"
-        #     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../Resources/missing_media.sh"
     )
 
 endif()

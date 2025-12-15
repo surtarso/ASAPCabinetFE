@@ -1,8 +1,12 @@
 # NOT YET COMPLETE
-Already builds 100% and links but it won't work yet.
+Already builds 100% and links but it won't run yet.
 
-- We're still missing the final part of Cmakelists.txt to redirect the executable to the correct location inside the flatpak;
 - We're still missing the C++ part to direct non-static data out of the read-only flatpak.
+
+```sh
+terminate called after throwing an instance of 'std::filesystem::__cxx11::filesystem_error'
+  what():  filesystem error: cannot create directories: Read-only file system [/app/bin/logs]
+```
 
 ### Instructions:
 

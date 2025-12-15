@@ -15,6 +15,8 @@ ProcessHandler::ProcessHandler(const std::string& exeDir, IConfigService* config
 
 bool ProcessHandler::launchVPX(const std::string& vpxFile) {
     const Settings& settings = configManager_->getSettings();
+
+#if !BUILDING_FLATPAK  // temporary workaround for Flatpak logging issues
     std::string logDir = exeDir_ + "logs/";
     std::string vpxLogFile = logDir + "vpx_launch.log";
     std::string mkdirCmd = "mkdir -p " + shellEscape(logDir) + " && rm -f " + vpxLogFile;
@@ -25,6 +27,10 @@ bool ProcessHandler::launchVPX(const std::string& vpxFile) {
     std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
                          settings.vpxPlayCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs +
                          " > " + vpxLogFile + " 2>&1 & echo $!";
+#else
+    std::string command = settings.vpxStartArgs + " " + settings.VPinballXPath + " " +
+                            settings.vpxPlayCmd + " \"" + vpxFile + "\" " + settings.vpxEndArgs + " 2>&1 & echo $!";
+#endif
     LOG_DEBUG("Executing VPX Launch command: " + command);
 
     FILE* pipe = popen(command.c_str(), "r");

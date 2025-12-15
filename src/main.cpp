@@ -165,7 +165,6 @@ int main(int argc, char* argv[]) {
 
     // Resolve exeDir
     std::string exeDir;
-    char path[PATH_MAX];
 
     #if defined(__APPLE__)
         CFBundleRef mainBundle = CFBundleGetMainBundle();
@@ -182,9 +181,19 @@ int main(int argc, char* argv[]) {
             // Fallback to CWD if not a bundle
             exeDir = std::filesystem::current_path().string() + "/";
         }
-
-    #else
+    #endif
+    #if BUILDING_FLATPAK
+        // Flatpak applications are mounted under /app
+        if (std::filesystem::exists("/app")) {
+            exeDir = "/app/bin/";
+        } else {
+            exeDir = std::filesystem::current_path().string() + "/";
+        }
+    #endif
+    //#else
+    #if defined(__linux__) && !BUILDING_FLATPAK
         // Linux: /proc/self/exe
+        char path[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
         if (count != -1) {
             path[count] = '\0';
@@ -252,8 +261,13 @@ int main(int argc, char* argv[]) {
         std::string logFile = exeDir + "logs/debug.log";
         asap::logging::Logger::getInstance().initialize(logFile, true);
     #else
-        std::string logFile = exeDir + "logs/asapcab.log";
-        asap::logging::Logger::getInstance().initialize(logFile, false);
+        #if BUILDING_FLATPAK
+            std::string logFile = "/tmp/asapcabinetfe_flatpak.log";
+            asap::logging::Logger::getInstance().initialize(logFile, false);
+        #else
+            std::string logFile = exeDir + "logs/asapcab.log";
+            asap::logging::Logger::getInstance().initialize(logFile, false);
+        #endif
     #endif
 
     // Set configPath using exeDir
