@@ -5,7 +5,7 @@ TODO [NEW]-> Feature/Idea
       -   -> General/Logic
 
 FIX:
-- flatpak
+- flatpak (logging issues on protected folder)
 - add failsafe when there is no audio (card)
 - [FE] ffmpeg volume slider has incorrect values (too narrow range)
 
@@ -16,6 +16,8 @@ LAST THINGS FOR 1.3.0:
 - see if that helps with launchbox hits (or just improve it after...)
 
 QOL:
+- 'desktop mode' button to rearange screen for single landscape
+- [FE] 'switch to editor' button
 - some way to 'mark' perfect matches and soso matches for inspection (use confidence var?)
 - add ipdb to the mix, change ids to ID_xxx (from xxxID)
 - update header docs and user manual
@@ -27,6 +29,7 @@ QOL:
 - ease overwhelm in FE, send to Editor!
 
 On hold:
+- DOF support
 - switch to use real DMDs
 - refactor the monoliths... interfaces, templates, factories...
 - refactor editor tooltips to centralized helpers
